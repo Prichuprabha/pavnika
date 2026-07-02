@@ -1,0 +1,505 @@
+/* ============================================================
+   PATTU HOUSE — Kancheepuram Silk Sarees, Dubai
+   Design tokens
+   ============================================================ */
+
+:root {
+  --ivory: #F7F1E5;
+  --ivory-deep: #EFE6D2;
+  --maroon: #6B1420;
+  --maroon-deep: #4A0D16;
+  --gold: #B8862E;
+  --gold-light: #D9B872;
+  --peacock: #0B5D5A;
+  --ink: #241B14;
+  --stone: #D8C9A3;
+
+  --display: 'Cormorant Garamond', serif;
+  --body: 'Jost', sans-serif;
+
+  --max: 1180px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--ivory);
+  color: var(--ink);
+  font-family: var(--body);
+  font-weight: 400;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img { max-width: 100%; display: block; }
+
+a { color: inherit; text-decoration: none; }
+
+h1, h2, h3, h4 {
+  font-family: var(--display);
+  font-weight: 600;
+  color: var(--maroon);
+  margin: 0 0 0.4em 0;
+  line-height: 1.15;
+}
+
+h1 { font-size: clamp(2.6rem, 5vw, 4.4rem); font-weight: 500; }
+h2 { font-size: clamp(1.9rem, 3.4vw, 2.8rem); }
+h3 { font-size: 1.4rem; }
+
+p { margin: 0 0 1em 0; }
+
+.eyebrow {
+  font-family: var(--body);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.72rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.container {
+  max-width: var(--max);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ---------- Temple border — the signature motif ----------
+   A woven kovil/gopuram zig-zag border, the way a real
+   Kanjivaram saree carries a temple border along its edge.
+   Used as a structural divider, never decorative filler. */
+
+.temple-border {
+  height: 22px;
+  width: 100%;
+  background-color: var(--maroon);
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='22' viewBox='0 0 44 22'><polygon points='0,22 11,4 22,22' fill='none' stroke='%23B8862E' stroke-width='1.4'/><polygon points='22,22 33,4 44,22' fill='none' stroke='%23B8862E' stroke-width='1.4'/><circle cx='11' cy='9' r='1.6' fill='%23B8862E'/><circle cx='33' cy='9' r='1.6' fill='%23B8862E'/></svg>");
+  background-repeat: repeat-x;
+  background-size: 44px 22px;
+}
+
+.temple-border.thin { height: 14px; background-size: 30px 14px; }
+
+/* ---------- Header / Nav ---------- */
+
+header.site-header {
+  background: var(--ivory);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 1px solid var(--stone);
+}
+
+.nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  max-width: var(--max);
+  margin: 0 auto;
+}
+
+.brand {
+  font-family: var(--display);
+  font-size: 1.7rem;
+  font-weight: 600;
+  color: var(--maroon);
+  letter-spacing: 0.02em;
+}
+
+.brand span { color: var(--gold); }
+
+nav.main-nav {
+  display: flex;
+  gap: 36px;
+  align-items: center;
+}
+
+nav.main-nav a {
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+  color: var(--ink);
+  padding-bottom: 4px;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+nav.main-nav a:hover,
+nav.main-nav a.active {
+  color: var(--maroon);
+  border-bottom-color: var(--gold);
+}
+
+.nav-cta {
+  background: var(--maroon);
+  color: var(--ivory) !important;
+  padding: 10px 20px !important;
+  border-radius: 2px;
+  border-bottom: none !important;
+}
+.nav-cta:hover { background: var(--maroon-deep); color: var(--ivory) !important; border-bottom: none !important; }
+
+.nav-toggle {
+  display: none;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  color: var(--maroon);
+  cursor: pointer;
+}
+
+/* ---------- Hero ---------- */
+
+.hero {
+  padding: 88px 0 72px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero .container {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.hero h1 { margin-bottom: 0.3em; }
+
+.hero .lede {
+  font-size: 1.15rem;
+  color: var(--ink);
+  max-width: 46ch;
+  margin-bottom: 1.6em;
+}
+
+.btn-row { display: flex; gap: 16px; flex-wrap: wrap; }
+
+.btn {
+  display: inline-block;
+  padding: 14px 30px;
+  font-size: 0.86rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  border-radius: 2px;
+  transition: transform 0.15s ease, background 0.2s ease;
+}
+
+.btn-primary { background: var(--maroon); color: var(--ivory); }
+.btn-primary:hover { background: var(--maroon-deep); transform: translateY(-1px); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--maroon);
+  border: 1px solid var(--maroon);
+}
+.btn-ghost:hover { background: var(--maroon); color: var(--ivory); }
+
+/* Woven pallu illustration — abstract, original SVG, no photography */
+.pallu-art {
+  aspect-ratio: 3 / 4;
+  border-radius: 2px;
+  background: linear-gradient(160deg, var(--maroon) 0%, var(--maroon-deep) 60%);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 48px -20px rgba(74, 13, 22, 0.45);
+}
+
+.pallu-art::before {
+  content: "";
+  position: absolute;
+  inset: 18px;
+  border: 1.5px solid var(--gold);
+  opacity: 0.55;
+}
+
+.pallu-art .motif-row {
+  position: absolute;
+  left: 0; right: 0;
+  height: 30px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='30' viewBox='0 0 40 30'><path d='M20 4 L34 26 L6 26 Z' fill='none' stroke='%23D9B872' stroke-width='1.2'/><circle cx='20' cy='16' r='2' fill='%23D9B872'/></svg>");
+  background-repeat: repeat-x;
+  background-size: 40px 30px;
+  opacity: 0.85;
+}
+.pallu-art .motif-row.r1 { top: 36px; }
+.pallu-art .motif-row.r2 { top: 50%; transform: translateY(-50%); }
+.pallu-art .motif-row.r3 { bottom: 36px; }
+
+.pallu-art .center-mark {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.pallu-art .center-mark span {
+  font-family: var(--display);
+  font-style: italic;
+  color: var(--gold-light);
+  font-size: 1rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+/* ---------- Sections ---------- */
+
+section { padding: 84px 0; }
+
+.section-head {
+  max-width: 640px;
+  margin: 0 auto 48px;
+  text-align: center;
+}
+
+.section-head.left { margin: 0 0 48px; text-align: left; }
+
+.bg-ivory-deep { background: var(--ivory-deep); }
+.bg-maroon { background: var(--maroon); color: var(--ivory); }
+.bg-maroon h2, .bg-maroon h3 { color: var(--ivory); }
+.bg-maroon .eyebrow { color: var(--gold-light); }
+
+/* Feature / value grid */
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.card {
+  background: var(--ivory);
+  border: 1px solid var(--stone);
+  padding: 34px 28px;
+  border-radius: 2px;
+}
+
+.card .num {
+  font-family: var(--display);
+  font-size: 1.6rem;
+  color: var(--gold);
+  font-style: italic;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* Collections list */
+.collection-item {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 32px;
+  padding: 40px 0;
+  border-bottom: 1px solid var(--stone);
+  align-items: start;
+}
+.collection-item:first-of-type { border-top: 1px solid var(--stone); }
+
+.collection-swatch {
+  aspect-ratio: 4 / 5;
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+.collection-swatch::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='30' height='30' viewBox='0 0 30 30'><path d='M15 2 L26 26 L4 26 Z' fill='none' stroke='rgba(255,255,255,0.35)' stroke-width='1'/></svg>");
+  background-size: 30px 30px;
+}
+.swatch-1 { background: linear-gradient(150deg, #6B1420, #8C1C2A); }
+.swatch-2 { background: linear-gradient(150deg, #0B5D5A, #0E7873); }
+.swatch-3 { background: linear-gradient(150deg, #B8862E, #8C671F); }
+.swatch-4 { background: linear-gradient(150deg, #4A0D16, #241B14); }
+
+.collection-item h3 { margin-bottom: 6px; }
+.collection-item .price-tag {
+  font-family: var(--body);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--peacock);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* Quote / trust block */
+.quote-block {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.quote-block p {
+  font-family: var(--display);
+  font-size: 1.7rem;
+  font-style: italic;
+  color: var(--maroon);
+  line-height: 1.45;
+}
+.quote-block .attribution {
+  font-family: var(--body);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--gold);
+  font-style: normal;
+}
+
+/* Timeline (used only where order genuinely matters: the sourcing journey) */
+.journey {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+.journey .step { position: relative; padding-top: 28px; }
+.journey .step::before {
+  content: attr(data-step);
+  font-family: var(--display);
+  font-style: italic;
+  color: var(--gold);
+  font-size: 0.95rem;
+  position: absolute;
+  top: 0; left: 0;
+}
+.journey .step h4 { font-size: 1.05rem; margin-bottom: 6px; }
+.journey .step p { font-size: 0.92rem; }
+
+/* Contact */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 56px;
+}
+
+.info-line {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--stone);
+}
+.info-line .label {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--gold);
+  font-weight: 600;
+  min-width: 110px;
+}
+
+form.contact-form { display: flex; flex-direction: column; gap: 18px; }
+
+.field label {
+  display: block;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--maroon);
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.field input, .field select, .field textarea {
+  width: 100%;
+  border: 1px solid var(--stone);
+  background: var(--ivory);
+  padding: 12px 14px;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  border-radius: 2px;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+  border-color: var(--gold);
+}
+
+.field textarea { resize: vertical; min-height: 110px; }
+
+.form-note { font-size: 0.82rem; color: var(--ink); opacity: 0.75; }
+
+/* Footer */
+footer.site-footer {
+  background: var(--ink);
+  color: var(--ivory-deep);
+  padding: 56px 0 32px;
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 32px;
+}
+.footer-grid h4 {
+  color: var(--gold-light);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 16px;
+}
+.footer-grid a, .footer-grid p { color: var(--ivory-deep); opacity: 0.85; font-size: 0.92rem; }
+.footer-grid ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.footer-bottom {
+  border-top: 1px solid rgba(247,241,229,0.15);
+  padding-top: 24px;
+  font-size: 0.78rem;
+  opacity: 0.6;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Page hero (interior pages) */
+.page-hero {
+  padding: 64px 0 48px;
+  text-align: center;
+}
+.page-hero .eyebrow { display: block; margin-bottom: 10px; }
+
+/* Utility */
+.mt-0 { margin-top: 0; }
+.text-center { text-align: center; }
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 880px) {
+  nav.main-nav {
+    position: fixed;
+    top: 68px; left: 0; right: 0;
+    background: var(--ivory);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0;
+    border-bottom: 1px solid var(--stone);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease;
+  }
+  nav.main-nav.open { max-height: 320px; }
+  nav.main-nav a { width: 100%; padding: 16px 32px; border-bottom: 1px solid var(--stone); }
+  .nav-toggle { display: block; }
+
+  .hero .container { grid-template-columns: 1fr; }
+  .hero { padding: 48px 0; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .journey { grid-template-columns: 1fr 1fr; row-gap: 32px; }
+  .collection-item { grid-template-columns: 1fr; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .footer-grid { grid-template-columns: 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  * { transition: none !important; }
+}
