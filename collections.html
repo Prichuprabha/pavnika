@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Collections &amp; Services — Pattu House</title>
-<meta name="description" content="Bridal Kanjivaram, temple border classics, soft silk everyday sarees, and personal styling services from Pattu House Dubai.">
+<title>Collections — Pavnika by Saranya</title>
+<meta name="description" content="Browse the full Pavnika by Saranya catalogue: bridal Kanjivaram, temple border classics, soft silk everyday sarees and more.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
@@ -13,10 +14,13 @@
 
 <header class="site-header">
   <div class="nav-row">
-    <a href="index.html" class="brand">Pattu <span>House</span></a>
+    <a href="home.html" class="brand">
+      <img src="assets/logo.png" alt="Pavnika by Saranya logo">
+      <span class="brand-text">Pavnika <small>by Saranya</small></span>
+    </a>
     <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
     <nav class="main-nav">
-      <a href="index.html">Home</a>
+      <a href="home.html">Home</a>
       <a href="about.html">About</a>
       <a href="collections.html" class="active">Collections</a>
       <a href="contact.html">Contact</a>
@@ -28,49 +32,41 @@
 
 <section class="page-hero">
   <div class="container">
-    <span class="eyebrow">Collections &amp; Services</span>
-    <h1>Sarees for every kind of occasion,<br>and the service to match</h1>
+    <span class="eyebrow">The Full Catalogue</span>
+    <h1>Sarees woven for<br>every kind of occasion</h1>
   </div>
 </section>
 
 <section style="padding-top:0;">
   <div class="container">
 
-    <div class="collection-item">
-      <div class="collection-swatch swatch-1"></div>
-      <div>
-        <span class="price-tag">From AED 3,800</span>
-        <h3>Bridal Kanjivaram</h3>
-        <p>Full zari borders and pallus, woven in traditional bridal colours — deep reds, maroons and gold-on-gold. Built for the muhurtham and reception, with weight and richness meant to be photographed.</p>
-      </div>
+    <div class="filter-bar" id="category-filter" data-filter-group="category">
+      <button class="filter-btn active" data-value="all">All Categories</button>
+      <button class="filter-btn" data-value="Bridal">Bridal</button>
+      <button class="filter-btn" data-value="Premium">Premium</button>
+      <button class="filter-btn" data-value="Mid Range">Mid Range</button>
+      <button class="filter-btn" data-value="Budget">Budget</button>
     </div>
 
-    <div class="collection-item">
-      <div class="collection-swatch swatch-2"></div>
-      <div>
-        <span class="price-tag">From AED 1,900</span>
-        <h3>Temple Border Classics</h3>
-        <p>The defining Kanjivaram silhouette — contrast body and border in a two-tone weave, finished with the traditional temple (kovil) motif along the edge. Suited to functions, engagements and temple visits.</p>
-      </div>
+    <div class="filter-bar" id="series-filter" data-filter-group="series">
+      <button class="filter-btn active" data-value="all">All Series</button>
+      <button class="filter-btn" data-value="VALUE WEAVES">Value Weaves</button>
+      <button class="filter-btn" data-value="SANSKRITI">Sanskriti</button>
+      <button class="filter-btn" data-value="SUMANGALI">Sumangali</button>
+      <button class="filter-btn" data-value="FESTIVE VIBES">Festive Vibes</button>
+      <button class="filter-btn" data-value="PASTEL POETRY">Pastel Poetry</button>
+      <button class="filter-btn" data-value="BRIDAL BLISS">Bridal Bliss</button>
+      <button class="filter-btn" data-value="GOLDEN GLOW">Golden Glow</button>
+      <button class="filter-btn" data-value="SOFT SILK">Soft Silk</button>
+      <button class="filter-btn" data-value="SHIMMER STORIES">Shimmer Stories</button>
+      <button class="filter-btn" data-value="PAVNIKA SIGNATURE">Pavnika Signature</button>
+      <button class="filter-btn" data-value="DEVATHA AURA">Devatha Aura</button>
     </div>
 
-    <div class="collection-item">
-      <div class="collection-swatch swatch-3"></div>
-      <div>
-        <span class="price-tag">From AED 1,200</span>
-        <h3>Soft Silk Everyday</h3>
-        <p>A lighter Kanjivaram weave with a softer drape, for Diwali evenings, office festivities, or any Dubai occasion where you want the silk without the full bridal weight.</p>
-      </div>
-    </div>
+    <p class="filter-meta" id="results-count"></p>
 
-    <div class="collection-item">
-      <div class="collection-swatch swatch-4"></div>
-      <div>
-        <span class="price-tag">From AED 2,600</span>
-        <h3>Heirloom &amp; Vintage Weaves</h3>
-        <p>Rare motifs and colourways sourced in limited numbers directly from senior weavers — for collectors and families building a saree wardrobe meant to be passed down.</p>
-      </div>
-    </div>
+    <div class="product-grid" id="product-grid"></div>
+    <p class="no-results" id="no-results" style="display:none;">No sarees match this filter yet — try another category or series.</p>
 
   </div>
 </section>
@@ -81,13 +77,13 @@
   <div class="container">
     <div class="section-head">
       <span class="eyebrow">Beyond the Saree</span>
-      <h2>Services at Pattu House</h2>
+      <h2>Services at Pavnika by Saranya</h2>
     </div>
     <div class="grid-3">
       <div class="card">
         <span class="num">01</span>
-        <h3>Private appointments</h3>
-        <p>One-on-one viewings across Dubai, by appointment — no rush, no crowd, just time with the sarees.</p>
+        <h3>WhatsApp viewings</h3>
+        <p>Browse and enquire on any saree by WhatsApp — no rush, no crowd, just time with the sarees.</p>
       </div>
       <div class="card">
         <span class="num">02</span>
@@ -101,8 +97,8 @@
       </div>
       <div class="card">
         <span class="num">04</span>
-        <h3>Home trials</h3>
-        <p>Selected pieces can be trialled at home before purchase, within Dubai city limits.</p>
+        <h3>UAE-wide delivery</h3>
+        <p>Selected pieces can be trialled at home before purchase, delivered across Dubai and the wider UAE.</p>
       </div>
       <div class="card">
         <span class="num">05</span>
@@ -118,17 +114,17 @@
   </div>
 </section>
 
-<section class="bg-maroon">
+<section class="bg-green">
   <div class="container quote-block">
     <p>&ldquo;Tell us the occasion, and we'll tell you which border suits it.&rdquo;</p>
-    <span class="attribution">— Pattu House Styling Desk</span>
+    <span class="attribution">— Pavnika by Saranya Styling Desk</span>
   </div>
 </section>
 
 <section>
   <div class="container text-center">
-    <h2>Ready to see them in person?</h2>
-    <p style="max-width:50ch; margin-left:auto; margin-right:auto;">Book a private appointment at our Dubai showroom, or request a home trial.</p>
+    <h2>Ready to see them up close?</h2>
+    <p style="max-width:50ch; margin-left:auto; margin-right:auto;">Book a private WhatsApp viewing, or request a home trial anywhere in Dubai.</p>
     <a href="contact.html" class="btn btn-primary">Book a Private Viewing</a>
   </div>
 </section>
@@ -137,31 +133,35 @@
   <div class="container">
     <div class="footer-grid">
       <div>
-        <h4>Pattu House</h4>
-        <p>Authentic Kancheepuram silk sarees, by appointment across Dubai. Sourced directly from weaving families in Tamil Nadu.</p>
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Pavnika by Saranya logo">
+          <span>Pavnika by Saranya</span>
+        </div>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
       </div>
       <div>
         <h4>Explore</h4>
         <ul>
-          <li><a href="index.html">Home</a></li>
+          <li><a href="home.html">Home</a></li>
           <li><a href="about.html">About</a></li>
           <li><a href="collections.html">Collections</a></li>
           <li><a href="contact.html">Contact</a></li>
         </ul>
       </div>
       <div>
-        <h4>Visit</h4>
-        <p>Al Karama, Dubai, UAE<br>By appointment, Sat–Thu</p>
-        <p>+971 50 000 0000<br>hello@pattuhouse.ae</p>
+        <h4>Reach Us</h4>
+        <p>Dubai based online boutique<br>By appointment, UAE-wide</p>
+        <p>+971 52 66 30307<br>Instagram &amp; Facebook: @pavnikabysaranya</p>
       </div>
     </div>
     <div class="footer-bottom">
-      <span>&copy; 2026 Pattu House. Prices shown are indicative starting prices.</span>
+      <span>&copy; 2026 Pavnika by Saranya. All sarees shown are subject to availability.</span>
       <span>Handwoven in Kancheepuram. Curated in Dubai.</span>
     </div>
   </div>
 </footer>
 
+<script src="products-data.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
