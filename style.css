@@ -250,7 +250,6 @@ nav.main-nav a.active {
 
 /* Hero video (loops the brand ad in place of the rotating photo) */
 .hero-video-wrap {
-  aspect-ratio: 9 / 16;
   border-radius: 2px;
   position: relative;
   overflow: hidden;
@@ -260,12 +259,11 @@ nav.main-nav a.active {
   margin: 0 auto;
 }
 .hero-video-wrap video {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   display: block;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  background: var(--green-deep);
 }
 .hero-video-wrap::after {
   content: "";
@@ -273,6 +271,7 @@ nav.main-nav a.active {
   inset: 18px;
   border: 1.5px solid var(--gold);
   opacity: 0.55;
+
   pointer-events: none;
 }
 
