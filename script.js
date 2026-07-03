@@ -667,10 +667,12 @@ function initReviewsMarquee() {
     stars.textContent = starString(r.stars);
     card.appendChild(stars);
 
-    var quote = document.createElement('p');
-    quote.className = 'review-quote';
-    quote.textContent = '\u201C' + (r.quote || '') + '\u201D';
-    card.appendChild(quote);
+    if (r.quote && r.quote.trim()) {
+      var quote = document.createElement('p');
+      quote.className = 'review-quote';
+      quote.textContent = '\u201C' + r.quote.trim() + '\u201D';
+      card.appendChild(quote);
+    }
 
     var who = document.createElement('div');
     who.className = 'review-who';
