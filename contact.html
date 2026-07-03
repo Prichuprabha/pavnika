@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  if (getCookie('pavnika_verified') !== '1') {
+    window.location.replace('index.html');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Contact — Pavnika by Saranya</title>
@@ -11,7 +22,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="site-header">
   <div class="nav-row">
     <a href="home.html" class="brand">
@@ -43,7 +53,7 @@
       <h2>Reach us</h2>
       <div class="info-line">
         <span class="label">Based in</span>
-        <span>Dubai, United Arab Emirates<br>Online boutique — by appointment, UAE-wide</span>
+        <span>Dubai, United Arab Emirates<br>Online boutique — by appointment</span>
       </div>
       <div class="info-line">
         <span class="label">Phone</span>
@@ -59,7 +69,7 @@
       </div>
       <div class="info-line">
         <span class="label">Hours</span>
-        <span>Saturday – Thursday, 10:00 AM – 8:00 PM<br>WhatsApp enquiries answered daily</span>
+        <span>All day, 10:00 AM – 9:30 PM<br>WhatsApp enquiries answered daily</span>
       </div>
       <p class="form-note" style="margin-top:24px;">Prefer to speak directly? Message us on WhatsApp with the saree ID from our <a href="collections.html">Collections</a> page and we'll get back to you within a day.</p>
     </div>
@@ -134,7 +144,7 @@
       </div>
       <div>
         <h4>Reach Us</h4>
-        <p>Dubai based online boutique<br>By appointment, UAE-wide</p>
+        <p>Dubai based online boutique<br>By appointment</p>
         <p>+971 52 66 30307<br>Instagram &amp; Facebook: @pavnikabysaranya</p>
       </div>
     </div>

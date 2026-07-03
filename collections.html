@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  if (getCookie('pavnika_verified') !== '1') {
+    window.location.replace('index.html');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Collections — Pavnika by Saranya</title>
 <meta name="description" content="Browse the full Pavnika by Saranya catalogue: bridal Kanjivaram, temple border classics, soft silk everyday sarees and more.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="site-header">
   <div class="nav-row">
     <a href="home.html" class="brand">
@@ -63,10 +75,18 @@
       <button class="filter-btn" data-value="DEVATHA AURA">Devatha Aura</button>
     </div>
 
-    <p class="filter-meta" id="results-count"></p>
+    <div class="filter-toolbar">
+      <p class="filter-meta" id="results-count"></p>
+      <label class="toggle-switch">
+        <input type="checkbox" id="hide-sold-toggle">
+        <span class="track"></span>
+        <span class="toggle-label">Hide sold out</span>
+      </label>
+    </div>
 
     <div class="product-grid" id="product-grid"></div>
     <p class="no-results" id="no-results" style="display:none;">No sarees match this filter yet — try another category or series.</p>
+    <div class="pagination" id="pagination"></div>
 
   </div>
 </section>
@@ -97,7 +117,7 @@
       </div>
       <div class="card">
         <span class="num">04</span>
-        <h3>UAE-wide delivery</h3>
+        <h3>Home delivery</h3>
         <p>Selected pieces can be trialled at home before purchase, delivered across Dubai and the wider UAE.</p>
       </div>
       <div class="card">
@@ -137,7 +157,7 @@
           <img src="assets/logo.png" alt="Pavnika by Saranya logo">
           <span>Pavnika by Saranya</span>
         </div>
-        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.<br>- Licensed by DET Dubai</p>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
       </div>
       <div>
         <h4>Explore</h4>
@@ -150,7 +170,7 @@
       </div>
       <div>
         <h4>Reach Us</h4>
-        <p>Dubai based online boutique<br>By appointment, UAE-wide</p>
+        <p>Dubai based online boutique<br>By appointment</p>
         <p>+971 52 66 30307<br>Instagram &amp; Facebook: @pavnikabysaranya</p>
       </div>
     </div>

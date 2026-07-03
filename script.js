@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+  initLoginPage();
+
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
 
@@ -45,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initCollectionsPage();
   initHomeSeriesMarquee();
+  initHeroVideoPlaylist();
 });
 
 var WHATSAPP_NUMBER = '971526630307';
@@ -85,7 +88,8 @@ function productCardHTML(p) {
     '<div class="product-card" data-category="' + p.category + '" data-series="' + p.series + '" data-id="' + p.id + '">' +
       '<div class="product-photo' + soldClass + '">' +
         '<span class="series-badge">' + seriesTitleCase(p.series) + '</span>' +
-        '<img src="' + p.image + '" alt="' + p.design + ' — ' + seriesTitleCase(p.series) + ' saree" loading="lazy">' +
+        '<span class="id-badge">' + p.id + '</span>' +
+        '<img src="' + p.image + '" alt="' + p.design + ' — ' + seriesTitleCase(p.series) + ' saree" loading="lazy" decoding="async">' +
         soldRibbon +
       '</div>' +
       '<div class="product-info">' +
@@ -97,24 +101,118 @@ function productCardHTML(p) {
   );
 }
 
+/* ---------- Hover image cycling: fade through all of a saree's images on mouseover ---------- */
+function initHoverCycle(grid) {
+  if (typeof window.PRODUCTS === 'undefined') return;
+
+  grid.querySelectorAll('.product-photo').forEach(function (photoEl) {
+    var card = photoEl.closest('.product-card');
+    var id = card && card.getAttribute('data-id');
+    var product = window.PRODUCTS.find(function (p) { return p.id === id; });
+    if (!product || !product.images || product.images.length < 2) return;
+
+    var cycleTimer = null;
+
+    function stopCycle() {
+      if (cycleTimer) {
+        clearTimeout(cycleTimer);
+        cycleTimer = null;
+      }
+      var imgs = photoEl.querySelectorAll('img');
+      imgs.forEach(function (im, i) { im.classList.toggle('is-active', i === 0); });
+    }
+
+    photoEl.addEventListener('mouseenter', function () {
+      if (!photoEl.classList.contains('hover-cycle')) {
+        photoEl.classList.add('hover-cycle');
+        var baseImg = photoEl.querySelector('img');
+        if (baseImg) baseImg.classList.add('is-active');
+        for (var i = 1; i < product.images.length; i++) {
+          var extraImg = document.createElement('img');
+          extraImg.src = product.images[i];
+          extraImg.alt = product.design + ' — view ' + (i + 1);
+          extraImg.loading = 'eager';
+          extraImg.decoding = 'async';
+          photoEl.appendChild(extraImg);
+        }
+      }
+
+      var imgs = photoEl.querySelectorAll('img');
+      var idx = 0;
+      imgs.forEach(function (im, i) { if (im.classList.contains('is-active')) idx = i; });
+
+      function advance(delay) {
+        cycleTimer = setTimeout(function () {
+          imgs[idx].classList.remove('is-active');
+          idx = (idx + 1) % imgs.length;
+          imgs[idx].classList.add('is-active');
+          advance(1800);
+        }, delay);
+      }
+
+      // First switch is quick, so hovering immediately signals there's more
+      // than one photo. Later switches slow down to give each one time.
+      advance(650);
+    });
+
+    photoEl.addEventListener('mouseleave', stopCycle);
+  });
+}
+
 function initCollectionsPage() {
   var grid = document.getElementById('product-grid');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
-  var state = { category: 'all', series: 'all' };
+  var PAGE_SIZE = 16;
+  var state = { category: 'all', series: 'all', hideSold: false, page: 1 };
   var countEl = document.getElementById('results-count');
   var noResults = document.getElementById('no-results');
+  var paginationEl = document.getElementById('pagination');
+  var hideSoldToggle = document.getElementById('hide-sold-toggle');
 
-  function render() {
-    var filtered = window.PRODUCTS.filter(function (p) {
+  function getFiltered() {
+    return window.PRODUCTS.filter(function (p) {
       var okCat = state.category === 'all' || p.category === state.category;
       var okSeries = state.series === 'all' || p.series === state.series;
-      return okCat && okSeries;
+      var okSold = !state.hideSold || !p.sold;
+      return okCat && okSeries && okSold;
     });
+  }
 
-    grid.innerHTML = filtered.map(productCardHTML).join('');
+  function renderPagination(totalItems) {
+    var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    if (state.page > totalPages) state.page = totalPages;
+
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
+      return;
+    }
+
+    var buttons = [];
+    buttons.push('<button type="button" class="page-btn" data-page="' + (state.page - 1) + '"' + (state.page === 1 ? ' disabled' : '') + ' aria-label="Previous page">&#8249;</button>');
+
+    for (var i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - state.page) <= 1) {
+        buttons.push('<button type="button" class="page-btn' + (i === state.page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>');
+      } else if (Math.abs(i - state.page) === 2) {
+        buttons.push('<span class="page-btn page-ellipsis">&hellip;</span>');
+      }
+    }
+
+    buttons.push('<button type="button" class="page-btn" data-page="' + (state.page + 1) + '"' + (state.page === totalPages ? ' disabled' : '') + ' aria-label="Next page">&#8250;</button>');
+    paginationEl.innerHTML = buttons.join('');
+  }
+
+  function render() {
+    var filtered = getFiltered();
+    var start = (state.page - 1) * PAGE_SIZE;
+    var pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+    grid.innerHTML = pageItems.map(productCardHTML).join('');
     countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees') + ' found';
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
+    renderPagination(filtered.length);
+    initHoverCycle(grid);
   }
 
   ['category-filter', 'series-filter'].forEach(function (groupId) {
@@ -127,9 +225,30 @@ function initCollectionsPage() {
       groupEl.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
       state[key] = btn.getAttribute('data-value');
+      state.page = 1;
       render();
     });
   });
+
+  if (hideSoldToggle) {
+    hideSoldToggle.addEventListener('change', function () {
+      state.hideSold = hideSoldToggle.checked;
+      state.page = 1;
+      render();
+    });
+  }
+
+  if (paginationEl) {
+    paginationEl.addEventListener('click', function (e) {
+      var btn = e.target.closest('.page-btn');
+      if (!btn || btn.disabled) return;
+      var target = parseInt(btn.getAttribute('data-page'), 10);
+      if (!target || target === state.page) return;
+      state.page = target;
+      render();
+      grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   // Pre-set the category/series filter if arriving from a homepage link,
   // e.g. collections.html?series=SUMANGALI or collections.html?category=Premium
@@ -326,5 +445,188 @@ function initHomeSeriesMarquee() {
         imgs[idx].classList.add('is-active');
       }, 2600);
     }, offset);
+  });
+}
+
+/* ---------- Homepage: hero video playlist ----------
+   Reads assets/videos/videos.json, an array of filenames living in
+   assets/videos/, and plays them one after another on a continuous loop.
+   To add a video: drop the file in assets/videos/ and add its filename
+   to videos.json. To remove one: delete the file and its entry. */
+function initHeroVideoPlaylist() {
+  var videoEl = document.getElementById('hero-video');
+  if (!videoEl) return;
+
+  var FOLDER = 'assets/videos/';
+  var FALLBACK_LIST = ['video-1.mp4'];
+
+  function startPlaylist(list) {
+    if (!list || !list.length) list = FALLBACK_LIST;
+    var idx = 0;
+
+    function playCurrent() {
+      videoEl.src = FOLDER + list[idx];
+      videoEl.load();
+      var playPromise = videoEl.play();
+      if (playPromise && playPromise.catch) playPromise.catch(function () {});
+    }
+
+    videoEl.addEventListener('ended', function () {
+      idx = (idx + 1) % list.length;
+      playCurrent();
+    });
+
+    playCurrent();
+  }
+
+  fetch(FOLDER + 'videos.json')
+    .then(function (res) { return res.ok ? res.json() : FALLBACK_LIST; })
+    .then(startPlaylist)
+    .catch(function () { startPlaylist(FALLBACK_LIST); });
+}
+
+/* ---------- Login page (index.html): email + mobile verification ---------- */
+function gateGetCookie(name) {
+  var match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? match[2] : null;
+}
+
+function gateSetCookie(name, value, days) {
+  var expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+  document.cookie = name + '=' + value + '; expires=' + expires + '; path=/; SameSite=Lax';
+}
+
+function initLoginPage() {
+  var root = document.getElementById('login-form-root');
+  if (!root) return;
+
+  if (gateGetCookie('pavnika_verified') === '1') {
+    window.location.replace('home.html');
+    return;
+  }
+
+  var sendBtn = document.getElementById('gate-send-btn');
+  var verifyBtn = document.getElementById('gate-verify-btn');
+  var resendBtn = document.getElementById('gate-resend-btn');
+  var gateEmail = '';
+
+  function showStepCode() {
+    document.getElementById('gate-step-details').style.display = 'none';
+    document.getElementById('gate-step-code').style.display = 'block';
+    var codeInput = document.getElementById('gate-code');
+    if (codeInput) codeInput.focus();
+  }
+
+  function unlockSite() {
+    gateSetCookie('pavnika_verified', '1', 90);
+    window.location.href = 'home.html';
+  }
+
+  function sendCode() {
+    var email = document.getElementById('gate-email').value.trim();
+    var phone = document.getElementById('gate-phone').value.trim();
+    var errorEl = document.getElementById('gate-error-1');
+    errorEl.textContent = '';
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errorEl.textContent = 'Please enter a valid email address.';
+      return;
+    }
+    if (!phone) {
+      errorEl.textContent = 'Please enter your mobile number.';
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+
+    fetch('/.netlify/functions/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email, phone: phone })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          errorEl.textContent = result.data.error || 'Something went wrong. Please try again.';
+          return;
+        }
+        gateEmail = email;
+        if (result.data.alreadyVerified) {
+          unlockSite();
+          return;
+        }
+        showStepCode();
+      })
+      .catch(function () {
+        errorEl.textContent = 'Network error. Please check your connection and try again.';
+      })
+      .finally(function () {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Verification Code';
+      });
+  }
+
+  function verifyCode() {
+    var code = document.getElementById('gate-code').value.trim();
+    var errorEl = document.getElementById('gate-error-2');
+    errorEl.textContent = '';
+
+    if (!code || code.length !== 4) {
+      errorEl.textContent = 'Please enter the 4-digit code.';
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+
+    fetch('/.netlify/functions/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: gateEmail, code: code })
+    })
+      .then(function (res) {
+        return res.json().then(function (data) { return { ok: res.ok, data: data }; });
+      })
+      .then(function (result) {
+        if (!result.ok) {
+          errorEl.textContent = result.data.error || 'Incorrect code. Please try again.';
+          return;
+        }
+        unlockSite();
+      })
+      .catch(function () {
+        errorEl.textContent = 'Network error. Please check your connection and try again.';
+      })
+      .finally(function () {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify & Enter';
+      });
+  }
+
+  sendBtn.addEventListener('click', sendCode);
+  verifyBtn.addEventListener('click', verifyCode);
+  document.getElementById('gate-code').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') verifyCode();
+  });
+  document.getElementById('gate-phone').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') sendCode();
+  });
+  resendBtn.addEventListener('click', function () {
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sending...';
+    fetch('/.netlify/functions/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: gateEmail, phone: document.getElementById('gate-phone').value.trim() })
+    })
+      .finally(function () {
+        setTimeout(function () {
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend code';
+        }, 3000);
+      });
   });
 }

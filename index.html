@@ -3,159 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pavnika by Saranya — On the Loom</title>
-<meta name="description" content="Pavnika by Saranya's new home is being woven. Follow us on Instagram for our authentic Kanchipuram silk saree collection.">
+<title>Sign In — Pavnika by Saranya</title>
+<meta name="description" content="Verify your email to enter Pavnika by Saranya, authentic Kanchipuram silk sarees, Dubai based online boutique.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<style>
-  body.splash-body {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background: var(--green-deep);
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
   }
-  .splash-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 24px;
-    position: relative;
-    overflow: hidden;
+  if (getCookie('pavnika_verified') === '1') {
+    window.location.replace('home.html');
   }
-  .splash-wrap::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background-image: url("assets/banner.jpg");
-    background-size: cover;
-    background-position: center;
-    opacity: 0.16;
-  }
-  .splash-card {
-    position: relative;
-    max-width: 620px;
-    text-align: center;
-    padding: 56px 44px;
-    background: rgba(8, 46, 34, 0.72);
-    border: 1px solid rgba(227, 201, 118, 0.35);
-    border-radius: 4px;
-    backdrop-filter: blur(2px);
-  }
-  .splash-logo {
-    width: 84px;
-    margin: 0 auto 24px;
-    display: block;
-  }
-  .splash-eyebrow {
-    display: block;
-    font-family: var(--body);
-    text-transform: uppercase;
-    letter-spacing: 0.24em;
-    font-size: 0.72rem;
-    color: var(--gold-light);
-    font-weight: 600;
-    margin-bottom: 18px;
-  }
-  .splash-card h1 {
-    font-family: var(--display);
-    font-style: italic;
-    font-weight: 500;
-    color: var(--ivory);
-    font-size: clamp(2rem, 5vw, 2.9rem);
-    line-height: 1.25;
-    margin-bottom: 22px;
-  }
-  .splash-card p {
-    color: var(--ivory-deep);
-    font-size: 1.02rem;
-    line-height: 1.7;
-    max-width: 46ch;
-    margin: 0 auto 30px;
-  }
-  .splash-thread {
-    width: 60px;
-    height: 1px;
-    background: var(--gold);
-    margin: 0 auto 30px;
-    opacity: 0.6;
-  }
-  .splash-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    padding: 15px 34px;
-    font-family: var(--body);
-    font-size: 0.86rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    font-weight: 600;
-    color: var(--green-deep);
-    background: var(--gold-light);
-    border-radius: 2px;
-    transition: transform 0.15s ease, background 0.2s ease;
-  }
-  .splash-btn:hover { background: var(--gold); transform: translateY(-1px); }
-
-  .splash-foot {
-    padding: 22px 24px 28px;
-    text-align: center;
-  }
-  .splash-foot p {
-    margin: 0 0 10px;
-    color: rgba(250, 247, 239, 0.55);
-    font-family: var(--body);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-  }
-  .admin-link {
-    background: none;
-    border: none;
-    color: rgba(250, 247, 239, 0.4);
-    font-family: var(--body);
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    cursor: pointer;
-    padding: 6px 10px;
-    transition: color 0.2s ease;
-  }
-  .admin-link:hover { color: var(--gold-light); }
-</style>
+})();
+</script>
 </head>
-<body class="splash-body">
+<body class="login-page">
 
-<div class="splash-wrap">
-  <div class="splash-card">
-    <img class="splash-logo" src="assets/logo.png" alt="Pavnika by Saranya logo">
-    <span class="splash-eyebrow">Pavnika by Saranya</span>
-    <h1>Every Kanchipuram saree takes months on the loom. Our new home is taking a little time too.</h1>
-    <div class="splash-thread" aria-hidden="true"></div>
-    <p>We're weaving together our full online catalogue, thread by thread. In the meantime, our latest authentic Kanchipuram silk sarees are already up on Instagram — come take a look.</p>
-    <a class="splash-btn" href="https://www.instagram.com/pavnika_by_saranya" target="_blank" rel="noopener">
-      Visit Our Instagram &rarr;
-    </a>
+<div class="login-bg" aria-hidden="true"></div>
+
+<div class="login-wrap">
+  <div class="gate-card" id="login-form-root">
+    <img src="assets/logo.png" alt="Pavnika by Saranya" class="gate-logo">
+    <div id="gate-step-details">
+      <h2>Welcome to Pavnika by Saranya</h2>
+      <p>Please verify your email to enter the site.</p>
+      <div class="field"><label>Email</label><input type="email" id="gate-email" autocomplete="email"></div>
+      <div class="field"><label>Mobile Number</label><input type="tel" id="gate-phone" autocomplete="tel"></div>
+      <button type="button" id="gate-send-btn" class="btn btn-primary">Send Verification Code</button>
+      <p class="gate-error" id="gate-error-1"></p>
+    </div>
+    <div id="gate-step-code" style="display:none;">
+      <h2>Enter Verification Code</h2>
+      <p>We sent a 4-digit code to your email — it expires in 10 minutes.</p>
+      <input type="text" id="gate-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+      <button type="button" id="gate-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>
+      <p class="gate-error" id="gate-error-2"></p>
+      <button type="button" id="gate-resend-btn" class="gate-resend">Resend code</button>
+    </div>
   </div>
 </div>
 
-<div class="splash-foot">
-  <p>&copy; 2026 Pavnika by Saranya. Authentic Kanchipuram silk sarees, Dubai based online boutique.</p>
-  <button type="button" class="admin-link" id="admin-access">Admin Access</button>
-</div>
-
-<script>
-  document.getElementById('admin-access').addEventListener('click', function () {
-    var input = window.prompt('Enter admin password:');
-    if (input === null) return;
-    if (input === '7651247') {
-      window.location.href = 'home.html';
-    } else {
-      window.alert('Incorrect password.');
-    }
-  });
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>

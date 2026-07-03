@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  if (getCookie('pavnika_verified') !== '1') {
+    window.location.replace('index.html');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pavnika by Saranya — Authentic Kanchipuram Silk Sarees in Dubai</title>
@@ -11,7 +22,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="site-header">
   <div class="nav-row">
     <a href="home.html" class="brand">
@@ -42,7 +52,7 @@
       </div>
     </div>
     <div class="hero-video-wrap">
-      <video src="assets/hero-video.mp4" poster="assets/hero-video-poster.jpg" autoplay muted loop playsinline aria-label="Pavnika by Saranya brand video"></video>
+      <video id="hero-video" poster="assets/videos/video-1-poster.jpg" autoplay muted playsinline aria-label="Pavnika by Saranya brand video"></video>
     </div>
   </div>
 </section>
@@ -81,6 +91,33 @@
 
 <section>
   <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">A First Look</span>
+      <h2>Our signature series</h2>
+    </div>
+  </div>
+  <div class="category-marquee">
+    <div class="category-track" id="home-category-marquee">
+      <!-- populated by script.js from products-data.js, grouped by category -->
+    </div>
+  </div>
+  <div class="container">
+    <div class="text-center" style="margin-top:44px;">
+      <a href="collections.html" class="btn btn-primary">See the Full Collection</a>
+    </div>
+  </div>
+</section>
+
+<section class="bg-green quote-section">
+  <div class="container quote-block">
+    <p class="sourcing-lede">We travel to Kancheepuram ourselves to sit with the weavers, and every saree in our collection is handpicked in person — nothing chosen from a catalogue we haven't seen. Beyond what's already woven, a number of our pieces are commissioned specially: a colour, a border or a motif we've requested, brought to life on the loom exclusively for Pavnika by Saranya.</p>
+    <p>&ldquo;A Kanjivaram is not bought for one evening. It is chosen the way a family chooses an heirloom — to be worn, folded, and worn again for thirty years.&rdquo;</p>
+    <span class="attribution">— Pavnika by Saranya, on how we select each piece</span>
+  </div>
+</section>
+
+<section>
+  <div class="container">
     <div class="section-head left">
       <span class="eyebrow">From Thread to Threshold</span>
       <h2>How a saree reaches you</h2>
@@ -106,33 +143,6 @@
   </div>
 </section>
 
-<section class="bg-green quote-section">
-  <div class="container quote-block">
-     <p>&ldquo;A Kanjivaram is not bought for one evening. It is chosen the way a family chooses an heirloom — to be worn, folded, and worn again for thirty years.&rdquo;</p>
-	 <p class="sourcing-lede">We travel to Kancheepuram ourselves to sit with the weavers, and every saree in our collection is handpicked in person — nothing chosen from a catalogue we haven't seen. Beyond what's already woven, a number of our pieces are commissioned specially: a colour, a border or a motif we've requested, brought to life on the loom exclusively for Pavnika by Saranya.</p>
-       <span class="attribution">— Pavnika by Saranya, on how we select each piece</span>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">A First Look</span>
-      <h2>Our signature series</h2>
-    </div>
-  </div>
-  <div class="category-marquee">
-    <div class="category-track" id="home-category-marquee">
-      <!-- populated by script.js from products-data.js, grouped by category -->
-    </div>
-  </div>
-  <div class="container">
-    <div class="text-center" style="margin-top:44px;">
-      <a href="collections.html" class="btn btn-primary">See the Full Collection</a>
-    </div>
-  </div>
-</section>
-
 <footer class="site-footer">
   <div class="container">
     <div class="footer-grid">
@@ -141,7 +151,7 @@
           <img src="assets/logo.png" alt="Pavnika by Saranya logo">
           <span>Pavnika by Saranya</span>
         </div>
-        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.<br>- Licensed by DET Dubai</p>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
       </div>
       <div>
         <h4>Explore</h4>

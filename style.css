@@ -600,6 +600,96 @@ footer.site-footer {
   margin-bottom: 28px;
 }
 
+/* Toolbar row: results count + hide-sold-out toggle */
+.filter-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 28px;
+}
+.filter-toolbar .filter-meta { margin-bottom: 0; }
+
+.toggle-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.toggle-switch .track {
+  width: 42px;
+  height: 24px;
+  background: var(--stone);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+.toggle-switch .track::after {
+  content: "";
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--ivory);
+  box-shadow: 0 1px 3px rgba(8, 46, 34, 0.3);
+  transition: transform 0.2s ease;
+}
+.toggle-switch input:checked + .track { background: var(--green); }
+.toggle-switch input:checked + .track::after { transform: translateX(18px); }
+.toggle-switch .toggle-label {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ---------- Pagination ---------- */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 48px;
+}
+.page-btn {
+  min-width: 38px;
+  height: 38px;
+  padding: 0 8px;
+  border: 1px solid var(--stone);
+  background: var(--ivory);
+  color: var(--ink);
+  border-radius: 3px;
+  font-family: var(--body);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.page-btn:hover:not(:disabled) { border-color: var(--gold); }
+.page-btn.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--ivory);
+}
+.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.page-btn.page-ellipsis {
+  border: none;
+  background: none;
+  cursor: default;
+  min-width: 20px;
+}
+
 /* ---------- Product grid ---------- */
 .product-grid {
   display: grid;
@@ -645,7 +735,31 @@ footer.site-footer {
   padding: 5px 10px;
   border-radius: 999px;
   font-weight: 600;
+  z-index: 3;
 }
+.product-photo .id-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: rgba(250, 247, 239, 0.88);
+  color: var(--green);
+  font-size: 0.62rem;
+  font-family: var(--body);
+  letter-spacing: 0.06em;
+  padding: 5px 9px;
+  border-radius: 999px;
+  font-weight: 600;
+  z-index: 3;
+}
+
+/* Hover image cycling — fades through every available image on mouseover */
+.product-photo.hover-cycle img {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.45s ease;
+  z-index: 1;
+}
+.product-photo.hover-cycle img.is-active { opacity: 1; }
 
 .product-info { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
 .product-info .p-design {
@@ -770,30 +884,35 @@ footer.site-footer {
 }
 
 /* ---------- Sold-out ribbon ---------- */
-.product-photo.is-sold img { filter: grayscale(45%); opacity: 0.72; }
+/* ---------- Sold-out overlay (centered text, more faded image) ---------- */
+.product-photo.is-sold img { filter: grayscale(40%); }
+.product-photo.is-sold::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 46, 34, 0.5);
+  pointer-events: none;
+  z-index: 2;
+}
 .sold-ribbon {
   position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(8, 46, 34, 0.22);
   pointer-events: none;
+  z-index: 2;
 }
 .sold-ribbon span {
-  font-family: var(--display);
-  font-style: italic;
+  font-family: var(--body);
   font-weight: 600;
-  font-size: 1.05rem;
-  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ivory);
-  background: rgba(8, 46, 34, 0.9);
   border-top: 1px solid var(--gold-light);
   border-bottom: 1px solid var(--gold-light);
-  padding: 8px 20px;
-  transform: rotate(-8deg);
-  white-space: nowrap;
+  padding: 8px 4px;
 }
 
 /* ---------- Lightbox (saree image gallery) ---------- */
@@ -894,4 +1013,161 @@ footer.site-footer {
   color: var(--green);
   font-weight: 600;
   background: var(--ivory-deep);
+}
+
+/* ---------- First-visit authentication gate ---------- */
+#auth-gate-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: var(--green-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow-y: auto;
+}
+.gate-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--ivory);
+  border-radius: 4px;
+  padding: 40px 32px;
+  text-align: center;
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.5);
+}
+.gate-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  display: block;
+}
+.gate-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+.gate-card > div > p {
+  font-size: 0.92rem;
+  color: var(--ink);
+  opacity: 0.8;
+  margin-bottom: 22px;
+}
+.gate-card .field { text-align: left; margin-bottom: 16px; }
+.gate-card input[type="email"],
+.gate-card input[type="tel"],
+.gate-card input[type="text"] {
+  width: 100%;
+  border: 1px solid var(--stone);
+  background: var(--ivory);
+  padding: 12px 14px;
+  font-family: var(--body);
+  font-size: 0.95rem;
+  color: var(--ink);
+  border-radius: 2px;
+  box-sizing: border-box;
+}
+.gate-card input:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+  border-color: var(--gold);
+}
+#gate-code {
+  text-align: center;
+  font-size: 1.6rem;
+  letter-spacing: 0.5em;
+  padding-left: 20px;
+  margin-bottom: 18px;
+}
+.gate-card .btn { width: 100%; }
+.gate-error {
+  color: #B8142A;
+  font-size: 0.82rem;
+  margin-top: 12px;
+  min-height: 1em;
+}
+.gate-resend {
+  background: none;
+  border: none;
+  color: var(--teal);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 16px;
+}
+.gate-resend:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- Standalone login page (index.html) ---------- */
+body.login-page {
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+}
+.login-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--green-deep);
+  background-image: url("assets/banner.jpg");
+  background-size: cover;
+  background-position: center;
+}
+.login-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(8, 46, 34, 0.4), rgba(8, 46, 34, 0.7));
+}
+.login-wrap {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Glass card — frosted, translucent, Apple-style */
+.login-page .gate-card {
+  background: rgba(250, 247, 239, 0.07);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  color: var(--ivory);
+}
+.login-page .gate-card h2 { color: var(--ivory); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35); }
+.login-page .gate-card > div > p { color: var(--ivory); opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.login-page .gate-card .field label {
+  color: var(--gold-light);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+.login-page .gate-card input[type="email"],
+.login-page .gate-card input[type="tel"],
+.login-page .gate-card input[type="text"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--ivory);
+}
+.login-page .gate-card input::placeholder { color: rgba(250, 247, 239, 0.5); }
+.login-page .gate-card input:focus {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 1px;
+  border-color: var(--gold-light);
+  background: rgba(255, 255, 255, 0.16);
+}
+.login-page .gate-resend { color: var(--gold-light); }
+
+@media (prefers-reduced-transparency: reduce) {
+  .login-page .gate-card {
+    background: var(--green-deep);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }

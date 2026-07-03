@@ -1,6 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  if (getCookie('pavnika_verified') !== '1') {
+    window.location.replace('index.html');
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>About — Pavnika by Saranya</title>
@@ -11,7 +22,6 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="site-header">
   <div class="nav-row">
     <a href="home.html" class="brand">
@@ -126,7 +136,7 @@
           <img src="assets/logo.png" alt="Pavnika by Saranya logo">
           <span>Pavnika by Saranya</span>
         </div>
-        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.<br>- Licensed by DET Dubai</p>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
       </div>
       <div>
         <h4>Explore</h4>
@@ -139,7 +149,7 @@
       </div>
       <div>
         <h4>Reach Us</h4>
-        <p>Dubai based online boutique<br>By appointment, UAE-wide</p>
+        <p>Dubai based online boutique<br>By appointment</p>
         <p>+971 52 66 30307<br>Instagram &amp; Facebook: @pavnikabysaranya</p>
       </div>
     </div>
