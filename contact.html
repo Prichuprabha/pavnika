@@ -66,7 +66,11 @@
 
     <div>
       <h2>Send an enquiry</h2>
-      <form class="contact-form">
+      <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+        <input type="hidden" name="form-name" value="contact">
+        <p style="display:none;">
+          <label>Leave this field blank: <input name="bot-field"></label>
+        </p>
         <div class="field">
           <label for="name">Full name</label>
           <input type="text" id="name" name="name" required>
@@ -117,7 +121,7 @@
           <img src="assets/logo.png" alt="Pavnika by Saranya logo">
           <span>Pavnika by Saranya</span>
         </div>
-        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.<br>- Licensed by DET Dubai</p>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
       </div>
       <div>
         <h4>Explore</h4>

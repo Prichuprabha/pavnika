@@ -14,11 +14,32 @@ document.addEventListener('DOMContentLoaded', function () {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var note = form.querySelector('.form-status');
-      if (note) {
-        note.textContent = 'Thank you — your enquiry has been noted. We will reach out on WhatsApp or email within one business day.';
-        note.style.color = '#0B5D5A';
-      }
-      form.reset();
+      var submitBtn = form.querySelector('button[type="submit"]');
+
+      if (submitBtn) submitBtn.disabled = true;
+
+      var data = new FormData(form);
+      fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(data).toString()
+      })
+        .then(function () {
+          if (note) {
+            note.textContent = 'Thank you — your enquiry has been noted. We will reach out on WhatsApp or email within one business day.';
+            note.style.color = '#0B5D5A';
+          }
+          form.reset();
+        })
+        .catch(function () {
+          if (note) {
+            note.textContent = 'Something went wrong sending your enquiry — please message us directly on WhatsApp instead.';
+            note.style.color = '#B8142A';
+          }
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
     });
   }
 
