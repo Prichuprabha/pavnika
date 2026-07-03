@@ -646,36 +646,69 @@ function initReviewsMarquee() {
   }
 
   function initials(name) {
-    var parts = String(name).trim().split(/\s+/);
+    var parts = String(name || '?').trim().split(/\s+/);
     var chars = parts.slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); });
     return chars.join('');
   }
 
-  function reviewCardHTML(r) {
-    var fallback = '<div class="review-avatar-fallback">' + initials(r.name || '?') + '</div>';
-    var avatar = r.photo
-      ? '<img class="review-avatar" src="' + r.photo + '" alt="' + r.name + '" loading="lazy" ' +
-        'onerror="this.outerHTML=\'' + fallback.replace(/'/g, "\\'") + '\'">'
-      : fallback;
-    return (
-      '<div class="review-card">' +
-        '<div class="review-stars">' + starString(r.stars) + '</div>' +
-        '<p class="review-quote">&ldquo;' + r.quote + '&rdquo;</p>' +
-        '<div class="review-who">' +
-          avatar +
-          '<span class="review-name">' + r.name + '</span>' +
-        '</div>' +
-      '</div>'
-    );
+  function buildFallbackAvatar(name) {
+    var fallback = document.createElement('div');
+    fallback.className = 'review-avatar-fallback';
+    fallback.textContent = initials(name);
+    return fallback;
+  }
+
+  function buildCard(r) {
+    var card = document.createElement('div');
+    card.className = 'review-card';
+
+    var stars = document.createElement('div');
+    stars.className = 'review-stars';
+    stars.textContent = starString(r.stars);
+    card.appendChild(stars);
+
+    var quote = document.createElement('p');
+    quote.className = 'review-quote';
+    quote.textContent = '\u201C' + (r.quote || '') + '\u201D';
+    card.appendChild(quote);
+
+    var who = document.createElement('div');
+    who.className = 'review-who';
+
+    if (r.photo) {
+      var img = document.createElement('img');
+      img.className = 'review-avatar';
+      img.src = r.photo;
+      img.alt = r.name || '';
+      img.loading = 'lazy';
+      img.addEventListener('error', function () {
+        who.replaceChild(buildFallbackAvatar(r.name), img);
+      });
+      who.appendChild(img);
+    } else {
+      who.appendChild(buildFallbackAvatar(r.name));
+    }
+
+    var name = document.createElement('span');
+    name.className = 'review-name';
+    name.textContent = r.name || '';
+    who.appendChild(name);
+
+    card.appendChild(who);
+    return card;
   }
 
   fetch('assets/reviews/reviews.json')
     .then(function (res) { return res.ok ? res.json() : []; })
     .then(function (reviews) {
       if (!reviews || !reviews.length) return;
-      var cards = reviews.map(reviewCardHTML).join('');
-      // Duplicate so the marquee loops seamlessly.
-      track.innerHTML = cards + cards;
+      var frag = document.createDocumentFragment();
+      // Duplicate the list so the marquee track can loop seamlessly.
+      reviews.concat(reviews).forEach(function (r) {
+        frag.appendChild(buildCard(r));
+      });
+      track.innerHTML = '';
+      track.appendChild(frag);
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }
