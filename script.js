@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
   initLoginPage();
+  initReviewsMarquee();
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -629,4 +630,52 @@ function initLoginPage() {
         }, 3000);
       });
   });
+}
+
+/* ---------- Reviews marquee (About page) ---------- */
+function initReviewsMarquee() {
+  var track = document.getElementById('reviews-track');
+  if (!track) return;
+
+  function starString(n) {
+    var count = Math.max(0, Math.min(5, parseInt(n, 10) || 0));
+    var filled = '';
+    for (var i = 0; i < count; i++) filled += '\u2605';
+    for (var i = count; i < 5; i++) filled += '\u2606';
+    return filled;
+  }
+
+  function initials(name) {
+    var parts = String(name).trim().split(/\s+/);
+    var chars = parts.slice(0, 2).map(function (p) { return p.charAt(0).toUpperCase(); });
+    return chars.join('');
+  }
+
+  function reviewCardHTML(r) {
+    var fallback = '<div class="review-avatar-fallback">' + initials(r.name || '?') + '</div>';
+    var avatar = r.photo
+      ? '<img class="review-avatar" src="' + r.photo + '" alt="' + r.name + '" loading="lazy" ' +
+        'onerror="this.outerHTML=\'' + fallback.replace(/'/g, "\\'") + '\'">'
+      : fallback;
+    return (
+      '<div class="review-card">' +
+        '<div class="review-stars">' + starString(r.stars) + '</div>' +
+        '<p class="review-quote">&ldquo;' + r.quote + '&rdquo;</p>' +
+        '<div class="review-who">' +
+          avatar +
+          '<span class="review-name">' + r.name + '</span>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  fetch('assets/reviews/reviews.json')
+    .then(function (res) { return res.ok ? res.json() : []; })
+    .then(function (reviews) {
+      if (!reviews || !reviews.length) return;
+      var cards = reviews.map(reviewCardHTML).join('');
+      // Duplicate so the marquee loops seamlessly.
+      track.innerHTML = cards + cards;
+    })
+    .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }
