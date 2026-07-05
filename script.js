@@ -886,13 +886,22 @@ function initHeroBannerCarousel() {
         var slides = wrap.querySelectorAll('.hero-banner-slide');
         var dots = wrap.querySelectorAll('.hero-banner-dots span');
         var idx = 0;
-        setInterval(function () {
-          slides[idx].classList.remove('is-active');
-          dots[idx].classList.remove('is-active');
-          idx = (idx + 1) % slides.length;
-          slides[idx].classList.add('is-active');
-          dots[idx].classList.add('is-active');
-        }, 3000);
+
+        // First banner shows for 3s, every banner after that for 5s.
+        function durationFor(i) { return i === 0 ? 3000 : 5000; }
+
+        function advance() {
+          setTimeout(function () {
+            slides[idx].classList.remove('is-active');
+            dots[idx].classList.remove('is-active');
+            idx = (idx + 1) % slides.length;
+            slides[idx].classList.add('is-active');
+            dots[idx].classList.add('is-active');
+            advance();
+          }, durationFor(idx));
+        }
+
+        advance();
       }
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
