@@ -392,15 +392,19 @@ function buildLightbox() {
   overlay.innerHTML =
     '<button type="button" class="lightbox-close" id="lightbox-close">&larr; Back</button>' +
     '<div class="lightbox-body">' +
-      '<div class="lightbox-info">' +
-        '<span class="p-design" id="lightbox-design"></span>' +
-        '<span class="p-meta" id="lightbox-meta"></span>' +
-      '</div>' +
       '<div class="lightbox-stage" id="lightbox-stage">' +
         '<button type="button" class="lightbox-arrow prev" id="lightbox-prev" aria-label="Previous image">&#8249;</button>' +
         '<button type="button" class="lightbox-arrow next" id="lightbox-next" aria-label="Next image">&#8250;</button>' +
       '</div>' +
-      '<div class="lightbox-dots" id="lightbox-dots"></div>' +
+      '<div class="lightbox-side">' +
+        '<div class="lightbox-details">' +
+          '<span class="p-design" id="lightbox-design"></span>' +
+          '<span class="p-meta" id="lightbox-meta"></span>' +
+        '</div>' +
+        '<div class="lightbox-tags" id="lightbox-tags"></div>' +
+        '<p class="lightbox-description" id="lightbox-description"></p>' +
+        '<div class="lightbox-dots" id="lightbox-dots"></div>' +
+      '</div>' +
     '</div>';
   document.body.appendChild(overlay);
 
@@ -431,12 +435,48 @@ function buildLightbox() {
     renderStage();
   }
 
+  // Builds a short set of highlight tags from whatever fields this saree
+  // actually has. Works for any product, present or future — fields that
+  // are missing/empty are simply skipped, nothing hardcoded per-saree.
+  function buildTags(p) {
+    var tags = [];
+    if (p.series) tags.push(seriesTitleCase(p.series) + ' Series');
+    if (p.category) tags.push(p.category);
+    if (p.type) tags.push(p.type);
+    if (p.pattern) tags.push(p.pattern);
+    return tags;
+  }
+
+  // Builds a one-sentence description from the product's own fields.
+  // New sarees automatically get a sensible sentence with no extra work.
+  function buildDescription(p) {
+    var bits = [];
+    var opening = 'A';
+    if (p.design) opening += ' ' + p.design + ' design';
+    if (p.type) opening += ' ' + p.type;
+    else opening += ' saree';
+    bits.push(opening.trim());
+    if (p.sareeType) bits.push('in ' + p.sareeType);
+    if (p.pattern) bits.push('featuring a ' + p.pattern);
+    var sentence = bits.join(', ');
+    if (p.series) sentence += ' — part of our ' + seriesTitleCase(p.series) + ' series';
+    return sentence + '.';
+  }
+
   window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
-    document.getElementById('lightbox-design').textContent = product.design;
+    document.getElementById('lightbox-design').textContent = product.design || '';
     document.getElementById('lightbox-meta').textContent =
-      product.type + (product.pattern ? ' · ' + product.pattern : '') + (product.sold ? ' · Sold Out' : '');
+      (product.type || '') + (product.pattern ? ' · ' + product.pattern : '') + (product.sold ? ' · Sold Out' : '');
+
+    var tags = buildTags(product);
+    document.getElementById('lightbox-tags').innerHTML = tags.map(function (t) {
+      return '<span>' + t + '</span>';
+    }).join('');
+
+    document.getElementById('lightbox-description').textContent = buildDescription(product);
+
     renderStage();
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
