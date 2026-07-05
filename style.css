@@ -1018,7 +1018,7 @@ footer.site-footer {
   position: relative;
   aspect-ratio: 3 / 4;
   max-height: 62vh;
-  width: auto;
+  width: 100%;
   max-width: 100%;
   margin: 0 auto;
   background: var(--green-deep);
