@@ -543,27 +543,41 @@ footer.site-footer {
   * { transition: none !important; }
 }
 
-/* ---------- Banner hero (image-based, homepage) ---------- */
-.banner-hero {
+/* ---------- Hero banner carousel (homepage, top of page) ---------- */
+.hero-banner {
   position: relative;
   width: 100%;
   overflow: hidden;
+  background: var(--green-deep);
 }
-.banner-hero img {
+.hero-banner-slide {
+  display: block;
+  position: relative;
+}
+.hero-banner-slide img {
   width: 100%;
   display: block;
+  opacity: 0;
+  transition: opacity 0.7s ease;
 }
-.banner-hero .banner-caption {
+.hero-banner-slide.is-active img { opacity: 1; }
+.hero-banner-slide:not(.is-active) { position: absolute; inset: 0; }
+.hero-banner-dots {
   position: absolute;
-  left: 0; right: 0; bottom: 18px;
-  text-align: center;
-  font-family: var(--body);
-  font-size: 0.7rem;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ivory);
-  opacity: 0.85;
+  left: 0; right: 0; bottom: 14px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  z-index: 2;
 }
+.hero-banner-dots span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(250, 247, 239, 0.45);
+  display: block;
+  transition: background 0.2s ease;
+}
+.hero-banner-dots span.is-active { background: var(--ivory); }
 
 /* ---------- Filter bar (collections page) ---------- */
 .filter-bar {

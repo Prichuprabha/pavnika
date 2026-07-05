@@ -48,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initCollectionsPage();
   initHomeSeriesMarquee();
+  initHeroBannerCarousel();
   initHeroVideoPlaylist();
 });
 
@@ -801,6 +802,58 @@ function initReviewsMarquee() {
       });
       track.innerHTML = '';
       track.appendChild(frag);
+    })
+    .catch(function () { /* silently do nothing if the manifest can't be read */ });
+}
+
+/* ---------- Homepage: hero banner carousel ----------
+   Reads assets/banners/banners.json, an array of { image, link }
+   entries living in assets/banners/. Displays them full-width at the
+   top of the page, auto-rotating with a crossfade if there's more than
+   one, and links each slide through to its "link" (or Collections by
+   default). To add a banner: drop the image in assets/banners/ and add
+   an entry to banners.json. To remove one: delete both. */
+function initHeroBannerCarousel() {
+  var wrap = document.getElementById('hero-banner');
+  if (!wrap) return;
+
+  var FOLDER = 'assets/banners/';
+  var DEFAULT_LINK = 'collections.html';
+
+  fetch(FOLDER + 'banners.json')
+    .then(function (res) { return res.ok ? res.json() : []; })
+    .then(function (banners) {
+      if (!banners || !banners.length) return;
+
+      var slidesHTML = banners.map(function (b, i) {
+        var link = b.link || DEFAULT_LINK;
+        return (
+          '<a class="hero-banner-slide' + (i === 0 ? ' is-active' : '') + '" href="' + link + '">' +
+            '<img src="' + FOLDER + b.image + '" alt="Pavnika by Saranya featured banner" loading="' + (i === 0 ? 'eager' : 'lazy') + '">' +
+          '</a>'
+        );
+      }).join('');
+
+      var dotsHTML = banners.length > 1
+        ? '<div class="hero-banner-dots">' + banners.map(function (_, i) {
+            return '<span class="' + (i === 0 ? 'is-active' : '') + '"></span>';
+          }).join('') + '</div>'
+        : '';
+
+      wrap.innerHTML = slidesHTML + dotsHTML;
+
+      if (banners.length > 1) {
+        var slides = wrap.querySelectorAll('.hero-banner-slide');
+        var dots = wrap.querySelectorAll('.hero-banner-dots span');
+        var idx = 0;
+        setInterval(function () {
+          slides[idx].classList.remove('is-active');
+          dots[idx].classList.remove('is-active');
+          idx = (idx + 1) % slides.length;
+          slides[idx].classList.add('is-active');
+          dots[idx].classList.add('is-active');
+        }, 5000);
+      }
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }
