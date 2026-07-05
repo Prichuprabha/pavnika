@@ -505,11 +505,13 @@ footer.site-footer {
 }
 .page-hero .eyebrow { display: block; margin-bottom: 10px; }
 
-/* Story banner (About page) — flag image with text overlaid */
+/* Story banner (About page) — flag image with text overlaid, contained in a box */
+.story-banner-section { padding: 40px 0 32px; }
 .story-banner {
   position: relative;
   width: 100%;
   overflow: hidden;
+  border-radius: 6px;
 }
 .story-banner img {
   position: absolute;
