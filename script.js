@@ -71,6 +71,26 @@ var SERIES_DESCRIPTIONS = {
   'PAVNIKA SIGNATURE': 'Our own jacquard designs, exclusive to Pavnika by Saranya.',
   'DEVATHA AURA': 'Rare vintage-inspired pieces with a divine, timeless aura.'
 };
+var SERIES_HOVER_TEXT = {
+  'VALUE WEAVES': 'View more from our Value Weaves collection',
+  'SANSKRITI': 'Explore the Sanskriti collection',
+  'SUMANGALI': 'Discover our Sumangali bridal collection',
+  'FESTIVE VIBES': 'See more Festive Vibes sarees',
+  'PASTEL POETRY': 'Browse the Pastel Poetry collection',
+  'BRIDAL BLISS': 'Explore the Bridal Bliss collection',
+  'GOLDEN GLOW': 'See more from Golden Glow',
+  'SOFT SILK': 'Browse our Soft Silk collection',
+  'SHIMMER STORIES': 'Discover Shimmer Stories',
+  'PAVNIKA SIGNATURE': 'Explore our Signature collection',
+  'DEVATHA AURA': 'See the Devatha Aura collection'
+};
+
+// Safe fallback: any series not listed above (e.g. a brand new one added
+// later to products-data.js) still gets a sensible generic phrase here —
+// this can never throw, since a missing key just falls through to it.
+function seriesHoverText(series) {
+  return SERIES_HOVER_TEXT[series] || ('View more from our ' + seriesTitleCase(series) + ' collection');
+}
 
 function seriesTitleCase(s) {
   return String(s).toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
@@ -170,6 +190,8 @@ function initCollectionsPage() {
   var noResults = document.getElementById('no-results');
   var paginationEl = document.getElementById('pagination');
   var hideSoldToggle = document.getElementById('hide-sold-toggle');
+  var categoryGroup = document.getElementById('category-filter');
+  var seriesGroup = document.getElementById('series-filter');
 
   function getFiltered() {
     return window.PRODUCTS.filter(function (p) {
@@ -177,6 +199,55 @@ function initCollectionsPage() {
       var okSeries = state.series === 'all' || p.series === state.series;
       var okSold = !state.hideSold || !p.sold;
       return okCat && okSeries && okSold;
+    });
+  }
+
+  // Which series actually have sarees in the given category (or all, if 'all').
+  function seriesAvailableFor(category) {
+    var set = {};
+    window.PRODUCTS.forEach(function (p) {
+      if (category === 'all' || p.category === category) set[p.series] = true;
+    });
+    return set;
+  }
+
+  // Which categories actually have sarees in the given series (or all, if 'all').
+  function categoriesAvailableFor(series) {
+    var set = {};
+    window.PRODUCTS.forEach(function (p) {
+      if (series === 'all' || p.series === series) set[p.category] = true;
+    });
+    return set;
+  }
+
+  // Disables/fades out filter buttons that would produce zero results given
+  // the other filter's current selection. Works for any series or category
+  // value found in the data — new ones added later need no code changes.
+  function updateFilterAvailability() {
+    if (seriesGroup) {
+      var availableSeries = seriesAvailableFor(state.category);
+      seriesGroup.querySelectorAll('.filter-btn').forEach(function (btn) {
+        var val = btn.getAttribute('data-value');
+        var ok = val === 'all' || !!availableSeries[val];
+        btn.disabled = !ok;
+        btn.classList.toggle('is-unavailable', !ok);
+      });
+    }
+    if (categoryGroup) {
+      var availableCategories = categoriesAvailableFor(state.series);
+      categoryGroup.querySelectorAll('.filter-btn').forEach(function (btn) {
+        var val = btn.getAttribute('data-value');
+        var ok = val === 'all' || !!availableCategories[val];
+        btn.disabled = !ok;
+        btn.classList.toggle('is-unavailable', !ok);
+      });
+    }
+  }
+
+  function setActiveButton(groupEl, value) {
+    if (!groupEl) return;
+    groupEl.querySelectorAll('.filter-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-value') === value);
     });
   }
 
@@ -205,6 +276,7 @@ function initCollectionsPage() {
   }
 
   function render() {
+    updateFilterAvailability();
     var filtered = getFiltered();
     var start = (state.page - 1) * PAGE_SIZE;
     var pageItems = filtered.slice(start, start + PAGE_SIZE);
@@ -216,20 +288,44 @@ function initCollectionsPage() {
     initHoverCycle(grid);
   }
 
-  ['category-filter', 'series-filter'].forEach(function (groupId) {
-    var groupEl = document.getElementById(groupId);
-    if (!groupEl) return;
-    var key = groupEl.getAttribute('data-filter-group');
-    groupEl.addEventListener('click', function (e) {
+  if (categoryGroup) {
+    categoryGroup.addEventListener('click', function (e) {
       var btn = e.target.closest('.filter-btn');
-      if (!btn) return;
-      groupEl.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      state[key] = btn.getAttribute('data-value');
+      if (!btn || btn.disabled) return;
+      state.category = btn.getAttribute('data-value');
+      setActiveButton(categoryGroup, state.category);
+
+      // If the currently selected series has no sarees in this category,
+      // fall back to "All Series" rather than showing an empty grid.
+      var available = seriesAvailableFor(state.category);
+      if (state.series !== 'all' && !available[state.series]) {
+        state.series = 'all';
+        setActiveButton(seriesGroup, 'all');
+      }
+
       state.page = 1;
       render();
     });
-  });
+  }
+
+  if (seriesGroup) {
+    seriesGroup.addEventListener('click', function (e) {
+      var btn = e.target.closest('.filter-btn');
+      if (!btn || btn.disabled) return;
+      state.series = btn.getAttribute('data-value');
+      setActiveButton(seriesGroup, state.series);
+
+      // Same reconciliation in the other direction.
+      var available = categoriesAvailableFor(state.series);
+      if (state.category !== 'all' && !available[state.category]) {
+        state.category = 'all';
+        setActiveButton(categoryGroup, 'all');
+      }
+
+      state.page = 1;
+      render();
+    });
+  }
 
   if (hideSoldToggle) {
     hideSoldToggle.addEventListener('change', function () {
@@ -257,27 +353,17 @@ function initCollectionsPage() {
   var catParam = params.get('category');
   var seriesParam = params.get('series');
 
-  if (catParam) {
-    var catGroup = document.getElementById('category-filter');
-    if (catGroup) {
-      var matchCatBtn = catGroup.querySelector('.filter-btn[data-value="' + catParam.replace(/"/g, '') + '"]');
-      if (matchCatBtn) {
-        catGroup.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-        matchCatBtn.classList.add('active');
-        state.category = catParam;
-      }
-    }
+  if (catParam && categoryGroup && categoryGroup.querySelector('.filter-btn[data-value="' + catParam.replace(/"/g, '') + '"]')) {
+    state.category = catParam;
+    setActiveButton(categoryGroup, catParam);
   }
 
-  if (seriesParam) {
-    var seriesGroup = document.getElementById('series-filter');
-    if (seriesGroup) {
-      var matchSeriesBtn = seriesGroup.querySelector('.filter-btn[data-value="' + seriesParam.replace(/"/g, '') + '"]');
-      if (matchSeriesBtn) {
-        seriesGroup.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
-        matchSeriesBtn.classList.add('active');
-        state.series = seriesParam;
-      }
+  if (seriesParam && seriesGroup && seriesGroup.querySelector('.filter-btn[data-value="' + seriesParam.replace(/"/g, '') + '"]')) {
+    // Only honor it if it's actually compatible with the category above.
+    var availableWithCat = seriesAvailableFor(state.category);
+    if (state.category === 'all' || availableWithCat[seriesParam]) {
+      state.series = seriesParam;
+      setActiveButton(seriesGroup, seriesParam);
     }
   }
 
@@ -414,12 +500,16 @@ function initHomeSeriesMarquee() {
     var picks = shuffled.slice(0, Math.min(5, shuffled.length));
     var desc = SERIES_DESCRIPTIONS[series] || '';
     var label = seriesTitleCase(series);
+    var hoverText = seriesHoverText(series);
     var imgsHTML = picks.map(function (src, i) {
       return '<img src="' + src + '" alt="' + label + ' saree" loading="lazy" class="' + (i === 0 ? 'is-active' : '') + '">';
     }).join('');
     return (
       '<a class="category-tile" href="collections.html?series=' + encodeURIComponent(series) + '">' +
-        '<div class="category-tile-media">' + imgsHTML + '</div>' +
+        '<div class="category-tile-media">' +
+          imgsHTML +
+          '<div class="tile-hover-overlay"><p>' + hoverText + '</p></div>' +
+        '</div>' +
         '<div class="category-tile-info">' +
           '<h3>' + label + '</h3>' +
           '<p>' + desc + '</p>' +
