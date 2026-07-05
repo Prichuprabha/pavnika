@@ -892,7 +892,7 @@ function initHeroBannerCarousel() {
           idx = (idx + 1) % slides.length;
           slides[idx].classList.add('is-active');
           dots[idx].classList.add('is-active');
-        }, 5000);
+        }, 3000);
       }
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
