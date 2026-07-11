@@ -15,18 +15,17 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 // Classic Netlify Functions (this handler style) receive geolocation via
 // the x-nf-geo request header, base64-encoded JSON — NOT via context.geo,
 // which only applies to the newer Edge/Fetch-style function format.
-function getCountryFromEvent(event) {
+function getGeoFromEvent(event) {
   try {
     var header = event.headers && (event.headers['x-nf-geo'] || event.headers['X-NF-Geo']);
-    console.log('DEBUG geo header present:', !!header);
-    console.log('DEBUG all header keys:', event.headers ? Object.keys(event.headers).join(', ') : 'none');
-    if (!header) return null;
+    if (!header) return { country: null, region: null };
     var geo = JSON.parse(Buffer.from(header, 'base64').toString('utf-8'));
-    console.log('DEBUG decoded geo:', JSON.stringify(geo));
-    return (geo.country && geo.country.name) || null;
+    return {
+      country: (geo.country && geo.country.name) || null,
+      region: (geo.subdivision && geo.subdivision.name) || null
+    };
   } catch (e) {
-    console.log('DEBUG geo decode error:', e.message);
-    return null;
+    return { country: null, region: null };
   }
 }
 
@@ -93,7 +92,7 @@ exports.handler = async function (event, context) {
     }
 
     const nowIso = new Date().toISOString();
-    const country = getCountryFromEvent(event);
+    const geo = getGeoFromEvent(event);
     await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
       method: 'PATCH',
       body: JSON.stringify({
@@ -101,7 +100,8 @@ exports.handler = async function (event, context) {
         verified_at: nowIso,
         otp_code: null,
         otp_expires_at: null,
-        country: country
+        country: geo.country,
+        region: geo.region
       })
     });
 

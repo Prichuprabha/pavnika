@@ -40,7 +40,7 @@ exports.handler = async function (event) {
 
   try {
     const visitors = await supabaseFetch(
-      'verified_visitors?select=email,phone,country,verified_at&verified=eq.true&order=verified_at.desc&limit=200'
+      'verified_visitors?select=email,phone,country,region,verified_at&verified=eq.true&order=verified_at.desc&limit=200'
     );
 
     const views = await supabaseFetch('saree_views?select=product_id,created_at&order=created_at.desc&limit=5000');
@@ -54,13 +54,20 @@ exports.handler = async function (event) {
       .sort(function (a, b) { return b.views - a.views; })
       .slice(0, 20);
 
-    const countryCounts = {};
+    const regionCounts = {};
     visitors.forEach(function (v) {
-      var c = v.country || 'Unknown';
-      countryCounts[c] = (countryCounts[c] || 0) + 1;
+      var label;
+      if (!v.country) {
+        label = 'Unknown';
+      } else if (v.region) {
+        label = v.region + ', ' + v.country;
+      } else {
+        label = v.country;
+      }
+      regionCounts[label] = (regionCounts[label] || 0) + 1;
     });
-    const regions = Object.keys(countryCounts)
-      .map(function (c) { return { country: c, count: countryCounts[c] }; })
+    const regions = Object.keys(regionCounts)
+      .map(function (label) { return { country: label, count: regionCounts[label] }; })
       .sort(function (a, b) { return b.count - a.count; });
 
     return {
