@@ -131,10 +131,28 @@ function showAdminPanel(token, email) {
   document.getElementById('admin-shell').style.display = 'flex';
   document.getElementById('admin-email-display').textContent = email || 'Admin';
   initSareeEditor(token);
+  initReviewsEditor(token);
+  initBannersEditor(token);
+  initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
     sessionStorage.removeItem(ADMIN_TOKEN_KEY);
     window.location.reload();
+  });
+}
+
+/* ---------- Sidebar view switching ---------- */
+function initSidebarNav() {
+  var navItems = document.querySelectorAll('.admin-nav-item');
+  navItems.forEach(function (item) {
+    item.addEventListener('click', function () {
+      var view = item.getAttribute('data-view');
+      navItems.forEach(function (n) { n.classList.remove('active'); });
+      item.classList.add('active');
+      document.querySelectorAll('.admin-view').forEach(function (v) { v.style.display = 'none'; });
+      var target = document.getElementById('admin-view-' + view);
+      if (target) target.style.display = 'block';
+    });
   });
 }
 
@@ -451,4 +469,251 @@ function initSareeEditor(token) {
   });
 
   renderTable();
+}
+
+/* ---------- Reviews editor ---------- */
+function initReviewsEditor(token) {
+  var rowsEl = document.getElementById('admin-review-rows');
+  var formCard = document.getElementById('admin-review-form-card');
+  var form = document.getElementById('admin-review-form');
+  var formTitle = document.getElementById('admin-review-form-title');
+  var statusMsg = document.getElementById('admin-review-status-msg');
+  var reviews = [];
+  var editingIndex = null;
+
+  function starString(n) {
+    var count = Math.max(0, Math.min(5, parseInt(n, 10) || 0));
+    var filled = '';
+    for (var i = 0; i < count; i++) filled += '\u2605';
+    for (var i = count; i < 5; i++) filled += '\u2606';
+    return filled;
+  }
+
+  function renderTable() {
+    rowsEl.innerHTML = reviews.map(function (r, i) {
+      var quotePreview = r.quote ? (r.quote.length > 60 ? r.quote.slice(0, 60) + '…' : r.quote) : '<em>(star only)</em>';
+      return (
+        '<tr>' +
+          '<td>' + (r.name || '') + '</td>' +
+          '<td>' + starString(r.stars) + '</td>' +
+          '<td>' + quotePreview + '</td>' +
+          '<td><span class="admin-edit-link" data-idx="' + i + '">Edit</span> &middot; <span class="admin-delete-link" data-idx="' + i + '">Delete</span></td>' +
+        '</tr>'
+      );
+    }).join('');
+  }
+
+  function loadReviews() {
+    fetch('assets/reviews/reviews.json?_=' + Date.now())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        reviews = data || [];
+        renderTable();
+      })
+      .catch(function () { rowsEl.innerHTML = '<tr><td colspan="4">Could not load reviews.</td></tr>'; });
+  }
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  function resetForm() {
+    editingIndex = null;
+    formTitle.textContent = 'Add New Review';
+    form.reset();
+    document.getElementById('admin-r-stars').value = 5;
+  }
+
+  document.getElementById('admin-add-review-btn').addEventListener('click', function () {
+    resetForm();
+    formCard.style.display = 'block';
+    formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
+  document.getElementById('admin-review-cancel-btn').addEventListener('click', function () {
+    formCard.style.display = 'none';
+  });
+
+  rowsEl.addEventListener('click', function (e) {
+    var editLink = e.target.closest('.admin-edit-link');
+    if (editLink) {
+      var idx = parseInt(editLink.getAttribute('data-idx'), 10);
+      var r = reviews[idx];
+      editingIndex = idx;
+      formTitle.textContent = 'Edit Review — ' + r.name;
+      document.getElementById('admin-r-name').value = r.name || '';
+      document.getElementById('admin-r-stars').value = r.stars || 5;
+      document.getElementById('admin-r-photo').value = r.photo || '';
+      document.getElementById('admin-r-quote').value = r.quote || '';
+      formCard.style.display = 'block';
+      formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      return;
+    }
+    var deleteLink = e.target.closest('.admin-delete-link');
+    if (deleteLink) {
+      var delIdx = parseInt(deleteLink.getAttribute('data-idx'), 10);
+      var name = reviews[delIdx].name || 'this review';
+      if (!confirm('Delete review from ' + name + '? This commits to GitHub immediately.')) return;
+
+      fetch('/.netlify/functions/admin-save-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, action: 'delete', index: delIdx })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) { showStatus('error', result.data.error || 'Delete failed.'); return; }
+          reviews = result.data.reviews;
+          renderTable();
+          showStatus('success', 'Deleted — commit <code>' + result.data.commitSha + '</code> pushed. <a href="' + result.data.commitUrl + '" target="_blank" rel="noopener">View on GitHub &rarr;</a>');
+        })
+        .catch(function () { showStatus('error', 'Network error — review was not deleted.'); });
+    }
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var saveBtn = document.getElementById('admin-review-save-btn');
+    var reviewData = {
+      name: document.getElementById('admin-r-name').value.trim(),
+      stars: parseInt(document.getElementById('admin-r-stars').value, 10) || 5,
+      photo: document.getElementById('admin-r-photo').value.trim(),
+      quote: document.getElementById('admin-r-quote').value.trim()
+    };
+
+    if (!reviewData.name) {
+      showStatus('error', 'Reviewer name is required.');
+      return;
+    }
+
+    var action = editingIndex !== null ? 'edit' : 'add';
+    var payload = { adminToken: token, action: action, review: reviewData };
+    if (action === 'edit') payload.index = editingIndex;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    fetch('/.netlify/functions/admin-save-review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Save failed.'); return; }
+        reviews = result.data.reviews;
+        renderTable();
+        formCard.style.display = 'none';
+        showStatus('success', 'Saved — commit <code>' + result.data.commitSha + '</code> pushed. <a href="' + result.data.commitUrl + '" target="_blank" rel="noopener">View on GitHub &rarr;</a>');
+      })
+      .catch(function () { showStatus('error', 'Network error — changes were not saved.'); })
+      .finally(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save to GitHub';
+      });
+  });
+
+  loadReviews();
+}
+
+/* ---------- Banners editor ---------- */
+function initBannersEditor(token) {
+  var listEl = document.getElementById('admin-banner-list');
+  var statusMsg = document.getElementById('admin-banner-status-msg');
+  var banners = [];
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  function renderList() {
+    listEl.innerHTML = '';
+    banners.forEach(function (b, i) {
+      var row = document.createElement('div');
+      row.className = 'admin-banner-item';
+      row.innerHTML =
+        '<img src="assets/banners/' + b.image + '" alt="">' +
+        '<div class="admin-field"><label>Image file</label><input type="text" value="' + b.image + '" data-role="image"></div>' +
+        '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
+        '<div class="admin-banner-controls">' +
+          '<button type="button" data-action="up" title="Move up">&uarr;</button>' +
+          '<button type="button" data-action="down" title="Move down">&darr;</button>' +
+          '<button type="button" data-action="remove" class="admin-banner-remove" title="Remove">&times;</button>' +
+        '</div>';
+      listEl.appendChild(row);
+    });
+  }
+
+  function readListFromDom() {
+    var rows = listEl.querySelectorAll('.admin-banner-item');
+    banners = Array.from(rows).map(function (row) {
+      return {
+        image: row.querySelector('[data-role="image"]').value.trim(),
+        link: row.querySelector('[data-role="link"]').value.trim() || 'collections.html'
+      };
+    });
+  }
+
+  function loadBanners() {
+    fetch('assets/banners/banners.json?_=' + Date.now())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        banners = data || [];
+        renderList();
+      })
+      .catch(function () { listEl.innerHTML = '<p>Could not load banners.</p>'; });
+  }
+
+  listEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    readListFromDom();
+    var row = btn.closest('.admin-banner-item');
+    var idx = Array.from(listEl.children).indexOf(row);
+    var action = btn.getAttribute('data-action');
+
+    if (action === 'up' && idx > 0) {
+      var tmp = banners[idx - 1];
+      banners[idx - 1] = banners[idx];
+      banners[idx] = tmp;
+    } else if (action === 'down' && idx < banners.length - 1) {
+      var tmp2 = banners[idx + 1];
+      banners[idx + 1] = banners[idx];
+      banners[idx] = tmp2;
+    } else if (action === 'remove') {
+      banners.splice(idx, 1);
+    }
+    renderList();
+  });
+
+  document.getElementById('admin-banner-refresh-btn').addEventListener('click', function () {
+    loadBanners();
+    showStatus('success', 'Reloaded the current banner list from GitHub.');
+  });
+
+  document.getElementById('admin-banner-save-btn').addEventListener('click', function () {
+    readListFromDom();
+    if (!banners.length) {
+      showStatus('error', 'At least one banner is required — use Refresh to restore the list if you removed them all by mistake.');
+      return;
+    }
+
+    fetch('/.netlify/functions/admin-save-banner', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, banners: banners })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Save failed.'); return; }
+        showStatus('success', 'Saved — commit <code>' + result.data.commitSha + '</code> pushed. <a href="' + result.data.commitUrl + '" target="_blank" rel="noopener">View on GitHub &rarr;</a>');
+      })
+      .catch(function () { showStatus('error', 'Network error — changes were not saved.'); });
+  });
+
+  loadBanners();
 }
