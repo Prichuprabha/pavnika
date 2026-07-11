@@ -1728,20 +1728,5 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vbN7xByG71IzwZUDEdRv.jpg"
     ],
     "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg"
-  },
-  {
-    "series": "VALUE WEAVES",
-    "category": "Budget",
-    "type": "Semi Silk Korvai",
-    "sareeType": "Yellow and Red",
-    "pattern": "Golden Motif Pattern",
-    "design": "Traditional",
-    "price": 220,
-    "sold": true,
-    "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
-    ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG",
-    "id": "VW001"
   }
 ];
