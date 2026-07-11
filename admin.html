@@ -52,12 +52,36 @@
   }
   .admin-banner-item .admin-banner-remove { color: #B8142A; }
 
-  .admin-metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
-  .admin-metric-card { background: var(--ivory-deep); border-radius: 6px; padding: 14px 16px; }
-  .admin-metric-card .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.6; margin: 0 0 6px; }
-  .admin-metric-card .value { font-size: 1.3rem; font-weight: 600; color: var(--green-deep); margin: 0; }
-  .admin-stats-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 8px; }
-  .admin-stats-subheading { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 10px; }
+  .admin-metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .admin-metric-card {
+    background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px;
+    padding: 16px 18px; border-left: 3px solid var(--green);
+  }
+  .admin-metric-card.accent-red { border-left-color: #B8142A; }
+  .admin-metric-card.accent-gold { border-left-color: var(--gold); }
+  .admin-metric-card .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.6; margin: 0 0 8px; }
+  .admin-metric-card .value { font-size: 1.5rem; font-weight: 600; color: var(--green-deep); margin: 0; }
+  .admin-metric-card.accent-red .value { color: #B8142A; }
+
+  .admin-stats-cols { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .admin-stats-card {
+    background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px; padding: 18px 20px;
+  }
+  .admin-stats-subheading { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; font-weight: 600; }
+
+  .admin-rank-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ivory-deep); font-size: 0.82rem; }
+  .admin-rank-row:last-child { border-bottom: none; }
+  .admin-rank-row .rank-value { font-weight: 600; color: var(--green-deep); font-size: 0.78rem; }
+
+  .admin-bar-row { margin-bottom: 12px; }
+  .admin-bar-row:last-child { margin-bottom: 0; }
+  .admin-bar-row .bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; }
+  .admin-bar-row .bar-label .bar-count { font-weight: 600; }
+  .admin-bar-track { height: 6px; background: var(--ivory-deep); border-radius: 3px; overflow: hidden; }
+  .admin-bar-fill { height: 100%; border-radius: 3px; background: var(--green); }
+
+  .admin-logins-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .admin-email-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--ink); opacity: 0.75; cursor: pointer; }
 
   @media (max-width: 880px) {
     .admin-metric-grid { grid-template-columns: repeat(2, 1fr); }
@@ -327,27 +351,23 @@
       <div class="admin-metric-grid" id="admin-metric-grid"></div>
 
       <div class="admin-stats-cols">
-        <div>
+        <div class="admin-stats-card">
           <h3 class="admin-stats-subheading">Most viewed sarees</h3>
-          <table class="admin-table">
-            <thead><tr><th>Saree</th><th>Views</th></tr></thead>
-            <tbody id="admin-most-viewed-rows"></tbody>
-          </table>
+          <div id="admin-most-viewed-rows"></div>
         </div>
-        <div>
+        <div class="admin-stats-card">
           <h3 class="admin-stats-subheading">Visitor regions</h3>
-          <table class="admin-table">
-            <thead><tr><th>Country</th><th>Visitors</th></tr></thead>
-            <tbody id="admin-regions-rows"></tbody>
-          </table>
+          <div id="admin-regions-rows"></div>
         </div>
       </div>
 
-      <h3 class="admin-stats-subheading">Recent logins</h3>
-      <table class="admin-table">
-        <thead><tr><th>Email</th><th>When</th></tr></thead>
-        <tbody id="admin-logins-rows"></tbody>
-      </table>
+      <div class="admin-stats-card" style="margin-bottom:24px;">
+        <div class="admin-logins-header">
+          <h3 class="admin-stats-subheading" style="margin:0;">Recent logins</h3>
+          <label class="admin-email-toggle"><input type="checkbox" id="admin-show-emails-toggle"> Show full emails</label>
+        </div>
+        <div id="admin-logins-rows"></div>
+      </div>
 
       <div class="admin-form-card">
         <h3>Track sheet — view changes made on GitHub</h3>

@@ -770,33 +770,47 @@ function initStatsDashboard(token) {
     var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
     var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
 
-    metricGrid.innerHTML = [
-      { label: 'In stock', value: inStock },
-      { label: 'Sold out', value: soldOut },
-      { label: 'Verified visitors', value: data.totalVisitors },
-      { label: 'Saree views logged', value: data.totalViews }
-    ].map(function (m) {
-      return '<div class="admin-metric-card"><p class="label">' + m.label + '</p><p class="value">' + m.value + '</p></div>';
-    }).join('');
+    metricGrid.innerHTML =
+      '<div class="admin-metric-card"><p class="label">In stock</p><p class="value">' + inStock + '</p></div>' +
+      '<div class="admin-metric-card accent-red"><p class="label">Sold out</p><p class="value">' + soldOut + '</p></div>' +
+      '<div class="admin-metric-card accent-gold"><p class="label">Verified visitors</p><p class="value">' + data.totalVisitors + '</p></div>' +
+      '<div class="admin-metric-card accent-gold"><p class="label">Saree views logged</p><p class="value">' + data.totalViews + '</p></div>';
 
     mostViewedRows.innerHTML = data.mostViewed.length
       ? data.mostViewed.map(function (v) {
-          return '<tr><td>' + findProductLabel(v.productId) + '</td><td>' + v.views + '</td></tr>';
+          return '<div class="admin-rank-row"><span>' + findProductLabel(v.productId) + '</span><span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span></div>';
         }).join('')
-      : '<tr><td colspan="2">No views logged yet.</td></tr>';
+      : '<p style="font-size:0.82rem; opacity:0.6;">No views logged yet.</p>';
 
+    var maxRegionCount = data.regions.length ? Math.max.apply(null, data.regions.map(function (r) { return r.count; })) : 1;
     regionsRows.innerHTML = data.regions.length
-      ? data.regions.map(function (r) {
-          return '<tr><td>' + r.country + '</td><td>' + r.count + '</td></tr>';
+      ? data.regions.map(function (r, i) {
+          var pct = Math.round((r.count / maxRegionCount) * 100);
+          var barColor = i === 0 ? 'var(--green)' : (i === 1 ? 'var(--gold)' : 'var(--stone)');
+          return (
+            '<div class="admin-bar-row">' +
+              '<div class="bar-label"><span>' + r.country + '</span><span class="bar-count">' + r.count + '</span></div>' +
+              '<div class="admin-bar-track"><div class="admin-bar-fill" style="width:' + pct + '%; background:' + barColor + ';"></div></div>' +
+            '</div>'
+          );
         }).join('')
-      : '<tr><td colspan="2">No data yet.</td></tr>';
+      : '<p style="font-size:0.82rem; opacity:0.6;">No data yet.</p>';
 
-    loginsRows.innerHTML = data.recentLogins.length
-      ? data.recentLogins.map(function (v) {
-          return '<tr><td>' + maskEmail(v.email) + '</td><td>' + timeAgo(v.verified_at) + '</td></tr>';
-        }).join('')
-      : '<tr><td colspan="2">No logins yet.</td></tr>';
+    renderLoginsList();
   }
+
+  function renderLoginsList() {
+    if (!latestStats) return;
+    var showFull = document.getElementById('admin-show-emails-toggle').checked;
+    loginsRows.innerHTML = latestStats.recentLogins.length
+      ? latestStats.recentLogins.map(function (v) {
+          var emailDisplay = showFull ? (v.email || '') : maskEmail(v.email);
+          return '<div class="admin-rank-row"><span>' + emailDisplay + '</span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
+        }).join('')
+      : '<p style="font-size:0.82rem; opacity:0.6;">No logins yet.</p>';
+  }
+
+  document.getElementById('admin-show-emails-toggle').addEventListener('change', renderLoginsList);
 
   function loadStats() {
     metricGrid.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading stats...</p>';

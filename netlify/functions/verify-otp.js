@@ -12,6 +12,20 @@ const { ADMIN_EMAIL, signAdminToken } = require('./_admin-auth');
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Classic Netlify Functions (this handler style) receive geolocation via
+// the x-nf-geo request header, base64-encoded JSON — NOT via context.geo,
+// which only applies to the newer Edge/Fetch-style function format.
+function getCountryFromEvent(event) {
+  try {
+    var header = event.headers && (event.headers['x-nf-geo'] || event.headers['X-NF-Geo']);
+    if (!header) return null;
+    var geo = JSON.parse(Buffer.from(header, 'base64').toString('utf-8'));
+    return (geo.country && geo.country.name) || null;
+  } catch (e) {
+    return null;
+  }
+}
+
 async function supabaseFetch(path, options) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
@@ -75,7 +89,7 @@ exports.handler = async function (event, context) {
     }
 
     const nowIso = new Date().toISOString();
-    const country = (context.geo && context.geo.country && context.geo.country.name) || null;
+    const country = getCountryFromEvent(event);
     await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
       method: 'PATCH',
       body: JSON.stringify({
