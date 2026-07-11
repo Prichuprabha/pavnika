@@ -30,7 +30,7 @@ async function supabaseFetch(path, options) {
   return res.json();
 }
 
-exports.handler = async function (event) {
+exports.handler = async function (event, context) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
@@ -75,13 +75,15 @@ exports.handler = async function (event) {
     }
 
     const nowIso = new Date().toISOString();
+    const country = (context.geo && context.geo.country && context.geo.country.name) || null;
     await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
       method: 'PATCH',
       body: JSON.stringify({
         verified: true,
         verified_at: nowIso,
         otp_code: null,
-        otp_expires_at: null
+        otp_expires_at: null,
+        country: country
       })
     });
 

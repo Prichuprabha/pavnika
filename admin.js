@@ -1,5 +1,10 @@
 var ADMIN_TOKEN_KEY = 'pavnika_admin_token';
 
+// Used only to build the "View on GitHub" link on the Stats page.
+// Update these if your GitHub username or repo name ever changes.
+var GITHUB_OWNER = 'Prichuprabha';
+var GITHUB_REPO = 'pavnika';
+
 var SERIES_CODES = {
   'VALUE WEAVES': 'VW',
   'PASTEL POETRY': 'PP',
@@ -133,6 +138,7 @@ function showAdminPanel(token, email) {
   initSareeEditor(token);
   initReviewsEditor(token);
   initBannersEditor(token);
+  initStatsDashboard(token);
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -152,6 +158,7 @@ function initSidebarNav() {
       document.querySelectorAll('.admin-view').forEach(function (v) { v.style.display = 'none'; });
       var target = document.getElementById('admin-view-' + view);
       if (target) target.style.display = 'block';
+      if (view === 'stats' && window.__refreshStats) window.__refreshStats();
     });
   });
 }
@@ -716,4 +723,159 @@ function initBannersEditor(token) {
   });
 
   loadBanners();
+}
+
+/* ---------- Stats dashboard ---------- */
+function initStatsDashboard(token) {
+  var statusMsg = document.getElementById('admin-stats-status-msg');
+  var metricGrid = document.getElementById('admin-metric-grid');
+  var mostViewedRows = document.getElementById('admin-most-viewed-rows');
+  var regionsRows = document.getElementById('admin-regions-rows');
+  var loginsRows = document.getElementById('admin-logins-rows');
+  var latestStats = null;
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  function findProductLabel(id) {
+    var p = (window.PRODUCTS || []).find(function (x) { return x.id === id; });
+    return p ? (p.design + ' — ' + id) : id;
+  }
+
+  function maskEmail(email) {
+    if (!email) return '';
+    var parts = email.split('@');
+    if (parts.length !== 2) return email;
+    var name = parts[0];
+    var masked = name.length > 2 ? name[0] + '****' + name.slice(-1) : name;
+    return masked + '@' + parts[1];
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return '';
+    var diffMs = Date.now() - new Date(iso).getTime();
+    var mins = Math.floor(diffMs / 60000);
+    if (mins < 60) return mins + ' min ago';
+    var hours = Math.floor(mins / 60);
+    if (hours < 24) return hours + ' hour' + (hours === 1 ? '' : 's') + ' ago';
+    var days = Math.floor(hours / 24);
+    return days + ' day' + (days === 1 ? '' : 's') + ' ago';
+  }
+
+  function renderStats(data) {
+    latestStats = data;
+    var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
+    var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
+
+    metricGrid.innerHTML = [
+      { label: 'In stock', value: inStock },
+      { label: 'Sold out', value: soldOut },
+      { label: 'Verified visitors', value: data.totalVisitors },
+      { label: 'Saree views logged', value: data.totalViews }
+    ].map(function (m) {
+      return '<div class="admin-metric-card"><p class="label">' + m.label + '</p><p class="value">' + m.value + '</p></div>';
+    }).join('');
+
+    mostViewedRows.innerHTML = data.mostViewed.length
+      ? data.mostViewed.map(function (v) {
+          return '<tr><td>' + findProductLabel(v.productId) + '</td><td>' + v.views + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="2">No views logged yet.</td></tr>';
+
+    regionsRows.innerHTML = data.regions.length
+      ? data.regions.map(function (r) {
+          return '<tr><td>' + r.country + '</td><td>' + r.count + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="2">No data yet.</td></tr>';
+
+    loginsRows.innerHTML = data.recentLogins.length
+      ? data.recentLogins.map(function (v) {
+          return '<tr><td>' + maskEmail(v.email) + '</td><td>' + timeAgo(v.verified_at) + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="2">No logins yet.</td></tr>';
+  }
+
+  function loadStats() {
+    metricGrid.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading stats...</p>';
+    fetch('/.netlify/functions/admin-get-stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not load stats.'); return; }
+        renderStats(result.data);
+      })
+      .catch(function () { showStatus('error', 'Network error loading stats.'); });
+  }
+
+  document.getElementById('admin-track-btn').addEventListener('click', function () {
+    var from = document.getElementById('admin-track-from').value;
+    var to = document.getElementById('admin-track-to').value;
+    if (!from || !to) {
+      showStatus('error', 'Please choose both a from and to date.');
+      return;
+    }
+    var url = 'https://github.com/' + GITHUB_OWNER + '/' + GITHUB_REPO + '/commits/main?since=' + from + '&until=' + to;
+    window.open(url, '_blank', 'noopener');
+  });
+
+  document.getElementById('admin-clear-views-btn').addEventListener('click', function () {
+    var days = parseInt(document.getElementById('admin-clear-days').value, 10);
+    if (!days || days < 1) {
+      showStatus('error', 'Please enter a valid number of days.');
+      return;
+    }
+    if (!confirm('Delete all view logs older than ' + days + ' days? This cannot be undone.')) return;
+
+    fetch('/.netlify/functions/admin-clear-views', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, olderThanDays: days })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not clear old views.'); return; }
+        showStatus('success', 'Cleared ' + result.data.deletedCount + ' old view log entries.');
+        loadStats();
+      })
+      .catch(function () { showStatus('error', 'Network error clearing old views.'); });
+  });
+
+  document.getElementById('admin-export-stats-btn').addEventListener('click', function () {
+    if (!latestStats) { showStatus('error', 'Stats have not loaded yet.'); return; }
+    var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
+    var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
+
+    var lines = [];
+    lines.push('Pavnika by Saranya — Stats Export');
+    lines.push('Generated: ' + new Date().toString());
+    lines.push('');
+    lines.push('In stock: ' + inStock);
+    lines.push('Sold out: ' + soldOut);
+    lines.push('Verified visitors: ' + latestStats.totalVisitors);
+    lines.push('Saree views logged: ' + latestStats.totalViews);
+    lines.push('');
+    lines.push('Most viewed sarees:');
+    latestStats.mostViewed.forEach(function (v) { lines.push('  ' + findProductLabel(v.productId) + ' — ' + v.views + ' views'); });
+    lines.push('');
+    lines.push('Visitor regions:');
+    latestStats.regions.forEach(function (r) { lines.push('  ' + r.country + ' — ' + r.count); });
+    lines.push('');
+    lines.push('Recent logins:');
+    latestStats.recentLogins.forEach(function (v) { lines.push('  ' + maskEmail(v.email) + ' — ' + (v.verified_at || '')); });
+
+    var blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pavnika-stats-' + new Date().toISOString().slice(0, 10) + '.txt';
+    a.click();
+  });
+
+  window.__refreshStats = loadStats;
+  loadStats();
 }

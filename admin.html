@@ -51,6 +51,18 @@
     width: 28px; height: 28px; cursor: pointer; font-size: 0.8rem;
   }
   .admin-banner-item .admin-banner-remove { color: #B8142A; }
+
+  .admin-metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 26px; }
+  .admin-metric-card { background: var(--ivory-deep); border-radius: 6px; padding: 14px 16px; }
+  .admin-metric-card .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.6; margin: 0 0 6px; }
+  .admin-metric-card .value { font-size: 1.3rem; font-weight: 600; color: var(--green-deep); margin: 0; }
+  .admin-stats-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 8px; }
+  .admin-stats-subheading { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 10px; }
+
+  @media (max-width: 880px) {
+    .admin-metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .admin-stats-cols { grid-template-columns: 1fr; }
+  }
   .admin-sidebar-footer {
     margin-top: auto;
     padding-top: 16px;
@@ -310,7 +322,53 @@
 
     <div class="admin-view" id="admin-view-stats" style="display:none;">
       <div class="admin-heading"><h1>Dashboard &amp; Stats</h1></div>
-      <p style="font-size:0.85rem; color:var(--ink); opacity:0.7;">Coming next — stock counts, visitor logs, most-viewed sarees, visitor regions, and exportable reports.</p>
+      <p class="admin-status-msg" id="admin-stats-status-msg"></p>
+
+      <div class="admin-metric-grid" id="admin-metric-grid"></div>
+
+      <div class="admin-stats-cols">
+        <div>
+          <h3 class="admin-stats-subheading">Most viewed sarees</h3>
+          <table class="admin-table">
+            <thead><tr><th>Saree</th><th>Views</th></tr></thead>
+            <tbody id="admin-most-viewed-rows"></tbody>
+          </table>
+        </div>
+        <div>
+          <h3 class="admin-stats-subheading">Visitor regions</h3>
+          <table class="admin-table">
+            <thead><tr><th>Country</th><th>Visitors</th></tr></thead>
+            <tbody id="admin-regions-rows"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <h3 class="admin-stats-subheading">Recent logins</h3>
+      <table class="admin-table">
+        <thead><tr><th>Email</th><th>When</th></tr></thead>
+        <tbody id="admin-logins-rows"></tbody>
+      </table>
+
+      <div class="admin-form-card">
+        <h3>Track sheet — view changes made on GitHub</h3>
+        <div class="admin-form-grid">
+          <div class="admin-field"><label>From</label><input type="date" id="admin-track-from"></div>
+          <div class="admin-field"><label>To</label><input type="date" id="admin-track-to"></div>
+        </div>
+        <button type="button" class="btn btn-primary" id="admin-track-btn">View changes on GitHub</button>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Keep the view log tidy</h3>
+        <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin-bottom:12px;">Not required at your current traffic — purely optional housekeeping.</p>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" id="admin-clear-days" value="180" min="1" style="width:90px; padding:8px 10px; border:1px solid var(--stone); border-radius:3px;">
+          <span style="font-size:0.82rem;">days and older</span>
+          <button type="button" class="btn btn-ghost" id="admin-clear-views-btn">Clear old view logs</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-ghost" id="admin-export-stats-btn">Export all stats as text file</button>
     </div>
   </div>
 </div>

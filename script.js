@@ -501,6 +501,12 @@ function buildLightbox() {
     document.getElementById('lightbox-meta').textContent =
       (product.type || '') + (product.pattern ? ' · ' + product.pattern : '') + (product.sold ? ' · Sold Out' : '');
 
+    fetch('/.netlify/functions/log-view', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: product.id })
+    }).catch(function () { /* view logging is best-effort, never blocks the popup */ });
+
     var tags = buildTags(product);
     document.getElementById('lightbox-tags').innerHTML = tags.map(function (t) {
       return '<span>' + t + '</span>';
