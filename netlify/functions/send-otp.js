@@ -81,10 +81,12 @@ exports.handler = async function (event) {
       return { statusCode: 200, body: JSON.stringify({ alreadyVerified: true }) };
     }
 
-    // Rate limiting
+    // Rate limiting — not applied to the admin email, since every admin
+    // login already requires a fresh code (never skipped), and admin
+    // needs to log in frequently during normal use/testing.
     const now = Date.now();
     let sendCount = 1;
-    if (existing && existing.last_sent_at) {
+    if (email !== ADMIN_EMAIL && existing && existing.last_sent_at) {
       const lastSent = new Date(existing.last_sent_at).getTime();
       if (now - lastSent < RATE_LIMIT_WINDOW_MS) {
         if ((existing.send_count || 0) >= RATE_LIMIT_MAX) {
