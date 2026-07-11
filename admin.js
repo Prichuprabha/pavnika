@@ -145,11 +145,19 @@ function initSareeEditor(token) {
   var form = document.getElementById('admin-product-form');
   var seriesSelect = document.getElementById('admin-f-series');
   var idField = document.getElementById('admin-f-id');
+  var idWrap = document.getElementById('admin-f-id-wrap');
   var idHint = document.getElementById('admin-id-hint');
+  var idWarning = document.getElementById('admin-id-warning');
   var imagesList = document.getElementById('admin-images-list');
   var statusMsg = document.getElementById('admin-status-msg');
   var formTitle = document.getElementById('admin-form-title');
+  var searchInput = document.getElementById('admin-search-input');
+  var paginationEl = document.getElementById('admin-pagination');
   var editingId = null;
+  var isAddMode = false;
+  var PAGE_SIZE = 80;
+  var currentPage = 1;
+  var searchQuery = '';
 
   function seriesTitle(code) {
     return code.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
@@ -162,9 +170,36 @@ function initSareeEditor(token) {
     seriesSelect.appendChild(opt);
   });
 
-  function renderTable() {
+  function getFilteredProducts() {
+    var q = searchQuery.trim().toLowerCase();
     var products = window.PRODUCTS || [];
-    rowsEl.innerHTML = products.map(function (p) {
+    if (!q) return products;
+    var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
+    return products.filter(function (p) {
+      return fields.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
+    });
+  }
+
+  function renderPagination(totalItems) {
+    var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
+
+    var buttons = [];
+    buttons.push('<button type="button" class="admin-page-btn" data-page="' + (currentPage - 1) + '"' + (currentPage === 1 ? ' disabled' : '') + '>&lsaquo;</button>');
+    for (var i = 1; i <= totalPages; i++) {
+      buttons.push('<button type="button" class="admin-page-btn' + (i === currentPage ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>');
+    }
+    buttons.push('<button type="button" class="admin-page-btn" data-page="' + (currentPage + 1) + '"' + (currentPage === totalPages ? ' disabled' : '') + '>&rsaquo;</button>');
+    paginationEl.innerHTML = buttons.join('');
+  }
+
+  function renderTable() {
+    var filtered = getFilteredProducts();
+    var start = (currentPage - 1) * PAGE_SIZE;
+    var pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+    rowsEl.innerHTML = pageItems.map(function (p) {
       return (
         '<tr class="' + (p.sold ? 'is-sold' : '') + '">' +
           '<td>' + p.id + '</td>' +
@@ -175,7 +210,24 @@ function initSareeEditor(token) {
         '</tr>'
       );
     }).join('');
+
+    renderPagination(filtered.length);
   }
+
+  searchInput.addEventListener('input', function () {
+    searchQuery = searchInput.value;
+    currentPage = 1;
+    renderTable();
+  });
+
+  paginationEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.admin-page-btn');
+    if (!btn || btn.disabled) return;
+    var target = parseInt(btn.getAttribute('data-page'), 10);
+    if (!target || target === currentPage) return;
+    currentPage = target;
+    renderTable();
+  });
 
   function addImageRow(value) {
     var row = document.createElement('div');
@@ -185,15 +237,18 @@ function initSareeEditor(token) {
     imagesList.appendChild(row);
   }
 
-  function updateIdPreview() {
+  function checkIdDuplicate() {
+    if (!isAddMode) return;
+    var typed = idField.value.trim().toUpperCase();
+    var exists = typed && (window.PRODUCTS || []).some(function (p) { return p.id.toUpperCase() === typed; });
+    idWarning.style.display = exists ? 'block' : 'none';
+    idWrap.classList.toggle('has-duplicate', !!exists);
+  }
+
+  function updateIdSuggestion() {
     var series = seriesSelect.value;
     var code = SERIES_CODES[series];
-    if (editingId) return; // don't regenerate when editing an existing saree
-    if (!code) {
-      idField.value = '';
-      idHint.textContent = '';
-      return;
-    }
+    if (!isAddMode || !code) return;
     var products = window.PRODUCTS || [];
     var highest = 0;
     products.forEach(function (p) {
@@ -204,19 +259,26 @@ function initSareeEditor(token) {
     });
     var next = String(highest + 1).padStart(3, '0');
     idField.value = code + next;
-    idHint.textContent = code + ' = ' + seriesTitle(series) + ', ' + next + ' = next free number in that series.';
+    idHint.textContent = 'Suggested: ' + code + ' = ' + seriesTitle(series) + ', ' + next + ' = next free number. You can type your own ID instead if you prefer.';
+    checkIdDuplicate();
   }
 
-  seriesSelect.addEventListener('change', updateIdPreview);
+  seriesSelect.addEventListener('change', updateIdSuggestion);
+  idField.addEventListener('input', checkIdDuplicate);
 
   function resetForm() {
     editingId = null;
+    isAddMode = true;
     formTitle.textContent = 'Add New Saree';
     form.reset();
+    idField.readOnly = false;
+    idWrap.classList.remove('readonly');
+    idWarning.style.display = 'none';
+    idWrap.classList.remove('has-duplicate');
     imagesList.innerHTML = '';
     addImageRow('');
     seriesSelect.selectedIndex = 0;
-    updateIdPreview();
+    updateIdSuggestion();
   }
 
   function openFormForAdd() {
@@ -229,9 +291,14 @@ function initSareeEditor(token) {
     var product = (window.PRODUCTS || []).find(function (p) { return p.id === id; });
     if (!product) return;
     editingId = id;
+    isAddMode = false;
     formTitle.textContent = 'Edit Saree — ' + id;
     seriesSelect.value = product.series;
     idField.value = product.id;
+    idField.readOnly = true;
+    idWrap.classList.add('readonly');
+    idWarning.style.display = 'none';
+    idWrap.classList.remove('has-duplicate');
     idHint.textContent = 'Editing an existing saree — ID stays fixed.';
     document.getElementById('admin-f-category').value = product.category || 'Budget';
     document.getElementById('admin-f-type').value = product.type || '';
@@ -306,6 +373,18 @@ function initSareeEditor(token) {
     var saveBtn = document.getElementById('admin-save-btn');
     var images = Array.from(imagesList.querySelectorAll('input')).map(function (i) { return i.value.trim(); }).filter(Boolean);
 
+    if (isAddMode) {
+      checkIdDuplicate();
+      if (idWrap.classList.contains('has-duplicate')) {
+        showStatus('error', 'That ID is already in use — please choose a different one before saving.');
+        return;
+      }
+      if (!idField.value.trim()) {
+        showStatus('error', 'Please provide an ID (or select a series to auto-generate one).');
+        return;
+      }
+    }
+
     var productData = {
       series: seriesSelect.value,
       category: document.getElementById('admin-f-category').value,
@@ -325,6 +404,7 @@ function initSareeEditor(token) {
       productData.id = editingId;
     } else {
       action = 'add';
+      productData.id = idField.value.trim().toUpperCase();
       productData.seriesCode = SERIES_CODES[seriesSelect.value];
     }
 

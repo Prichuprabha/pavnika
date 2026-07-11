@@ -116,15 +116,27 @@ exports.handler = async function (event) {
     var savedProduct;
 
     if (action === 'add') {
-      var seriesCode = productInput.seriesCode || SERIES_CODES[productInput.series];
-      if (!seriesCode) {
-        return { statusCode: 400, body: JSON.stringify({ error: 'Unknown series — please provide a 2-letter series code.' }) };
+      var suppliedId = productInput.id && String(productInput.id).trim().toUpperCase();
+      var finalId;
+
+      if (suppliedId) {
+        var duplicate = products.some(function (p) { return p.id.toUpperCase() === suppliedId; });
+        if (duplicate) {
+          return { statusCode: 409, body: JSON.stringify({ error: `ID ${suppliedId} already exists. Choose a different one.` }) };
+        }
+        finalId = suppliedId;
+      } else {
+        var seriesCode = productInput.seriesCode || SERIES_CODES[productInput.series];
+        if (!seriesCode) {
+          return { statusCode: 400, body: JSON.stringify({ error: 'Unknown series — please provide a 2-letter series code.' }) };
+        }
+        finalId = nextIdForSeries(products, seriesCode);
       }
-      var newId = nextIdForSeries(products, seriesCode);
-      savedProduct = Object.assign({}, productInput, { id: newId });
+
+      savedProduct = Object.assign({}, productInput, { id: finalId });
       delete savedProduct.seriesCode;
       products.push(savedProduct);
-      commitMessage = `Admin: add saree ${newId}`;
+      commitMessage = `Admin: add saree ${finalId}`;
     } else if (action === 'edit') {
       var idx = products.findIndex(function (p) { return p.id === productInput.id; });
       if (idx === -1) {

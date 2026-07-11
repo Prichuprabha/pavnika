@@ -48,8 +48,24 @@
     font-size: 11px; padding: 7px 12px; border-radius: 3px; cursor: pointer; width: 100%;
   }
   .admin-main { flex: 1; padding: 28px 36px; max-width: 980px; }
-  .admin-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-  .admin-heading h1 { font-size: 1.3rem; margin: 0; }
+  .admin-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
+  .admin-heading h1 { font-size: 1.3rem; margin: 0; flex-shrink: 0; }
+  .admin-search-input {
+    flex: 1; max-width: 320px; box-sizing: border-box; padding: 9px 14px; border: 1px solid var(--stone);
+    border-radius: 999px; font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+  }
+  .admin-search-input:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--green); }
+
+  .admin-pagination { display: flex; justify-content: center; gap: 6px; margin: -8px 0 24px; flex-wrap: wrap; }
+  .admin-page-btn {
+    min-width: 32px; height: 32px; border: 1px solid var(--stone); background: var(--ivory);
+    border-radius: 3px; font-size: 0.78rem; cursor: pointer;
+  }
+  .admin-page-btn.active { background: var(--green); border-color: var(--green); color: var(--ivory); }
+  .admin-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .admin-id-warning { font-size: 0.72rem; color: #B8142A; margin: -6px 0 12px; font-weight: 600; }
+  #admin-f-id-wrap.has-duplicate input { border-color: #B8142A; }
 
   .admin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--stone); border-radius: 6px; overflow: hidden; margin-bottom: 26px; font-size: 0.82rem; }
   .admin-table th { background: var(--ivory-deep); text-align: left; padding: 9px 12px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); opacity: 0.7; }
@@ -133,6 +149,7 @@
   <div class="admin-main">
     <div class="admin-heading">
       <h1>Saree Editor</h1>
+      <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Search by ID, design, series...">
       <span class="btn btn-primary" id="admin-add-new-btn" style="cursor:pointer;">+ Add New Saree</span>
     </div>
 
@@ -145,6 +162,8 @@
       <tbody id="admin-product-rows"></tbody>
     </table>
 
+    <div class="admin-pagination" id="admin-pagination"></div>
+
     <div class="admin-form-card" id="admin-form-card" style="display:none;">
       <h3 id="admin-form-title">Add New Saree</h3>
       <form id="admin-product-form">
@@ -153,12 +172,13 @@
             <label>Series</label>
             <select id="admin-f-series"></select>
           </div>
-          <div class="admin-field readonly">
+          <div class="admin-field" id="admin-f-id-wrap">
             <label>ID</label>
-            <input type="text" id="admin-f-id" readonly placeholder="Generated on save">
+            <input type="text" id="admin-f-id" placeholder="Generated on save, or type your own">
           </div>
         </div>
         <p class="admin-id-hint" id="admin-id-hint"></p>
+        <p class="admin-id-warning" id="admin-id-warning" style="display:none;">This ID already exists — choose a different one.</p>
 
         <div class="admin-form-grid">
           <div class="admin-field">
