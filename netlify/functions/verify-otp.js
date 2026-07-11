@@ -18,10 +18,14 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 function getCountryFromEvent(event) {
   try {
     var header = event.headers && (event.headers['x-nf-geo'] || event.headers['X-NF-Geo']);
+    console.log('DEBUG geo header present:', !!header);
+    console.log('DEBUG all header keys:', event.headers ? Object.keys(event.headers).join(', ') : 'none');
     if (!header) return null;
     var geo = JSON.parse(Buffer.from(header, 'base64').toString('utf-8'));
+    console.log('DEBUG decoded geo:', JSON.stringify(geo));
     return (geo.country && geo.country.name) || null;
   } catch (e) {
+    console.log('DEBUG geo decode error:', e.message);
     return null;
   }
 }
