@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Pavnika by Saranya</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  body.admin-body { background: var(--ivory-deep); min-height: 100vh; }
+  .admin-shell { display: flex; min-height: 100vh; }
+  .admin-sidebar {
+    width: 210px;
+    background: var(--green-deep);
+    padding: 24px 18px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-sidebar .brand-text {
+    font-family: var(--display);
+    color: var(--ivory);
+    font-size: 15px;
+    margin-bottom: 28px;
+    display: block;
+  }
+  .admin-nav-item {
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--ivory);
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .admin-nav-item.active { background: var(--gold-light); color: var(--green-deep); opacity: 1; font-weight: 600; }
+  .admin-sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(250,247,239,0.15);
+  }
+  .admin-sidebar-footer p { font-size: 10px; color: var(--gold-light); opacity: 0.8; margin: 0 0 2px; }
+  .admin-sidebar-footer .admin-email { font-size: 11px; color: var(--ivory); margin: 0 0 10px; word-break: break-all; }
+  .admin-logout-btn {
+    background: none; border: 1px solid rgba(250,247,239,0.3); color: var(--ivory);
+    font-size: 11px; padding: 7px 12px; border-radius: 3px; cursor: pointer; width: 100%;
+  }
+  .admin-main { flex: 1; padding: 28px 36px; max-width: 980px; }
+  .admin-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+  .admin-heading h1 { font-size: 1.3rem; margin: 0; }
+
+  .admin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--stone); border-radius: 6px; overflow: hidden; margin-bottom: 26px; font-size: 0.82rem; }
+  .admin-table th { background: var(--ivory-deep); text-align: left; padding: 9px 12px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); opacity: 0.7; }
+  .admin-table td { padding: 9px 12px; border-top: 1px solid var(--stone); vertical-align: middle; }
+  .admin-table tr.is-sold td { opacity: 0.55; }
+  .admin-edit-link { color: var(--gold); cursor: pointer; font-weight: 600; }
+  .admin-delete-link { color: #B8142A; cursor: pointer; font-weight: 600; }
+  .admin-sold-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #f3e3e3; color: #a33; }
+  .admin-avail-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #e6efe2; color: var(--green); }
+
+  .admin-form-card { border: 1px solid var(--green); border-radius: 6px; padding: 20px 24px; background: var(--ivory); margin-bottom: 20px; }
+  .admin-form-card h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; }
+  .admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .admin-field label { font-size: 0.7rem; color: var(--ink); opacity: 0.7; display: block; margin-bottom: 4px; }
+  .admin-field input, .admin-field select, .admin-field textarea {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--stone);
+    border-radius: 3px; font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+  }
+  .admin-field.readonly input { background: var(--ivory-deep); color: var(--green-deep); font-weight: 600; border-style: dashed; }
+  .admin-id-hint { font-size: 0.7rem; color: var(--ink); opacity: 0.55; margin: -6px 0 12px; }
+  .admin-images-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .admin-images-list input { flex: 1; }
+  .admin-image-row { display: flex; gap: 6px; align-items: center; }
+  .admin-image-row button { flex-shrink: 0; background: none; border: 1px solid var(--stone); border-radius: 3px; cursor: pointer; padding: 6px 10px; font-size: 0.75rem; }
+  .admin-checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .admin-checkbox-row label { font-size: 0.8rem; }
+
+  .admin-status-msg { padding: 12px 16px; border-radius: 4px; font-size: 0.82rem; margin-bottom: 20px; display: none; }
+  .admin-status-msg.success { background: #eaf3de; color: #27500a; display: block; }
+  .admin-status-msg.error { background: #fcebeb; color: #791f1f; display: block; }
+  .admin-status-msg a { color: inherit; text-decoration: underline; }
+
+  @media (max-width: 880px) {
+    .admin-shell { flex-direction: column; }
+    .admin-sidebar { width: auto; flex-direction: row; align-items: center; gap: 16px; overflow-x: auto; }
+    .admin-sidebar .brand-text { margin-bottom: 0; }
+    .admin-sidebar-footer { display: none; }
+    .admin-form-grid { grid-template-columns: 1fr; }
+    .admin-main { padding: 20px; }
+  }
+</style>
+</head>
+<body class="admin-body login-page">
+
+<div class="login-bg" id="admin-login-bg" aria-hidden="true"></div>
+<div class="login-wrap" id="admin-login-wrap">
+  <div class="gate-card" id="admin-login-form">
+    <img src="assets/logo.png" alt="Pavnika by Saranya" class="gate-logo">
+    <div id="admin-step-details">
+      <h2>Admin Sign In</h2>
+      <p>This area is restricted. Enter the admin email to continue.</p>
+      <div class="field"><label>Email</label><input type="email" id="admin-gate-email" autocomplete="email"></div>
+      <div class="field"><label>Mobile Number</label><input type="tel" id="admin-gate-phone" autocomplete="tel"></div>
+      <button type="button" id="admin-send-btn" class="btn btn-primary">Send Verification Code</button>
+      <p class="gate-error" id="admin-error-1"></p>
+    </div>
+    <div id="admin-step-code" style="display:none;">
+      <h2>Enter Verification Code</h2>
+      <p>We sent a 4-digit code to your email — it expires in 10 minutes.</p>
+      <input type="text" id="admin-gate-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+      <button type="button" id="admin-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>
+      <p class="gate-error" id="admin-error-2"></p>
+    </div>
+  </div>
+</div>
+
+<div class="admin-shell" id="admin-shell" style="display:none;">
+  <div class="admin-sidebar">
+    <span class="brand-text">Pavnika Admin</span>
+    <div class="admin-nav-item">Dashboard &amp; Stats</div>
+    <div class="admin-nav-item active">Saree Editor</div>
+    <div class="admin-nav-item">Reviews</div>
+    <div class="admin-nav-item">Banners</div>
+    <div class="admin-sidebar-footer">
+      <p>Signed in as</p>
+      <p class="admin-email" id="admin-email-display">&nbsp;</p>
+      <button type="button" class="admin-logout-btn" id="admin-logout-btn">Logout</button>
+    </div>
+  </div>
+
+  <div class="admin-main">
+    <div class="admin-heading">
+      <h1>Saree Editor</h1>
+      <span class="btn btn-primary" id="admin-add-new-btn" style="cursor:pointer;">+ Add New Saree</span>
+    </div>
+
+    <p class="admin-status-msg" id="admin-status-msg"></p>
+
+    <table class="admin-table">
+      <thead>
+        <tr><th>ID</th><th>Design / Series</th><th>Category</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody id="admin-product-rows"></tbody>
+    </table>
+
+    <div class="admin-form-card" id="admin-form-card" style="display:none;">
+      <h3 id="admin-form-title">Add New Saree</h3>
+      <form id="admin-product-form">
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Series</label>
+            <select id="admin-f-series"></select>
+          </div>
+          <div class="admin-field readonly">
+            <label>ID</label>
+            <input type="text" id="admin-f-id" readonly placeholder="Generated on save">
+          </div>
+        </div>
+        <p class="admin-id-hint" id="admin-id-hint"></p>
+
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Category</label>
+            <select id="admin-f-category">
+              <option>Budget</option>
+              <option>Mid Range</option>
+              <option>Premium</option>
+              <option>Bridal</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label>Type (weave)</label>
+            <input type="text" id="admin-f-type" placeholder="e.g. Kanchipuram">
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Saree Type (colour)</label>
+            <input type="text" id="admin-f-sareeType" placeholder="e.g. Light Violet with red border">
+          </div>
+          <div class="admin-field">
+            <label>Pattern</label>
+            <input type="text" id="admin-f-pattern" placeholder="e.g. Floral Pattern">
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Design</label>
+            <input type="text" id="admin-f-design" placeholder="e.g. Traditional">
+          </div>
+          <div class="admin-field">
+            <label>Price (AED, internal only)</label>
+            <input type="number" id="admin-f-price" placeholder="e.g. 990">
+          </div>
+        </div>
+
+        <div class="admin-checkbox-row">
+          <input type="checkbox" id="admin-f-sold">
+          <label for="admin-f-sold">Sold out</label>
+        </div>
+
+        <label style="font-size:0.7rem; color:var(--ink); opacity:0.7; display:block; margin-bottom:6px;">Image URLs</label>
+        <div class="admin-images-list" id="admin-images-list"></div>
+        <button type="button" class="btn btn-ghost" id="admin-add-image-btn" style="margin-bottom:16px;">+ Add image URL</button>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn btn-primary" id="admin-save-btn">Save to GitHub</button>
+          <button type="button" class="btn btn-ghost" id="admin-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="products-data.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>

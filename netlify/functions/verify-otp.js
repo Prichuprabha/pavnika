@@ -4,6 +4,10 @@
 // - Checks the code against Supabase.
 // - If it matches and hasn't expired, marks the visitor as verified
 //   and returns { verified: true }.
+// - If the verifying email is the admin email, also returns a signed
+//   adminToken the admin panel uses to authenticate write requests.
+
+const { ADMIN_EMAIL, signAdminToken } = require('./_admin-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -57,7 +61,9 @@ exports.handler = async function (event) {
     }
 
     if (record.verified) {
-      return { statusCode: 200, body: JSON.stringify({ verified: true }) };
+      var alreadyResponse = { verified: true };
+      if (email === ADMIN_EMAIL) alreadyResponse.adminToken = signAdminToken(email);
+      return { statusCode: 200, body: JSON.stringify(alreadyResponse) };
     }
 
     if (!record.otp_code || record.otp_code !== code) {
@@ -79,7 +85,11 @@ exports.handler = async function (event) {
       })
     });
 
-    return { statusCode: 200, body: JSON.stringify({ verified: true }) };
+    return { statusCode: 200, body: JSON.stringify(
+      email === ADMIN_EMAIL
+        ? { verified: true, adminToken: signAdminToken(email) }
+        : { verified: true }
+    ) };
   } catch (err) {
     console.error(err);
     return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong. Please try again.' }) };

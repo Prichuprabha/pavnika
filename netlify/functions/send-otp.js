@@ -3,9 +3,15 @@
 // POST { email, phone }
 // - If this email is already verified in Supabase, responds immediately
 //   with { alreadyVerified: true } and sends no email.
+// - Exception: the admin email always gets a fresh code, even if
+//   previously verified — admin sessions must be re-proven each time,
+//   never skipped, since a skipped check would let anyone who simply
+//   knows the admin email obtain an admin session.
 // - Otherwise generates a 4-digit code, stores it (with a 10-minute
 //   expiry) in Supabase, and emails it via Resend.
 // - Rate limited to 5 sends per email per rolling hour.
+
+const { ADMIN_EMAIL } = require('./_admin-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -71,7 +77,7 @@ exports.handler = async function (event) {
     const existing = existingRows[0];
 
     // Already verified before — no need to send a code at all.
-    if (existing && existing.verified) {
+    if (existing && existing.verified && email !== ADMIN_EMAIL) {
       return { statusCode: 200, body: JSON.stringify({ alreadyVerified: true }) };
     }
 
