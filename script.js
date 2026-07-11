@@ -970,8 +970,17 @@ function initAccountMenu() {
   if (!accountBtn || !dropdown) return;
 
   var email = gateGetCookie('pavnika_email');
+  var decodedEmail = email ? decodeURIComponent(email) : '';
   if (emailEl) {
-    emailEl.textContent = email ? decodeURIComponent(email) : 'Guest';
+    emailEl.textContent = decodedEmail || 'Guest';
+  }
+
+  if (decodedEmail === 'pavnikabysaranya@gmail.com') {
+    var adminLink = document.createElement('a');
+    adminLink.href = 'admin.html';
+    adminLink.className = 'account-admin-link';
+    adminLink.textContent = 'Admin Panel';
+    dropdown.insertBefore(adminLink, dropdown.querySelector('.account-divider'));
   }
 
   accountBtn.addEventListener('click', function (e) {

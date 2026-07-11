@@ -222,6 +222,15 @@ nav.main-nav a.active {
   word-break: break-all;
 }
 .account-divider { height: 1px; background: var(--stone); margin-bottom: 12px; }
+.account-admin-link {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--green);
+  text-decoration: none;
+  margin-bottom: 12px;
+}
+.account-admin-link:hover { color: var(--gold); }
 .account-logout {
   background: none;
   border: none;
