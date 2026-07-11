@@ -833,6 +833,11 @@ footer.site-footer {
   margin-bottom: 28px;
 }
 .collections-search-row { margin-bottom: 24px; }
+.collections-search-row .search-input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
 
 /* Toolbar row: results count + hide-sold-out toggle */
 .filter-toolbar {
