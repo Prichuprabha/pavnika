@@ -133,8 +133,19 @@ exports.handler = async function (event) {
         finalId = nextIdForSeries(products, seriesCode);
       }
 
-      savedProduct = Object.assign({}, productInput, { id: finalId });
-      delete savedProduct.seriesCode;
+      savedProduct = {
+        id: finalId,
+        series: productInput.series,
+        category: productInput.category,
+        type: productInput.type,
+        sareeType: productInput.sareeType,
+        pattern: productInput.pattern,
+        design: productInput.design,
+        price: productInput.price,
+        sold: productInput.sold,
+        images: productInput.images,
+        image: productInput.image
+      };
       products.push(savedProduct);
       commitMessage = `Admin: add saree ${finalId}`;
     } else if (action === 'edit') {
