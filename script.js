@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
   initLoginPage();
   initReviewsMarquee();
+  initFaqAccordion();
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -186,7 +187,7 @@ function initCollectionsPage() {
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
   var PAGE_SIZE = 16;
-  var state = { category: 'all', series: 'all', hideSold: false, page: 1 };
+  var state = { category: 'all', series: 'all', showSold: false, page: 1 };
   var countEl = document.getElementById('results-count');
   var noResults = document.getElementById('no-results');
   var paginationEl = document.getElementById('pagination');
@@ -198,7 +199,7 @@ function initCollectionsPage() {
     return window.PRODUCTS.filter(function (p) {
       var okCat = state.category === 'all' || p.category === state.category;
       var okSeries = state.series === 'all' || p.series === state.series;
-      var okSold = !state.hideSold || !p.sold;
+      var okSold = state.showSold || !p.sold;
       return okCat && okSeries && okSold;
     });
   }
@@ -330,7 +331,7 @@ function initCollectionsPage() {
 
   if (hideSoldToggle) {
     hideSoldToggle.addEventListener('change', function () {
-      state.hideSold = hideSoldToggle.checked;
+      state.showSold = hideSoldToggle.checked;
       state.page = 1;
       render();
     });
@@ -905,4 +906,26 @@ function initHeroBannerCarousel() {
       }
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
+}
+
+/* ---------- FAQ accordion ---------- */
+function initFaqAccordion() {
+  var items = document.querySelectorAll('.faq-item');
+  if (!items.length) return;
+
+  items.forEach(function (item) {
+    var question = item.querySelector('.faq-question');
+    var answer = item.querySelector('.faq-answer');
+    question.addEventListener('click', function () {
+      var isOpen = item.classList.contains('is-open');
+      items.forEach(function (other) {
+        other.classList.remove('is-open');
+        other.querySelector('.faq-answer').style.maxHeight = null;
+      });
+      if (!isOpen) {
+        item.classList.add('is-open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
 }

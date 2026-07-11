@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  if (getCookie('pavnika_verified') !== '1') {
+    window.location.replace('index.html');
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Methods — Pavnika by Saranya</title>
+<meta name="description" content="Payment options available at Pavnika by Saranya, including Tabby installments, bank transfer, card, and cash on delivery.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-row">
+    <a href="home.html" class="brand">
+      <img src="assets/logo.png" alt="Pavnika by Saranya logo">
+      <span class="brand-text">Pavnika <small>by Saranya</small></span>
+    </a>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+    <nav class="main-nav">
+      <a href="home.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="collections.html">Collections</a>
+      <a href="contact.html">Contact</a>
+      <a href="contact.html" class="nav-cta">Book a Viewing</a>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Customer Care</span>
+    <h1>Payment Methods</h1>
+  </div>
+</section>
+
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="legal-content">
+
+      <span class="updated-date">Last updated: July 2026</span>
+
+      <p>We currently confirm and finalize all payments directly with you, via WhatsApp or in person, once your saree is selected. The following payment options are available:</p>
+
+      <div class="payment-grid">
+        <div class="payment-card">
+          <h3>Pay in Installments (Tabby)</h3>
+          <p>Split your payment into easy, interest-free installments with Tabby — shop now, pay over time.</p>
+        </div>
+        <div class="payment-card">
+          <h3>Bank Transfer</h3>
+          <p>Transfer directly from your bank account — safe, secure, and straightforward.</p>
+        </div>
+        <div class="payment-card">
+          <h3>Credit / Debit Card</h3>
+          <p>Pay instantly with your card — quick, convenient, and completely secure.</p>
+        </div>
+        <div class="payment-card">
+          <h3>Cash on Delivery</h3>
+          <p>See your saree and love it first — pay upon receipt, with complete confidence.</p>
+        </div>
+      </div>
+
+      <p style="margin-top:24px;"><em>Note: Direct online checkout through this website is not yet available — see "Future Online Payments" in our <a href="terms.html">Terms &amp; Conditions</a>. Payment is arranged once your order is confirmed.</em></p>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Pavnika by Saranya logo">
+          <span>Pavnika by Saranya</span>
+        </div>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="collections.html">Collections</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reach Us</h4>
+        <p>Dubai based online boutique<br>By appointment</p>
+        <p>+971 52 66 30307<br>Instagram &amp; Facebook: @pavnikabysaranya</p>
+      </div>
+    </div>
+    <div class="footer-grid footer-grid-legal">
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy &amp; Cookies Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Customer Care</h4>
+        <ul>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="payment.html">Payment Methods</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Shipping &amp; Returns</h4>
+        <ul>
+          <li><a href="shipping.html">Shipping &amp; Delivery</a></li>
+          <li><a href="returns.html">Returns &amp; Exchange Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Pavnika by Saranya. All sarees shown are illustrative of collection style.</span>
+      <span>Handwoven in Kancheepuram. Curated in Dubai.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
