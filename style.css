@@ -96,10 +96,23 @@ header.site-header {
 .nav-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 20px 32px;
   max-width: var(--max);
   margin: 0 auto;
+}
+
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 24px;
+}
+
+.main-nav { margin-left: auto; }
+
+@media (max-width: 880px) {
+  .nav-controls { margin-left: auto; }
+  .main-nav { margin-left: 0; }
 }
 
 .brand {
