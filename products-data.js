@@ -295,7 +295,7 @@ window.PRODUCTS = [
     "pattern": "Gold Floral Pattern",
     "design": "Traditional",
     "price": 790,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YIQhh0nRh8y3rOcZQbha.jpg",
@@ -437,7 +437,7 @@ window.PRODUCTS = [
     "pattern": "Mango Motif Pattern",
     "design": "Vintage",
     "price": 760,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/b6JZkVwy5Z5m9QH7JIHP.jpg",
@@ -749,7 +749,7 @@ window.PRODUCTS = [
     "pattern": "Lines Pattern",
     "design": "Traditional",
     "price": 250,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H66wOTdFZ4KpLd1TEOkk.png",
@@ -817,7 +817,7 @@ window.PRODUCTS = [
     "pattern": "ZigZag Lines",
     "design": "Modern",
     "price": 390,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MrhN5T3eM1DRLR7D94my.jpg",
@@ -1079,7 +1079,7 @@ window.PRODUCTS = [
     "pattern": "Floral",
     "design": "Modern",
     "price": 285,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XQ5buBbFIz7D2bUVFolg.jpg",
@@ -1338,7 +1338,7 @@ window.PRODUCTS = [
     "pattern": "Golden Buttas",
     "design": "Traditional",
     "price": 390,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bae64N95fOeEfiWMQItu.jpg",
@@ -1672,7 +1672,7 @@ window.PRODUCTS = [
     "pattern": "Leaves Pattern",
     "design": "Traditional",
     "price": 340,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9WHEJPqZeduklvs7121C.jpg",
