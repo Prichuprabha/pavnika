@@ -34,10 +34,33 @@
       <a href="about.html">About</a>
       <a href="collections.html">Collections</a>
       <a href="contact.html">Contact</a>
+      <button type="button" class="nav-icon-btn" id="nav-search-btn" aria-label="Search sarees">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="nav-account">
+        <button type="button" class="nav-icon-btn" id="nav-account-btn" aria-label="Account">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        </button>
+        <div class="account-dropdown" id="account-dropdown">
+          <p class="account-label">Signed in as</p>
+          <p class="account-email" id="account-email">&nbsp;</p>
+          <div class="account-divider"></div>
+          <button type="button" class="account-logout" id="account-logout">Logout</button>
+        </div>
+      </div>
       <a href="contact.html" class="nav-cta">Book a Viewing</a>
     </nav>
   </div>
 </header>
+<div class="search-panel" id="search-panel">
+  <div class="search-panel-inner">
+    <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
+    <input type="text" id="search-input" class="search-input" placeholder="Search sarees by design, pattern, series..." autocomplete="off">
+    <div class="search-results" id="search-results"></div>
+    <p class="search-empty" id="search-empty" style="display:none;">No sarees match your search.</p>
+  </div>
+</div>
+
 
 <section class="page-hero">
   <div class="container">
@@ -159,6 +182,7 @@
   </div>
 </footer>
 
+<script src="products-data.js"></script>
 <script src="script.js"></script>
 </body>
 </html>

@@ -2,6 +2,9 @@ document.addEventListener('DOMContentLoaded', function () {
   initLoginPage();
   initReviewsMarquee();
   initFaqAccordion();
+  buildLightbox();
+  initAccountMenu();
+  initSearchPanel();
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -652,6 +655,7 @@ function initLoginPage() {
 
   function unlockSite() {
     gateSetCookie('pavnika_verified', '1', 90);
+    gateSetCookie('pavnika_email', encodeURIComponent(gateEmail), 90);
     window.location.href = 'home.html';
   }
 
@@ -928,4 +932,122 @@ function initFaqAccordion() {
       }
     });
   });
+}
+
+/* ---------- Account menu (top-right dropdown) ---------- */
+function initAccountMenu() {
+  var accountBtn = document.getElementById('nav-account-btn');
+  var dropdown = document.getElementById('account-dropdown');
+  var emailEl = document.getElementById('account-email');
+  var logoutBtn = document.getElementById('account-logout');
+  if (!accountBtn || !dropdown) return;
+
+  var email = gateGetCookie('pavnika_email');
+  if (emailEl) {
+    emailEl.textContent = email ? decodeURIComponent(email) : 'Guest';
+  }
+
+  accountBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    dropdown.classList.toggle('is-open');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!dropdown.contains(e.target) && e.target !== accountBtn) {
+      dropdown.classList.remove('is-open');
+    }
+  });
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', function () {
+      gateSetCookie('pavnika_verified', '', -1);
+      gateSetCookie('pavnika_email', '', -1);
+      window.location.href = 'index.html';
+    });
+  }
+}
+
+/* ---------- Site-wide saree search (frosted-glass panel) ---------- */
+function initSearchPanel() {
+  var searchBtn = document.getElementById('nav-search-btn');
+  var panel = document.getElementById('search-panel');
+  var closeBtn = document.getElementById('search-close');
+  var input = document.getElementById('search-input');
+  var resultsWrap = document.getElementById('search-results');
+  var emptyMsg = document.getElementById('search-empty');
+  if (!searchBtn || !panel) return;
+
+  function openPanel() {
+    var header = document.querySelector('.site-header');
+    var top = header ? header.getBoundingClientRect().bottom : 0;
+    panel.style.top = top + 'px';
+    panel.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(function () { input.focus(); }, 50);
+  }
+
+  function closePanel() {
+    panel.classList.remove('is-open');
+    document.body.style.overflow = '';
+    input.value = '';
+    resultsWrap.innerHTML = '';
+    emptyMsg.style.display = 'none';
+  }
+
+  searchBtn.addEventListener('click', openPanel);
+  closeBtn.addEventListener('click', closePanel);
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && panel.classList.contains('is-open')) closePanel();
+  });
+
+  function renderResults(query) {
+    if (typeof window.PRODUCTS === 'undefined') return;
+    var q = query.trim().toLowerCase();
+    resultsWrap.innerHTML = '';
+    if (!q) {
+      emptyMsg.style.display = 'none';
+      return;
+    }
+
+    var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
+    var matches = window.PRODUCTS.filter(function (p) {
+      return fields.some(function (f) {
+        return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
+      });
+    }).slice(0, 30);
+
+    emptyMsg.style.display = matches.length ? 'none' : 'block';
+
+    matches.forEach(function (p) {
+      var row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'search-result-row';
+
+      var img = document.createElement('img');
+      img.src = p.image;
+      img.alt = p.design;
+      row.appendChild(img);
+
+      var info = document.createElement('div');
+      info.className = 'search-result-info';
+      var title = document.createElement('span');
+      title.className = 'r-design';
+      title.textContent = p.design + ' — ' + p.id;
+      var meta = document.createElement('span');
+      meta.className = 'r-meta';
+      meta.textContent = p.type + ' · ' + p.pattern + ' · ' + seriesTitleCase(p.series);
+      info.appendChild(title);
+      info.appendChild(meta);
+      row.appendChild(info);
+
+      row.addEventListener('click', function () {
+        closePanel();
+        if (window.openLightbox) window.openLightbox(p);
+      });
+
+      resultsWrap.appendChild(row);
+    });
+  }
+
+  input.addEventListener('input', function () { renderResults(input.value); });
 }
