@@ -54,8 +54,10 @@
 </header>
 <div class="search-panel" id="search-panel">
   <div class="search-panel-inner">
-    <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
-    <input type="text" id="search-input" class="search-input" placeholder="Search sarees by design, pattern, series..." autocomplete="off">
+    <div class="search-input-row">
+      <input type="text" id="search-input" class="search-input" placeholder="Search by design, colour, pattern, series..." autocomplete="off">
+      <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
+    </div>
     <div class="search-results" id="search-results"></div>
     <p class="search-empty" id="search-empty" style="display:none;">No sarees match your search.</p>
   </div>

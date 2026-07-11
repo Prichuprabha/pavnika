@@ -190,20 +190,26 @@ function initCollectionsPage() {
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
   var PAGE_SIZE = 16;
-  var state = { category: 'all', series: 'all', showSold: false, page: 1 };
+  var state = { category: 'all', series: 'all', showSold: false, page: 1, query: '' };
   var countEl = document.getElementById('results-count');
   var noResults = document.getElementById('no-results');
   var paginationEl = document.getElementById('pagination');
   var hideSoldToggle = document.getElementById('hide-sold-toggle');
   var categoryGroup = document.getElementById('category-filter');
   var seriesGroup = document.getElementById('series-filter');
+  var searchInput = document.getElementById('collections-search-input');
+  var SEARCH_FIELDS = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
 
   function getFiltered() {
+    var q = state.query.trim().toLowerCase();
     return window.PRODUCTS.filter(function (p) {
       var okCat = state.category === 'all' || p.category === state.category;
       var okSeries = state.series === 'all' || p.series === state.series;
       var okSold = state.showSold || !p.sold;
-      return okCat && okSeries && okSold;
+      var okQuery = !q || SEARCH_FIELDS.some(function (f) {
+        return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
+      });
+      return okCat && okSeries && okSold && okQuery;
     });
   }
 
@@ -340,6 +346,14 @@ function initCollectionsPage() {
     });
   }
 
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      state.query = searchInput.value;
+      state.page = 1;
+      render();
+    });
+  }
+
   if (paginationEl) {
     paginationEl.addEventListener('click', function (e) {
       var btn = e.target.closest('.page-btn');
@@ -352,11 +366,14 @@ function initCollectionsPage() {
     });
   }
 
-  // Pre-set the category/series filter if arriving from a homepage link,
-  // e.g. collections.html?series=SUMANGALI or collections.html?category=Premium
+  // Pre-set the category/series/search filter if arriving from a link
+  // elsewhere on the site, e.g. collections.html?series=SUMANGALI or
+  // collections.html?q=floral&open=SU003
   var params = new URLSearchParams(window.location.search);
   var catParam = params.get('category');
   var seriesParam = params.get('series');
+  var queryParam = params.get('q');
+  var openParam = params.get('open');
 
   if (catParam && categoryGroup && categoryGroup.querySelector('.filter-btn[data-value="' + catParam.replace(/"/g, '') + '"]')) {
     state.category = catParam;
@@ -372,8 +389,18 @@ function initCollectionsPage() {
     }
   }
 
+  if (queryParam && searchInput) {
+    state.query = queryParam;
+    searchInput.value = queryParam;
+  }
+
   render();
   buildLightbox();
+
+  if (openParam) {
+    var openProduct = window.PRODUCTS.find(function (p) { return p.id === openParam; });
+    if (openProduct) window.openLightbox(openProduct);
+  }
 
   // Open the lightbox when a saree card is clicked, but not when the
   // WhatsApp enquiry link itself is clicked.
@@ -1011,6 +1038,7 @@ function initSearchPanel() {
 
     var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
     var matches = window.PRODUCTS.filter(function (p) {
+      if (p.sold) return false;
       return fields.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
       });
@@ -1041,8 +1069,8 @@ function initSearchPanel() {
       row.appendChild(info);
 
       row.addEventListener('click', function () {
-        closePanel();
-        if (window.openLightbox) window.openLightbox(p);
+        var query = input.value.trim();
+        window.location.href = 'collections.html?q=' + encodeURIComponent(query) + '&open=' + encodeURIComponent(p.id);
       });
 
       resultsWrap.appendChild(row);
