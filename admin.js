@@ -138,6 +138,7 @@ function showAdminPanel(token, email) {
   initSareeEditor(token);
   initReviewsEditor(token);
   initBannersEditor(token);
+  initVideosEditor(token);
   initStatsDashboard(token);
   initSidebarNav();
 
@@ -892,4 +893,94 @@ function initStatsDashboard(token) {
 
   window.__refreshStats = loadStats;
   loadStats();
+}
+
+/* ---------- Home page videos editor ---------- */
+function initVideosEditor(token) {
+  var listEl = document.getElementById('admin-video-list');
+  var statusMsg = document.getElementById('admin-video-status-msg');
+  var videos = [];
+
+  var ORDER_LABELS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'];
+  function orderLabel(i) { return ORDER_LABELS[i] || (i + 1) + 'th'; }
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  function renderList() {
+    listEl.innerHTML = '';
+    videos.forEach(function (filename, i) {
+      var row = document.createElement('div');
+      row.className = 'admin-video-item';
+      row.innerHTML =
+        '<div class="video-thumb">&#9654;</div>' +
+        '<div class="video-info">' + filename + ' <span class="video-order">— plays ' + orderLabel(i) + '</span></div>' +
+        '<div class="admin-banner-controls">' +
+          '<button type="button" data-action="up" title="Move up"' + (i === 0 ? ' disabled' : '') + '>&uarr;</button>' +
+          '<button type="button" data-action="down" title="Move down"' + (i === videos.length - 1 ? ' disabled' : '') + '>&darr;</button>' +
+          '<button type="button" data-action="remove" class="admin-banner-remove" title="Remove">&times;</button>' +
+        '</div>';
+      listEl.appendChild(row);
+    });
+  }
+
+  function loadVideos() {
+    fetch('assets/videos/videos.json?_=' + Date.now())
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        videos = data || [];
+        renderList();
+      })
+      .catch(function () { listEl.innerHTML = '<p>Could not load videos.</p>'; });
+  }
+
+  listEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('button[data-action]');
+    if (!btn || btn.disabled) return;
+    var row = btn.closest('.admin-video-item');
+    var idx = Array.from(listEl.children).indexOf(row);
+    var action = btn.getAttribute('data-action');
+
+    if (action === 'up' && idx > 0) {
+      var tmp = videos[idx - 1];
+      videos[idx - 1] = videos[idx];
+      videos[idx] = tmp;
+    } else if (action === 'down' && idx < videos.length - 1) {
+      var tmp2 = videos[idx + 1];
+      videos[idx + 1] = videos[idx];
+      videos[idx] = tmp2;
+    } else if (action === 'remove') {
+      videos.splice(idx, 1);
+    }
+    renderList();
+  });
+
+  document.getElementById('admin-video-refresh-btn').addEventListener('click', function () {
+    loadVideos();
+    showStatus('success', 'Reloaded the current video list from GitHub.');
+  });
+
+  document.getElementById('admin-video-save-btn').addEventListener('click', function () {
+    if (!videos.length) {
+      showStatus('error', 'At least one video is required — use Refresh to restore the list if you removed them all by mistake.');
+      return;
+    }
+
+    fetch('/.netlify/functions/admin-save-videos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, videos: videos })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Save failed.'); return; }
+        showStatus('success', 'Saved — commit <code>' + result.data.commitSha + '</code> pushed. <a href="' + result.data.commitUrl + '" target="_blank" rel="noopener">View on GitHub &rarr;</a>');
+      })
+      .catch(function () { showStatus('error', 'Network error — changes were not saved.'); });
+  });
+
+  loadVideos();
 }

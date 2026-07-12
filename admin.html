@@ -52,6 +52,18 @@
   }
   .admin-banner-item .admin-banner-remove { color: #B8142A; }
 
+  .admin-video-item {
+    display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
+    border-radius: 6px; background: var(--ivory); margin-bottom: 10px;
+  }
+  .admin-video-item .video-thumb {
+    width: 34px; height: 46px; border-radius: 3px; flex-shrink: 0;
+    background: linear-gradient(160deg, var(--green), var(--green-deep));
+    display: flex; align-items: center; justify-content: center; color: var(--gold-light); font-size: 0.8rem;
+  }
+  .admin-video-item .video-info { flex: 1; font-size: 0.82rem; }
+  .admin-video-item .video-order { color: var(--ink); opacity: 0.55; font-size: 0.76rem; }
+
   .admin-metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
   .admin-metric-card {
     background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px;
@@ -341,7 +353,18 @@
       </p>
       <button type="button" class="btn btn-ghost" id="admin-banner-refresh-btn" style="margin-bottom:20px;">Refresh from GitHub</button>
       <div id="admin-banner-list"></div>
-      <button type="button" class="btn btn-primary" id="admin-banner-save-btn" style="margin-top:16px;">Save Changes to GitHub</button>
+      <button type="button" class="btn btn-primary" id="admin-banner-save-btn" style="margin-top:16px;">Save Banner Changes to GitHub</button>
+
+      <div style="height:1px; background:var(--stone); margin:32px 0 26px;"></div>
+
+      <h1 style="font-size:1.1rem; margin-bottom:8px;">Home Page Videos</h1>
+      <p class="admin-status-msg" id="admin-video-status-msg"></p>
+      <p style="font-size:0.85rem; color:var(--ink); opacity:0.7; margin-bottom:20px; max-width:60ch;">
+        Reorder or remove the videos that loop on the homepage hero. To add a brand-new video, upload the compressed file to <code>assets/videos/</code> on GitHub first, then click "Refresh from GitHub" below to bring it into this list.
+      </p>
+      <button type="button" class="btn btn-ghost" id="admin-video-refresh-btn" style="margin-bottom:20px;">Refresh from GitHub</button>
+      <div id="admin-video-list"></div>
+      <button type="button" class="btn btn-primary" id="admin-video-save-btn" style="margin-top:16px;">Save Video Order to GitHub</button>
     </div>
 
     <div class="admin-view" id="admin-view-stats">
