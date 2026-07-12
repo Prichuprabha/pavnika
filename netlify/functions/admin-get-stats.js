@@ -1,8 +1,10 @@
 // netlify/functions/admin-get-stats.js
 //
-// POST { adminToken }
-// - Returns: recent visitor logins, visitor counts by country, and
-//   saree view counts grouped by product ID.
+// POST { adminToken, fromDate, toDate }
+// - fromDate/toDate are optional "YYYY-MM-DD" strings. When given, all
+//   stats (visitors, views, regions, logins) are limited to that range.
+//   "In stock" / "sold out" are current-state counts and are computed
+//   client-side from products-data.js, unaffected by this date range.
 // - Admin-only, same signed-token check as the other admin functions.
 
 const { verifyAdminToken } = require('./_admin-auth');
@@ -19,6 +21,13 @@ async function supabaseFetch(path) {
   });
   if (!res.ok) throw new Error(`Supabase error ${res.status}: ${await res.text()}`);
   return res.json();
+}
+
+function dateRangeFilter(column, fromDate, toDate) {
+  var parts = [];
+  if (fromDate) parts.push(`${column}=gte.${fromDate}T00:00:00`);
+  if (toDate) parts.push(`${column}=lte.${toDate}T23:59:59`);
+  return parts.length ? '&' + parts.join('&') : '';
 }
 
 exports.handler = async function (event) {
@@ -38,12 +47,19 @@ exports.handler = async function (event) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Not authorized. Please sign in again.' }) };
   }
 
+  const fromDate = body.fromDate || null;
+  const toDate = body.toDate || null;
+
   try {
     const visitors = await supabaseFetch(
-      'verified_visitors?select=email,phone,country,region,verified_at&verified=eq.true&order=verified_at.desc&limit=200'
+      'verified_visitors?select=email,phone,country,region,verified_at&verified=eq.true&order=verified_at.desc&limit=200' +
+      dateRangeFilter('verified_at', fromDate, toDate)
     );
 
-    const views = await supabaseFetch('saree_views?select=product_id,created_at&order=created_at.desc&limit=5000');
+    const views = await supabaseFetch(
+      'saree_views?select=product_id,created_at&order=created_at.desc&limit=5000' +
+      dateRangeFilter('created_at', fromDate, toDate)
+    );
 
     const viewCounts = {};
     views.forEach(function (v) {
@@ -77,7 +93,8 @@ exports.handler = async function (event) {
         totalViews: views.length,
         recentLogins: visitors.slice(0, 50),
         mostViewed: mostViewed,
-        regions: regions
+        regions: regions,
+        filtered: !!(fromDate || toDate)
       })
     };
   } catch (err) {

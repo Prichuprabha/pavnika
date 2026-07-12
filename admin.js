@@ -343,6 +343,205 @@ function initSareeEditor(token) {
   document.getElementById('admin-cancel-btn').addEventListener('click', function () { formCard.style.display = 'none'; });
   document.getElementById('admin-add-image-btn').addEventListener('click', function () { addImageRow(''); });
 
+  /* ----- CSV download ----- */
+  var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sold',
+    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Selling Cost'];
+
+  function csvEscape(val) {
+    val = val === undefined || val === null ? '' : String(val);
+    if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1 || val.indexOf('\n') !== -1) {
+      return '"' + val.replace(/"/g, '""') + '"';
+    }
+    return val;
+  }
+
+  document.getElementById('admin-download-csv-btn').addEventListener('click', function () {
+    var rows = [CSV_COLUMNS.join(',')];
+    (window.PRODUCTS || []).forEach(function (p) {
+      var images = p.images || [];
+      var row = [
+        p.id, p.series, p.category, p.type, p.sareeType, p.pattern, p.design, p.price,
+        p.sold ? 'TRUE' : 'FALSE',
+        images[0] || '', images[1] || '', images[2] || '', images[3] || '', images[4] || '', images[5] || '', images[6] || '',
+        '', ''
+      ].map(csvEscape);
+      rows.push(row.join(','));
+    });
+    var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pavnika-sarees-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+  });
+
+  /* ----- CSV bulk upload ----- */
+  var csvFileInput = document.getElementById('admin-csv-file-input');
+  var csvPreviewCard = document.getElementById('admin-csv-preview-card');
+  var csvSummary = document.getElementById('admin-csv-summary');
+  var csvPreviewList = document.getElementById('admin-csv-preview-list');
+  var pendingBulkProducts = null;
+
+  document.getElementById('admin-upload-csv-btn').addEventListener('click', function () {
+    csvFileInput.click();
+  });
+
+  function parseCsv(text) {
+    var lines = text.replace(/\r\n/g, '\n').split('\n').filter(function (l) { return l.trim().length; });
+    if (!lines.length) return [];
+
+    function parseLine(line) {
+      var result = [];
+      var cur = '';
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (inQuotes) {
+          if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (ch === '"') { inQuotes = false; }
+          else { cur += ch; }
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === ',') { result.push(cur); cur = ''; }
+          else cur += ch;
+        }
+      }
+      result.push(cur);
+      return result;
+    }
+
+    var headers = parseLine(lines[0]).map(function (h) { return h.trim(); });
+    return lines.slice(1).map(function (line) {
+      var cells = parseLine(line);
+      var obj = {};
+      headers.forEach(function (h, i) { obj[h] = (cells[i] || '').trim(); });
+      return obj;
+    });
+  }
+
+  function csvRowToProduct(row) {
+    var images = [];
+    for (var i = 1; i <= 7; i++) {
+      var url = row['Image_' + i];
+      if (url) images.push(url);
+    }
+    var soldRaw = (row['Sold'] || '').toLowerCase();
+    return {
+      id: (row['Unique ID'] || '').trim().toUpperCase(),
+      series: row['Series'] || '',
+      category: row['Category'] || '',
+      type: row['Type'] || '',
+      sareeType: row['Saree Type'] || '',
+      pattern: row['Pattern'] || '',
+      design: row['Design'] || '',
+      price: parseInt(row['Cost AED'], 10) || 0,
+      sold: soldRaw === 'true' || soldRaw === '1' || soldRaw === 'yes',
+      images: images,
+      image: images[0] || ''
+    };
+  }
+
+  csvFileInput.addEventListener('change', function () {
+    var file = csvFileInput.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var rows;
+      try {
+        rows = parseCsv(e.target.result);
+      } catch (err) {
+        showStatus('error', 'Could not read that CSV file. Please check its format.');
+        return;
+      }
+
+      if (!rows.length) {
+        showStatus('error', 'That CSV file appears to be empty.');
+        return;
+      }
+
+      var existingById = {};
+      (window.PRODUCTS || []).forEach(function (p) { existingById[p.id.toUpperCase()] = p; });
+
+      var newRows = [];
+      var editedRows = [];
+      var invalidRows = [];
+
+      rows.forEach(function (row) {
+        var product = csvRowToProduct(row);
+        if (!product.id) { invalidRows.push(row); return; }
+        if (existingById[product.id]) {
+          editedRows.push(product);
+        } else {
+          newRows.push(product);
+        }
+      });
+
+      if (invalidRows.length) {
+        showStatus('error', invalidRows.length + ' row(s) are missing a Unique ID and were skipped. Please fix and re-upload if needed.');
+      }
+
+      if (!newRows.length && !editedRows.length) {
+        showStatus('error', 'No valid rows found in that CSV.');
+        return;
+      }
+
+      // Build the final merged list: existing products not touched by the
+      // CSV stay as-is; edited ones get replaced; new ones get appended.
+      var merged = (window.PRODUCTS || []).map(function (p) {
+        var editMatch = editedRows.find(function (r) { return r.id === p.id.toUpperCase(); });
+        return editMatch || p;
+      });
+      newRows.forEach(function (r) { merged.push(r); });
+
+      pendingBulkProducts = merged;
+
+      csvSummary.textContent = newRows.length + ' new saree(s) will be added, ' + editedRows.length + ' existing saree(s) will be edited.';
+      csvPreviewList.innerHTML =
+        newRows.map(function (r) { return '<div class="admin-csv-row"><span>' + r.id + ' — ' + (r.design || '') + '</span><span class="tag new">New</span></div>'; }).join('') +
+        editedRows.map(function (r) { return '<div class="admin-csv-row"><span>' + r.id + ' — ' + (r.design || '') + '</span><span class="tag edit">Edit</span></div>'; }).join('');
+
+      csvPreviewCard.style.display = 'block';
+      csvPreviewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      csvFileInput.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('admin-csv-cancel-btn').addEventListener('click', function () {
+    pendingBulkProducts = null;
+    csvPreviewCard.style.display = 'none';
+  });
+
+  document.getElementById('admin-csv-confirm-btn').addEventListener('click', function () {
+    if (!pendingBulkProducts) return;
+    var confirmBtn = document.getElementById('admin-csv-confirm-btn');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Saving...';
+
+    fetch('/.netlify/functions/admin-bulk-save-products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, products: pendingBulkProducts })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Bulk save failed.'); return; }
+        window.PRODUCTS = pendingBulkProducts;
+        pendingBulkProducts = null;
+        csvPreviewCard.style.display = 'none';
+        renderTable();
+        showStatus('success',
+          'Saved ' + result.data.count + ' sarees — commit <code>' + result.data.commitSha + '</code> pushed to GitHub. ' +
+          '<a href="' + result.data.commitUrl + '" target="_blank" rel="noopener">View the commit on GitHub &rarr;</a>'
+        );
+      })
+      .catch(function () { showStatus('error', 'Network error — bulk changes were not saved.'); })
+      .finally(function () {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm & Save to GitHub';
+      });
+  });
+
   rowsEl.addEventListener('click', function (e) {
     var editLink = e.target.closest('.admin-edit-link');
     if (editLink) {
@@ -771,6 +970,12 @@ function initStatsDashboard(token) {
     var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
     var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
 
+    if (data.filtered) {
+      showStatus('success', 'Showing results for the selected date range.');
+    } else {
+      statusMsg.style.display = 'none';
+    }
+
     metricGrid.innerHTML =
       '<div class="admin-metric-card"><p class="label">In stock</p><p class="value">' + inStock + '</p></div>' +
       '<div class="admin-metric-card accent-red"><p class="label">Sold out</p><p class="value">' + soldOut + '</p></div>' +
@@ -815,10 +1020,12 @@ function initStatsDashboard(token) {
 
   function loadStats() {
     metricGrid.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading stats...</p>';
+    var fromDate = document.getElementById('admin-stats-from').value || null;
+    var toDate = document.getElementById('admin-stats-till').value || null;
     fetch('/.netlify/functions/admin-get-stats', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token })
+      body: JSON.stringify({ adminToken: token, fromDate: fromDate, toDate: toDate })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -827,6 +1034,22 @@ function initStatsDashboard(token) {
       })
       .catch(function () { showStatus('error', 'Network error loading stats.'); });
   }
+
+  document.getElementById('admin-stats-apply-btn').addEventListener('click', function () {
+    var from = document.getElementById('admin-stats-from').value;
+    var till = document.getElementById('admin-stats-till').value;
+    if (!from && !till) {
+      showStatus('error', 'Pick at least one date, or use "Reset to all-time" instead.');
+      return;
+    }
+    loadStats();
+  });
+
+  document.getElementById('admin-stats-reset-btn').addEventListener('click', function () {
+    document.getElementById('admin-stats-from').value = '';
+    document.getElementById('admin-stats-till').value = '';
+    loadStats();
+  });
 
   document.getElementById('admin-track-btn').addEventListener('click', function () {
     var from = document.getElementById('admin-track-from').value;
