@@ -1,5 +1,20 @@
 window.PRODUCTS = [
   {
+    "id": "VW001",
+    "series": "VALUE WEAVES",
+    "category": "Budget",
+    "type": "Semi Silk Korvai",
+    "sareeType": "Yellow and Red",
+    "pattern": "Golden Motif Pattern",
+    "design": "Traditional",
+    "price": 220,
+    "sold": true,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
+  },
+  {
     "id": "VW002",
     "series": "VALUE WEAVES",
     "category": "Budget",
@@ -1685,13 +1700,15 @@ window.PRODUCTS = [
     "price": 340,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XXkE9fSLZSgWNv8EETSQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VxSfFFxJIoTBmVZgCXBW.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17Ns1581RvL2ZHbOs1IK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7YB909xly6i8ejaQ5zxG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HqvLKq4nG1vC8FDVLB5R.jpg"
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dRygdgfKmI5QvUoxhb6w.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UOvwcz2Qx54H1kkMhWFo.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wSwst9SDc0JoCTAmScAn.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PIfUxLKFDLfQN9fzTABN.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Zl0aMfcE416JLlR6XAOK.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sSjCUAaRygwy1Zf7CXZA.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XXkE9fSLZSgWNv8EETSQ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg"
   },
   {
     "id": "BB004",
@@ -1704,14 +1721,14 @@ window.PRODUCTS = [
     "price": 340,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YUZChovKdApZFq8krLMc.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R060YPaoTP5n79UigICr.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Z9Kg0ev2VM7lJ4JGY49F.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QAlQUG9vhxbQUcLp0ZCZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zkqIrUNjXsKtYZD46rhz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZbZcFVJb5ID47H1Vxgtj.jpg"
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ELXiy7n1gPqnDdmUoSZe.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Go20ikvinMtTXzbc2L9S.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1wMZKvQhAmxpoRVtNF1K.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rPRwq8s28ykWCDC4YTpV.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9Xhj0XAy0ROwgT42puE3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YUZChovKdApZFq8krLMc.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg"
   },
   {
     "id": "BB005",
@@ -1733,20 +1750,5 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vbN7xByG71IzwZUDEdRv.jpg"
     ],
     "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg"
-  },
-  {
-    "id": "VW001",
-    "series": "VALUE WEAVES",
-    "category": "Budget",
-    "type": "Semi Silk Korvai",
-    "sareeType": "Yellow and Red",
-    "pattern": "Golden Motif Pattern",
-    "design": "Traditional",
-    "price": 220,
-    "sold": true,
-    "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
-    ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
   }
 ];
