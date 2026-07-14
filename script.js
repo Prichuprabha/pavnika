@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initSearchPanel();
   initCartDrawer();
   initCheckoutPage();
+  initOrderSuccessPage();
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -1476,7 +1477,46 @@ function initCheckoutPage() {
 
   document.getElementById('checkout-pay-online').addEventListener('click', function (e) {
     e.preventDefault();
-    alert('Online payment is launching very soon! For now, please use "Checkout via WhatsApp" below to complete your order.');
+    var payBtn = document.getElementById('checkout-pay-online');
+    var name = document.getElementById('checkout-name').value.trim();
+    var phone = document.getElementById('checkout-phone').value.trim();
+    var email = decodeURIComponent(gateGetCookie('pavnika_email') || '');
+
+    if (!name || !phone) {
+      alert('Please enter your name and mobile number before proceeding to payment.');
+      return;
+    }
+
+    payBtn.textContent = 'Starting payment...';
+    payBtn.style.pointerEvents = 'none';
+
+    var payload = {
+      items: products.map(function (p) { return { id: p.id, name: p.design + ' — ' + p.id, price: p.price }; }),
+      customer: { name: name, phone: phone, email: email },
+      discountPercent: appliedDiscount,
+      promoCode: appliedCode
+    };
+
+    fetch('/.netlify/functions/create-nomod-checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok || !result.data.url) {
+          alert(result.data.error || 'Could not start payment. Please try WhatsApp checkout instead.');
+          payBtn.textContent = 'Pay Online';
+          payBtn.style.pointerEvents = '';
+          return;
+        }
+        window.location.href = result.data.url;
+      })
+      .catch(function () {
+        alert('Network error — could not start payment. Please try WhatsApp checkout instead.');
+        payBtn.textContent = 'Pay Online';
+        payBtn.style.pointerEvents = '';
+      });
   });
 
   document.getElementById('checkout-whatsapp-btn').addEventListener('click', function () {
@@ -1490,4 +1530,61 @@ function initCheckoutPage() {
     msg += '\n\nTotal: AED ' + currentTotal().toLocaleString();
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
+}
+
+/* ---------- Order success page ---------- */
+function initOrderSuccessPage() {
+  var loadingEl = document.getElementById('order-loading');
+  var successEl = document.getElementById('order-success');
+  var pendingEl = document.getElementById('order-pending');
+  var errorEl = document.getElementById('order-error');
+  var headingEl = document.getElementById('order-status-heading');
+  if (!loadingEl) return;
+
+  var params = new URLSearchParams(window.location.search);
+  var ref = params.get('ref');
+
+  function showState(state) {
+    loadingEl.style.display = state === 'loading' ? 'block' : 'none';
+    successEl.style.display = state === 'success' ? 'block' : 'none';
+    pendingEl.style.display = state === 'pending' ? 'block' : 'none';
+    errorEl.style.display = state === 'error' ? 'block' : 'none';
+    headingEl.textContent =
+      state === 'success' ? 'Order Confirmed' :
+      state === 'pending' ? 'Payment Not Yet Confirmed' :
+      state === 'error' ? 'We Need to Check This Manually' :
+      'Confirming Your Payment...';
+  }
+
+  function checkOrder() {
+    if (!ref) {
+      showState('error');
+      return;
+    }
+    showState('loading');
+
+    fetch('/.netlify/functions/verify-nomod-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ referenceId: ref })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (result) {
+        if (result.paid) {
+          cartSaveItems([]); // clear the cart now that payment is genuinely confirmed
+          renderCartDrawer();
+          showState('success');
+        } else if (result.error) {
+          showState('error');
+        } else {
+          showState('pending');
+        }
+      })
+      .catch(function () { showState('error'); });
+  }
+
+  var retryBtn = document.getElementById('order-retry-btn');
+  if (retryBtn) retryBtn.addEventListener('click', checkOrder);
+
+  checkOrder();
 }

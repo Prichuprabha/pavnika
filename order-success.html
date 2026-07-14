@@ -14,8 +14,8 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checkout — Pavnika by Saranya</title>
-<meta name="description" content="Review your order and check out with Pavnika by Saranya.">
+<title>Order Confirmation — Pavnika by Saranya</title>
+<meta name="description" content="Your order confirmation from Pavnika by Saranya.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
@@ -58,66 +58,34 @@
     </nav>
   </div>
 </header>
-<div class="search-panel" id="search-panel">
-  <div class="search-panel-inner">
-    <div class="search-input-row">
-      <input type="text" id="search-input" class="search-input" placeholder="Search by design, colour, pattern, series..." autocomplete="off">
-      <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
-    </div>
-    <div class="search-results" id="search-results"></div>
-    <p class="search-empty" id="search-empty" style="display:none;">No sarees match your search.</p>
-  </div>
-</div>
 
 <section class="page-hero">
   <div class="container">
-    <span class="eyebrow">Checkout</span>
-    <h1>Review Your Order</h1>
+    <span class="eyebrow">Order</span>
+    <h1 id="order-status-heading">Confirming Your Payment...</h1>
   </div>
 </section>
 
 <section style="padding-top:0;">
   <div class="container">
-    <div class="checkout-box" id="checkout-box">
-
-      <div id="checkout-empty" style="display:none;">
-        <p style="text-align:center; opacity:0.7; padding:20px 0 28px;">Your cart is empty.</p>
-        <div style="text-align:center;"><a href="collections.html" class="btn btn-primary">Browse the Collection</a></div>
+    <div class="checkout-box" style="text-align:center;">
+      <div id="order-loading">
+        <p style="opacity:0.7;">Please wait a moment while we confirm your payment with our payment partner...</p>
       </div>
-
-      <div id="checkout-content" style="display:none;">
-        <div id="checkout-items"></div>
-
-        <div class="checkout-promo-row">
-          <input type="text" id="checkout-promo-input" placeholder="Promo code">
-          <button type="button" class="btn btn-ghost" id="checkout-promo-apply">Apply</button>
-        </div>
-        <p class="checkout-promo-msg" id="checkout-promo-msg"></p>
-
-        <div class="checkout-summary-row">
-          <span>Subtotal (AED)</span>
-          <span id="checkout-subtotal">0</span>
-        </div>
-        <div class="checkout-summary-row checkout-discount-row" id="checkout-discount-row" style="display:none;">
-          <span id="checkout-discount-label">Discount</span>
-          <span id="checkout-discount-amount">-AED 0</span>
-        </div>
-        <div class="checkout-total-row">
-          <span>Total (AED)</span>
-          <span id="checkout-total">0</span>
-        </div>
-
-        <div class="checkout-customer-fields">
-          <div class="checkout-field"><label>Full Name</label><input type="text" id="checkout-name" placeholder="Your name"></div>
-          <div class="checkout-field"><label>Mobile Number</label><input type="tel" id="checkout-phone" placeholder="+971..."></div>
-        </div>
-
-        <a href="#" class="btn btn-primary" id="checkout-pay-online" style="display:block; text-align:center; margin-bottom:6px;">Pay Online</a>
-        <p class="checkout-note">Choosing Pay Online will take you to our secure payment partner's page to complete payment — where the price will also show in your local currency automatically.</p>
-
-        <button type="button" class="btn btn-ghost" id="checkout-whatsapp-btn" style="width:100%; margin-top:14px;">Checkout via WhatsApp</button>
+      <div id="order-success" style="display:none;">
+        <p style="font-size:2rem; margin-bottom:10px;">&#10003;</p>
+        <p style="font-size:1.05rem; color:var(--green-deep); font-weight:600; margin-bottom:10px;">Thank you — your order is confirmed!</p>
+        <p style="opacity:0.75; margin-bottom:24px;">We've received your payment and will be in touch shortly to arrange delivery.</p>
+        <a href="collections.html" class="btn btn-primary">Continue Browsing</a>
       </div>
-
+      <div id="order-pending" style="display:none;">
+        <p style="opacity:0.75; margin-bottom:20px;">We haven't received confirmation of your payment yet. If you completed payment, this can take a few moments — try refreshing this page.</p>
+        <button type="button" class="btn btn-ghost" id="order-retry-btn">Check Again</button>
+      </div>
+      <div id="order-error" style="display:none;">
+        <p style="opacity:0.75; margin-bottom:20px;">We couldn't confirm your order automatically. If you completed payment, please contact us on WhatsApp with your order details so we can confirm it manually.</p>
+        <a href="https://wa.me/971526630307" target="_blank" rel="noopener" class="btn btn-primary">Contact Us on WhatsApp</a>
+      </div>
     </div>
   </div>
 </section>

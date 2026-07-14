@@ -2079,3 +2079,22 @@ body.login-page {
   margin-bottom: 22px;
 }
 .checkout-note { font-size: 0.76rem; color: var(--ink); opacity: 0.65; text-align: center; margin: 0; }
+
+.checkout-customer-fields { margin-bottom: 18px; }
+.checkout-field { margin-bottom: 12px; }
+.checkout-field label {
+  font-size: 0.76rem;
+  color: var(--ink);
+  opacity: 0.7;
+  display: block;
+  margin-bottom: 5px;
+}
+.checkout-field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid var(--stone);
+  border-radius: 3px;
+  font-family: var(--body);
+  font-size: 0.9rem;
+}
