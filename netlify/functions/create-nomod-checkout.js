@@ -51,7 +51,6 @@ exports.handler = async function (event) {
   const nomodItems = items.map(function (it) {
     var priceCents = toCents(it.price);
     var itemDiscountCents = Math.round(priceCents * discountPercent / 100);
-    var netCents = priceCents - itemDiscountCents;
 
     subtotalCents += priceCents;
     totalDiscountCents += itemDiscountCents;
@@ -60,9 +59,7 @@ exports.handler = async function (event) {
       item_id: it.id,
       name: it.name || it.id,
       quantity: 1,
-      unit_amount: centsToStr(priceCents),
-      total_amount: centsToStr(priceCents), // quantity (1) * unit_amount
-      net_amount: centsToStr(netCents)
+      unit_amount: centsToStr(priceCents)
     };
     if (itemDiscountCents > 0) {
       item.discount_type = 'flat';
