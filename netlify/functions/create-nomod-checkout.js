@@ -37,16 +37,24 @@ exports.handler = async function (event) {
   const discountPercent = Number(body.discountPercent) || 0;
 
   const subtotal = items.reduce(function (sum, it) { return sum + (Number(it.price) || 0); }, 0);
-  const discountAmount = Math.round(subtotal * (discountPercent / 100) * 100) / 100;
 
   const nomodItems = items.map(function (it) {
-    return {
+    var price = Number(it.price) || 0;
+    var itemDiscount = Math.round(price * (discountPercent / 100) * 100) / 100;
+    var item = {
       item_id: it.id,
       name: it.name || it.id,
       quantity: 1,
-      unit_amount: (Number(it.price) || 0).toFixed(2)
+      unit_amount: price.toFixed(2)
     };
+    if (itemDiscount > 0) {
+      item.discount_type = 'flat';
+      item.discount_amount = itemDiscount.toFixed(2);
+    }
+    return item;
   });
+
+  const discountAmount = Math.round(subtotal * (discountPercent / 100) * 100) / 100;
 
   const referenceId = 'pavnika-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
@@ -54,7 +62,6 @@ exports.handler = async function (event) {
     currency: 'AED',
     reference_id: referenceId,
     items: nomodItems,
-    discount: discountAmount,
     customer: {
       first_name: customer.name || '',
       email: customer.email || '',
