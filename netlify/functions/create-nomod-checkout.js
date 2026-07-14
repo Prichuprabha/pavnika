@@ -45,35 +45,45 @@ exports.handler = async function (event) {
       item_id: it.id,
       name: it.name || it.id,
       quantity: 1,
-      unit_amount: price.toFixed(2)
+      unit_amount: price.toFixed(2),
+      total_amount: price.toFixed(2) // quantity (1) * unit_amount
     };
     if (itemDiscount > 0) {
       item.discount_type = 'flat';
       item.discount_amount = itemDiscount.toFixed(2);
+      item.net_amount = (price - itemDiscount).toFixed(2);
+    } else {
+      item.net_amount = price.toFixed(2);
     }
     return item;
   });
 
   const discountAmount = Math.round(subtotal * (discountPercent / 100) * 100) / 100;
+  const finalAmount = subtotal - discountAmount;
 
   const referenceId = 'pavnika-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
   const payload = {
-    currency: 'AED',
     reference_id: referenceId,
+    amount: finalAmount.toFixed(2),
+    currency: 'AED',
     items: nomodItems,
     customer: {
       first_name: customer.name || '',
       email: customer.email || '',
       phone_number: customer.phone || ''
     },
+    success_url: SITE_URL + '/order-success.html?ref=' + referenceId,
+    failure_url: SITE_URL + '/order-success.html?ref=' + referenceId,
+    cancelled_url: SITE_URL + '/checkout.html',
     metadata: {
       promo_code: body.promoCode || '',
       saree_ids: items.map(function (it) { return it.id; }).join(',')
-    },
-    success_url: SITE_URL + '/order-success.html?ref=' + referenceId,
-    cancel_url: SITE_URL + '/checkout.html'
+    }
   };
+  if (discountAmount > 0) {
+    payload.discount = discountAmount.toFixed(2);
+  }
 
   try {
     const res = await fetch(`${NOMOD_BASE}/checkout`, {
