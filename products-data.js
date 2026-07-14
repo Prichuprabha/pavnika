@@ -8,7 +8,7 @@ window.PRODUCTS = [
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
     "price": 220,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
     ],
@@ -23,7 +23,7 @@ window.PRODUCTS = [
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
     "price": 240,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG"
     ],
