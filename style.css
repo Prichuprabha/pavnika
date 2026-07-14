@@ -1476,6 +1476,56 @@ footer.site-footer {
   line-height: 1.55;
   margin: 0;
 }
+.lightbox-price {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--gold-light);
+  margin: 14px 0 12px;
+}
+.lightbox-cart-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.lightbox-cart-actions button {
+  flex: 1;
+  font-family: var(--body);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+  padding: 10px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.lightbox-cart-actions .btn-add-cart {
+  background: none;
+  border: 1px solid var(--ivory);
+  color: var(--ivory);
+}
+.lightbox-cart-actions .btn-add-cart:hover { background: rgba(250, 247, 239, 0.1); }
+.lightbox-cart-actions .btn-buy-now {
+  background: var(--gold-light);
+  border: 1px solid var(--gold-light);
+  color: var(--green-deep);
+}
+.lightbox-cart-actions .btn-buy-now:hover { background: var(--gold); border-color: var(--gold); }
+.lightbox-cart-actions button:disabled {
+  flex: 1;
+  background: none;
+  border: 1px solid rgba(250, 247, 239, 0.3);
+  color: var(--ivory);
+  opacity: 0.5;
+  cursor: not-allowed;
+  padding: 10px 8px;
+  border-radius: 3px;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+.lightbox-side .interest-badge {
+  color: var(--gold-light);
+  margin: 0 0 12px;
+}
 
 @media (min-width: 720px) {
   .lightbox-body {

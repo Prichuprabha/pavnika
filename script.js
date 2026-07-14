@@ -112,14 +112,6 @@ function whatsappLink(product) {
 function productCardHTML(p) {
   var soldClass = p.sold ? ' is-sold' : '';
   var soldRibbon = p.sold ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
-  var cartButtons = p.sold
-    ? '<div class="product-card-actions"><button type="button" disabled>Sold Out</button></div>'
-    : (
-        '<div class="product-card-actions">' +
-          '<button type="button" class="btn-add-cart" data-action="add-cart" data-id="' + p.id + '">Add to Cart</button>' +
-          '<button type="button" class="btn-buy-now" data-action="buy-now" data-id="' + p.id + '">Buy Now</button>' +
-        '</div>'
-      );
   return (
     '<div class="product-card" data-category="' + p.category + '" data-series="' + p.series + '" data-id="' + p.id + '">' +
       '<div class="product-photo' + soldClass + '">' +
@@ -133,8 +125,6 @@ function productCardHTML(p) {
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
         '<span class="p-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
         '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
-        cartButtons +
-        '<span class="interest-badge" id="interest-' + p.id + '" style="display:none;"></span>' +
       '</div>' +
     '</div>'
   );
@@ -310,7 +300,6 @@ function initCollectionsPage() {
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
     renderPagination(filtered.length);
     initHoverCycle(grid);
-    loadInterestBadges();
   }
 
   if (categoryGroup) {
@@ -417,25 +406,9 @@ function initCollectionsPage() {
   }
 
   // Open the lightbox when a saree card is clicked, but not when the
-  // WhatsApp enquiry link or a cart action button is clicked.
+  // WhatsApp enquiry link itself is clicked.
   grid.addEventListener('click', function (e) {
     if (e.target.closest('.p-enquire')) return;
-
-    var cartBtn = e.target.closest('[data-action="add-cart"], [data-action="buy-now"]');
-    if (cartBtn) {
-      var productId = cartBtn.getAttribute('data-id');
-      var product = window.PRODUCTS.find(function (p) { return p.id === productId; });
-      if (!product) return;
-      cartAddItem(product);
-      if (cartBtn.getAttribute('data-action') === 'buy-now') {
-        openCartDrawer();
-      } else {
-        cartBtn.textContent = 'Added ✓';
-        setTimeout(function () { cartBtn.textContent = 'Add to Cart'; }, 1200);
-      }
-      return;
-    }
-
     var card = e.target.closest('.product-card');
     if (!card) return;
     var id = card.getAttribute('data-id');
@@ -444,27 +417,21 @@ function initCollectionsPage() {
   });
 }
 
-/* ---------- Cart interest badges (Collections page) ---------- */
-function loadInterestBadges() {
-  var badges = document.querySelectorAll('.interest-badge');
-  if (!badges.length) return;
-  var ids = Array.from(badges).map(function (el) { return el.id.replace('interest-', ''); });
-
+/* ---------- Cart interest indicator (shown in the saree detail popup) ---------- */
+function loadInterestBadge(productId, targetEl) {
+  if (!targetEl) return;
   fetch('/.netlify/functions/get-cart-interest', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ productIds: ids })
+    body: JSON.stringify({ productIds: [productId] })
   })
     .then(function (res) { return res.json(); })
     .then(function (counts) {
-      Object.keys(counts).forEach(function (id) {
-        var el = document.getElementById('interest-' + id);
-        if (!el || !counts[id]) return;
-        var n = counts[id];
-        el.style.display = 'inline-flex';
-        el.textContent = '🛍 ' + n + ' ' + (n === 1 ? 'person has' : 'people have') + ' this in their cart';
-        el.title = n + ' ' + (n === 1 ? 'person' : 'people') + ' added this in the last hour';
-      });
+      var n = counts[productId];
+      if (!n) { targetEl.style.display = 'none'; return; }
+      targetEl.style.display = 'block';
+      targetEl.textContent = '🛍 ' + n + ' ' + (n === 1 ? 'person has' : 'people have') + ' this in their cart';
+      targetEl.title = n + ' ' + (n === 1 ? 'person' : 'people') + ' added this in the last hour';
     })
     .catch(function () { /* silently skip if this fails */ });
 }
@@ -489,6 +456,12 @@ function buildLightbox() {
         '</div>' +
         '<div class="lightbox-tags" id="lightbox-tags"></div>' +
         '<p class="lightbox-description" id="lightbox-description"></p>' +
+        '<p class="lightbox-price" id="lightbox-price"></p>' +
+        '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
+          '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
+          '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
+        '</div>' +
+        '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
         '<div class="lightbox-dots" id="lightbox-dots"></div>' +
       '</div>' +
     '</div>';
@@ -568,6 +541,32 @@ function buildLightbox() {
     }).join('');
 
     document.getElementById('lightbox-description').textContent = buildDescription(product);
+    document.getElementById('lightbox-price').textContent = 'AED ' + Number(product.price || 0).toLocaleString();
+
+    var addCartBtn = document.getElementById('lightbox-add-cart');
+    var buyNowBtn = document.getElementById('lightbox-buy-now');
+    var actionsWrap = document.getElementById('lightbox-cart-actions');
+
+    if (product.sold) {
+      actionsWrap.innerHTML = '<button type="button" disabled>Sold Out</button>';
+    } else {
+      actionsWrap.innerHTML =
+        '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
+        '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>';
+      document.getElementById('lightbox-add-cart').addEventListener('click', function () {
+        cartAddItem(product);
+        this.textContent = 'Added ✓';
+        var self = this;
+        setTimeout(function () { self.textContent = 'Add to Cart'; }, 1200);
+      });
+      document.getElementById('lightbox-buy-now').addEventListener('click', function () {
+        cartAddItem(product);
+        closeLightbox();
+        openCartDrawer();
+      });
+    }
+
+    loadInterestBadge(product.id, document.getElementById('lightbox-interest'));
 
     renderStage();
     overlay.style.display = 'flex';
