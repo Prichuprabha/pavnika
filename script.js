@@ -130,6 +130,7 @@ function productCardHTML(p) {
       '<div class="product-info">' +
         '<span class="p-design">' + p.design + '</span>' +
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
+        '<span class="p-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
         '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
         cartButtons +
         '<span class="interest-badge" id="interest-' + p.id + '" style="display:none;"></span>' +

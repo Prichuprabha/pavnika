@@ -1178,9 +1178,9 @@ footer.site-footer {
 .product-info .p-price {
   margin-top: 8px;
   font-family: var(--body);
-  font-weight: 600;
-  color: var(--teal);
-  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold);
+  font-size: 0.98rem;
 }
 .product-info .p-enquire {
   margin-top: 10px;
