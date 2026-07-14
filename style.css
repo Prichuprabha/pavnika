@@ -280,6 +280,18 @@ nav.main-nav a.active {
 .cart-drawer-item .item-design { font-size: 0.85rem; font-weight: 600; color: var(--green-deep); display: block; }
 .cart-drawer-item .item-series { font-size: 0.75rem; color: var(--ink); opacity: 0.6; display: block; margin-top: 2px; }
 .cart-drawer-item .item-remove { background: none; border: none; color: #B8142A; font-size: 0.75rem; cursor: pointer; padding: 0; margin-top: 6px; }
+.cart-drawer-item .item-price { font-size: 0.85rem; font-weight: 700; color: var(--green-deep); white-space: nowrap; align-self: flex-start; margin-top: 2px; }
+.cart-drawer-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--green-deep);
+  padding: 16px 0 6px;
+  margin-top: 4px;
+  border-top: 1px solid var(--stone);
+}
 .cart-drawer-footer {
   padding: 18px 22px 24px;
   border-top: 1px solid var(--stone);

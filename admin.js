@@ -139,6 +139,7 @@ function showAdminPanel(token, email) {
   initReviewsEditor(token);
   initBannersEditor(token);
   initVideosEditor(token);
+  initPromoCodesEditor(token);
   initStatsDashboard(token);
   initSidebarNav();
 
@@ -1228,4 +1229,121 @@ function initVideosEditor(token) {
   });
 
   loadVideos();
+}
+
+/* ---------- Promo codes editor ---------- */
+function initPromoCodesEditor(token) {
+  var statusMsg = document.getElementById('admin-promo-status-msg');
+  var activeList = document.getElementById('admin-promo-active-list');
+  var historyRows = document.getElementById('admin-promo-history-rows');
+  var countdownInterval = null;
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  function formatCountdown(expiresAt) {
+    var msLeft = new Date(expiresAt).getTime() - Date.now();
+    if (msLeft <= 0) return 'expired';
+    var mins = Math.floor(msLeft / 60000);
+    var secs = Math.floor((msLeft % 60000) / 1000);
+    return mins + ':' + (secs < 10 ? '0' : '') + secs;
+  }
+
+  function renderPromos(data) {
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    if (!data.active.length) {
+      activeList.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No active codes right now.</p>';
+    } else {
+      activeList.innerHTML = data.active.map(function (p) {
+        return (
+          '<div class="admin-promo-item" data-code="' + p.code + '" data-expires="' + p.expires_at + '">' +
+            '<div>' +
+              '<p class="code">' + p.code + '</p>' +
+              '<p class="meta">' + p.discount_percent + '% off &middot; expires in <span class="countdown">' + formatCountdown(p.expires_at) + '</span></p>' +
+            '</div>' +
+            '<span class="deactivate-link" data-code="' + p.code + '">Deactivate</span>' +
+          '</div>'
+        );
+      }).join('');
+
+      countdownInterval = setInterval(function () {
+        document.querySelectorAll('.admin-promo-item').forEach(function (item) {
+          var expires = item.getAttribute('data-expires');
+          var countdownEl = item.querySelector('.countdown');
+          if (!countdownEl) return;
+          var text = formatCountdown(expires);
+          countdownEl.textContent = text;
+          if (text === 'expired') loadPromos();
+        });
+      }, 1000);
+    }
+
+    historyRows.innerHTML = data.history.length
+      ? data.history.map(function (p) {
+          var status = p.used ? 'Used' : (!p.active ? 'Deactivated' : 'Expired');
+          return '<tr><td style="font-family:monospace;">' + p.code + '</td><td>' + p.discount_percent + '%</td><td>' + status + '</td></tr>';
+        }).join('')
+      : '<tr><td colspan="3">No history yet.</td></tr>';
+  }
+
+  function loadPromos() {
+    fetch('/.netlify/functions/admin-get-promos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not load promo codes.'); return; }
+        renderPromos(result.data);
+      })
+      .catch(function () { showStatus('error', 'Network error loading promo codes.'); });
+  }
+
+  document.getElementById('admin-promo-create-btn').addEventListener('click', function () {
+    var discount = parseInt(document.getElementById('admin-promo-discount').value, 10);
+    if (!discount || discount < 1 || discount > 90) {
+      showStatus('error', 'Please enter a discount between 1 and 90.');
+      return;
+    }
+
+    fetch('/.netlify/functions/admin-create-promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, discountPercent: discount })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not create code.'); return; }
+        showStatus('success', 'Created code <code>' + result.data.promo.code + '</code> — share this with the customer now, it expires in 10 minutes.');
+        loadPromos();
+      })
+      .catch(function () { showStatus('error', 'Network error creating code.'); });
+  });
+
+  activeList.addEventListener('click', function (e) {
+    var link = e.target.closest('.deactivate-link');
+    if (!link) return;
+    var code = link.getAttribute('data-code');
+    if (!confirm('Deactivate ' + code + '? It will no longer be usable.')) return;
+
+    fetch('/.netlify/functions/admin-deactivate-promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, code: code })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not deactivate code.'); return; }
+        showStatus('success', 'Deactivated ' + code + '.');
+        loadPromos();
+      })
+      .catch(function () { showStatus('error', 'Network error deactivating code.'); });
+  });
+
+  loadPromos();
 }

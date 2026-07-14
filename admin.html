@@ -39,6 +39,15 @@
   .admin-nav-item { cursor: pointer; }
   .admin-nav-item:hover:not(.active) { background: rgba(250,247,239,0.08); opacity: 0.85; }
 
+  .admin-promo-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #FFFFFF; border: 1px solid var(--stone); border-radius: 6px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .admin-promo-item .code { font-family: monospace; font-size: 0.9rem; font-weight: 700; color: var(--green-deep); margin: 0; }
+  .admin-promo-item .meta { font-size: 0.72rem; color: var(--ink); opacity: 0.65; margin: 3px 0 0; }
+  .admin-promo-item .deactivate-link { font-size: 0.72rem; color: #B8142A; cursor: pointer; text-decoration: underline; }
+
   .admin-banner-item {
     display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
     border-radius: 6px; background: var(--ivory); margin-bottom: 10px;
@@ -208,6 +217,7 @@
     <div class="admin-nav-item" data-view="sarees">Saree Editor</div>
     <div class="admin-nav-item" data-view="reviews">Reviews</div>
     <div class="admin-nav-item" data-view="banners">Banners</div>
+    <div class="admin-nav-item" data-view="promos">Promo Codes</div>
     <div class="admin-sidebar-footer">
       <p>Signed in as</p>
       <p class="admin-email" id="admin-email-display">&nbsp;</p>
@@ -387,6 +397,34 @@
       <button type="button" class="btn btn-ghost" id="admin-video-refresh-btn" style="margin-bottom:20px;">Refresh from GitHub</button>
       <div id="admin-video-list"></div>
       <button type="button" class="btn btn-primary" id="admin-video-save-btn" style="margin-top:16px;">Save Video Order to GitHub</button>
+    </div>
+
+    <div class="admin-view" id="admin-view-promos" style="display:none;">
+      <div class="admin-heading"><h1>Promo Codes</h1></div>
+      <p class="admin-status-msg" id="admin-promo-status-msg"></p>
+
+      <div class="admin-form-card">
+        <h3>Create New Code</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="admin-field" style="max-width:120px;">
+            <label>Discount %</label>
+            <input type="number" id="admin-promo-discount" min="1" max="90" value="10">
+          </div>
+          <button type="button" class="btn btn-primary" id="admin-promo-create-btn">Create &amp; Enable Code</button>
+        </div>
+        <p style="font-size:0.76rem; color:var(--ink); opacity:0.6; margin:12px 0 0;">Generates a random code, valid for 10 minutes, single-use only.</p>
+      </div>
+
+      <h3 class="admin-stats-subheading">Active codes</h3>
+      <div id="admin-promo-active-list" style="margin-bottom:26px;">
+        <p style="font-size:0.85rem; opacity:0.6;">No active codes right now.</p>
+      </div>
+
+      <h3 class="admin-stats-subheading">Recent history</h3>
+      <table class="admin-table">
+        <thead><tr><th>Code</th><th>Discount</th><th>Status</th></tr></thead>
+        <tbody id="admin-promo-history-rows"></tbody>
+      </table>
     </div>
 
     <div class="admin-view" id="admin-view-stats">

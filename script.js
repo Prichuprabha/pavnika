@@ -1295,6 +1295,7 @@ function renderCartDrawer() {
   }
 
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+  var subtotal = products.reduce(function (sum, p) { return sum + (Number(p.price) || 0); }, 0);
 
   itemsWrap.innerHTML = products.map(function (p) {
     return (
@@ -1305,9 +1306,10 @@ function renderCartDrawer() {
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
           '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
         '</div>' +
+        '<span class="item-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
       '</div>'
     );
-  }).join('');
+  }).join('') + '<div class="cart-drawer-total"><span>Total (AED)</span><span>' + subtotal.toLocaleString() + '</span></div>';
 
   if (footer) footer.style.display = 'block';
 }
@@ -1398,10 +1400,61 @@ function initCheckoutPage() {
 
   totalEl.textContent = subtotal.toLocaleString();
 
+  var appliedDiscount = 0;
+  var appliedCode = '';
+
+  function currentTotal() {
+    return Math.round(subtotal * (1 - appliedDiscount / 100));
+  }
+
   document.getElementById('checkout-promo-apply').addEventListener('click', function () {
+    var input = document.getElementById('checkout-promo-input');
     var msg = document.getElementById('checkout-promo-msg');
-    msg.className = 'checkout-promo-msg error';
-    msg.textContent = 'Promo codes are launching soon — check back shortly.';
+    var applyBtn = document.getElementById('checkout-promo-apply');
+    var code = input.value.trim();
+
+    if (!code) {
+      msg.className = 'checkout-promo-msg error';
+      msg.textContent = 'Please enter a code.';
+      return;
+    }
+    if (appliedCode) {
+      msg.className = 'checkout-promo-msg error';
+      msg.textContent = 'A code has already been applied to this order.';
+      return;
+    }
+
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Checking...';
+
+    fetch('/.netlify/functions/validate-promo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code: code })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (result) {
+        if (!result.valid) {
+          msg.className = 'checkout-promo-msg error';
+          msg.textContent = result.error || 'That code is not valid.';
+          return;
+        }
+        appliedDiscount = result.discountPercent;
+        appliedCode = result.code;
+        msg.className = 'checkout-promo-msg success';
+        msg.textContent = appliedCode + ' applied — ' + appliedDiscount + '% off.';
+        totalEl.textContent = currentTotal().toLocaleString();
+        input.disabled = true;
+        applyBtn.style.display = 'none';
+      })
+      .catch(function () {
+        msg.className = 'checkout-promo-msg error';
+        msg.textContent = 'Network error — please try again.';
+      })
+      .finally(function () {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+      });
   });
 
   document.getElementById('checkout-pay-online').addEventListener('click', function (e) {
@@ -1413,7 +1466,11 @@ function initCheckoutPage() {
     var lines = products.map(function (p) {
       return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design + ' — AED ' + Number(p.price || 0).toLocaleString();
     });
-    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n') + '\n\nTotal: AED ' + subtotal.toLocaleString();
+    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n');
+    if (appliedCode) {
+      msg += '\n\nPromo code applied: ' + appliedCode + ' (' + appliedDiscount + '% off)';
+    }
+    msg += '\n\nTotal: AED ' + currentTotal().toLocaleString();
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
 }
