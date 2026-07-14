@@ -1,3 +1,11 @@
+// If the browser restores this page from its back-forward cache (e.g. the
+// customer hits "back" after visiting Nomod's payment page), force a real
+// reload — otherwise things like a "Starting payment..." button label or a
+// consumed promo code field can be stuck showing stale, frozen state.
+window.addEventListener('pageshow', function (e) {
+  if (e.persisted) window.location.reload();
+});
+
 document.addEventListener('DOMContentLoaded', function () {
   initLoginPage();
   initReviewsMarquee();
@@ -100,6 +108,10 @@ function seriesHoverText(series) {
   return SERIES_HOVER_TEXT[series] || ('View more from our ' + seriesTitleCase(series) + ' collection');
 }
 
+function formatAED(n) {
+  return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 function seriesTitleCase(s) {
   return String(s).toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
 }
@@ -124,7 +136,7 @@ function productCardHTML(p) {
       '<div class="product-info">' +
         '<span class="p-design">' + p.design + '</span>' +
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
-        '<span class="p-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
+        '<span class="p-price">AED ' + formatAED(p.price) + '</span>' +
         '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
       '</div>' +
     '</div>'
@@ -542,7 +554,7 @@ function buildLightbox() {
     }).join('');
 
     document.getElementById('lightbox-description').textContent = buildDescription(product);
-    document.getElementById('lightbox-price').textContent = 'AED ' + Number(product.price || 0).toLocaleString();
+    document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(product.price);
 
     var addCartBtn = document.getElementById('lightbox-add-cart');
     var buyNowBtn = document.getElementById('lightbox-buy-now');
@@ -1307,10 +1319,10 @@ function renderCartDrawer() {
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
           '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
         '</div>' +
-        '<span class="item-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
+        '<span class="item-price">AED ' + formatAED(p.price) + '</span>' +
       '</div>'
     );
-  }).join('') + '<div class="cart-drawer-total"><span>Total (AED)</span><span>' + subtotal.toLocaleString() + '</span></div>';
+  }).join('') + '<div class="cart-drawer-total"><span>Total (AED)</span><span>' + formatAED(subtotal) + '</span></div>';
 
   if (footer) footer.style.display = 'block';
 }
@@ -1398,13 +1410,13 @@ function initCheckoutPage() {
           '<span class="item-design">' + p.design + ' — ' + p.id + '</span>' +
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
         '</div>' +
-        '<span class="item-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
+        '<span class="item-price">AED ' + formatAED(p.price) + '</span>' +
       '</div>'
     );
   }).join('');
 
-  subtotalEl.textContent = subtotal.toLocaleString();
-  totalEl.textContent = subtotal.toLocaleString();
+  subtotalEl.textContent = formatAED(subtotal);
+  totalEl.textContent = formatAED(subtotal);
 
   var appliedDiscount = 0;
   var appliedCode = '';
@@ -1417,12 +1429,12 @@ function initCheckoutPage() {
     if (appliedDiscount > 0) {
       var discountAmount = subtotal - currentTotal();
       discountLabel.textContent = appliedCode + ' (' + appliedDiscount + '% off)';
-      discountAmountEl.textContent = '-AED ' + discountAmount.toLocaleString();
+      discountAmountEl.textContent = '-AED ' + formatAED(discountAmount);
       discountRow.style.display = 'flex';
     } else {
       discountRow.style.display = 'none';
     }
-    totalEl.textContent = currentTotal().toLocaleString();
+    totalEl.textContent = formatAED(currentTotal());
   }
 
   document.getElementById('checkout-promo-apply').addEventListener('click', function () {
@@ -1522,13 +1534,13 @@ function initCheckoutPage() {
 
   document.getElementById('checkout-whatsapp-btn').addEventListener('click', function () {
     var lines = products.map(function (p) {
-      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design + ' — AED ' + Number(p.price || 0).toLocaleString();
+      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design + ' — AED ' + formatAED(p.price);
     });
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n');
     if (appliedCode) {
       msg += '\n\nPromo code applied: ' + appliedCode + ' (' + appliedDiscount + '% off)';
     }
-    msg += '\n\nTotal: AED ' + currentTotal().toLocaleString();
+    msg += '\n\nTotal: AED ' + formatAED(currentTotal());
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
 }
@@ -1545,6 +1557,10 @@ function initOrderSuccessPage() {
   var params = new URLSearchParams(window.location.search);
   var ref = params.get('ref');
 
+  var MAX_AUTO_RETRIES = 6;   // check up to 6 times...
+  var RETRY_DELAY_MS = 3000;  // ...every 3 seconds (18 seconds total) before giving up automatically
+  var attempt = 0;
+
   function showState(state) {
     loadingEl.style.display = state === 'loading' ? 'block' : 'none';
     successEl.style.display = state === 'success' ? 'block' : 'none';
@@ -1557,7 +1573,7 @@ function initOrderSuccessPage() {
       'Confirming Your Payment...';
   }
 
-  function checkOrder() {
+  function checkOrder(isAutoRetry) {
     if (!ref) {
       showState('error');
       return;
@@ -1575,17 +1591,37 @@ function initOrderSuccessPage() {
           cartSaveItems([]); // clear the cart now that payment is genuinely confirmed
           renderCartDrawer();
           showState('success');
-        } else if (result.error) {
-          showState('error');
-        } else {
-          showState('pending');
+          return;
         }
+
+        // Not confirmed yet — if we haven't exhausted automatic retries,
+        // quietly try again rather than immediately telling the customer
+        // something's wrong. Nomod can take a few seconds to finalize.
+        if (isAutoRetry !== false && attempt < MAX_AUTO_RETRIES) {
+          attempt++;
+          setTimeout(function () { checkOrder(true); }, RETRY_DELAY_MS);
+          return;
+        }
+
+        showState(result.error ? 'error' : 'pending');
       })
-      .catch(function () { showState('error'); });
+      .catch(function () {
+        if (isAutoRetry !== false && attempt < MAX_AUTO_RETRIES) {
+          attempt++;
+          setTimeout(function () { checkOrder(true); }, RETRY_DELAY_MS);
+          return;
+        }
+        showState('error');
+      });
   }
 
   var retryBtn = document.getElementById('order-retry-btn');
-  if (retryBtn) retryBtn.addEventListener('click', checkOrder);
+  if (retryBtn) {
+    retryBtn.addEventListener('click', function () {
+      attempt = 0; // manual retry gets its own fresh round of auto-retries too
+      checkOrder(true);
+    });
+  }
 
-  checkOrder();
+  checkOrder(true);
 }

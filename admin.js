@@ -1265,7 +1265,10 @@ function initPromoCodesEditor(token) {
               '<p class="code">' + p.code + '</p>' +
               '<p class="meta">' + p.discount_percent + '% off &middot; expires in <span class="countdown">' + formatCountdown(p.expires_at) + '</span></p>' +
             '</div>' +
-            '<span class="deactivate-link" data-code="' + p.code + '">Deactivate</span>' +
+            '<div style="display:flex; align-items:center; gap:14px;">' +
+              '<span class="copy-link" data-code="' + p.code + '">Copy</span>' +
+              '<span class="deactivate-link" data-code="' + p.code + '">Deactivate</span>' +
+            '</div>' +
           '</div>'
         );
       }).join('');
@@ -1326,6 +1329,19 @@ function initPromoCodesEditor(token) {
   });
 
   activeList.addEventListener('click', function (e) {
+    var copyLink = e.target.closest('.copy-link');
+    if (copyLink) {
+      var code = copyLink.getAttribute('data-code');
+      navigator.clipboard.writeText(code).then(function () {
+        var original = copyLink.textContent;
+        copyLink.textContent = 'Copied!';
+        setTimeout(function () { copyLink.textContent = original; }, 1200);
+      }).catch(function () {
+        showStatus('error', 'Could not copy — please select and copy the code manually.');
+      });
+      return;
+    }
+
     var link = e.target.closest('.deactivate-link');
     if (!link) return;
     var code = link.getAttribute('data-code');

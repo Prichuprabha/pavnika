@@ -2,9 +2,11 @@
 //
 // POST { code }
 // - Checks the code exists, hasn't expired, hasn't already been used,
-//   and is active. If valid, marks it used immediately (codes are
-//   single-use — the act of successfully applying it consumes it) and
-//   returns the discount percentage.
+//   and is active, and returns the discount percentage if so.
+// - Does NOT mark the code as used here — that only happens once a
+//   payment actually succeeds (see verify-nomod-order.js). Consuming
+//   it at apply-time would permanently burn a code even if the
+//   customer abandons checkout or cancels payment on Nomod's page.
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -56,14 +58,6 @@ exports.handler = async function (event) {
     if (new Date(promo.expires_at).getTime() < Date.now()) {
       return { statusCode: 200, body: JSON.stringify({ valid: false, error: 'That code has expired.' }) };
     }
-
-    // Valid — mark it used right away, since it's single-use.
-    const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/promo_codes?id=eq.${promo.id}`, {
-      method: 'PATCH',
-      headers: headers(),
-      body: JSON.stringify({ used: true })
-    });
-    if (!updateRes.ok) throw new Error(`Supabase update error ${updateRes.status}`);
 
     return {
       statusCode: 200,

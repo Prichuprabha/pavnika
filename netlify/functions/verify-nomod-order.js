@@ -53,6 +53,19 @@ async function markOrderPaid(orderId) {
   });
 }
 
+function formatAED(n) {
+  return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+async function markPromoCodeUsed(code) {
+  if (!code) return;
+  await fetch(`${SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code)}`, {
+    method: 'PATCH',
+    headers: supabaseHeaders(),
+    body: JSON.stringify({ used: true })
+  });
+}
+
 async function markSareesSold(sareeIds) {
   const headers = {
     'Authorization': `Bearer ${GITHUB_TOKEN}`,
@@ -95,7 +108,7 @@ async function markSareesSold(sareeIds) {
 async function sendReceiptEmail(order, nomodData) {
   var items = JSON.parse(order.items || '[]');
   var itemLines = items.map(function (it) {
-    return `<tr><td style="padding:6px 10px;">${it.id}</td><td style="padding:6px 10px;">${it.name || ''}</td><td style="padding:6px 10px;">AED ${Number(it.price || 0).toLocaleString()}</td></tr>`;
+    return `<tr><td style="padding:6px 10px;">${it.id}</td><td style="padding:6px 10px;">${it.name || ''}</td><td style="padding:6px 10px;">AED ${formatAED(it.price)}</td></tr>`;
   }).join('');
 
   var html = `
@@ -109,7 +122,7 @@ async function sendReceiptEmail(order, nomodData) {
         <tbody>${itemLines}</tbody>
       </table>
       ${order.promo_code ? `<p><strong>Promo code used:</strong> ${order.promo_code}</p>` : ''}
-      <p style="font-size:18px; font-weight:bold; color:#0E4B39;">Total paid: AED ${Number(order.total || 0).toLocaleString()}</p>
+      <p style="font-size:18px; font-weight:bold; color:#0E4B39;">Total paid: AED ${formatAED(order.total)}</p>
       <p style="color:#666; font-size:13px;">Nomod checkout reference: ${order.nomod_checkout_id}</p>
     </div>
   `;
@@ -123,7 +136,7 @@ async function sendReceiptEmail(order, nomodData) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: ADMIN_EMAIL,
-      subject: `New order — AED ${Number(order.total || 0).toLocaleString()} — Payment confirmed`,
+      subject: `New order — AED ${formatAED(order.total)} — Payment confirmed`,
       html: html
     })
   });
@@ -149,6 +162,7 @@ exports.handler = async function (event) {
   try {
     const order = await getOrderByReference(referenceId);
     if (!order) {
+      console.error('No order found for reference_id:', referenceId);
       return { statusCode: 200, body: JSON.stringify({ paid: false, error: 'No matching order found.' }) };
     }
 
@@ -161,9 +175,12 @@ exports.handler = async function (event) {
       headers: { 'X-API-KEY': NOMOD_API_KEY }
     });
     if (!nomodRes.ok) {
+      const errText = await nomodRes.text();
+      console.error(`Nomod GET checkout failed (status ${nomodRes.status}) for checkout ${order.nomod_checkout_id}:`, errText);
       return { statusCode: 200, body: JSON.stringify({ paid: false, error: 'Could not verify this checkout session with Nomod.' }) };
     }
     const nomodData = await nomodRes.json();
+    console.log(`Nomod checkout ${order.nomod_checkout_id} status:`, nomodData.status);
 
     if (nomodData.status !== 'paid') {
       return { statusCode: 200, body: JSON.stringify({ paid: false, status: nomodData.status }) };
@@ -174,6 +191,7 @@ exports.handler = async function (event) {
 
     await markSareesSold(sareeIds);
     await markOrderPaid(order.id);
+    await markPromoCodeUsed(order.promo_code);
     await sendReceiptEmail(order, nomodData);
 
     return { statusCode: 200, body: JSON.stringify({ paid: true, order: order }) };
