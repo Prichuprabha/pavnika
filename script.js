@@ -1368,6 +1368,10 @@ function initCheckoutPage() {
   var emptyEl = document.getElementById('checkout-empty');
   var contentEl = document.getElementById('checkout-content');
   var itemsEl = document.getElementById('checkout-items');
+  var subtotalEl = document.getElementById('checkout-subtotal');
+  var discountRow = document.getElementById('checkout-discount-row');
+  var discountLabel = document.getElementById('checkout-discount-label');
+  var discountAmountEl = document.getElementById('checkout-discount-amount');
   var totalEl = document.getElementById('checkout-total');
   if (!emptyEl || !contentEl) return;
 
@@ -1398,6 +1402,7 @@ function initCheckoutPage() {
     );
   }).join('');
 
+  subtotalEl.textContent = subtotal.toLocaleString();
   totalEl.textContent = subtotal.toLocaleString();
 
   var appliedDiscount = 0;
@@ -1405,6 +1410,18 @@ function initCheckoutPage() {
 
   function currentTotal() {
     return Math.round(subtotal * (1 - appliedDiscount / 100));
+  }
+
+  function updateSummary() {
+    if (appliedDiscount > 0) {
+      var discountAmount = subtotal - currentTotal();
+      discountLabel.textContent = appliedCode + ' (' + appliedDiscount + '% off)';
+      discountAmountEl.textContent = '-AED ' + discountAmount.toLocaleString();
+      discountRow.style.display = 'flex';
+    } else {
+      discountRow.style.display = 'none';
+    }
+    totalEl.textContent = currentTotal().toLocaleString();
   }
 
   document.getElementById('checkout-promo-apply').addEventListener('click', function () {
@@ -1443,7 +1460,7 @@ function initCheckoutPage() {
         appliedCode = result.code;
         msg.className = 'checkout-promo-msg success';
         msg.textContent = appliedCode + ' applied — ' + appliedDiscount + '% off.';
-        totalEl.textContent = currentTotal().toLocaleString();
+        updateSummary();
         input.disabled = true;
         applyBtn.style.display = 'none';
       })
