@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initAccountMenu();
   initSearchPanel();
   initCartDrawer();
+  initCheckoutPage();
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -1330,8 +1331,9 @@ function initCartDrawer() {
       '</div>' +
       '<div class="cart-drawer-items" id="cart-drawer-items-wrap"></div>' +
       '<div class="cart-drawer-footer" id="cart-drawer-footer" style="display:none;">' +
-        '<button type="button" class="btn btn-primary" id="cart-checkout-btn">Checkout via WhatsApp</button>' +
-        '<p>Online payment is coming soon — for now, checkout sends your cart to us on WhatsApp to confirm and arrange payment.</p>' +
+        '<a href="checkout.html" class="btn btn-primary" id="cart-proceed-btn" style="display:block; text-align:center; margin-bottom:10px;">Proceed to Checkout</a>' +
+        '<button type="button" class="btn btn-ghost" id="cart-checkout-btn" style="width:100%;">Checkout via WhatsApp</button>' +
+        '<p>Proceed to Checkout for a full order review, or checkout directly via WhatsApp.</p>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
@@ -1358,4 +1360,61 @@ function initCartDrawer() {
   });
 
   renderCartDrawer();
+}
+
+/* ---------- Checkout page ---------- */
+function initCheckoutPage() {
+  var emptyEl = document.getElementById('checkout-empty');
+  var contentEl = document.getElementById('checkout-content');
+  var itemsEl = document.getElementById('checkout-items');
+  var totalEl = document.getElementById('checkout-total');
+  if (!emptyEl || !contentEl) return;
+
+  var ids = cartGetItems();
+  var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+
+  if (!products.length) {
+    emptyEl.style.display = 'block';
+    contentEl.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  contentEl.style.display = 'block';
+
+  var subtotal = products.reduce(function (sum, p) { return sum + (Number(p.price) || 0); }, 0);
+
+  itemsEl.innerHTML = products.map(function (p) {
+    return (
+      '<div class="checkout-item">' +
+        '<img src="' + p.image + '" alt="' + p.design + '">' +
+        '<div class="item-info">' +
+          '<span class="item-design">' + p.design + ' — ' + p.id + '</span>' +
+          '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
+        '</div>' +
+        '<span class="item-price">AED ' + Number(p.price || 0).toLocaleString() + '</span>' +
+      '</div>'
+    );
+  }).join('');
+
+  totalEl.textContent = subtotal.toLocaleString();
+
+  document.getElementById('checkout-promo-apply').addEventListener('click', function () {
+    var msg = document.getElementById('checkout-promo-msg');
+    msg.className = 'checkout-promo-msg error';
+    msg.textContent = 'Promo codes are launching soon — check back shortly.';
+  });
+
+  document.getElementById('checkout-pay-online').addEventListener('click', function (e) {
+    e.preventDefault();
+    alert('Online payment is launching very soon! For now, please use "Checkout via WhatsApp" below to complete your order.');
+  });
+
+  document.getElementById('checkout-whatsapp-btn').addEventListener('click', function () {
+    var lines = products.map(function (p) {
+      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design + ' — AED ' + Number(p.price || 0).toLocaleString();
+    });
+    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n') + '\n\nTotal: AED ' + subtotal.toLocaleString();
+    window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  });
 }
