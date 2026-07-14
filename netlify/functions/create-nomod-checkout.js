@@ -36,36 +36,48 @@ exports.handler = async function (event) {
   const customer = body.customer || {};
   const discountPercent = Number(body.discountPercent) || 0;
 
-  const subtotal = items.reduce(function (sum, it) { return sum + (Number(it.price) || 0); }, 0);
+  // All money math is done in integer cents, then formatted to a decimal
+  // string only at the very end. This guarantees net_amount always
+  // exactly equals total_amount minus discount_amount — doing this math
+  // in floating-point AED (multiplying/dividing fractions of a dirham)
+  // can introduce tiny rounding mismatches that Nomod's strict
+  // validation rejects, even though the numbers look identical to us.
+  function toCents(aed) { return Math.round((Number(aed) || 0) * 100); }
+  function centsToStr(cents) { return (cents / 100).toFixed(2); }
+
+  var subtotalCents = 0;
+  var totalDiscountCents = 0;
 
   const nomodItems = items.map(function (it) {
-    var price = Number(it.price) || 0;
-    var itemDiscount = Math.round(price * (discountPercent / 100) * 100) / 100;
+    var priceCents = toCents(it.price);
+    var itemDiscountCents = Math.round(priceCents * discountPercent / 100);
+    var netCents = priceCents - itemDiscountCents;
+
+    subtotalCents += priceCents;
+    totalDiscountCents += itemDiscountCents;
+
     var item = {
       item_id: it.id,
       name: it.name || it.id,
       quantity: 1,
-      unit_amount: price.toFixed(2),
-      total_amount: price.toFixed(2) // quantity (1) * unit_amount
+      unit_amount: centsToStr(priceCents),
+      total_amount: centsToStr(priceCents), // quantity (1) * unit_amount
+      net_amount: centsToStr(netCents)
     };
-    if (itemDiscount > 0) {
+    if (itemDiscountCents > 0) {
       item.discount_type = 'flat';
-      item.discount_amount = itemDiscount.toFixed(2);
-      item.net_amount = (price - itemDiscount).toFixed(2);
-    } else {
-      item.net_amount = price.toFixed(2);
+      item.discount_amount = centsToStr(itemDiscountCents);
     }
     return item;
   });
 
-  const discountAmount = Math.round(subtotal * (discountPercent / 100) * 100) / 100;
-  const finalAmount = subtotal - discountAmount;
+  const finalAmountCents = subtotalCents - totalDiscountCents;
 
   const referenceId = 'pavnika-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
   const payload = {
     reference_id: referenceId,
-    amount: finalAmount.toFixed(2),
+    amount: centsToStr(finalAmountCents),
     currency: 'AED',
     items: nomodItems,
     customer: {
@@ -82,8 +94,8 @@ exports.handler = async function (event) {
       saree_ids: items.map(function (it) { return it.id; }).join(',')
     }
   };
-  if (discountAmount > 0) {
-    payload.discount = discountAmount.toFixed(2);
+  if (totalDiscountCents > 0) {
+    payload.discount = centsToStr(totalDiscountCents);
   }
 
   try {
@@ -122,7 +134,7 @@ exports.handler = async function (event) {
           customer_phone: customer.phone || '',
           items: JSON.stringify(items),
           promo_code: body.promoCode || '',
-          total: subtotal - discountAmount,
+          total: finalAmountCents / 100,
           status: 'pending'
         })
       });
