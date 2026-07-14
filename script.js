@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
   buildLightbox();
   initAccountMenu();
   initSearchPanel();
+  initCartDrawer();
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -110,6 +111,14 @@ function whatsappLink(product) {
 function productCardHTML(p) {
   var soldClass = p.sold ? ' is-sold' : '';
   var soldRibbon = p.sold ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
+  var cartButtons = p.sold
+    ? '<div class="product-card-actions"><button type="button" disabled>Sold Out</button></div>'
+    : (
+        '<div class="product-card-actions">' +
+          '<button type="button" class="btn-add-cart" data-action="add-cart" data-id="' + p.id + '">Add to Cart</button>' +
+          '<button type="button" class="btn-buy-now" data-action="buy-now" data-id="' + p.id + '">Buy Now</button>' +
+        '</div>'
+      );
   return (
     '<div class="product-card" data-category="' + p.category + '" data-series="' + p.series + '" data-id="' + p.id + '">' +
       '<div class="product-photo' + soldClass + '">' +
@@ -122,6 +131,8 @@ function productCardHTML(p) {
         '<span class="p-design">' + p.design + '</span>' +
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
         '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
+        cartButtons +
+        '<span class="interest-badge" id="interest-' + p.id + '" style="display:none;"></span>' +
       '</div>' +
     '</div>'
   );
@@ -297,6 +308,7 @@ function initCollectionsPage() {
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
     renderPagination(filtered.length);
     initHoverCycle(grid);
+    loadInterestBadges();
   }
 
   if (categoryGroup) {
@@ -403,15 +415,56 @@ function initCollectionsPage() {
   }
 
   // Open the lightbox when a saree card is clicked, but not when the
-  // WhatsApp enquiry link itself is clicked.
+  // WhatsApp enquiry link or a cart action button is clicked.
   grid.addEventListener('click', function (e) {
     if (e.target.closest('.p-enquire')) return;
+
+    var cartBtn = e.target.closest('[data-action="add-cart"], [data-action="buy-now"]');
+    if (cartBtn) {
+      var productId = cartBtn.getAttribute('data-id');
+      var product = window.PRODUCTS.find(function (p) { return p.id === productId; });
+      if (!product) return;
+      cartAddItem(product);
+      if (cartBtn.getAttribute('data-action') === 'buy-now') {
+        openCartDrawer();
+      } else {
+        cartBtn.textContent = 'Added ✓';
+        setTimeout(function () { cartBtn.textContent = 'Add to Cart'; }, 1200);
+      }
+      return;
+    }
+
     var card = e.target.closest('.product-card');
     if (!card) return;
     var id = card.getAttribute('data-id');
     var product = window.PRODUCTS.find(function (p) { return p.id === id; });
     if (product) window.openLightbox(product);
   });
+}
+
+/* ---------- Cart interest badges (Collections page) ---------- */
+function loadInterestBadges() {
+  var badges = document.querySelectorAll('.interest-badge');
+  if (!badges.length) return;
+  var ids = Array.from(badges).map(function (el) { return el.id.replace('interest-', ''); });
+
+  fetch('/.netlify/functions/get-cart-interest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ productIds: ids })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (counts) {
+      Object.keys(counts).forEach(function (id) {
+        var el = document.getElementById('interest-' + id);
+        if (!el || !counts[id]) return;
+        var n = counts[id];
+        el.style.display = 'inline-flex';
+        el.textContent = '🛍 ' + n + ' ' + (n === 1 ? 'person has' : 'people have') + ' this in their cart';
+        el.title = n + ' ' + (n === 1 ? 'person' : 'people') + ' added this in the last hour';
+      });
+    })
+    .catch(function () { /* silently skip if this fails */ });
 }
 
 /* ---------- Lightbox: swipeable image gallery per saree ---------- */
@@ -1162,4 +1215,146 @@ function initLegalPopup() {
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && popup.classList.contains('is-open')) closePopup();
   });
+}
+
+/* ---------- Cart drawer (site-wide) ----------
+   Cart contents live in localStorage as a simple list of saree IDs —
+   since every saree is a one-off piece, quantity is always 1 per item,
+   so the cart is really just a set of IDs, not a quantity-per-item cart.
+   Actual checkout isn't wired to a payment provider yet, so the drawer's
+   checkout button sends the cart as a WhatsApp message for now — this
+   keeps the feature fully useful on its own before online payment
+   (a future phase) is added. */
+var CART_STORAGE_KEY = 'pavnika_cart';
+
+function cartGetItems() {
+  try {
+    var raw = localStorage.getItem(CART_STORAGE_KEY);
+    var ids = raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) ? ids : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function cartSaveItems(ids) {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(ids));
+  } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
+}
+
+function cartAddItem(product) {
+  var ids = cartGetItems();
+  if (ids.indexOf(product.id) === -1) {
+    ids.push(product.id);
+    cartSaveItems(ids);
+    fetch('/.netlify/functions/log-cart-activity', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ productId: product.id })
+    }).catch(function () {});
+  }
+  renderCartDrawer();
+}
+
+function cartRemoveItem(id) {
+  var ids = cartGetItems().filter(function (x) { return x !== id; });
+  cartSaveItems(ids);
+  renderCartDrawer();
+}
+
+function openCartDrawer() {
+  var overlay = document.getElementById('cart-drawer-overlay');
+  if (overlay) overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCartDrawer() {
+  var overlay = document.getElementById('cart-drawer-overlay');
+  if (overlay) overlay.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function renderCartDrawer() {
+  var badge = document.getElementById('nav-cart-badge');
+  var itemsWrap = document.getElementById('cart-drawer-items-wrap');
+  var footer = document.getElementById('cart-drawer-footer');
+  if (!badge) return;
+
+  var ids = cartGetItems();
+  badge.style.display = ids.length ? 'flex' : 'none';
+  badge.textContent = ids.length;
+
+  if (!itemsWrap) return;
+
+  if (!ids.length) {
+    itemsWrap.innerHTML = '<p class="cart-drawer-empty">Your cart is empty. Browse the collection to find something you love.</p>';
+    if (footer) footer.style.display = 'none';
+    return;
+  }
+
+  var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+
+  itemsWrap.innerHTML = products.map(function (p) {
+    return (
+      '<div class="cart-drawer-item">' +
+        '<img src="' + p.image + '" alt="' + p.design + '">' +
+        '<div class="item-info">' +
+          '<span class="item-design">' + p.design + ' — ' + p.id + '</span>' +
+          '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
+          '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+
+  if (footer) footer.style.display = 'block';
+}
+
+function initCartDrawer() {
+  var cartBtn = document.getElementById('nav-cart-btn');
+  if (!cartBtn || document.getElementById('cart-drawer-overlay')) {
+    renderCartDrawer();
+    return;
+  }
+
+  var overlay = document.createElement('div');
+  overlay.className = 'cart-drawer-overlay';
+  overlay.id = 'cart-drawer-overlay';
+  overlay.innerHTML =
+    '<div class="cart-drawer">' +
+      '<div class="cart-drawer-header">' +
+        '<h3>Your Cart</h3>' +
+        '<button type="button" class="cart-drawer-close" id="cart-drawer-close" aria-label="Close cart">&times;</button>' +
+      '</div>' +
+      '<div class="cart-drawer-items" id="cart-drawer-items-wrap"></div>' +
+      '<div class="cart-drawer-footer" id="cart-drawer-footer" style="display:none;">' +
+        '<button type="button" class="btn btn-primary" id="cart-checkout-btn">Checkout via WhatsApp</button>' +
+        '<p>Online payment is coming soon — for now, checkout sends your cart to us on WhatsApp to confirm and arrange payment.</p>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  cartBtn.addEventListener('click', openCartDrawer);
+  document.getElementById('cart-drawer-close').addEventListener('click', closeCartDrawer);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeCartDrawer(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeCartDrawer();
+  });
+
+  overlay.addEventListener('click', function (e) {
+    var removeBtn = e.target.closest('.item-remove');
+    if (removeBtn) cartRemoveItem(removeBtn.getAttribute('data-id'));
+  });
+
+  document.getElementById('cart-checkout-btn').addEventListener('click', function () {
+    var ids = cartGetItems();
+    if (!ids.length) return;
+    var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+    var lines = products.map(function (p) { return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design; });
+    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees from my cart:\n' + lines.join('\n');
+    window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+  });
+
+  renderCartDrawer();
 }
