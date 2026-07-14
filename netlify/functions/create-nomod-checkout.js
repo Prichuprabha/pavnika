@@ -69,7 +69,8 @@ exports.handler = async function (event) {
     currency: 'AED',
     items: nomodItems,
     customer: {
-      first_name: customer.name || '',
+      first_name: customer.firstName || '',
+      last_name: customer.lastName || '',
       email: customer.email || '',
       phone_number: customer.phone || ''
     },
@@ -117,7 +118,7 @@ exports.handler = async function (event) {
           nomod_checkout_id: data.id,
           reference_id: referenceId,
           customer_email: customer.email || '',
-          customer_name: customer.name || '',
+          customer_name: ((customer.firstName || '') + ' ' + (customer.lastName || '')).trim(),
           customer_phone: customer.phone || '',
           items: JSON.stringify(items),
           promo_code: body.promoCode || '',
