@@ -679,6 +679,14 @@ function initLoginPage() {
   var resendBtn = document.getElementById('gate-resend-btn');
   var gateEmail = '';
 
+  var consentBox = document.getElementById('gate-consent-checkbox');
+  if (consentBox) {
+    consentBox.addEventListener('change', function () {
+      sendBtn.disabled = !consentBox.checked;
+    });
+  }
+  initLegalPopup();
+
   function showStepCode() {
     document.getElementById('gate-step-details').style.display = 'none';
     document.getElementById('gate-step-code').style.display = 'block';
@@ -697,6 +705,12 @@ function initLoginPage() {
     var phone = document.getElementById('gate-phone').value.trim();
     var errorEl = document.getElementById('gate-error-1');
     errorEl.textContent = '';
+
+    var consentBox = document.getElementById('gate-consent-checkbox');
+    if (consentBox && !consentBox.checked) {
+      errorEl.textContent = 'Please agree to the Terms & Conditions and Privacy & Cookies Policy to continue.';
+      return;
+    }
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errorEl.textContent = 'Please enter a valid email address.';
@@ -1093,4 +1107,59 @@ function initSearchPanel() {
   }
 
   input.addEventListener('input', function () { renderResults(input.value); });
+}
+
+/* ---------- Legal popup on the login page ----------
+   Fetches the real Terms & Conditions / Privacy & Cookies Policy pages
+   and shows just their content inline, in a frosted-glass popup, so a
+   visitor can read them without leaving the login screen. Reads from
+   the actual pages rather than duplicating their text, so there's only
+   ever one place the content needs to be kept up to date. */
+function initLegalPopup() {
+  var popup = document.getElementById('legal-popup');
+  var popupBody = document.getElementById('legal-popup-body');
+  var closeBtn = document.getElementById('legal-popup-close');
+  if (!popup) return;
+
+  var cache = {};
+
+  function openPopup(page) {
+    popup.classList.add('is-open');
+    popupBody.innerHTML = '<p style="text-align:center; opacity:0.7;">Loading…</p>';
+
+    if (cache[page]) {
+      popupBody.innerHTML = cache[page];
+      return;
+    }
+
+    fetch(page)
+      .then(function (res) { return res.text(); })
+      .then(function (html) {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var content = doc.querySelector('.legal-content');
+        var inner = content ? content.innerHTML : '<p>Sorry, this couldn\'t be loaded right now.</p>';
+        cache[page] = inner;
+        popupBody.innerHTML = inner;
+      })
+      .catch(function () {
+        popupBody.innerHTML = '<p>Sorry, this couldn\'t be loaded right now. Please try again.</p>';
+      });
+  }
+
+  function closePopup() {
+    popup.classList.remove('is-open');
+  }
+
+  document.querySelectorAll('.gate-legal-link').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      openPopup(link.getAttribute('data-page'));
+    });
+  });
+
+  closeBtn.addEventListener('click', closePopup);
+  popup.addEventListener('click', function (e) { if (e.target === popup) closePopup(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && popup.classList.contains('is-open')) closePopup();
+  });
 }

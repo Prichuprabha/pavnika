@@ -33,7 +33,13 @@
       <p>Please verify your email to enter the site.</p>
       <div class="field"><label>Email</label><input type="email" id="gate-email" autocomplete="email"></div>
       <div class="field"><label>Mobile Number</label><input type="tel" id="gate-phone" autocomplete="tel"></div>
-      <button type="button" id="gate-send-btn" class="btn btn-primary">Send Verification Code</button>
+      <div class="gate-consent-row">
+        <input type="checkbox" id="gate-consent-checkbox">
+        <label for="gate-consent-checkbox">
+          I agree to the <a href="#" class="gate-legal-link" data-page="terms.html">Terms &amp; Conditions</a> and <a href="#" class="gate-legal-link" data-page="privacy.html">Privacy &amp; Cookies Policy</a>
+        </label>
+      </div>
+      <button type="button" id="gate-send-btn" class="btn btn-primary" disabled>Send Verification Code</button>
       <p class="gate-error" id="gate-error-1"></p>
     </div>
     <div id="gate-step-code" style="display:none;">
@@ -43,6 +49,15 @@
       <button type="button" id="gate-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>
       <p class="gate-error" id="gate-error-2"></p>
       <button type="button" id="gate-resend-btn" class="gate-resend">Resend code</button>
+    </div>
+  </div>
+</div>
+
+<div class="legal-popup" id="legal-popup">
+  <div class="legal-popup-inner">
+    <button type="button" class="legal-popup-close" id="legal-popup-close" aria-label="Close">&times;</button>
+    <div class="legal-popup-body" id="legal-popup-body">
+      <p style="text-align:center; opacity:0.7;">Loading…</p>
     </div>
   </div>
 </div>

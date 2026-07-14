@@ -466,11 +466,29 @@ function initSareeEditor(token) {
       var editedRows = [];
       var invalidRows = [];
 
+      function productsEqual(a, b) {
+        var fields = ['series', 'category', 'type', 'sareeType', 'pattern', 'design', 'price', 'sold'];
+        for (var i = 0; i < fields.length; i++) {
+          if ((a[fields[i]] || '') !== (b[fields[i]] || '')) return false;
+        }
+        var imgA = a.images || [];
+        var imgB = b.images || [];
+        if (imgA.length !== imgB.length) return false;
+        for (var j = 0; j < imgA.length; j++) {
+          if (imgA[j] !== imgB[j]) return false;
+        }
+        return true;
+      }
+
       rows.forEach(function (row) {
         var product = csvRowToProduct(row);
         if (!product.id) { invalidRows.push(row); return; }
-        if (existingById[product.id]) {
-          editedRows.push(product);
+        var existing = existingById[product.id];
+        if (existing) {
+          if (!productsEqual(existing, product)) {
+            editedRows.push(product);
+          }
+          // else: identical to what's already saved — not a real change, skip it
         } else {
           newRows.push(product);
         }
@@ -481,7 +499,11 @@ function initSareeEditor(token) {
       }
 
       if (!newRows.length && !editedRows.length) {
-        showStatus('error', 'No valid rows found in that CSV.');
+        if (rows.length && !invalidRows.length) {
+          showStatus('success', 'No changes detected — every row in this CSV already matches what\'s saved. Nothing to save.');
+        } else {
+          showStatus('error', 'No valid rows found in that CSV.');
+        }
         return;
       }
 
