@@ -1478,12 +1478,13 @@ function initCheckoutPage() {
   document.getElementById('checkout-pay-online').addEventListener('click', function (e) {
     e.preventDefault();
     var payBtn = document.getElementById('checkout-pay-online');
-    var name = document.getElementById('checkout-name').value.trim();
+    var firstName = document.getElementById('checkout-first-name').value.trim();
+    var lastName = document.getElementById('checkout-last-name').value.trim();
     var phone = document.getElementById('checkout-phone').value.trim();
     var email = decodeURIComponent(gateGetCookie('pavnika_email') || '');
 
-    if (!name || !phone) {
-      alert('Please enter your name and mobile number before proceeding to payment.');
+    if (!firstName || !lastName || !phone) {
+      alert('Please enter your first name, last name, and mobile number before proceeding to payment.');
       return;
     }
 
@@ -1492,7 +1493,7 @@ function initCheckoutPage() {
 
     var payload = {
       items: products.map(function (p) { return { id: p.id, name: p.design + ' — ' + p.id, price: p.price }; }),
-      customer: { name: name, phone: phone, email: email },
+      customer: { firstName: firstName, lastName: lastName, phone: phone, email: email },
       discountPercent: appliedDiscount,
       promoCode: appliedCode
     };
