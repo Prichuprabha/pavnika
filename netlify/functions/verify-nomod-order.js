@@ -105,25 +105,78 @@ async function markSareesSold(sareeIds) {
   });
 }
 
+function buildItemDescription(it) {
+  // e.g. "VALUE WEAVES (VW001) Semi Silk Korvai saree in Yellow and Red & Golden Motif Pattern"
+  var line = '';
+  if (it.series) line += it.series + ' (' + it.id + ') ';
+  line += it.type ? (it.type + ' saree') : 'Saree';
+  if (it.sareeType) line += ' in ' + it.sareeType;
+  if (it.pattern) line += (it.sareeType ? ' & ' : ' with ') + it.pattern;
+  return line;
+}
+
 async function sendReceiptEmail(order, nomodData) {
   var items = JSON.parse(order.items || '[]');
-  var itemLines = items.map(function (it) {
-    return `<tr><td style="padding:6px 10px;">${it.id}</td><td style="padding:6px 10px;">${it.name || ''}</td><td style="padding:6px 10px;">AED ${formatAED(it.price)}</td></tr>`;
+  var billing = JSON.parse(order.billing_address || '{}');
+  var shipping = JSON.parse(order.shipping_address || '{}');
+
+  function addressHtml(addr) {
+    if (!addr.building && !addr.city) return '<span style="opacity:0.6;">(not provided)</span>';
+    return `${addr.building || ''}, ${addr.street || ''}<br>${addr.city || ''}, ${addr.state || ''} ${addr.pincode || ''}<br>${addr.country || ''}`;
+  }
+
+  var sameAddress = JSON.stringify(billing) === JSON.stringify(shipping);
+
+  var itemRows = items.map(function (it) {
+    return `
+      <tr>
+        <td style="padding:10px; border-bottom:1px solid #ece8de;">
+          ${it.image ? `<img src="${it.image}" alt="${it.id}" width="60" style="border-radius:3px; display:block;">` : ''}
+        </td>
+        <td style="padding:10px; border-bottom:1px solid #ece8de; font-size:13px; color:#1B241E;">
+          ${buildItemDescription(it)}
+        </td>
+        <td style="padding:10px; border-bottom:1px solid #ece8de; font-size:13px; font-weight:bold; color:#0E4B39; white-space:nowrap;">
+          AED ${formatAED(it.price)}
+        </td>
+      </tr>`;
   }).join('');
 
   var html = `
-    <div style="font-family:sans-serif; max-width:520px; margin:0 auto;">
-      <h2 style="color:#0E4B39;">New Order — Payment Confirmed</h2>
-      <p><strong>Customer:</strong> ${order.customer_name || '(not provided)'}</p>
-      <p><strong>Email:</strong> ${order.customer_email || '(not provided)'}</p>
-      <p><strong>Phone:</strong> ${order.customer_phone || '(not provided)'}</p>
+    <div style="font-family:sans-serif; max-width:560px; margin:0 auto;">
+      <h2 style="color:#0E4B39; margin-bottom:4px;">New Order — Payment Confirmed</h2>
+      <p style="color:#666; font-size:13px; margin-top:0;">Nomod checkout reference: ${order.nomod_checkout_id}</p>
+
+      <div style="background:#F0EAD9; border-radius:6px; padding:14px 18px; margin:16px 0;">
+        <p style="margin:0 0 4px;"><strong>Customer:</strong> ${order.customer_name || '(not provided)'}</p>
+        <p style="margin:0 0 4px;"><strong>Email:</strong> ${order.customer_email || '(not provided)'}</p>
+        <p style="margin:0;"><strong>Phone:</strong> ${order.customer_phone || '(not provided)'}</p>
+      </div>
+
+      <div style="display:flex; gap:16px; margin:16px 0; flex-wrap:wrap;">
+        <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #ece8de; border-radius:6px; padding:14px 16px;">
+          <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Billing Address</p>
+          <p style="margin:0; font-size:13px; line-height:1.6;">${addressHtml(billing)}</p>
+        </div>
+        <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #ece8de; border-radius:6px; padding:14px 16px;">
+          <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Shipping Address ${sameAddress ? '(same as billing)' : ''}</p>
+          <p style="margin:0; font-size:13px; line-height:1.6;">${addressHtml(shipping)}</p>
+        </div>
+      </div>
+
       <table style="border-collapse:collapse; width:100%; margin:16px 0;">
-        <thead><tr style="background:#F0EAD9; text-align:left;"><th style="padding:6px 10px;">ID</th><th style="padding:6px 10px;">Item</th><th style="padding:6px 10px;">Price</th></tr></thead>
-        <tbody>${itemLines}</tbody>
+        <thead>
+          <tr style="text-align:left;">
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Saree</th>
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Description</th>
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Price</th>
+          </tr>
+        </thead>
+        <tbody>${itemRows}</tbody>
       </table>
+
       ${order.promo_code ? `<p><strong>Promo code used:</strong> ${order.promo_code}</p>` : ''}
-      <p style="font-size:18px; font-weight:bold; color:#0E4B39;">Total paid: AED ${formatAED(order.total)}</p>
-      <p style="color:#666; font-size:13px;">Nomod checkout reference: ${order.nomod_checkout_id}</p>
+      <p style="font-size:20px; font-weight:bold; color:#0E4B39; margin-top:18px;">Total paid: AED ${formatAED(order.total)}</p>
     </div>
   `;
 

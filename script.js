@@ -108,6 +108,13 @@ function seriesHoverText(series) {
   return SERIES_HOVER_TEXT[series] || ('View more from our ' + seriesTitleCase(series) + ' collection');
 }
 
+var COUNTRY_LIST = [
+  'United Arab Emirates', 'India', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
+  'United Kingdom', 'United States', 'Canada', 'Australia', 'Singapore', 'Pakistan',
+  'Sri Lanka', 'Bangladesh', 'Malaysia', 'Egypt', 'Jordan', 'Lebanon', 'South Africa',
+  'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Other'
+];
+
 function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -560,23 +567,34 @@ function buildLightbox() {
     var buyNowBtn = document.getElementById('lightbox-buy-now');
     var actionsWrap = document.getElementById('lightbox-cart-actions');
 
-    if (product.sold) {
-      actionsWrap.innerHTML = '<button type="button" disabled>Sold Out</button>';
-    } else {
+    function renderCartActions() {
+      var inCart = cartGetItems().indexOf(product.id) !== -1;
       actionsWrap.innerHTML =
-        '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
+        (inCart
+          ? '<button type="button" class="btn-add-cart" id="lightbox-add-cart">View Cart</button>'
+          : '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>') +
         '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>';
+
       document.getElementById('lightbox-add-cart').addEventListener('click', function () {
+        if (inCart) {
+          closeLightbox();
+          openCartDrawer();
+          return;
+        }
         cartAddItem(product);
-        this.textContent = 'Added ✓';
-        var self = this;
-        setTimeout(function () { self.textContent = 'Add to Cart'; }, 1200);
+        renderCartActions();
       });
       document.getElementById('lightbox-buy-now').addEventListener('click', function () {
         cartAddItem(product);
         closeLightbox();
         openCartDrawer();
       });
+    }
+
+    if (product.sold) {
+      actionsWrap.innerHTML = '<button type="button" disabled>Sold Out</button>';
+    } else {
+      renderCartActions();
     }
 
     loadInterestBadge(product.id, document.getElementById('lightbox-interest'));
@@ -1418,6 +1436,19 @@ function initCheckoutPage() {
   subtotalEl.textContent = formatAED(subtotal);
   totalEl.textContent = formatAED(subtotal);
 
+  // Populate both country dropdowns, UAE first (and selected by default).
+  var billingCountrySelect = document.getElementById('billing-country');
+  var shippingCountrySelect = document.getElementById('shipping-country');
+  [billingCountrySelect, shippingCountrySelect].forEach(function (select) {
+    select.innerHTML = COUNTRY_LIST.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
+  });
+
+  var sameAddressBox = document.getElementById('checkout-same-address');
+  var shippingBlock = document.getElementById('checkout-shipping-block');
+  sameAddressBox.addEventListener('change', function () {
+    shippingBlock.style.display = sameAddressBox.checked ? 'none' : 'block';
+  });
+
   var appliedDiscount = 0;
   var appliedCode = '';
 
@@ -1487,9 +1518,28 @@ function initCheckoutPage() {
       });
   });
 
+  function readAddress(prefix) {
+    return {
+      building: document.getElementById(prefix + '-building').value.trim(),
+      street: document.getElementById(prefix + '-street').value.trim(),
+      city: document.getElementById(prefix + '-city').value.trim(),
+      state: document.getElementById(prefix + '-state').value.trim(),
+      pincode: document.getElementById(prefix + '-pincode').value.trim(),
+      country: document.getElementById(prefix + '-country').value
+    };
+  }
+
+  function addressIsComplete(addr) {
+    return addr.building && addr.street && addr.city && addr.state && addr.pincode && addr.country;
+  }
+
   document.getElementById('checkout-pay-online').addEventListener('click', function (e) {
     e.preventDefault();
     var payBtn = document.getElementById('checkout-pay-online');
+    var addressMsg = document.getElementById('checkout-address-msg');
+    addressMsg.className = 'checkout-promo-msg';
+    addressMsg.textContent = '';
+
     var firstName = document.getElementById('checkout-first-name').value.trim();
     var lastName = document.getElementById('checkout-last-name').value.trim();
     var phone = document.getElementById('checkout-phone').value.trim();
@@ -1500,12 +1550,47 @@ function initCheckoutPage() {
       return;
     }
 
+    var billingAddress = readAddress('billing');
+    if (!addressIsComplete(billingAddress)) {
+      alert('Please complete all billing address fields before proceeding to payment.');
+      return;
+    }
+
+    var sameAddress = document.getElementById('checkout-same-address').checked;
+    var shippingAddress = sameAddress ? billingAddress : readAddress('shipping');
+    if (!sameAddress && !addressIsComplete(shippingAddress)) {
+      alert('Please complete all shipping address fields, or check "Ship to the same address".');
+      return;
+    }
+
+    // Direct international orders to WhatsApp — online payment and direct
+    // shipping is currently only available within the UAE.
+    if (shippingAddress.country !== 'United Arab Emirates') {
+      addressMsg.className = 'checkout-promo-msg error';
+      addressMsg.innerHTML = 'We currently offer online payment and direct shipping within the UAE only. For international orders, please use "Checkout via WhatsApp" below so we can arrange shipping and payment together.';
+      addressMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
     payBtn.textContent = 'Starting payment...';
     payBtn.style.pointerEvents = 'none';
 
     var payload = {
-      items: products.map(function (p) { return { id: p.id, name: p.design + ' — ' + p.id, price: p.price }; }),
+      items: products.map(function (p) {
+        return {
+          id: p.id,
+          name: p.design + ' — ' + p.id,
+          price: p.price,
+          series: p.series,
+          type: p.type,
+          sareeType: p.sareeType,
+          pattern: p.pattern,
+          image: p.image
+        };
+      }),
       customer: { firstName: firstName, lastName: lastName, phone: phone, email: email },
+      billingAddress: billingAddress,
+      shippingAddress: shippingAddress,
       discountPercent: appliedDiscount,
       promoCode: appliedCode
     };

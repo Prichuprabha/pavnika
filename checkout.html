@@ -113,6 +113,41 @@
           <div class="checkout-field"><label>Mobile Number</label><input type="tel" id="checkout-phone" placeholder="+971..."></div>
         </div>
 
+        <h3 class="checkout-address-heading">Billing Address</h3>
+        <div class="checkout-customer-fields" id="checkout-billing-fields">
+          <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="billing-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
+          <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="billing-street" placeholder="e.g. Near Dubai Marina Mall"></div>
+          <div class="checkout-field"><label>City</label><input type="text" id="billing-city" placeholder="e.g. Dubai"></div>
+          <div class="checkout-field"><label>State / Province</label><input type="text" id="billing-state" placeholder="e.g. Dubai"></div>
+          <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="billing-pincode" placeholder="e.g. 00000"></div>
+          <div class="checkout-field">
+            <label>Country / Region</label>
+            <select id="billing-country"></select>
+          </div>
+        </div>
+
+        <label class="checkout-checkbox-row">
+          <input type="checkbox" id="checkout-same-address" checked>
+          Ship to the same address
+        </label>
+
+        <div id="checkout-shipping-block" style="display:none;">
+          <h3 class="checkout-address-heading">Shipping Address</h3>
+          <div class="checkout-customer-fields">
+            <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="shipping-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
+            <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="shipping-street" placeholder="e.g. Near Dubai Marina Mall"></div>
+            <div class="checkout-field"><label>City</label><input type="text" id="shipping-city" placeholder="e.g. Dubai"></div>
+            <div class="checkout-field"><label>State / Province</label><input type="text" id="shipping-state" placeholder="e.g. Dubai"></div>
+            <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="shipping-pincode" placeholder="e.g. 00000"></div>
+            <div class="checkout-field">
+              <label>Country / Region</label>
+              <select id="shipping-country"></select>
+            </div>
+          </div>
+        </div>
+
+        <p class="checkout-promo-msg" id="checkout-address-msg"></p>
+
         <a href="#" class="btn btn-primary" id="checkout-pay-online" style="display:block; text-align:center; margin-bottom:6px;">Pay Online</a>
         <p class="checkout-note">Choosing Pay Online will take you to our secure payment partner's page to complete payment — where the price will also show in your local currency automatically.</p>
 

@@ -132,7 +132,9 @@ exports.handler = async function (event) {
           items: JSON.stringify(items),
           promo_code: body.promoCode || '',
           total: finalAmountCents / 100,
-          status: 'pending'
+          status: 'pending',
+          billing_address: JSON.stringify(body.billingAddress || {}),
+          shipping_address: JSON.stringify(body.shippingAddress || {})
         })
       });
     } catch (dbErr) {

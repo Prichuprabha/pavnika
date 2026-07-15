@@ -2098,3 +2098,29 @@ body.login-page {
   font-family: var(--body);
   font-size: 0.9rem;
 }
+.checkout-field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 14px;
+  border: 1px solid var(--stone);
+  border-radius: 3px;
+  font-family: var(--body);
+  font-size: 0.9rem;
+  background: var(--ivory);
+}
+.checkout-address-heading {
+  font-size: 0.95rem;
+  color: var(--green-deep);
+  margin: 24px 0 14px;
+  padding-top: 18px;
+  border-top: 1px solid var(--stone);
+}
+.checkout-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  margin: 4px 0 6px;
+  cursor: pointer;
+}
