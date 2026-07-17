@@ -16,6 +16,42 @@ const SITE_URL = 'https://pavnika.ae';
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// Builds an order number like "0231062601": HH (24hr) + MM + DD + YY of
+// when the order was placed (UAE time, GMT+4), followed by a 2-digit
+// sequence number for how many orders have been placed that same day.
+async function generateOrderNumber() {
+  var now = new Date(Date.now() + 4 * 60 * 60 * 1000); // shift to UAE time (GMT+4)
+  var hh = String(now.getUTCHours()).padStart(2, '0');
+  var mm = String(now.getUTCMinutes()).padStart(2, '0');
+  var dd = String(now.getUTCDate()).padStart(2, '0');
+  var yy = String(now.getUTCFullYear()).slice(-2);
+
+  var dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -4, 0, 0)).toISOString();
+  var dayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, -4, 0, 0)).toISOString();
+
+  var seq = 1;
+  try {
+    var res = await fetch(
+      `${SUPABASE_URL}/rest/v1/orders?select=id&created_at=gte.${dayStart}&created_at=lt.${dayEnd}`,
+      {
+        headers: {
+          'apikey': SUPABASE_SERVICE_ROLE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+        }
+      }
+    );
+    if (res.ok) {
+      var rows = await res.json();
+      seq = rows.length + 1;
+    }
+  } catch (e) {
+    console.error('Could not count today\'s orders, defaulting sequence to 1:', e);
+  }
+
+  var xx = String(seq).padStart(2, '0');
+  return hh + mm + dd + yy + xx;
+}
+
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -116,6 +152,7 @@ exports.handler = async function (event) {
     // Nomod's page — verify-nomod-order will look this up and update it
     // once (and only if) Nomod confirms the payment actually went through.
     try {
+      const orderNumber = await generateOrderNumber();
       await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
         method: 'POST',
         headers: {
@@ -124,6 +161,7 @@ exports.handler = async function (event) {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
+          order_number: orderNumber,
           nomod_checkout_id: data.id,
           reference_id: referenceId,
           customer_email: customer.email || '',
@@ -131,6 +169,8 @@ exports.handler = async function (event) {
           customer_phone: customer.phone || '',
           items: JSON.stringify(items),
           promo_code: body.promoCode || '',
+          subtotal: subtotalCents / 100,
+          discount_amount: totalDiscountCents / 100,
           total: finalAmountCents / 100,
           status: 'pending',
           billing_address: JSON.stringify(body.billingAddress || {}),

@@ -111,17 +111,43 @@ function buildItemDescription(it) {
   if (it.series) line += it.series + ' (' + it.id + ') ';
   line += it.type ? (it.type + ' saree') : 'Saree';
   if (it.sareeType) line += ' in ' + it.sareeType;
-  if (it.pattern) line += (it.sareeType ? ' & ' : ' with ') + it.pattern;
+  if (it.pattern) {
+    var patternText = /pattern\s*$/i.test(it.pattern) ? it.pattern : (it.pattern + ' Pattern');
+    line += (it.sareeType ? ' & ' : ' with ') + patternText;
+  }
   return line;
+}
+
+function extractPaymentMethod(nomodData) {
+  // Nomod's exact field name/shape for payment method details on a
+  // confirmed checkout hasn't been verified against a real response yet
+  // (this needs a real-log check the first time this runs for real, same
+  // as we did for the checkout amount fields earlier). Written
+  // defensively so it degrades to a generic label rather than breaking
+  // if the actual response shape differs from what's guessed here.
+  try {
+    var charge = (nomodData.charges && nomodData.charges[0]) || null;
+    var methodType = (charge && (charge.payment_method || charge.method || charge.type)) || nomodData.payment_method || null;
+    var last4 = (charge && (charge.last4 || charge.card_last4 || (charge.card && charge.card.last4))) || null;
+
+    if (!methodType) return null;
+
+    var label = String(methodType).replace(/_/g, ' ');
+    label = label.charAt(0).toUpperCase() + label.slice(1);
+    return last4 ? (label + ' •••• ' + last4) : label;
+  } catch (e) {
+    return null;
+  }
 }
 
 async function sendReceiptEmail(order, nomodData) {
   var items = JSON.parse(order.items || '[]');
   var billing = JSON.parse(order.billing_address || '{}');
   var shipping = JSON.parse(order.shipping_address || '{}');
+  var paymentMethod = extractPaymentMethod(nomodData);
 
   function addressHtml(addr) {
-    if (!addr.building && !addr.city) return '<span style="opacity:0.6;">(not provided)</span>';
+    if (!addr.building && !addr.city) return '<span style="color:#8a8880;">(not provided)</span>';
     return `${addr.building || ''}, ${addr.street || ''}<br>${addr.city || ''}, ${addr.state || ''} ${addr.pincode || ''}<br>${addr.country || ''}`;
   }
 
@@ -143,24 +169,29 @@ async function sendReceiptEmail(order, nomodData) {
   }).join('');
 
   var html = `
-    <div style="font-family:sans-serif; max-width:560px; margin:0 auto;">
-      <h2 style="color:#0E4B39; margin-bottom:4px;">New Order — Payment Confirmed</h2>
-      <p style="color:#666; font-size:13px; margin-top:0;">Nomod checkout reference: ${order.nomod_checkout_id}</p>
+    <div style="font-family:sans-serif; max-width:560px; margin:0 auto; background:#FAF7EF;">
+      <div style="background:#082E22; padding:28px 24px; text-align:center; border-radius:6px 6px 0 0;">
+        <div style="width:44px; height:44px; border-radius:50%; background:#0E4B39; margin:0 auto 10px; display:flex; align-items:center; justify-content:center; color:#E3C976; font-family:Georgia,serif; font-size:20px;">P</div>
+        <p style="font-family:Georgia,serif; font-size:20px; color:#FAF7EF; margin:0 0 4px;">Thank you for your purchase!</p>
+        <p style="font-size:11.5px; color:#E3C976; margin:0;">Our team will be in touch shortly to arrange shipment.</p>
+      </div>
+      <div style="padding:22px 24px; color:#1B241E;">
+      <p style="color:#666666; font-size:13px; margin-top:0;">Order #${order.order_number || order.nomod_checkout_id}</p>
 
       <div style="background:#F0EAD9; border-radius:6px; padding:14px 18px; margin:16px 0;">
-        <p style="margin:0 0 4px;"><strong>Customer:</strong> ${order.customer_name || '(not provided)'}</p>
-        <p style="margin:0 0 4px;"><strong>Email:</strong> ${order.customer_email || '(not provided)'}</p>
-        <p style="margin:0;"><strong>Phone:</strong> ${order.customer_phone || '(not provided)'}</p>
+        <p style="margin:0 0 4px; color:#1B241E;"><strong>Customer:</strong> ${order.customer_name || '(not provided)'}</p>
+        <p style="margin:0 0 4px; color:#1B241E;"><strong>Email:</strong> ${order.customer_email || '(not provided)'}</p>
+        <p style="margin:0; color:#1B241E;"><strong>Phone:</strong> ${order.customer_phone || '(not provided)'}</p>
       </div>
 
       <div style="display:flex; gap:16px; margin:16px 0; flex-wrap:wrap;">
         <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #ece8de; border-radius:6px; padding:14px 16px;">
           <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Billing Address</p>
-          <p style="margin:0; font-size:13px; line-height:1.6;">${addressHtml(billing)}</p>
+          <p style="margin:0; font-size:13px; line-height:1.6; color:#1B241E;">${addressHtml(billing)}</p>
         </div>
         <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #ece8de; border-radius:6px; padding:14px 16px;">
           <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Shipping Address ${sameAddress ? '(same as billing)' : ''}</p>
-          <p style="margin:0; font-size:13px; line-height:1.6;">${addressHtml(shipping)}</p>
+          <p style="margin:0; font-size:13px; line-height:1.6; color:#1B241E;">${addressHtml(shipping)}</p>
         </div>
       </div>
 
@@ -175,10 +206,22 @@ async function sendReceiptEmail(order, nomodData) {
         <tbody>${itemRows}</tbody>
       </table>
 
-      ${order.promo_code ? `<p><strong>Promo code used:</strong> ${order.promo_code}</p>` : ''}
+      <div style="border-top:1px solid #ece8de; padding-top:10px; margin-top:6px;">
+        <div style="display:flex; justify-content:space-between; font-size:12.5px; color:#5c6b62; margin-bottom:4px;"><span>Subtotal</span><span>AED ${formatAED(order.subtotal || order.total)}</span></div>
+        ${(order.discount_amount && Number(order.discount_amount) > 0) ? `<div style="display:flex; justify-content:space-between; font-size:12.5px; color:#3B6D11; font-weight:600; margin-bottom:4px;"><span>${order.promo_code ? order.promo_code + ' discount' : 'Discount'}</span><span>-AED ${formatAED(order.discount_amount)}</span></div>` : ''}
+      </div>
+      ${paymentMethod ? `
+      <div style="border:1px solid #ece8de; border-radius:6px; padding:10px 14px; margin:14px 0; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:12px; color:#5c6b62;">Payment method</span>
+        <span style="font-size:13px; font-weight:600; color:#1B241E;">${paymentMethod}</span>
+      </div>` : ''}
       <p style="font-size:20px; font-weight:bold; color:#0E4B39; margin-top:18px;">Total paid: AED ${formatAED(order.total)}</p>
+      </div>
     </div>
   `;
+
+  var recipients = [ADMIN_EMAIL];
+  if (order.customer_email) recipients.push(order.customer_email);
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -188,8 +231,8 @@ async function sendReceiptEmail(order, nomodData) {
     },
     body: JSON.stringify({
       from: FROM_EMAIL,
-      to: ADMIN_EMAIL,
-      subject: `New order — AED ${formatAED(order.total)} — Payment confirmed`,
+      to: recipients,
+      subject: `Order #${order.order_number || order.nomod_checkout_id} — AED ${formatAED(order.total)} — Payment confirmed`,
       html: html
     })
   });

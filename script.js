@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initAccountMenu();
   initSearchPanel();
   initCartDrawer();
+  initRevealAnimations();
   initCheckoutPage();
   initOrderSuccessPage();
 
@@ -316,10 +317,11 @@ function initCollectionsPage() {
     var pageItems = filtered.slice(start, start + PAGE_SIZE);
 
     grid.innerHTML = pageItems.map(productCardHTML).join('');
-    countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees') + ' found';
+    if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees') + ' found';
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
     renderPagination(filtered.length);
     initHoverCycle(grid);
+    if (window.__revealElements) window.__revealElements(grid, '.product-card');
   }
 
   if (categoryGroup) {
@@ -787,7 +789,6 @@ function initLoginPage() {
 
   function sendCode() {
     var email = document.getElementById('gate-email').value.trim();
-    var phone = document.getElementById('gate-phone').value.trim();
     var errorEl = document.getElementById('gate-error-1');
     errorEl.textContent = '';
 
@@ -801,10 +802,6 @@ function initLoginPage() {
       errorEl.textContent = 'Please enter a valid email address.';
       return;
     }
-    if (!phone) {
-      errorEl.textContent = 'Please enter your mobile number.';
-      return;
-    }
 
     sendBtn.disabled = true;
     sendBtn.textContent = 'Sending...';
@@ -812,7 +809,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, phone: phone })
+      body: JSON.stringify({ email: email })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -880,7 +877,7 @@ function initLoginPage() {
   document.getElementById('gate-code').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') verifyCode();
   });
-  document.getElementById('gate-phone').addEventListener('keydown', function (e) {
+  document.getElementById('gate-email').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') sendCode();
   });
   resendBtn.addEventListener('click', function () {
@@ -889,7 +886,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateEmail, phone: document.getElementById('gate-phone').value.trim() })
+      body: JSON.stringify({ email: gateEmail })
     })
       .finally(function () {
         setTimeout(function () {
@@ -1709,4 +1706,49 @@ function initOrderSuccessPage() {
   }
 
   checkOrder(true);
+}
+
+/* ---------- Site-wide fade + slide reveal animation ----------
+   Automatically applies a subtle fade-up reveal to headings and
+   section content as they scroll into view, and to product cards as
+   they render — no per-page markup changes needed. Respects
+   prefers-reduced-motion for accessibility. */
+function initRevealAnimations() {
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+  function observeAll(root) {
+    (root || document).querySelectorAll('.reveal:not(.is-visible)').forEach(function (el) {
+      observer.observe(el);
+    });
+  }
+
+  // Tag common static structural elements that exist on page load.
+  var staticSelectors = '.page-hero .eyebrow, .page-hero h1, .section-head, .hero-copy > *, .why-card, .journey-step, .category-tile, .story-banner-overlay > *';
+  document.querySelectorAll(staticSelectors).forEach(function (el, i) {
+    el.classList.add('reveal');
+    el.style.transitionDelay = (Math.min(i % 5, 5) * 0.08) + 's';
+  });
+
+  observeAll();
+
+  // Exposed so dynamically-rendered content (product grids, etc.) can
+  // opt in after being inserted into the page.
+  window.__revealElements = function (container, selector) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var items = container.querySelectorAll(selector || ':scope > *');
+    items.forEach(function (el, i) {
+      el.classList.add('reveal');
+      el.style.transitionDelay = (Math.min(i % 8, 8) * 0.05) + 's';
+    });
+    observeAll(container);
+  };
 }

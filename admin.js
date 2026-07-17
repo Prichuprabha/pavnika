@@ -53,16 +53,11 @@ function initAdminLogin() {
 
   sendBtn.addEventListener('click', function () {
     var emailInput = document.getElementById('admin-gate-email').value.trim();
-    var phone = document.getElementById('admin-gate-phone').value.trim();
     var errorEl = document.getElementById('admin-error-1');
     errorEl.textContent = '';
 
     if (!emailInput || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
       errorEl.textContent = 'Please enter a valid email address.';
-      return;
-    }
-    if (!phone) {
-      errorEl.textContent = 'Please enter a mobile number.';
       return;
     }
 
@@ -72,7 +67,7 @@ function initAdminLogin() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailInput, phone: phone })
+      body: JSON.stringify({ email: emailInput })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -141,6 +136,7 @@ function showAdminPanel(token, email) {
   initVideosEditor(token);
   initPromoCodesEditor(token);
   initStatsDashboard(token);
+  initOrdersView(token);
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -185,6 +181,7 @@ function initSareeEditor(token) {
   var PAGE_SIZE = 80;
   var currentPage = 1;
   var searchQuery = '';
+  var hideSold = false;
 
   function seriesTitle(code) {
     return code.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
@@ -200,6 +197,7 @@ function initSareeEditor(token) {
   function getFilteredProducts() {
     var q = searchQuery.trim().toLowerCase();
     var products = window.PRODUCTS || [];
+    if (hideSold) products = products.filter(function (p) { return !p.sold; });
     if (!q) return products;
     var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
     return products.filter(function (p) {
@@ -229,6 +227,7 @@ function initSareeEditor(token) {
     rowsEl.innerHTML = pageItems.map(function (p) {
       return (
         '<tr class="' + (p.sold ? 'is-sold' : '') + '">' +
+          '<td><img src="' + (p.image || '') + '" alt="' + p.id + '" style="width:36px; height:46px; object-fit:cover; border-radius:3px;"></td>' +
           '<td>' + p.id + '</td>' +
           '<td>' + p.design + ' — ' + seriesTitle(p.series) + '</td>' +
           '<td>' + p.category + '</td>' +
@@ -246,6 +245,15 @@ function initSareeEditor(token) {
     currentPage = 1;
     renderTable();
   });
+
+  var hideSoldToggle = document.getElementById('admin-hide-sold-toggle');
+  if (hideSoldToggle) {
+    hideSoldToggle.addEventListener('change', function () {
+      hideSold = hideSoldToggle.checked;
+      currentPage = 1;
+      renderTable();
+    });
+  }
 
   paginationEl.addEventListener('click', function (e) {
     var btn = e.target.closest('.admin-page-btn');
@@ -1034,7 +1042,8 @@ function initStatsDashboard(token) {
     loginsRows.innerHTML = latestStats.recentLogins.length
       ? latestStats.recentLogins.map(function (v) {
           var emailDisplay = showFull ? (v.email || '') : maskEmail(v.email);
-          return '<div class="admin-rank-row"><span>' + emailDisplay + '</span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
+          var location = v.country ? (v.region ? v.region + ', ' + v.country : v.country) : 'Unknown';
+          return '<div class="admin-rank-row"><span>' + emailDisplay + '<br><span style="font-size:0.7rem; opacity:0.6;">' + location + '</span></span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
         }).join('')
       : '<p style="font-size:0.82rem; opacity:0.6;">No logins yet.</p>';
   }
@@ -1362,4 +1371,168 @@ function initPromoCodesEditor(token) {
   });
 
   loadPromos();
+}
+
+/* ---------- Orders view ---------- */
+function initOrdersView(token) {
+  var statusMsg = document.getElementById('admin-orders-status-msg');
+  var summaryEl = document.getElementById('admin-orders-summary');
+  var pendingListEl = document.getElementById('admin-pending-list');
+  var rowsEl = document.getElementById('admin-orders-rows');
+  var statusFilter = document.getElementById('admin-orders-status-filter');
+  var searchInput = document.getElementById('admin-orders-search');
+
+  var allOrders = [];
+  var sortKey = 'created_at';
+  var sortDir = 'desc';
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  function elapsedText(iso) {
+    var diffMs = Date.now() - new Date(iso).getTime();
+    var mins = Math.floor(diffMs / 60000);
+    if (mins < 60) return mins + 'm ago';
+    var hours = Math.floor(mins / 60);
+    if (hours < 24) return hours + 'h ' + (mins % 60) + 'm ago';
+    var days = Math.floor(hours / 24);
+    return days + 'd ' + (hours % 24) + 'h ago';
+  }
+
+  function statusLabel(s) {
+    return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function renderSummary() {
+    var pendingDispatch = allOrders.filter(function (o) { return o.status === 'paid'; });
+    var totalOrders = allOrders.length;
+    var totalRevenue = allOrders.filter(function (o) { return o.status !== 'cancelled' && o.status !== 'payment_error'; })
+      .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+
+    summaryEl.innerHTML =
+      '<div class="admin-metric-card"><p class="label">Total orders</p><p class="value">' + totalOrders + '</p></div>' +
+      '<div class="admin-metric-card accent-gold"><p class="label">Pending dispatch</p><p class="value">' + pendingDispatch.length + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">Total revenue (AED)</p><p class="value">' + Math.round(totalRevenue).toLocaleString() + '</p></div>';
+
+    if (pendingDispatch.length) {
+      pendingListEl.innerHTML =
+        '<h3 class="admin-stats-subheading">Awaiting dispatch</h3>' +
+        pendingDispatch.map(function (o) {
+          return '<div class="admin-pending-card"><span>Order #' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Unknown') + '</span><span class="elapsed">' + elapsedText(o.created_at) + '</span></div>';
+        }).join('');
+    } else {
+      pendingListEl.innerHTML = '';
+    }
+  }
+
+  function getFilteredSorted() {
+    var statusVal = statusFilter.value;
+    var query = searchInput.value.trim().toLowerCase();
+
+    var filtered = allOrders.filter(function (o) {
+      var okStatus = !statusVal || (o.status || 'pending') === statusVal;
+      var okSearch = !query ||
+        (o.order_number || '').toLowerCase().indexOf(query) !== -1 ||
+        (o.customer_name || '').toLowerCase().indexOf(query) !== -1 ||
+        (o.customer_email || '').toLowerCase().indexOf(query) !== -1;
+      return okStatus && okSearch;
+    });
+
+    filtered.sort(function (a, b) {
+      var av = a[sortKey], bv = b[sortKey];
+      if (sortKey === 'total') { av = Number(av) || 0; bv = Number(bv) || 0; }
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }
+
+  function renderTable() {
+    var filtered = getFilteredSorted();
+    rowsEl.innerHTML = filtered.length ? filtered.map(function (o) {
+      var items = [];
+      try { items = JSON.parse(o.items || '[]'); } catch (e) {}
+      var itemsSummary = items.map(function (it) { return it.id; }).join(', ');
+
+      return (
+        '<tr>' +
+          '<td>' + (o.order_number || '—') + '</td>' +
+          '<td>' + new Date(o.created_at).toLocaleString() + '</td>' +
+          '<td>' + (o.customer_name || '—') + '<br><span style="opacity:0.6; font-size:0.72rem;">' + (o.customer_email || '') + '</span></td>' +
+          '<td style="font-size:0.76rem;">' + itemsSummary + '</td>' +
+          '<td>AED ' + Number(o.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) + '</td>' +
+          '<td>' + buildStatusSelect(o) + '</td>' +
+        '</tr>'
+      );
+    }).join('') : '<tr><td colspan="6">No orders match.</td></tr>';
+  }
+
+  function buildStatusSelect(o) {
+    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'payment_error', 'cancelled', 'refunded'];
+    var options = statuses.map(function (s) {
+      return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
+    }).join('');
+    return '<select class="admin-order-status-select" data-id="' + o.id + '">' + options + '</select>';
+  }
+
+  rowsEl.addEventListener('change', function (e) {
+    var select = e.target.closest('.admin-order-status-select');
+    if (!select) return;
+    var orderId = select.getAttribute('data-id');
+    var newStatus = select.value;
+
+    fetch('/.netlify/functions/admin-update-order-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
+        var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
+        if (order) order.status = newStatus;
+        showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
+        renderSummary();
+      })
+      .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
+  });
+
+  document.querySelectorAll('.admin-sortable').forEach(function (th) {
+    th.addEventListener('click', function () {
+      var key = th.getAttribute('data-sort');
+      if (sortKey === key) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortKey = key;
+        sortDir = 'desc';
+      }
+      renderTable();
+    });
+  });
+
+  statusFilter.addEventListener('change', renderTable);
+  searchInput.addEventListener('input', renderTable);
+
+  function loadOrders() {
+    fetch('/.netlify/functions/admin-get-orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not load orders.'); return; }
+        allOrders = result.data.orders || [];
+        renderSummary();
+        renderTable();
+      })
+      .catch(function () { showStatus('error', 'Network error loading orders.'); });
+  }
+
+  loadOrders();
 }

@@ -829,9 +829,41 @@ footer.site-footer {
 }
 .footer-grid a, .footer-grid p { color: var(--ivory-deep); opacity: 0.85; font-size: 0.92rem; }
 .footer-grid ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.footer-bottom {
+
+.footer-social {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+}
+.footer-social a {
+  color: var(--ivory-deep);
+  opacity: 0.75;
+  display: flex;
+  transition: opacity 0.15s ease;
+}
+.footer-social a:hover { opacity: 1; color: var(--gold-light); }
+
+.footer-payment-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 20px;
   border-top: 1px solid rgba(247,241,229,0.15);
-  padding-top: 24px;
+  margin-bottom: 16px;
+}
+.pay-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--ivory-deep);
+  background: rgba(247,241,229,0.08);
+  border: 1px solid rgba(247,241,229,0.18);
+  padding: 5px 12px;
+  border-radius: 4px;
+  letter-spacing: 0.02em;
+}
+
+.footer-bottom {
+  padding-top: 4px;
   font-size: 0.78rem;
   opacity: 0.6;
   display: flex;
@@ -2123,4 +2155,22 @@ body.login-page {
   color: var(--ink);
   margin: 4px 0 6px;
   cursor: pointer;
+}
+
+/* ---------- Site-wide fade + slide reveal animation ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1), transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal.is-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

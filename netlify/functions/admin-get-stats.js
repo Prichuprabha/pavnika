@@ -68,7 +68,7 @@ exports.handler = async function (event) {
     const mostViewed = Object.keys(viewCounts)
       .map(function (id) { return { productId: id, views: viewCounts[id] }; })
       .sort(function (a, b) { return b.views - a.views; })
-      .slice(0, 20);
+      .slice(0, 50);
 
     const regionCounts = {};
     visitors.forEach(function (v) {

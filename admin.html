@@ -49,6 +49,36 @@
   .admin-promo-item .deactivate-link { font-size: 0.72rem; color: #B8142A; cursor: pointer; text-decoration: underline; }
   .admin-promo-item .copy-link { font-size: 0.72rem; color: var(--green); cursor: pointer; text-decoration: underline; }
 
+  .admin-sortable { cursor: pointer; user-select: none; }
+  .admin-sortable:hover { color: var(--green); }
+  .admin-sortable::after { content: ' \2195'; opacity: 0.4; font-size: 0.65rem; }
+
+  #admin-orders-status-filter, #admin-orders-search {
+    padding: 8px 12px; border: 1px solid var(--stone); border-radius: 3px;
+    font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+  }
+  #admin-orders-search { flex: 1; min-width: 180px; }
+
+  .admin-order-status-select {
+    padding: 5px 8px; border: 1px solid var(--stone); border-radius: 3px;
+    font-family: var(--body); font-size: 0.76rem; background: var(--ivory);
+  }
+
+  .admin-pending-card {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fdf3df; border: 1px solid #E3C976; border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 8px; font-size: 0.82rem;
+  }
+  .admin-pending-card .elapsed { font-weight: 600; color: var(--gold); }
+
+  .admin-toggle-label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; }
+  .admin-toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .admin-toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .admin-toggle-slider { position: absolute; inset: 0; background: var(--stone); border-radius: 999px; transition: background 0.2s ease; }
+  .admin-toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; }
+  .admin-toggle-switch input:checked + .admin-toggle-slider { background: var(--green); }
+  .admin-toggle-switch input:checked + .admin-toggle-slider::before { transform: translateX(16px); }
+
   .admin-banner-item {
     display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
     border-radius: 6px; background: var(--ivory); margin-bottom: 10px;
@@ -197,7 +227,6 @@
       <h2>Admin Sign In</h2>
       <p>This area is restricted. Enter the admin email to continue.</p>
       <div class="field"><label>Email</label><input type="email" id="admin-gate-email" autocomplete="email"></div>
-      <div class="field"><label>Mobile Number</label><input type="tel" id="admin-gate-phone" autocomplete="tel"></div>
       <button type="button" id="admin-send-btn" class="btn btn-primary">Send Verification Code</button>
       <p class="gate-error" id="admin-error-1"></p>
     </div>
@@ -215,6 +244,7 @@
   <div class="admin-sidebar">
     <span class="brand-text">Pavnika Admin</span>
     <div class="admin-nav-item active" data-view="stats">Dashboard &amp; Stats</div>
+    <div class="admin-nav-item" data-view="orders">Orders</div>
     <div class="admin-nav-item" data-view="sarees">Saree Editor</div>
     <div class="admin-nav-item" data-view="reviews">Reviews</div>
     <div class="admin-nav-item" data-view="banners">Banners</div>
@@ -227,6 +257,43 @@
   </div>
 
   <div class="admin-main">
+    <div class="admin-view" id="admin-view-orders" style="display:none;">
+      <div class="admin-heading"><h1>Orders</h1></div>
+      <p class="admin-status-msg" id="admin-orders-status-msg"></p>
+
+      <div class="admin-metric-grid" id="admin-orders-summary"></div>
+
+      <div id="admin-pending-list" style="margin-bottom:24px;"></div>
+
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <select id="admin-orders-status-filter">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="payment_error">Payment error</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="refunded">Refunded</option>
+        </select>
+        <input type="text" id="admin-orders-search" placeholder="Search order #, name, email...">
+      </div>
+
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th class="admin-sortable" data-sort="order_number">Order #</th>
+            <th class="admin-sortable" data-sort="created_at">Date</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th class="admin-sortable" data-sort="total">Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="admin-orders-rows"></tbody>
+      </table>
+    </div>
+
     <div class="admin-view" id="admin-view-sarees" style="display:none;">
     <div class="admin-heading">
       <h1>Saree Editor</h1>
@@ -234,17 +301,21 @@
       <span class="btn btn-primary" id="admin-add-new-btn" style="cursor:pointer;">+ Add New Saree</span>
     </div>
 
-    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap;">
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
       <button type="button" class="btn btn-ghost" id="admin-download-csv-btn">Download as CSV</button>
       <button type="button" class="btn btn-ghost" id="admin-upload-csv-btn">Upload CSV for bulk add/edit</button>
       <input type="file" id="admin-csv-file-input" accept=".csv" style="display:none;">
+      <label class="admin-toggle-label">
+        <span class="admin-toggle-switch"><input type="checkbox" id="admin-hide-sold-toggle"><span class="admin-toggle-slider"></span></span>
+        Hide sold out
+      </label>
     </div>
 
     <p class="admin-status-msg" id="admin-status-msg"></p>
 
     <table class="admin-table">
       <thead>
-        <tr><th>ID</th><th>Design / Series</th><th>Category</th><th>Status</th><th></th></tr>
+        <tr><th>Image</th><th>ID</th><th>Design / Series</th><th>Category</th><th>Status</th><th></th></tr>
       </thead>
       <tbody id="admin-product-rows"></tbody>
     </table>
@@ -432,6 +503,8 @@
       <div class="admin-heading"><h1>Dashboard &amp; Stats</h1></div>
       <p class="admin-status-msg" id="admin-stats-status-msg"></p>
 
+      <div class="admin-metric-grid" id="admin-metric-grid"></div>
+
       <div class="admin-form-card" style="margin-bottom:22px;">
         <h3 style="margin-bottom:12px;">Filter by date range</h3>
         <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
@@ -442,8 +515,6 @@
         </div>
         <p style="font-size:0.76rem; color:var(--ink); opacity:0.6; margin:10px 0 0;">Applies to visitors, views, regions, and logins below. "In stock" and "Sold out" always reflect current inventory, regardless of this range.</p>
       </div>
-
-      <div class="admin-metric-grid" id="admin-metric-grid"></div>
 
       <div class="admin-stats-cols">
         <div class="admin-stats-card">

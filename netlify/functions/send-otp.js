@@ -1,6 +1,6 @@
 // netlify/functions/send-otp.js
 //
-// POST { email, phone }
+// POST { email }
 // - If this email is already verified in Supabase, responds immediately
 //   with { alreadyVerified: true } and sends no email.
 // - Exception: the admin email always gets a fresh code, even if
@@ -60,13 +60,9 @@ exports.handler = async function (event) {
   }
 
   const email = (body.email || '').trim().toLowerCase();
-  const phone = (body.phone || '').trim();
 
   if (!isValidEmail(email)) {
     return { statusCode: 400, body: JSON.stringify({ error: 'A valid email is required' }) };
-  }
-  if (!phone) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'A phone number is required' }) };
   }
 
   try {
@@ -107,7 +103,6 @@ exports.handler = async function (event) {
       await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
         method: 'PATCH',
         body: JSON.stringify({
-          phone,
           otp_code: code,
           otp_expires_at: expiresAt,
           last_sent_at: nowIso,
@@ -119,7 +114,6 @@ exports.handler = async function (event) {
         method: 'POST',
         body: JSON.stringify({
           email,
-          phone,
           otp_code: code,
           otp_expires_at: expiresAt,
           last_sent_at: nowIso,
