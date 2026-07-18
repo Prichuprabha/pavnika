@@ -27,7 +27,7 @@ exports.handler = async function (event) {
 
   try {
     const res = await fetch(
-      `${SUPABASE_URL}/rest/v1/orders?select=*&order=created_at.desc&limit=500`,
+      `${SUPABASE_URL}/rest/v1/orders?select=*&status=neq.pending&order=created_at.desc&limit=500`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,

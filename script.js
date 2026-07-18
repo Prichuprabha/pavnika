@@ -6,9 +6,24 @@ window.addEventListener('pageshow', function (e) {
   if (e.persisted) window.location.reload();
 });
 
+(function initFrostedHeader() {
+  var header = document.querySelector('header.site-header');
+  if (!header) return;
+  function onScroll() {
+    if (window.scrollY > 24) {
+      header.classList.add('is-scrolled');
+    } else {
+      header.classList.remove('is-scrolled');
+    }
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
   initLoginPage();
   initReviewsMarquee();
+  initCuratedShowcase();
   initFaqAccordion();
   buildLightbox();
   initAccountMenu();
@@ -214,7 +229,7 @@ function initCollectionsPage() {
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
   var PAGE_SIZE = 16;
-  var state = { category: 'all', series: 'all', showSold: false, page: 1, query: '' };
+  var state = { category: 'all', series: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
   var countEl = document.getElementById('results-count');
   var noResults = document.getElementById('no-results');
   var paginationEl = document.getElementById('pagination');
@@ -233,7 +248,10 @@ function initCollectionsPage() {
       var okQuery = !q || SEARCH_FIELDS.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
       });
-      return okCat && okSeries && okSold && okQuery;
+      var price = Number(p.price) || 0;
+      var okMinPrice = state.priceMin === null || price >= state.priceMin;
+      var okMaxPrice = state.priceMax === null || price <= state.priceMax;
+      return okCat && okSeries && okSold && okQuery && okMinPrice && okMaxPrice;
     });
   }
 
@@ -313,6 +331,13 @@ function initCollectionsPage() {
   function render() {
     updateFilterAvailability();
     var filtered = getFiltered();
+
+    if (state.sort === 'price-asc') {
+      filtered = filtered.slice().sort(function (a, b) { return (Number(a.price) || 0) - (Number(b.price) || 0); });
+    } else if (state.sort === 'price-desc') {
+      filtered = filtered.slice().sort(function (a, b) { return (Number(b.price) || 0) - (Number(a.price) || 0); });
+    }
+
     var start = (state.page - 1) * PAGE_SIZE;
     var pageItems = filtered.slice(start, start + PAGE_SIZE);
 
@@ -375,6 +400,88 @@ function initCollectionsPage() {
     searchInput.addEventListener('input', function () {
       state.query = searchInput.value;
       state.page = 1;
+      render();
+    });
+  }
+
+  // Price range dual-handle slider — bounds computed from actual saree
+  // prices rather than a hardcoded guess.
+  var priceMinInput = document.getElementById('price-min-input');
+  var priceMaxInput = document.getElementById('price-max-input');
+  var priceMinLabel = document.getElementById('price-min-label');
+  var priceMaxLabel = document.getElementById('price-max-label');
+  var priceTrackFill = document.getElementById('price-track-fill');
+  var updatePriceUI = function () {};
+
+  if (priceMinInput && priceMaxInput && window.PRODUCTS && window.PRODUCTS.length) {
+    var allPrices = window.PRODUCTS.map(function (p) { return Number(p.price) || 0; });
+    var dataMin = Math.floor(Math.min.apply(null, allPrices) / 50) * 50;
+    var dataMax = Math.ceil(Math.max.apply(null, allPrices) / 50) * 50;
+
+    [priceMinInput, priceMaxInput].forEach(function (input) {
+      input.min = dataMin;
+      input.max = dataMax;
+    });
+    priceMinInput.value = dataMin;
+    priceMaxInput.value = dataMax;
+    state.priceMin = dataMin;
+    state.priceMax = dataMax;
+
+    updatePriceUI = function () {
+      var lo = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+      var hi = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+      priceMinLabel.textContent = lo.toLocaleString();
+      priceMaxLabel.textContent = hi.toLocaleString();
+      if (priceTrackFill) {
+        var pctLo = ((lo - dataMin) / (dataMax - dataMin)) * 100;
+        var pctHi = ((hi - dataMin) / (dataMax - dataMin)) * 100;
+        priceTrackFill.style.left = pctLo + '%';
+        priceTrackFill.style.width = (pctHi - pctLo) + '%';
+      }
+    };
+    updatePriceUI();
+
+    function onPriceChange() {
+      state.priceMin = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+      state.priceMax = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+      state.page = 1;
+      updatePriceUI();
+      render();
+    }
+    priceMinInput.addEventListener('input', onPriceChange);
+    priceMaxInput.addEventListener('input', onPriceChange);
+  }
+
+  var sortSelect = document.getElementById('sort-select');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function () {
+      state.sort = sortSelect.value;
+      state.page = 1;
+      render();
+    });
+  }
+
+  var clearFiltersBtn = document.getElementById('clear-all-filters');
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', function () {
+      state.category = 'all';
+      state.series = 'all';
+      state.showSold = false;
+      state.query = '';
+      state.sort = 'default';
+      state.page = 1;
+      if (categoryGroup) setActiveButton(categoryGroup, 'all');
+      if (seriesGroup) setActiveButton(seriesGroup, 'all');
+      if (hideSoldToggle) hideSoldToggle.checked = false;
+      if (searchInput) searchInput.value = '';
+      if (sortSelect) sortSelect.value = 'default';
+      if (priceMinInput && priceMaxInput) {
+        priceMinInput.value = priceMinInput.min;
+        priceMaxInput.value = priceMaxInput.max;
+        state.priceMin = Number(priceMinInput.min);
+        state.priceMax = Number(priceMaxInput.max);
+        updatePriceUI();
+      }
       render();
     });
   }
@@ -702,6 +809,9 @@ function initHomeSeriesMarquee() {
       }, 2600);
     }, offset);
   });
+
+  var marqueeEl = document.querySelector('.category-marquee');
+  if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.45 });
 }
 
 /* ---------- Homepage: hero video playlist ----------
@@ -976,6 +1086,28 @@ function initReviewsMarquee() {
       });
       track.innerHTML = '';
       track.appendChild(frag);
+
+      // 4-line clamp + "read more" toggle for long reviews.
+      track.querySelectorAll('.review-card').forEach(function (card) {
+        var quoteEl = card.querySelector('.review-quote');
+        if (!quoteEl) return;
+        if (quoteEl.scrollHeight > quoteEl.clientHeight + 2) {
+          card.classList.add('has-overflow');
+          var moreBtn = document.createElement('button');
+          moreBtn.type = 'button';
+          moreBtn.className = 'review-read-more';
+          moreBtn.textContent = 'Read more';
+          moreBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            var expanded = card.classList.toggle('is-expanded');
+            moreBtn.textContent = expanded ? 'Show less' : 'Read more';
+          });
+          quoteEl.insertAdjacentElement('afterend', moreBtn);
+        }
+      });
+
+      var marqueeEl = document.querySelector('.reviews-marquee');
+      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35 });
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }
@@ -1751,4 +1883,116 @@ function initRevealAnimations() {
     });
     observeAll(container);
   };
+}
+
+/* ---------- Reusable draggable, hover-pausing auto-scroll marquee ----------
+   Used for the homepage reviews carousel and the series marquee. JS-driven
+   (not CSS @keyframes) so it can pause exactly in place on hover, be
+   click-and-dragged with the mouse, and resume smoothly from wherever it
+   was left — a keyframe animation can't do the "resume from here" part. */
+function initDraggableMarquee(container, track, options) {
+  if (!container || !track) return;
+  options = options || {};
+  var speed = options.speed || 0.4;
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var offset = 0;
+  var halfWidth = 0;
+  var isHovering = false;
+  var isDragging = false;
+  var dragStartX = 0;
+  var dragStartOffset = 0;
+  var dragDistance = 0;
+
+  function measure() {
+    halfWidth = track.scrollWidth / 2;
+  }
+  measure();
+  window.addEventListener('resize', measure);
+
+  function tick() {
+    if (!reduced && !isHovering && !isDragging && halfWidth > 0) {
+      offset -= speed;
+      if (offset <= -halfWidth) offset += halfWidth;
+      if (offset > 0) offset -= halfWidth;
+    }
+    track.style.transform = 'translateX(' + offset + 'px)';
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+
+  container.addEventListener('mouseenter', function () { isHovering = true; });
+  container.addEventListener('mouseleave', function () {
+    isHovering = false;
+    isDragging = false;
+    track.style.cursor = 'grab';
+  });
+
+  function dragStart(clientX) {
+    isDragging = true;
+    dragStartX = clientX;
+    dragStartOffset = offset;
+    dragDistance = 0;
+    track.style.cursor = 'grabbing';
+  }
+  function dragMove(clientX) {
+    if (!isDragging) return;
+    var delta = clientX - dragStartX;
+    dragDistance = Math.abs(delta);
+    offset = dragStartOffset + delta;
+  }
+  function dragEnd() {
+    isDragging = false;
+    track.style.cursor = 'grab';
+  }
+
+  container.addEventListener('mousedown', function (e) { dragStart(e.clientX); e.preventDefault(); });
+  window.addEventListener('mousemove', function (e) { dragMove(e.clientX); });
+  window.addEventListener('mouseup', dragEnd);
+
+  container.addEventListener('touchstart', function (e) { dragStart(e.touches[0].clientX); }, { passive: true });
+  container.addEventListener('touchmove', function (e) { dragMove(e.touches[0].clientX); }, { passive: true });
+  container.addEventListener('touchend', dragEnd);
+
+  // Suppress accidental navigation/clicks on inner links when the user was
+  // actually dragging, not clicking.
+  container.addEventListener('click', function (e) {
+    if (dragDistance > 6) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }, true);
+}
+
+/* ---------- Homepage: Curated Excellence saree showcase ----------
+   Shows 5 random, currently-available sarees — a different set on every
+   page load. Clicking one goes to Collections filtered to that saree's
+   series and type. */
+function initCuratedShowcase() {
+  var grid = document.getElementById('curated-showcase');
+  if (!grid || typeof window.PRODUCTS === 'undefined') return;
+
+  var available = window.PRODUCTS.filter(function (p) { return !p.sold && p.image; });
+  if (!available.length) return;
+
+  var shuffled = available.slice().sort(function () { return Math.random() - 0.5; });
+  var picks = shuffled.slice(0, Math.min(5, shuffled.length));
+
+  grid.innerHTML = picks.map(function (p) {
+    var seriesLabel = seriesTitleCase(p.series);
+    var href = 'collections.html?series=' + encodeURIComponent(p.series) + '&q=' + encodeURIComponent(p.type || '');
+    var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.type || '');
+    return (
+      '<a class="curated-tile" href="' + href + '">' +
+        '<div class="curated-tile-media"><img src="' + p.image + '" alt="' + p.type + ' — ' + seriesLabel + ' saree" loading="lazy"></div>' +
+        '<div class="curated-tile-gradient"></div>' +
+        '<div class="curated-tile-text">' +
+          '<span class="curated-series">' + seriesLabel + '</span>' +
+          '<h3 class="curated-type">' + (p.type || '') + '</h3>' +
+          '<p class="curated-hover-detail">' + detail + '</p>' +
+          '<span class="curated-explore">Explore More &rarr;</span>' +
+        '</div>' +
+      '</a>'
+    );
+  }).join('');
 }
