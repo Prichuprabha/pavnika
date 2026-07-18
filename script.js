@@ -81,6 +81,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initHomeSeriesMarquee();
   initHeroBannerCarousel();
   initHomeVideoShowcase();
+  initPinnedHero();
 });
 
 var WHATSAPP_NUMBER = '971526630307';
@@ -2037,4 +2038,45 @@ function initCuratedShowcase() {
       '</a>'
     );
   }).join('');
+}
+
+/* ---------- Homepage: JS-driven pinned hero positioning ----------
+   Deliberately not pure CSS position:sticky — sticky silently stops
+   working if ANY ancestor has certain transform/filter/perspective
+   properties, which is easy to trip on unintentionally as a site
+   grows. This drives the same visual effect directly via scroll
+   position, so it can't be broken by unrelated CSS elsewhere. */
+function initPinnedHero() {
+  var wrapper = document.querySelector('.hero-pin-wrapper');
+  var hero = document.querySelector('.hero-banner-pinned');
+  if (!wrapper || !hero) return;
+
+  function onScroll() {
+    var wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
+    var wrapperHeight = wrapper.offsetHeight;
+    var heroHeight = hero.offsetHeight;
+    var scrollY = window.scrollY;
+    var releaseAt = wrapperTop + wrapperHeight - heroHeight;
+
+    if (scrollY < wrapperTop) {
+      // Haven't reached the hero yet — sits normally at the top of the wrapper.
+      hero.classList.remove('is-fixed');
+      hero.style.position = 'absolute';
+      hero.style.top = '0';
+    } else if (scrollY < releaseAt) {
+      // Within the pin range — fixed to the viewport, visually "stuck".
+      hero.classList.add('is-fixed');
+      hero.style.top = '0';
+    } else {
+      // Scrolled past — release it so it stays behind at this point,
+      // and the next section naturally covers it from here on.
+      hero.classList.remove('is-fixed');
+      hero.style.position = 'absolute';
+      hero.style.top = (wrapperHeight - heroHeight) + 'px';
+    }
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
 }

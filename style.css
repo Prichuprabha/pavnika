@@ -17,7 +17,7 @@
   --display: 'Cormorant Garamond', serif;
   --body: 'Jost', sans-serif;
 
-  --max: 1180px;
+  --max: 1400px;
 }
 
 * { box-sizing: border-box; }
@@ -530,27 +530,31 @@ nav.main-nav a.active {
 /* ---------- Hero ---------- */
 
 /* ---------- Pinned hero banner with text overlay ----------
-   The banner stays pinned in place (position: sticky) while the next
-   section scrolls up and over it, revealing the rest of the page —
-   the text and buttons sit as an overlay on top of the image itself,
-   rather than in a separate section below it.
+   Positioning is driven by JS (see initPinnedHero in script.js), not
+   pure CSS position:sticky — sticky is silently broken by all sorts of
+   unrelated ancestor properties (transforms, certain filters, etc.),
+   so this uses fixed/absolute directly for guaranteed, predictable
+   behavior regardless of what else is on the page.
    The wrapper below is taller than the pinned banner itself — that
    extra height is what defines how long the "pin" effect lasts before
-   the banner naturally releases and gets covered by the next section.
-   Without a taller wrapper, a sticky element has nothing to release
-   from and stays pinned indefinitely as the page keeps scrolling. */
+   the banner naturally releases and gets covered by the next section. */
 .hero-pin-wrapper {
   position: relative;
   height: 150vh;
 }
 .hero-banner-pinned {
-  position: sticky;
+  position: absolute;
   top: 0;
-  height: 82vh;
-  min-height: 460px;
-  max-height: 720px;
+  left: 0;
+  right: 0;
+  height: 88vh;
+  min-height: 520px;
+  max-height: 760px;
   overflow: hidden;
   z-index: 1;
+}
+.hero-banner-pinned.is-fixed {
+  position: fixed;
 }
 .hero-banner-gradient {
   position: absolute;
@@ -579,18 +583,18 @@ nav.main-nav a.active {
 .hero-banner-text h1 {
   color: var(--ivory);
   max-width: 13ch;
-  font-size: 2.4rem;
+  font-size: 2.9rem;
   line-height: 1.15;
-  margin-bottom: 0.28em;
+  margin-bottom: 0.32em;
   text-shadow: 0 2px 20px rgba(0,0,0,0.25);
 }
 .hero-banner-text .lede {
   color: var(--ivory);
   opacity: 0.92;
-  font-size: 0.98rem;
+  font-size: 1.08rem;
   max-width: 40ch;
-  line-height: 1.5;
-  margin-bottom: 1.3em;
+  line-height: 1.55;
+  margin-bottom: 1.5em;
 }
 .hero-banner-text .btn-ghost {
   background: transparent;
@@ -2366,11 +2370,10 @@ body.login-page {
   border-radius: 4px;
   overflow: hidden;
   background: var(--stone);
-  outline: 2px solid transparent;
-  outline-offset: -2px;
-  transition: outline-color 0.25s ease;
+  box-shadow: inset 0 0 0 2px transparent;
+  transition: box-shadow 0.25s ease;
 }
-.curated-tile:hover { outline-color: var(--gold); }
+.curated-tile:hover { box-shadow: inset 0 0 0 2px var(--gold); }
 .curated-tile-media .id-badge {
   position: absolute;
   top: 10px; right: 10px;
