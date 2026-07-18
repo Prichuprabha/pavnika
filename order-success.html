@@ -14,14 +14,14 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pavnika by Saranya — Authentic Kanchipuram Silk Sarees in Dubai</title>
-<meta name="description" content="Pavnika by Saranya: handwoven Kanchipuram (Kanjivaram) silk sarees, sourced directly from master weavers in Tamil Nadu, curated for Dubai and the UAE.">
+<title>Order Confirmation — Pavnika by Saranya</title>
+<meta name="description" content="Your order confirmation from Pavnika by Saranya.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-<body class="home-page">
+<body>
 <header class="site-header">
   <div class="nav-row">
     <a href="home.html" class="brand">
@@ -50,7 +50,7 @@
       <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
     </div>
     <nav class="main-nav">
-      <a href="home.html" class="active">Home</a>
+      <a href="home.html">Home</a>
       <a href="about.html">About</a>
       <a href="collections.html">Collections</a>
       <a href="contact.html">Contact</a>
@@ -58,116 +58,33 @@
     </nav>
   </div>
 </header>
-<div class="search-panel" id="search-panel">
-  <div class="search-panel-inner">
-    <div class="search-input-row">
-      <input type="text" id="search-input" class="search-input" placeholder="Search by design, colour, pattern, series..." autocomplete="off">
-      <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
-    </div>
-    <div class="search-results" id="search-results"></div>
-    <p class="search-empty" id="search-empty" style="display:none;">No sarees match your search.</p>
-  </div>
-</div>
 
-
-<div class="hero-banner-pinned" id="hero-banner-pinned">
-  <div class="hero-banner" id="hero-banner" aria-label="Featured collections banner">
-    <!-- populated by script.js from assets/banners/banners.json -->
-  </div>
-  <div class="hero-banner-gradient"></div>
-  <div class="hero-banner-text">
-    <div class="container">
-      <span class="eyebrow">Kancheepuram, Tamil Nadu — to Dubai</span>
-      <h1>Silk woven by hand, carried across the sea for you.</h1>
-      <p class="lede">Pavnika by Saranya is a Dubai-based boutique bringing genuine Kanjivaram silk sarees to the UAE — each one handwoven in Kancheepuram, in real zari, across a vast and ever-growing collection spanning everyday weaves to bridal Kanjivaram.</p>
-      <div class="btn-row">
-        <a href="collections.html" class="btn btn-primary">View Collections</a>
-        <a href="contact.html" class="btn btn-ghost">Book a Private Viewing</a>
-      </div>
-    </div>
-  </div>
-</div>
-
-<section class="bg-ivory-deep hero-spacer-section">
+<section class="page-hero">
   <div class="container">
-    <div class="section-head">
-      <h2>Curated, Just for You</h2>
-    </div>
-  </div>
-  <div class="container">
-    <div class="curated-grid" id="curated-showcase">
-      <!-- populated by script.js with 5 random available sarees -->
-    </div>
+    <span class="eyebrow">Order</span>
+    <h1 id="order-status-heading">Confirming Your Payment...</h1>
   </div>
 </section>
 
-<section class="bg-ivory-deep">
+<section style="padding-top:0;">
   <div class="container">
-    <div class="section-head">
-      <h2>In Motion</h2>
-    </div>
-    <div class="home-video-grid" id="home-video-grid">
-      <!-- populated by script.js from assets/videos/home-video-slots.json -->
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">A First Look</span>
-      <h2>Our signature series</h2>
-    </div>
-  </div>
-  <div class="category-marquee">
-    <div class="category-track" id="home-category-marquee">
-      <!-- populated by script.js from products-data.js, grouped by category -->
-    </div>
-  </div>
-  <div class="container">
-    <div class="text-center" style="margin-top:44px;">
-      <a href="collections.html" class="btn btn-primary">See the Full Collection</a>
-    </div>
-  </div>
-</section>
-
-<section class="bg-green">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Word of Mouth</span>
-      <h2>What our customers say</h2>
-      <p style="text-align:center; font-size:0.85rem; color:var(--ivory); opacity:0.7; margin-top:8px;">Genuine reviews from our Google Business listing.</p>
-    </div>
-  </div>
-  <div class="reviews-marquee">
-    <div class="reviews-track" id="reviews-track">
-      <!-- populated by script.js from assets/reviews/reviews.json -->
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-head left">
-      <span class="eyebrow">From Thread to Threshold</span>
-      <h2>How a saree reaches you</h2>
-    </div>
-    <div class="journey">
-      <div class="step" data-step="i.">
-        <h4>Selected in Kancheepuram</h4>
-        <p>Our team visits weaving households to select finished pieces by hand.</p>
+    <div class="checkout-box" style="text-align:center;">
+      <div id="order-loading">
+        <p style="opacity:0.7;">Please wait a moment while we confirm your payment with our payment partner...</p>
       </div>
-      <div class="step" data-step="ii.">
-        <h4>Checked &amp; catalogued</h4>
-        <p>Each saree is photographed and listed with its true weave and pattern.</p>
+      <div id="order-success" style="display:none;">
+        <p style="font-size:2rem; margin-bottom:10px;">&#10003;</p>
+        <p style="font-size:1.05rem; color:var(--green-deep); font-weight:600; margin-bottom:10px;">Thank you — your order is confirmed!</p>
+        <p style="opacity:0.75; margin-bottom:24px;">We've received your payment and will be in touch shortly to arrange delivery.</p>
+        <a href="collections.html" class="btn btn-primary">Continue Browsing</a>
       </div>
-      <div class="step" data-step="iii.">
-        <h4>Flown to Dubai</h4>
-        <p>Small batches, so what you see in the catalogue is genuinely limited.</p>
+      <div id="order-pending" style="display:none;">
+        <p style="opacity:0.75; margin-bottom:20px;">We haven't received confirmation of your payment yet. If you completed payment, this can take a few moments — try refreshing this page.</p>
+        <button type="button" class="btn btn-ghost" id="order-retry-btn">Check Again</button>
       </div>
-      <div class="step" data-step="iv.">
-        <h4>Fitted to you</h4>
-        <p>WhatsApp consultation and styling guidance before it reaches your door.</p>
+      <div id="order-error" style="display:none;">
+        <p style="opacity:0.75; margin-bottom:20px;">We couldn't confirm your order automatically. If you completed payment, please contact us on WhatsApp with your order details so we can confirm it manually.</p>
+        <a href="https://wa.me/971526630307" target="_blank" rel="noopener" class="btn btn-primary">Contact Us on WhatsApp</a>
       </div>
     </div>
   </div>

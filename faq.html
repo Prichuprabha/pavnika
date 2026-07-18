@@ -14,12 +14,10 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Collections — Pavnika by Saranya</title>
-<meta name="description" content="Browse the full Pavnika by Saranya catalogue: bridal Kanjivaram, temple border classics, soft silk everyday sarees and more.">
+<title>FAQ — Pavnika by Saranya</title>
+<meta name="description" content="Frequently asked questions about Pavnika by Saranya sarees, authenticity, payment, shipping, and more.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
-<link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -54,7 +52,7 @@
     <nav class="main-nav">
       <a href="home.html">Home</a>
       <a href="about.html">About</a>
-      <a href="collections.html" class="active">Collections</a>
+      <a href="collections.html">Collections</a>
       <a href="contact.html">Contact</a>
       <a href="contact.html" class="nav-cta">Book Appointment</a>
     </nav>
@@ -74,154 +72,56 @@
 
 <section class="page-hero">
   <div class="container">
-    <span class="eyebrow">The Full Catalogue</span>
-    <h1>Sarees woven for<br>every kind of occasion</h1>
+    <span class="eyebrow">Customer Care</span>
+    <h1>Frequently Asked Questions</h1>
   </div>
 </section>
 
 <section style="padding-top:0;">
   <div class="container">
-    <div class="collections-layout">
+    <div class="faq-list">
 
-      <aside class="collections-sidebar">
-        <div class="sidebar-heading-row">
-          <h3>Filters</h3>
-          <div style="display:flex; align-items:center; gap:14px;">
-            <button type="button" id="clear-all-filters">Clear All</button>
-            <button type="button" id="close-filters-btn" class="close-filters-btn" aria-label="Close filters">&times;</button>
-          </div>
-        </div>
-
-        <div class="sidebar-filter-group">
-          <h4>Price Range</h4>
-          <div class="price-range-slider">
-            <div class="price-range-track">
-              <div class="price-range-fill" id="price-track-fill"></div>
-            </div>
-            <input type="range" id="price-min-input" class="price-range-input" min="0" max="10000" value="0">
-            <input type="range" id="price-max-input" class="price-range-input" min="0" max="10000" value="10000">
-            <div class="price-range-display">AED <span id="price-min-label">0</span> &ndash; AED <span id="price-max-label">10,000</span></div>
-          </div>
-        </div>
-
-        <div class="sidebar-filter-group">
-          <h4>Category</h4>
-          <div class="filter-bar-vertical" id="category-filter" data-filter-group="category">
-            <button class="filter-btn active" data-value="all">All Categories</button>
-            <button class="filter-btn" data-value="Bridal">Bridal</button>
-            <button class="filter-btn" data-value="Premium">Premium</button>
-            <button class="filter-btn" data-value="Mid Range">Mid Range</button>
-            <button class="filter-btn" data-value="Budget">Budget</button>
-          </div>
-        </div>
-
-        <div class="sidebar-filter-group">
-          <h4>Series</h4>
-          <div class="filter-bar-vertical" id="series-filter" data-filter-group="series">
-            <button class="filter-btn active" data-value="all">All Series</button>
-            <button class="filter-btn" data-value="VALUE WEAVES">Value Weaves</button>
-            <button class="filter-btn" data-value="SANSKRITI">Sanskriti</button>
-            <button class="filter-btn" data-value="SUMANGALI">Sumangali</button>
-            <button class="filter-btn" data-value="FESTIVE VIBES">Festive Vibes</button>
-            <button class="filter-btn" data-value="PASTEL POETRY">Pastel Poetry</button>
-            <button class="filter-btn" data-value="BRIDAL BLISS">Bridal Bliss</button>
-            <button class="filter-btn" data-value="GOLDEN GLOW">Golden Glow</button>
-            <button class="filter-btn" data-value="SOFT SILK">Soft Silk</button>
-            <button class="filter-btn" data-value="SHIMMER STORIES">Shimmer Stories</button>
-            <button class="filter-btn" data-value="PAVNIKA SIGNATURE">Pavnika Signature</button>
-            <button class="filter-btn" data-value="DEVATHA AURA">Devatha Aura</button>
-          </div>
-        </div>
-
-        <button type="button" id="apply-filters-btn" class="btn btn-primary apply-filters-btn">Apply Filters</button>
-      </aside>
-
-      <div class="collections-main">
-        <div class="collections-search-row">
-          <button type="button" id="mobile-filters-btn" class="mobile-filters-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-            Filters
-          </button>
-          <input type="text" id="collections-search-input" class="search-input" placeholder="Search within these results by design, colour, pattern..." autocomplete="off">
-          <select id="sort-select">
-            <option value="default">Sort: Featured</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-          </select>
-        </div>
-
-        <div class="filter-toolbar">
-          <label class="toggle-switch">
-            <input type="checkbox" id="hide-sold-toggle">
-            <span class="track"></span>
-            <span class="toggle-label">Show sold out</span>
-          </label>
-        </div>
-
-        <div class="product-grid" id="product-grid"></div>
-        <p class="no-results" id="no-results" style="display:none;">No sarees match this filter yet — try another category or series.</p>
-        <div class="pagination" id="pagination"></div>
+            <div class="faq-item">
+        <button type="button" class="faq-question">What makes a saree a genuine Kanchipuram silk saree?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>A genuine Kanchipuram (Kanjivaram) saree is handwoven in Kancheepuram, Tamil Nadu, using pure mulberry silk and real zari thread. Authentic pieces often carry a Silk Mark certification and show the slightly uneven, handloom texture that distinguishes them from machine-made or blended imitations.</p></div>
       </div>
-
-    </div>
-  </div>
-</section>
-
-<div class="temple-border thin"></div>
-
-<section class="bg-ivory-deep">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Beyond the Saree</span>
-      <h2>Services at Pavnika by Saranya</h2>
-    </div>
-    <div class="grid-3">
-      <div class="card">
-        <span class="num">01</span>
-        <h3>WhatsApp viewings</h3>
-        <p>Browse and enquire on any saree by WhatsApp — no rush, no crowd, just time with the sarees.</p>
+      <div class="faq-item">
+        <button type="button" class="faq-question">How can I check that a saree is genuinely pure silk?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Genuine silk has a soft texture, a natural (not artificial-looking) sheen, and warms slightly when rubbed between your fingers. We only source directly from weaving families in Kancheepuram, and are happy to share close-up photos or video of the weave and zari before you commit.</p></div>
       </div>
-      <div class="card">
-        <span class="num">02</span>
-        <h3>Draping &amp; styling</h3>
-        <p>Guidance on pleats, pallu style and blouse pairing, tailored to your body and the occasion.</p>
+      <div class="faq-item">
+        <button type="button" class="faq-question">Do you show prices on the website?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Yes — every saree in our <a href="collections.html">Collections</a> shows its price in AED. If you've been offered a special discount over WhatsApp, we can also generate a one-time promo code for you to use at checkout.</p></div>
       </div>
-      <div class="card">
-        <span class="num">03</span>
-        <h3>Custom orders</h3>
-        <p>Request a specific colour, border width or motif and we'll place it directly with a weaving family.</p>
+      <div class="faq-item">
+        <button type="button" class="faq-question">How do I actually buy a saree from Pavnika by Saranya?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Browse our <a href="collections.html">Collections</a> page, open a saree you like, and either add it to your cart and pay online (for UAE delivery), or message us directly on WhatsApp or through our <a href="contact.html">Contact</a> page — whichever you prefer.</p></div>
       </div>
-      <div class="card">
-        <span class="num">04</span>
-        <h3>Home delivery</h3>
-        <p>Selected pieces can be trialled at home before purchase, delivered across Dubai and the wider UAE.</p>
+      <div class="faq-item">
+        <button type="button" class="faq-question">Do you deliver outside the UAE?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Yes — we deliver internationally, with additional shipping charges applied based on destination. Online payment through the website currently covers UAE delivery only; for overseas orders, please contact us on WhatsApp to arrange your order and payment. See our <a href="shipping.html">Shipping &amp; Delivery</a> page for details.</p></div>
       </div>
-      <div class="card">
-        <span class="num">05</span>
-        <h3>Saree care &amp; preservation</h3>
-        <p>Advice and referral for correct storage, folding and cleaning to protect zari over decades.</p>
+      <div class="faq-item">
+        <button type="button" class="faq-question">How long does delivery take?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Within the UAE, delivery is free and typically takes up to 3 days from order confirmation. Overseas delivery timelines vary by destination and will be confirmed with your order.</p></div>
       </div>
-      <div class="card">
-        <span class="num">06</span>
-        <h3>Gifting &amp; corporate orders</h3>
-        <p>Curated sets for weddings, milestone birthdays or corporate gifting, packaged and ready to present.</p>
+      <div class="faq-item">
+        <button type="button" class="faq-question">Can I return or exchange a saree?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>At this time we don't offer returns or exchanges, given the personal, made-to-order nature of each sale — this applies whether you pay online or via WhatsApp. See our <a href="returns.html">Returns &amp; Exchange Policy</a> for full details, including how we handle damaged or incorrect deliveries.</p></div>
+      </div>
+      <div class="faq-item">
+        <button type="button" class="faq-question">How should I care for my silk saree?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Always dry clean your silk saree to preserve its sheen and zari work. Store it wrapped in breathable muslin cloth, away from direct sunlight, and refold it every few months to prevent permanent creasing.</p></div>
+      </div>
+      <div class="faq-item">
+        <button type="button" class="faq-question">Are your sarees suitable for weddings?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Yes — our Bridal and Premium series (including Sumangali, Bridal Bliss, and Pavnika Signature) are woven specifically for wedding-weight richness, while our Budget and Mid Range series suit festivals and everyday occasions.</p></div>
+      </div>
+      <div class="faq-item">
+        <button type="button" class="faq-question">Is Pavnika by Saranya a licensed business?<span class="faq-icon">+</span></button>
+        <div class="faq-answer"><p>Yes — we're a fully licensed business under Dubai's Department of Economy and Tourism (DET), license number 1563920.</p></div>
       </div>
     </div>
-  </div>
-</section>
-
-<section class="bg-green">
-  <div class="container quote-block">
-    <p>&ldquo;Tell us the occasion, and we'll tell you which border suits it.&rdquo;</p>
-    <span class="attribution">— Pavnika by Saranya Styling Desk</span>
-  </div>
-</section>
-
-<section>
-  <div class="container text-center">
-    <h2>Ready to see them up close?</h2>
-    <p style="max-width:50ch; margin-left:auto; margin-right:auto;">Book a private WhatsApp viewing, or request a home trial anywhere in Dubai.</p>
-    <a href="contact.html" class="btn btn-primary">Book a Private Viewing</a>
   </div>
 </section>
 
@@ -297,7 +197,7 @@
     </div>
 
     <div class="footer-bottom">
-      <span>&copy; 2026 Pavnika by Saranya. All sarees shown are subject to availability.</span>
+      <span>&copy; 2026 Pavnika by Saranya. All sarees shown are illustrative of collection style.</span>
       <span>Handwoven in Kancheepuram. Curated in Dubai.</span>
     </div>
   </div>

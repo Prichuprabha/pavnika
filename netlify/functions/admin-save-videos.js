@@ -1,8 +1,10 @@
 // netlify/functions/admin-save-videos.js
 //
-// POST { adminToken, videos: ["video-1.mp4", "video-2.mp4", ...] }
-// - Overwrites assets/videos/videos.json with the provided list, in
-//   the order given — same reorder/remove pattern as banners.
+// POST { adminToken, videos: ["video-1.mp4", "", "", ""] }
+// - Overwrites assets/videos/home-video-slots.json with exactly 4
+//   slots (a filename, or "" for an empty slot showing the fallback).
+//   Empty strings are meaningful here — they mark an empty slot by
+//   position, so they're kept rather than filtered out.
 // - Does not handle uploading new video files — those still go
 //   through a normal GitHub upload, by design (video files are large).
 
@@ -12,7 +14,7 @@ const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
-const FILE_PATH = 'assets/videos/videos.json';
+const FILE_PATH = 'assets/videos/home-video-slots.json';
 
 function githubHeaders() {
   return {
@@ -64,15 +66,18 @@ exports.handler = async function (event) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Not authorized. Please sign in again.' }) };
   }
 
-  if (!Array.isArray(body.videos) || !body.videos.length) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'At least one video is required.' }) };
+  if (!Array.isArray(body.videos)) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Video slots must be a list.' }) };
   }
 
   try {
     const sha = await getFileSha();
-    const cleanVideos = body.videos.map(function (v) { return String(v).trim(); }).filter(Boolean);
+    // Keep exactly 4 slots, preserving empty strings (they mark an
+    // intentionally empty slot by position — not something to strip).
+    var cleanVideos = body.videos.slice(0, 4).map(function (v) { return String(v || '').trim(); });
+    while (cleanVideos.length < 4) cleanVideos.push('');
     const newContent = JSON.stringify(cleanVideos, null, 2) + '\n';
-    const result = await putFile(newContent, sha, 'Admin: update video playlist');
+    const result = await putFile(newContent, sha, 'Admin: update home page video slots');
 
     return {
       statusCode: 200,

@@ -1,66 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In — Pavnika by Saranya</title>
-<meta name="description" content="Verify your email to enter Pavnika by Saranya, authentic Kanchipuram silk sarees, Dubai based online boutique.">
-<link rel="icon" type="image/png" href="assets/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
 <script>
 (function () {
   function getCookie(name) {
     var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return m ? m[2] : null;
   }
-  if (getCookie('pavnika_verified') === '1') {
-    window.location.replace('home.html');
+  if (getCookie('pavnika_verified') !== '1') {
+    window.location.replace('index.html');
   }
 })();
 </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Payment Methods — Pavnika by Saranya</title>
+<meta name="description" content="Payment options available at Pavnika by Saranya, including Tabby installments, bank transfer, card, and cash on delivery.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="login-page">
-
-<div class="login-bg" aria-hidden="true"></div>
-
-<div class="login-wrap">
-  <div class="gate-card" id="login-form-root">
-    <img src="assets/logo.png" alt="Pavnika by Saranya" class="gate-logo">
-    <div id="gate-step-details">
-      <h2>Welcome to Pavnika by Saranya</h2>
-      <p>Please verify your email to enter the site.</p>
-      <div class="field"><label>Email</label><input type="email" id="gate-email" autocomplete="email"></div>
-      <div class="gate-consent-row">
-        <input type="checkbox" id="gate-consent-checkbox">
-        <label for="gate-consent-checkbox">
-          I agree to the <a href="#" class="gate-legal-link" data-page="terms.html">Terms &amp; Conditions</a> and <a href="#" class="gate-legal-link" data-page="privacy.html">Privacy &amp; Cookies Policy</a>
-        </label>
+<body>
+<header class="site-header">
+  <div class="nav-row">
+    <a href="home.html" class="brand">
+      <img src="assets/logo.png" alt="Pavnika by Saranya logo">
+      <span class="brand-text">Pavnika <small>by Saranya</small></span>
+    </a>
+    <div class="nav-controls">
+      <button type="button" class="nav-icon-btn" id="nav-search-btn" aria-label="Search sarees">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="nav-account">
+        <button type="button" class="nav-icon-btn" id="nav-account-btn" aria-label="Account">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        </button>
+        <div class="account-dropdown" id="account-dropdown">
+          <p class="account-label">Signed in as</p>
+          <p class="account-email" id="account-email">&nbsp;</p>
+          <div class="account-divider"></div>
+          <button type="button" class="account-logout" id="account-logout">Logout</button>
+        </div>
       </div>
-      <button type="button" id="gate-send-btn" class="btn btn-primary" disabled>Send Verification Code</button>
-      <p class="gate-error" id="gate-error-1"></p>
+      <button type="button" class="nav-icon-btn nav-cart-btn" id="nav-cart-btn" aria-label="Cart">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-cart-badge" id="nav-cart-badge" style="display:none;">0</span>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
     </div>
-    <div id="gate-step-code" style="display:none;">
-      <h2>Enter Verification Code</h2>
-      <p>We sent a 4-digit code to your email — it expires in 10 minutes.</p>
-      <input type="text" id="gate-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-      <button type="button" id="gate-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>
-      <p class="gate-error" id="gate-error-2"></p>
-      <button type="button" id="gate-resend-btn" class="gate-resend">Resend code</button>
+    <nav class="main-nav">
+      <a href="home.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="collections.html">Collections</a>
+      <a href="contact.html">Contact</a>
+      <a href="contact.html" class="nav-cta">Book Appointment</a>
+    </nav>
+  </div>
+</header>
+<div class="search-panel" id="search-panel">
+  <div class="search-panel-inner">
+    <div class="search-input-row">
+      <input type="text" id="search-input" class="search-input" placeholder="Search by design, colour, pattern, series..." autocomplete="off">
+      <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
     </div>
+    <div class="search-results" id="search-results"></div>
+    <p class="search-empty" id="search-empty" style="display:none;">No sarees match your search.</p>
   </div>
 </div>
 
-<div class="legal-popup" id="legal-popup">
-  <div class="legal-popup-inner">
-    <button type="button" class="legal-popup-close" id="legal-popup-close" aria-label="Close">&times;</button>
-    <div class="legal-popup-body" id="legal-popup-body">
-      <p style="text-align:center; opacity:0.7;">Loading…</p>
+
+<section class="page-hero">
+  <div class="container">
+    <span class="eyebrow">Customer Care</span>
+    <h1>Payment Methods</h1>
+  </div>
+</section>
+
+<section style="padding-top:0;">
+  <div class="container">
+    <div class="legal-content">
+
+      <span class="updated-date">Last updated: July 2026</span>
+
+      <p>For orders shipping within the UAE, you can pay directly on this website via our secure payment partner, Nomod — select your sarees, proceed to checkout, and choose "Pay Online." For overseas orders, payment is arranged directly with us via WhatsApp once your order is confirmed. The following payment options are available:</p>
+
+      <div class="payment-grid">
+        <div class="payment-card">
+          <h3>Pay in Installments (Tabby / Tamara)</h3>
+          <p>Split your payment into easy, interest-free installments — shop now, pay over time.</p>
+        </div>
+        <div class="payment-card">
+          <h3>Credit / Debit Card</h3>
+          <p>Pay instantly with your card via Nomod's secure checkout — quick, convenient, and completely secure.</p>
+        </div>
+        <div class="payment-card">
+          <h3>Apple Pay / Google Pay</h3>
+          <p>Check out in seconds using the digital wallet already on your phone.</p>
+        </div>
+        <div class="payment-card">
+          <h3>Bank Transfer</h3>
+          <p>Transfer directly from your bank account, arranged with us via WhatsApp — safe, secure, and straightforward.</p>
+        </div>
+      </div>
+
+      <p style="margin-top:24px;"><em>Note: Online checkout through this website is currently available for orders shipping within the UAE only. For international orders, please contact us on WhatsApp to arrange your order and payment — see our <a href="shipping.html">Shipping &amp; Delivery</a> page for details.</em></p>
     </div>
   </div>
-</div>
+</section>
 
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <img src="assets/logo.png" alt="Pavnika by Saranya logo">
+          <span>Pavnika by Saranya</span>
+        </div>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="collections.html">Collections</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reach Us</h4>
+        <p>Dubai based online boutique<br>By appointment</p>
+        <div class="footer-social">
+          <a href="https://wa.me/971526630307" target="_blank" rel="noopener" aria-label="Chat with Pavnika by Saranya on WhatsApp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.16c-.24.68-1.4 1.3-1.93 1.36-.5.06-1.03.28-3.46-.72-2.91-1.2-4.78-4.14-4.93-4.33-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.01-2.41.27-.29.58-.36.78-.36.19 0 .39 0 .55.01.18.01.42-.07.66.5.24.58.83 1.99.9 2.14.07.14.12.31.02.5-.1.19-.15.31-.3.48-.14.17-.3.37-.43.5-.14.14-.3.29-.13.58.17.29.75 1.24 1.62 2.01 1.11.99 2.05 1.29 2.34 1.43.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.38-.24.64-.14.26.1 1.66.78 1.94.92.29.15.48.22.55.34.07.13.07.72-.17 1.4z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/pavnika_by_saranya?igsh=MWpseTBjODVucHA1cQ==" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="https://youtube.com/@pavnikabysaranya?si=lLIEQ6G0UG-YI7QO" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+          </a>
+          <a href="https://m.facebook.com/profile.php?id=61579090843467" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on Facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-grid footer-grid-legal">
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy &amp; Cookies Policy</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Customer Care</h4>
+        <ul>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="payment.html">Payment Methods</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Shipping &amp; Returns</h4>
+        <ul>
+          <li><a href="shipping.html">Shipping &amp; Delivery</a></li>
+          <li><a href="returns.html">Returns &amp; Exchange Policy</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-payment-badges">
+      <span class="pay-badge"><svg viewBox="0 0 60 24" width="46" height="18"><text x="30" y="17" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-style="italic" font-size="15" fill="#1A1F71">VISA</text></svg></span>
+      <span class="pay-badge"><svg viewBox="0 0 100 24" width="70" height="18"><text x="50" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="13" fill="#EB5B2C">mastercard</text></svg></span>
+      <span class="pay-badge"><svg viewBox="0 0 70 24" width="50" height="18"><text x="35" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#22C6AE">tabby</text></svg></span>
+      <span class="pay-badge"><svg viewBox="0 0 80 24" width="56" height="18"><text x="40" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#EE7373">tamara</text></svg></span>
+      <span class="pay-badge"><svg viewBox="0 0 90 24" width="64" height="18"><text x="45" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="600" font-size="12" fill="#1B1B1B">Apple Pay</text></svg></span>
+      <span class="pay-badge"><svg viewBox="0 0 95 24" width="68" height="18"><text x="47" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="600" font-size="12" fill="#5F6368">Google Pay</text></svg></span>
+    </div>
+
+    <div class="footer-bottom">
+      <span>&copy; 2026 Pavnika by Saranya. All sarees shown are illustrative of collection style.</span>
+      <span>Handwoven in Kancheepuram. Curated in Dubai.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="products-data.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
