@@ -572,12 +572,29 @@ nav.main-nav a.active {
   pointer-events: none;
 }
 .hero-banner-text .container {
-  pointer-events: auto;
+  pointer-events: none; /* only the copy column itself is interactive,
+                           so clicks to its right fall through to the
+                           banner's click layer */
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
   padding-bottom: 8vh;
+}
+/* Desktop-only clickable area over the right side of the banner (the
+   image area beyond the text column) linking to the active slide's
+   admin-configured link. Hidden on mobile. */
+.hero-banner-click {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  right: 0;
+  z-index: 3;
+  cursor: pointer;
+}
+@media (max-width: 880px) {
+  .hero-banner-click { display: none; }
 }
 /* One shared column for eyebrow, heading, paragraph and buttons —
    everything aligns to the same left AND right edges, and the width
@@ -586,6 +603,7 @@ nav.main-nav a.active {
 .hero-copy {
   width: 100%;
   max-width: min(680px, 48vw);
+  pointer-events: auto;
 }
 .hero-banner-text .eyebrow {
   color: var(--gold-light);
@@ -614,6 +632,8 @@ nav.main-nav a.active {
   border: 1px solid var(--gold-light);
 }
 .hero-banner-text .btn-ghost:hover { background: var(--gold-light); color: var(--green-deep); }
+/* View Collections: turns golden on hover */
+.hero-banner-text .btn-primary:hover { background: var(--gold-light); color: var(--green-deep); }
 /* Both hero buttons: identical 54px pills with vertically centered
    labels, so they sit perfectly aligned side by side. */
 .hero-banner-text .btn-row { align-items: center; }
@@ -631,6 +651,10 @@ nav.main-nav a.active {
   min-width: 240px;
   padding: 0 7px 0 28px;
 }
+/* WhatsApp chip in the site's own palette (gold/green, matching the
+   footer & contact icons — not WhatsApp brand green), sitting flush
+   at the right edge of the pill. Colors invert on hover along with
+   the button so it stays legible. */
 .wa-icon-circle {
   display: inline-flex;
   align-items: center;
@@ -639,11 +663,15 @@ nav.main-nav a.active {
   height: 40px;
   flex: 0 0 40px;
   border-radius: 50%;
-  background: #25D366;
-  color: #fff;
-  transition: transform 0.25s ease;
+  background: var(--gold-light);
+  color: var(--green-deep);
+  transition: transform 0.25s ease, background 0.25s ease, color 0.25s ease;
 }
-.hero-whatsapp-btn:hover .wa-icon-circle { transform: scale(1.08); }
+.hero-whatsapp-btn:hover .wa-icon-circle {
+  transform: scale(1.08);
+  background: var(--green-deep);
+  color: var(--gold-light);
+}
 @media (max-width: 880px) {
   .hero-banner-pinned { height: 88vh; }
   .hero-copy { max-width: 100%; }

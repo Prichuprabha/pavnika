@@ -1177,6 +1177,19 @@ function initHeroBannerCarousel() {
 
       wrap.innerHTML = slidesHTML + dotsHTML + navHTML;
 
+      // Desktop-only clickable layer over the right half of the banner
+      // (the image area beyond the text column). Its href always points
+      // to the ACTIVE slide's admin-configured link, falling back to
+      // Collections. Hidden on mobile via CSS.
+      var clickLink = document.createElement('a');
+      clickLink.className = 'hero-banner-click';
+      clickLink.setAttribute('aria-label', 'Open this banner\'s collection');
+      function syncClickHref(i) {
+        clickLink.href = (banners[i] && banners[i].link) || DEFAULT_LINK;
+      }
+      syncClickHref(0);
+      wrap.appendChild(clickLink);
+
       if (banners.length > 1) {
         var slides = wrap.querySelectorAll('.hero-banner-slide');
         var dots = wrap.querySelectorAll('.hero-banner-dots span');
@@ -1192,6 +1205,7 @@ function initHeroBannerCarousel() {
           idx = (newIdx + slides.length) % slides.length;
           slides[idx].classList.add('is-active');
           dots[idx].classList.add('is-active');
+          syncClickHref(idx);
         }
 
         function scheduleNext() {
