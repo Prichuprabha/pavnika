@@ -834,10 +834,12 @@ function initHomeSeriesMarquee() {
 
 /* ---------- Homepage: 4-video showcase grid ----------
    Reads assets/videos/home-video-slots.json, an array of exactly 4
-   entries (a filename, or "" for an empty slot). Each filled slot
-   autoplays, muted and looping; empty slots show the Pavnika mark with
-   a short authenticity note instead. Manage which videos fill which
-   slot from the admin panel's Banners page. */
+   entries. Each entry is { file, link } — or a plain filename string
+   (the old format, still supported). Filled slots autoplay, muted and
+   looping; a slot with a link becomes clickable and navigates there
+   (new tab for external URLs). Empty slots show the Pavnika mark with
+   a short authenticity note instead. Manage files AND links from the
+   admin panel's videos section. */
 function initHomeVideoShowcase() {
   var grid = document.getElementById('home-video-grid');
   if (!grid) return;
@@ -845,19 +847,34 @@ function initHomeVideoShowcase() {
   var FOLDER = 'assets/videos/';
   var FALLBACK_TEXT = 'Handwoven authenticity, direct from the weaving families of Kancheepuram.';
 
-  fetch(FOLDER + 'home-video-slots.json')
-    .then(function (res) { return res.ok ? res.json() : ['', '', '', '']; })
-    .then(function (slots) {
-      if (!slots || !slots.length) slots = ['', '', '', ''];
-      while (slots.length < 4) slots.push('');
+  function normalizeSlot(s) {
+    if (typeof s === 'string') return { file: s, link: '' };
+    if (s && typeof s === 'object') return { file: s.file || '', link: s.link || '' };
+    return { file: '', link: '' };
+  }
 
-      grid.innerHTML = slots.slice(0, 4).map(function (filename) {
-        if (filename) {
-          return (
-            '<div class="home-video-tile">' +
-              '<video src="' + FOLDER + filename + '" autoplay muted loop playsinline></video>' +
-            '</div>'
-          );
+  fetch(FOLDER + 'home-video-slots.json')
+    .then(function (res) { return res.ok ? res.json() : []; })
+    .then(function (slots) {
+      if (!Array.isArray(slots)) slots = [];
+      slots = slots.map(normalizeSlot);
+      while (slots.length < 4) slots.push({ file: '', link: '' });
+
+      grid.innerHTML = slots.slice(0, 4).map(function (slot) {
+        if (slot.file) {
+          var videoHTML =
+            '<video src="' + FOLDER + slot.file + '" autoplay muted loop playsinline></video>';
+          if (slot.link) {
+            var isExternal = /^https?:\/\//i.test(slot.link);
+            return (
+              '<a class="home-video-tile home-video-tile-link" href="' + slot.link + '"' +
+                (isExternal ? ' target="_blank" rel="noopener"' : '') +
+                ' aria-label="Watch and explore">' +
+                videoHTML +
+              '</a>'
+            );
+          }
+          return '<div class="home-video-tile">' + videoHTML + '</div>';
         }
         return (
           '<div class="home-video-tile">' +

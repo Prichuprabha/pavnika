@@ -72,10 +72,17 @@ exports.handler = async function (event) {
 
   try {
     const sha = await getFileSha();
-    // Keep exactly 4 slots, preserving empty strings (they mark an
-    // intentionally empty slot by position — not something to strip).
-    var cleanVideos = body.videos.slice(0, 4).map(function (v) { return String(v || '').trim(); });
-    while (cleanVideos.length < 4) cleanVideos.push('');
+    // Keep exactly 4 slots. Each slot is { file, link } — empty file
+    // means an intentionally empty slot by position (shows the Pavnika
+    // mark), so empties are preserved, not stripped. Old-format plain
+    // strings are accepted and upgraded to { file, link: '' }.
+    var cleanVideos = body.videos.slice(0, 4).map(function (v) {
+      if (v && typeof v === 'object') {
+        return { file: String(v.file || '').trim(), link: String(v.link || '').trim() };
+      }
+      return { file: String(v || '').trim(), link: '' };
+    });
+    while (cleanVideos.length < 4) cleanVideos.push({ file: '', link: '' });
     const newContent = JSON.stringify(cleanVideos, null, 2) + '\n';
     const result = await putFile(newContent, sha, 'Admin: update home page video slots');
 

@@ -1154,7 +1154,16 @@ function initStatsDashboard(token) {
 function initVideosEditor(token) {
   var listEl = document.getElementById('admin-video-list');
   var statusMsg = document.getElementById('admin-video-status-msg');
-  var slots = ['', '', '', ''];
+  var slots = [
+    { file: '', link: '' }, { file: '', link: '' },
+    { file: '', link: '' }, { file: '', link: '' }
+  ];
+
+  function normalizeSlot(s) {
+    if (typeof s === 'string') return { file: s, link: '' };
+    if (s && typeof s === 'object') return { file: s.file || '', link: s.link || '' };
+    return { file: '', link: '' };
+  }
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
@@ -1163,13 +1172,14 @@ function initVideosEditor(token) {
   }
 
   function renderList() {
-    listEl.innerHTML = slots.map(function (filename, i) {
+    listEl.innerHTML = slots.map(function (slot, i) {
       return (
         '<div class="admin-video-item">' +
-          '<div class="video-thumb">' + (filename ? '&#9654;' : '&#9711;') + '</div>' +
+          '<div class="video-thumb">' + (slot.file ? '&#9654;' : '&#9711;') + '</div>' +
           '<div class="video-info">' +
             '<strong>Slot ' + (i + 1) + (i === 0 ? ' (currently the main brand video)' : '') + '</strong><br>' +
-            '<input type="text" class="admin-video-slot-input" data-index="' + i + '" value="' + filename + '" placeholder="Empty — shows Pavnika mark + text">' +
+            '<input type="text" class="admin-video-slot-input" data-field="file" data-index="' + i + '" value="' + slot.file + '" placeholder="Empty — shows Pavnika mark + text"><br>' +
+            '<input type="text" class="admin-video-slot-input" data-field="link" data-index="' + i + '" value="' + slot.link + '" placeholder="Click-through link (optional) — e.g. collections.html or https://..." style="margin-top:6px;">' +
           '</div>' +
         '</div>'
       );
@@ -1180,8 +1190,8 @@ function initVideosEditor(token) {
     fetch('assets/videos/home-video-slots.json?_=' + Date.now())
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        slots = (data && data.length) ? data.slice(0, 4) : ['', '', '', ''];
-        while (slots.length < 4) slots.push('');
+        slots = (Array.isArray(data) ? data.slice(0, 4) : []).map(normalizeSlot);
+        while (slots.length < 4) slots.push({ file: '', link: '' });
         renderList();
       })
       .catch(function () { listEl.innerHTML = '<p>Could not load video slots.</p>'; });
@@ -1191,7 +1201,8 @@ function initVideosEditor(token) {
     var input = e.target.closest('.admin-video-slot-input');
     if (!input) return;
     var idx = parseInt(input.getAttribute('data-index'), 10);
-    slots[idx] = input.value.trim();
+    var field = input.getAttribute('data-field') || 'file';
+    slots[idx][field] = input.value.trim();
   });
 
   document.getElementById('admin-video-refresh-btn').addEventListener('click', function () {

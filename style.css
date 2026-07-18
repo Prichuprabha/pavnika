@@ -2767,6 +2767,10 @@ body.login-page {
   transition: border-color 0.25s ease;
 }
 .home-video-tile:hover { border-color: var(--gold); }
+a.home-video-tile-link {
+  display: block;
+  cursor: pointer;
+}
 .home-video-tile video {
   position: absolute;
   inset: 0;
