@@ -2051,32 +2051,49 @@ function initPinnedHero() {
   var hero = document.querySelector('.hero-banner-pinned');
   if (!wrapper || !hero) return;
 
-  function onScroll() {
-    var wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
-    var wrapperHeight = wrapper.offsetHeight;
-    var heroHeight = hero.offsetHeight;
-    var scrollY = window.scrollY;
+  var wrapperTop = 0;
+  var wrapperHeight = 0;
+  var heroHeight = 0;
+  var ticking = false;
+
+  // Measuring only on load/resize (not on every scroll) avoids forcing a
+  // layout recalculation on every scroll event — recalculating on every
+  // scroll tick is expensive and was the actual cause of the visible
+  // snapping/jank, not the positioning logic itself.
+  function measure() {
+    wrapperTop = wrapper.offsetTop;
+    wrapperHeight = wrapper.offsetHeight;
+    heroHeight = hero.offsetHeight;
+  }
+
+  function update() {
+    var scrollY = window.scrollY || window.pageYOffset;
     var releaseAt = wrapperTop + wrapperHeight - heroHeight;
 
     if (scrollY < wrapperTop) {
-      // Haven't reached the hero yet — sits normally at the top of the wrapper.
       hero.classList.remove('is-fixed');
       hero.style.position = 'absolute';
       hero.style.top = '0';
     } else if (scrollY < releaseAt) {
-      // Within the pin range — fixed to the viewport, visually "stuck".
       hero.classList.add('is-fixed');
       hero.style.top = '0';
     } else {
-      // Scrolled past — release it so it stays behind at this point,
-      // and the next section naturally covers it from here on.
       hero.classList.remove('is-fixed');
       hero.style.position = 'absolute';
       hero.style.top = (wrapperHeight - heroHeight) + 'px';
     }
+    ticking = false;
   }
 
+  function onScroll() {
+    if (!ticking) {
+      requestAnimationFrame(update);
+      ticking = true;
+    }
+  }
+
+  measure();
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll);
-  onScroll();
+  window.addEventListener('resize', function () { measure(); update(); });
+  update();
 }
