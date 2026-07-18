@@ -535,12 +535,16 @@ nav.main-nav a.active {
    unrelated ancestor properties (transforms, certain filters, etc.),
    so this uses fixed/absolute directly for guaranteed, predictable
    behavior regardless of what else is on the page.
-   The wrapper below is taller than the pinned banner itself — that
-   extra height is what defines how long the "pin" effect lasts before
-   the banner naturally releases and gets covered by the next section. */
+   The hero is pinned PERMANENTLY (like siahbyahadishika.com): the
+   wrapper is exactly one hero tall, all content after it scrolls up
+   and over the fixed banner, and once covered the banner never
+   reappears (everything after it has an opaque background and a
+   higher z-index). JS keeps the wrapper height synced to the hero. */
 .hero-pin-wrapper {
   position: relative;
-  height: 150vh;
+  height: 88vh;
+  min-height: 520px;
+  max-height: 760px;
 }
 .hero-banner-pinned {
   position: absolute;
@@ -577,14 +581,22 @@ nav.main-nav a.active {
   justify-content: center;
   padding-bottom: 8vh;
 }
+/* One shared column for eyebrow, heading, paragraph and buttons —
+   everything aligns to the same left AND right edges, and the width
+   scales fluidly with the viewport so resizing reflows the text
+   smoothly instead of jumping at a breakpoint. */
+.hero-copy {
+  width: 100%;
+  max-width: min(680px, 48vw);
+}
 .hero-banner-text .eyebrow {
   color: var(--gold-light);
   font-size: 0.78rem;
 }
 .hero-banner-text h1 {
   color: var(--ivory);
-  max-width: 13ch;
-  font-size: 3.3rem;
+  max-width: none;
+  font-size: clamp(1.7rem, 2.4vw + 0.85rem, 3.3rem);
   line-height: 1.18;
   margin-bottom: 0.36em;
   text-shadow: 0 2px 20px rgba(0,0,0,0.25);
@@ -592,8 +604,9 @@ nav.main-nav a.active {
 .hero-banner-text .lede {
   color: var(--ivory);
   opacity: 0.92;
-  font-size: 1.15rem;
-  max-width: 42ch;
+  font-size: clamp(0.88rem, 0.45vw + 0.72rem, 1.15rem);
+  max-width: none;
+  text-align: justify;
   line-height: 1.6;
   margin-bottom: 1.6em;
 }
@@ -607,13 +620,28 @@ nav.main-nav a.active {
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  min-width: 200px;
+  gap: 16px;
+  min-width: 230px;
+  padding: 7px 8px 7px 28px;
+  border-radius: 999px;
 }
+.wa-icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  background: #25D366;
+  color: #fff;
+  transition: transform 0.25s ease;
+}
+.hero-whatsapp-btn:hover .wa-icon-circle { transform: scale(1.08); }
 @media (max-width: 880px) {
   .hero-banner-pinned { height: 88vh; }
-  .hero-banner-text h1 { max-width: 12ch; font-size: 1.6rem; }
-  .hero-banner-text .lede { font-size: 0.88rem; margin-bottom: 1em; }
+  .hero-copy { max-width: 100%; }
+  .hero-banner-text h1 { max-width: none; }
   .hero-banner-gradient { background: linear-gradient(180deg, rgba(8,46,34,0.35) 0%, rgba(8,46,34,0.78) 78%); }
 }
 
@@ -1017,8 +1045,16 @@ footer.site-footer {
   object-fit: cover;
   display: block;
 }
-.story-banner-plain { background: var(--ivory-deep); }
-.story-banner-plain .story-banner-overlay { background: none; position: relative; }
+/* Plain (about page) variant: no background colour, and auto height so
+   nothing below the heading — like the DET licence badge — gets clipped
+   by the fixed 300px banner height above. */
+.story-banner.story-banner-plain {
+  background: none;
+  height: auto;
+  overflow: visible;
+  padding: 56px 24px 16px;
+}
+.story-banner-plain .story-banner-overlay { background: none; position: relative; inset: auto; padding: 0; }
 .det-license-badge {
   display: inline-flex;
   align-items: center;

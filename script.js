@@ -2045,15 +2045,19 @@ function initCuratedShowcase() {
    working if ANY ancestor has certain transform/filter/perspective
    properties, which is easy to trip on unintentionally as a site
    grows. This drives the same visual effect directly via scroll
-   position, so it can't be broken by unrelated CSS elsewhere. */
+   position, so it can't be broken by unrelated CSS elsewhere.
+
+   Behavior (modelled on siahbyahadishika.com): the hero pins
+   PERMANENTLY once the page scrolls past its top. All content after
+   it (opaque, higher z-index) scrolls up and over the banner and its
+   text, and because the banner stays fixed at the top of the viewport
+   behind that content, it never reappears further down the page. */
 function initPinnedHero() {
   var wrapper = document.querySelector('.hero-pin-wrapper');
   var hero = document.querySelector('.hero-banner-pinned');
   if (!wrapper || !hero) return;
 
   var wrapperTop = 0;
-  var wrapperHeight = 0;
-  var heroHeight = 0;
   var ticking = false;
 
   // Measuring only on load/resize (not on every scroll) avoids forcing a
@@ -2061,27 +2065,30 @@ function initPinnedHero() {
   // scroll tick is expensive and was the actual cause of the visible
   // snapping/jank, not the positioning logic itself.
   function measure() {
+    // Keep the in-flow wrapper exactly as tall as the hero itself, so
+    // the content after it starts right at the hero's bottom edge and
+    // begins covering it as soon as the user scrolls.
+    wrapper.style.height = hero.offsetHeight + 'px';
     wrapperTop = wrapper.offsetTop;
-    wrapperHeight = wrapper.offsetHeight;
-    heroHeight = hero.offsetHeight;
   }
 
   function update() {
     var scrollY = window.scrollY || window.pageYOffset;
-    var releaseAt = wrapperTop + wrapperHeight - heroHeight;
 
     if (scrollY < wrapperTop) {
+      // Above the hero (only possible if anything ever sits before it):
+      // let it scroll normally within its wrapper.
       hero.classList.remove('is-fixed');
       hero.style.position = 'absolute';
-      hero.style.top = '0';
-    } else if (scrollY < releaseAt) {
-      hero.classList.add('is-fixed');
-      hero.style.top = '0';
     } else {
-      hero.classList.remove('is-fixed');
-      hero.style.position = 'absolute';
-      hero.style.top = (wrapperHeight - heroHeight) + 'px';
+      // Pinned — permanently. Content after the wrapper scrolls over it.
+      // NOTE: position must be set inline here; an inline style always
+      // beats the .is-fixed class rule, so relying on the class alone
+      // while an inline 'absolute' is still set silently breaks the pin.
+      hero.classList.add('is-fixed');
+      hero.style.position = 'fixed';
     }
+    hero.style.top = '0';
     ticking = false;
   }
 
