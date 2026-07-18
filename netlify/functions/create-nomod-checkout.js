@@ -148,12 +148,15 @@ exports.handler = async function (event) {
       return { statusCode: 502, body: JSON.stringify({ error: (data.error && data.error.message) || 'Could not start payment. Please try again or use WhatsApp checkout.' }) };
     }
 
-    // Record the pending order now, before the customer even reaches
-    // Nomod's page — verify-nomod-order will look this up and update it
-    // once (and only if) Nomod confirms the payment actually went through.
+    // Record the pending order now, BEFORE the customer is sent to pay.
+    // This must succeed: verify-nomod-order needs this row (it stores the
+    // nomod_checkout_id) to confirm the payment afterwards. If we can't
+    // record it, sending the customer to pay anyway would take their money
+    // with no way to auto-confirm the order — so we stop here instead.
+    // (The unused Nomod session simply expires.)
     try {
       const orderNumber = await generateOrderNumber();
-      await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+      const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
         method: 'POST',
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
@@ -177,10 +180,17 @@ exports.handler = async function (event) {
           shipping_address: JSON.stringify(body.shippingAddress || {})
         })
       });
+      if (!insertRes.ok) {
+        // fetch() does NOT throw on HTTP errors — this explicit check is
+        // what surfaces Supabase rejections (schema/constraint problems)
+        // that previously failed completely silently.
+        const errBody = await insertRes.text();
+        console.error(`Failed to record pending order (Supabase ${insertRes.status}) for ${referenceId}:`, errBody);
+        return { statusCode: 500, body: JSON.stringify({ error: 'Could not register your order. Please try again in a moment, or use WhatsApp checkout — you have not been charged.' }) };
+      }
     } catch (dbErr) {
-      // Don't block the customer's payment if this logging step fails —
-      // verify-nomod-order can still confirm status directly with Nomod.
-      console.error('Failed to record pending order:', dbErr);
+      console.error('Failed to record pending order (network) for', referenceId, ':', dbErr);
+      return { statusCode: 500, body: JSON.stringify({ error: 'Could not register your order. Please try again in a moment, or use WhatsApp checkout — you have not been charged.' }) };
     }
 
     return {

@@ -1793,6 +1793,16 @@ function initCheckoutPage() {
           payBtn.style.pointerEvents = '';
           return;
         }
+        // Remember this checkout locally before leaving for Nomod. If the
+        // server-side order record is ever missing when the customer comes
+        // back, the success page sends this checkoutId along and
+        // verify-nomod-order can recover the order directly from Nomod.
+        try {
+          localStorage.setItem('pavnika_last_checkout', JSON.stringify({
+            referenceId: result.data.referenceId,
+            checkoutId: result.data.id
+          }));
+        } catch (e) { /* storage unavailable — recovery fallback just won't apply */ }
         window.location.href = result.data.url;
       })
       .catch(function () {
@@ -1850,10 +1860,20 @@ function initOrderSuccessPage() {
     }
     showState('loading');
 
+    // If this browser remembers the checkoutId for this exact reference
+    // (saved just before the redirect to Nomod), pass it along — it lets
+    // the server recover the order straight from Nomod even if the
+    // pending order record failed to save at checkout time.
+    var recoveryCheckoutId = null;
+    try {
+      var saved = JSON.parse(localStorage.getItem('pavnika_last_checkout') || 'null');
+      if (saved && saved.referenceId === ref) recoveryCheckoutId = saved.checkoutId;
+    } catch (e) { /* ignore bad stored data */ }
+
     fetch('/.netlify/functions/verify-nomod-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ referenceId: ref })
+      body: JSON.stringify({ referenceId: ref, checkoutId: recoveryCheckoutId })
     })
       .then(function (res) { return res.json(); })
       .then(function (result) {
