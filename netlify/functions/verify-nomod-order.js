@@ -367,6 +367,7 @@ async function sendReceiptEmail(order, nomodData) {
     },
     body: JSON.stringify({
       from: FROM_EMAIL,
+      reply_to: 'support@pavnika.ae',
       to: recipients,
       subject: `Order #${order.order_number || order.nomod_checkout_id} — AED ${formatAED(order.total)} — Payment confirmed`,
       html: html

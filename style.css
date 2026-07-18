@@ -822,7 +822,21 @@ nav.main-nav a.active {
 section { padding: 84px 0; }
 
 .home-page section { padding: 56px 0; }
-.home-page .section-head { margin-bottom: 32px; }
+.home-page .section-sub {
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  margin: 8px 0 0;
+}
+.section-sub a {
+  color: var(--green);
+  text-decoration: none;
+  border-bottom: 1px solid var(--gold);
+  padding-bottom: 1px;
+  transition: color 0.2s ease;
+}
+.section-sub a:hover { color: var(--gold); }
+
+.section-head { margin-bottom: 32px; }
 
 .section-head {
   max-width: 640px;
