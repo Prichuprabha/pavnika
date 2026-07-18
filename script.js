@@ -1167,28 +1167,48 @@ function initHeroBannerCarousel() {
           }).join('') + '</div>'
         : '';
 
-      wrap.innerHTML = slidesHTML + dotsHTML;
+      var navHTML = banners.length > 1
+        ? '<div class="hero-banner-nav">' +
+            '<button type="button" class="hero-banner-nav-btn" data-dir="-1" aria-label="Previous banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>' +
+            '<button type="button" class="hero-banner-nav-btn" data-dir="1" aria-label="Next banner"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>' +
+          '</div>'
+        : '';
+
+      wrap.innerHTML = slidesHTML + dotsHTML + navHTML;
 
       if (banners.length > 1) {
         var slides = wrap.querySelectorAll('.hero-banner-slide');
         var dots = wrap.querySelectorAll('.hero-banner-dots span');
         var idx = 0;
+        var timer = null;
 
         // First banner shows for 3s, every banner after that for 5s.
         function durationFor(i) { return i === 0 ? 3000 : 5000; }
 
-        function advance() {
-          setTimeout(function () {
-            slides[idx].classList.remove('is-active');
-            dots[idx].classList.remove('is-active');
-            idx = (idx + 1) % slides.length;
-            slides[idx].classList.add('is-active');
-            dots[idx].classList.add('is-active');
-            advance();
+        function showSlide(newIdx) {
+          slides[idx].classList.remove('is-active');
+          dots[idx].classList.remove('is-active');
+          idx = (newIdx + slides.length) % slides.length;
+          slides[idx].classList.add('is-active');
+          dots[idx].classList.add('is-active');
+        }
+
+        function scheduleNext() {
+          clearTimeout(timer);
+          timer = setTimeout(function () {
+            showSlide(idx + 1);
+            scheduleNext();
           }, durationFor(idx));
         }
 
-        advance();
+        wrap.querySelectorAll('.hero-banner-nav-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            showSlide(idx + parseInt(btn.getAttribute('data-dir'), 10));
+            scheduleNext(); // manual navigation resets the auto-advance timer
+          });
+        });
+
+        scheduleNext();
       }
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
