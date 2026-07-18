@@ -2112,13 +2112,25 @@ function initPinnedHero() {
   if (!wrapper || !hero) return;
   var header = document.querySelector('header.site-header');
 
+  // The banner artwork is authored at 1900x540 (ratio 3.52:1). On
+  // desktop the hero height follows that ratio at full viewport width,
+  // so the images display essentially uncropped; it's floored at 460px
+  // (so the overlay text always fits) and capped at the space below the
+  // header. On mobile the hero fills the viewport below the header as
+  // before — a 3.52:1 image on a portrait screen crops regardless, and
+  // the gradient + text carry the layout there.
+  var BANNER_RATIO = 1900 / 540;
+
   function layout() {
     var headerH = header ? header.offsetHeight : 0;
-    // Fill the viewport below the header exactly, so the whole banner
-    // is visible on screen — nothing hidden under the header or cut
-    // off below the fold. Floor of 460px keeps it usable on very
-    // short windows.
-    var heroH = Math.max(window.innerHeight - headerH, 460);
+    var maxH = window.innerHeight - headerH;
+    var heroH;
+    if (window.innerWidth <= 880) {
+      heroH = Math.max(maxH, 460);
+    } else {
+      var ratioH = Math.round(window.innerWidth / BANNER_RATIO);
+      heroH = Math.min(Math.max(ratioH, 460), maxH);
+    }
     hero.classList.add('is-fixed');
     hero.style.position = 'fixed';
     hero.style.top = headerH + 'px';
