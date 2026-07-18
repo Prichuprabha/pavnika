@@ -533,7 +533,16 @@ nav.main-nav a.active {
    The banner stays pinned in place (position: sticky) while the next
    section scrolls up and over it, revealing the rest of the page —
    the text and buttons sit as an overlay on top of the image itself,
-   rather than in a separate section below it. */
+   rather than in a separate section below it.
+   The wrapper below is taller than the pinned banner itself — that
+   extra height is what defines how long the "pin" effect lasts before
+   the banner naturally releases and gets covered by the next section.
+   Without a taller wrapper, a sticky element has nothing to release
+   from and stays pinned indefinitely as the page keeps scrolling. */
+.hero-pin-wrapper {
+  position: relative;
+  height: 130vh;
+}
 .hero-banner-pinned {
   position: sticky;
   top: 0;
@@ -558,24 +567,41 @@ nav.main-nav a.active {
   align-items: center;
   pointer-events: none;
 }
-.hero-banner-text .container { pointer-events: auto; }
-.hero-banner-text .eyebrow { color: var(--gold-light); }
+.hero-banner-text .container {
+  pointer-events: auto;
+  margin: 0;
+  width: 100%;
+}
+.hero-banner-text .eyebrow {
+  color: var(--gold-light);
+  font-size: 0.78rem;
+}
 .hero-banner-text h1 {
   color: var(--ivory);
-  max-width: 14ch;
-  margin-bottom: 0.3em;
+  max-width: 13ch;
+  font-size: 2.4rem;
+  line-height: 1.15;
+  margin-bottom: 0.28em;
   text-shadow: 0 2px 20px rgba(0,0,0,0.25);
 }
 .hero-banner-text .lede {
   color: var(--ivory);
   opacity: 0.92;
-  font-size: 1.1rem;
-  max-width: 42ch;
-  margin-bottom: 1.6em;
+  font-size: 0.98rem;
+  max-width: 40ch;
+  line-height: 1.5;
+  margin-bottom: 1.3em;
 }
+.hero-banner-text .btn-ghost {
+  background: transparent;
+  color: var(--gold-light);
+  border: 1px solid var(--gold-light);
+}
+.hero-banner-text .btn-ghost:hover { background: var(--gold-light); color: var(--green-deep); }
 @media (max-width: 880px) {
   .hero-banner-pinned { height: 88vh; }
-  .hero-banner-text h1 { max-width: 12ch; font-size: 1.7rem; }
+  .hero-banner-text h1 { max-width: 12ch; font-size: 1.6rem; }
+  .hero-banner-text .lede { font-size: 0.88rem; margin-bottom: 1em; }
   .hero-banner-gradient { background: linear-gradient(180deg, rgba(8,46,34,0.35) 0%, rgba(8,46,34,0.78) 78%); }
 }
 
@@ -975,11 +1001,19 @@ footer.site-footer {
 }
 .story-banner-plain { background: var(--ivory-deep); }
 .story-banner-plain .story-banner-overlay { background: none; position: relative; }
-.det-license-text {
-  font-size: 0.82rem;
-  color: var(--ink);
-  opacity: 0.75;
-  margin-top: 6px;
+.det-license-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-top: 10px;
+  padding: 10px 20px;
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  font-family: var(--body);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--green-deep);
+  font-weight: 600;
 }
 
 .story-banner-overlay {
@@ -2305,10 +2339,22 @@ body.login-page {
   border-radius: 4px;
   overflow: hidden;
   background: var(--stone);
-  border: 1px solid transparent;
+  border: 3px solid transparent;
   transition: border-color 0.25s ease;
 }
 .curated-tile:hover { border-color: var(--gold); }
+.curated-tile-media .id-badge {
+  position: absolute;
+  top: 10px; right: 10px;
+  background: rgba(250, 247, 239, 0.88);
+  color: var(--green);
+  font-size: 0.62rem;
+  font-family: var(--body);
+  letter-spacing: 0.06em;
+  padding: 5px 9px;
+  border-radius: 999px;
+  z-index: 2;
+}
 .curated-tile-media {
   position: absolute;
   inset: 0;

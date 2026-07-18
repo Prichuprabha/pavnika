@@ -2006,7 +2006,7 @@ function initCuratedShowcase() {
     var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +
-        '<div class="curated-tile-media"><img src="' + p.image + '" alt="' + p.type + ' — ' + seriesLabel + ' saree" loading="lazy"></div>' +
+        '<div class="curated-tile-media"><img src="' + p.image + '" alt="' + p.type + ' — ' + seriesLabel + ' saree" loading="lazy"><span class="id-badge">' + p.id + '</span></div>' +
         '<div class="curated-tile-gradient"></div>' +
         '<div class="curated-tile-text">' +
           '<span class="curated-series">' + seriesLabel + '</span>' +
