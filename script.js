@@ -2040,67 +2040,46 @@ function initCuratedShowcase() {
   }).join('');
 }
 
-/* ---------- Homepage: JS-driven pinned hero positioning ----------
+/* ---------- Homepage: JS-driven static hero positioning ----------
    Deliberately not pure CSS position:sticky — sticky silently stops
    working if ANY ancestor has certain transform/filter/perspective
    properties, which is easy to trip on unintentionally as a site
-   grows. This drives the same visual effect directly via scroll
-   position, so it can't be broken by unrelated CSS elsewhere.
+   grows.
 
-   Behavior (modelled on siahbyahadishika.com): the hero pins
-   PERMANENTLY once the page scrolls past its top. All content after
-   it (opaque, higher z-index) scrolls up and over the banner and its
-   text, and because the banner stays fixed at the top of the viewport
-   behind that content, it never reappears further down the page. */
+   Behavior (modelled on siahbyahadishika.com): the hero is FULLY
+   STATIC. It is fixed permanently just below the sticky header and
+   sized to fill the rest of the viewport, so it never moves at all —
+   there is no absolute↔fixed handoff on scroll (that handoff was the
+   source of the jitter where the banner slid under the header). The
+   in-flow wrapper is a same-size spacer; all content after it scrolls
+   up and over the banner, and since the banner stays fixed behind
+   that opaque, higher-z content, it never reappears further down.
+   No scroll listener needed — only re-layout on resize. */
 function initPinnedHero() {
   var wrapper = document.querySelector('.hero-pin-wrapper');
   var hero = document.querySelector('.hero-banner-pinned');
   if (!wrapper || !hero) return;
+  var header = document.querySelector('header.site-header');
 
-  var wrapperTop = 0;
-  var ticking = false;
-
-  // Measuring only on load/resize (not on every scroll) avoids forcing a
-  // layout recalculation on every scroll event — recalculating on every
-  // scroll tick is expensive and was the actual cause of the visible
-  // snapping/jank, not the positioning logic itself.
-  function measure() {
-    // Keep the in-flow wrapper exactly as tall as the hero itself, so
-    // the content after it starts right at the hero's bottom edge and
-    // begins covering it as soon as the user scrolls.
-    wrapper.style.height = hero.offsetHeight + 'px';
-    wrapperTop = wrapper.offsetTop;
+  function layout() {
+    var headerH = header ? header.offsetHeight : 0;
+    // Fill the viewport below the header exactly, so the whole banner
+    // is visible on screen — nothing hidden under the header or cut
+    // off below the fold. Floor of 460px keeps it usable on very
+    // short windows.
+    var heroH = Math.max(window.innerHeight - headerH, 460);
+    hero.classList.add('is-fixed');
+    hero.style.position = 'fixed';
+    hero.style.top = headerH + 'px';
+    hero.style.left = '0';
+    hero.style.right = '0';
+    hero.style.height = heroH + 'px';
+    wrapper.style.height = heroH + 'px';
   }
 
-  function update() {
-    var scrollY = window.scrollY || window.pageYOffset;
-
-    if (scrollY < wrapperTop) {
-      // Above the hero (only possible if anything ever sits before it):
-      // let it scroll normally within its wrapper.
-      hero.classList.remove('is-fixed');
-      hero.style.position = 'absolute';
-    } else {
-      // Pinned — permanently. Content after the wrapper scrolls over it.
-      // NOTE: position must be set inline here; an inline style always
-      // beats the .is-fixed class rule, so relying on the class alone
-      // while an inline 'absolute' is still set silently breaks the pin.
-      hero.classList.add('is-fixed');
-      hero.style.position = 'fixed';
-    }
-    hero.style.top = '0';
-    ticking = false;
-  }
-
-  function onScroll() {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }
-
-  measure();
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', function () { measure(); update(); });
-  update();
+  layout();
+  window.addEventListener('resize', layout);
+  // Re-run once everything (fonts, images) has loaded, in case the
+  // header height changed after first paint.
+  window.addEventListener('load', layout);
 }

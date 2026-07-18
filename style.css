@@ -535,25 +535,23 @@ nav.main-nav a.active {
    unrelated ancestor properties (transforms, certain filters, etc.),
    so this uses fixed/absolute directly for guaranteed, predictable
    behavior regardless of what else is on the page.
-   The hero is pinned PERMANENTLY (like siahbyahadishika.com): the
-   wrapper is exactly one hero tall, all content after it scrolls up
-   and over the fixed banner, and once covered the banner never
-   reappears (everything after it has an opaque background and a
-   higher z-index). JS keeps the wrapper height synced to the hero. */
+   The hero is FULLY STATIC (like siahbyahadishika.com): JS fixes it
+   permanently just below the sticky header, sized to fill the rest of
+   the viewport, so it never moves at all — no absolute/fixed handoff,
+   no sliding under the header, zero jitter. The wrapper is a same-size
+   in-flow spacer; all content after it scrolls up and over the banner,
+   and once covered the banner never reappears (everything after it has
+   an opaque background and a higher z-index). */
 .hero-pin-wrapper {
   position: relative;
-  height: 88vh;
-  min-height: 520px;
-  max-height: 760px;
+  height: 88vh; /* fallback; JS sets exact px */
 }
 .hero-banner-pinned {
-  position: absolute;
+  position: absolute; /* fallback; JS sets fixed + top/height in px */
   top: 0;
   left: 0;
   right: 0;
   height: 88vh;
-  min-height: 520px;
-  max-height: 760px;
   overflow: hidden;
   z-index: 1;
 }
@@ -616,22 +614,30 @@ nav.main-nav a.active {
   border: 1px solid var(--gold-light);
 }
 .hero-banner-text .btn-ghost:hover { background: var(--gold-light); color: var(--green-deep); }
-.hero-whatsapp-btn {
+/* Both hero buttons: identical 54px pills with vertically centered
+   labels, so they sit perfectly aligned side by side. */
+.hero-banner-text .btn-row { align-items: center; }
+.hero-banner-text .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  height: 54px;
+  padding: 0 34px;
+  line-height: 1;
+}
+.hero-whatsapp-btn {
   justify-content: space-between;
   gap: 16px;
-  min-width: 230px;
-  padding: 7px 8px 7px 28px;
-  border-radius: 999px;
+  min-width: 240px;
+  padding: 0 7px 0 28px;
 }
 .wa-icon-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 38px;
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
   border-radius: 50%;
   background: #25D366;
   color: #fff;
