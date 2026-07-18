@@ -1172,9 +1172,19 @@ function initHeroBannerCarousel() {
       if (!banners || !banners.length) return;
 
       var slidesHTML = banners.map(function (b, i) {
+        var loading = i === 0 ? 'eager' : 'lazy';
+        var imgClass = b.mobileImage ? ' class="has-mobile-art"' : '';
+        // <picture> lets the browser swap automatically: the portrait
+        // mobile artwork below 880px, the wide desktop artwork above —
+        // including live on window resize / rotation.
+        var mobileSource = b.mobileImage
+          ? '<source media="(max-width: 880px)" srcset="' + FOLDER + b.mobileImage + '">'
+          : '';
         return (
           '<div class="hero-banner-slide' + (i === 0 ? ' is-active' : '') + '">' +
-            '<img src="' + FOLDER + b.image + '" alt="Pavnika by Saranya featured banner" loading="' + (i === 0 ? 'eager' : 'lazy') + '">' +
+            '<picture>' + mobileSource +
+              '<img src="' + FOLDER + b.image + '"' + imgClass + ' alt="Pavnika by Saranya featured banner" loading="' + loading + '">' +
+            '</picture>' +
           '</div>'
         );
       }).join('');

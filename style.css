@@ -683,7 +683,11 @@ nav.main-nav a.active {
      and the banner image anchored to its RIGHT end so the subject
      (model / logo, always on the right in the 1900x540 artwork) stays
      in view instead of cropping to the empty middle. */
+  /* Slides with dedicated portrait mobile artwork display it centered,
+     as designed. Slides WITHOUT one fall back to the wide desktop
+     image anchored to its right end, where the subject sits. */
   .hero-banner-slide img { object-position: right center; }
+  .hero-banner-slide img.has-mobile-art { object-position: center; }
   .hero-banner-text .lede { display: none; }
   .hero-banner-text .container { justify-content: flex-end; padding-bottom: 44px; }
   .hero-banner-text h1 { margin-bottom: 0.6em; }
@@ -1203,6 +1207,7 @@ footer.site-footer {
   position: absolute;
   inset: 0;
 }
+.hero-banner-slide picture { display: contents; }
 .hero-banner-slide img {
   width: 100%;
   height: 100%;

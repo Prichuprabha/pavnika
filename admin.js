@@ -875,7 +875,8 @@ function initBannersEditor(token) {
       row.className = 'admin-banner-item';
       row.innerHTML =
         '<img src="assets/banners/' + b.image + '" alt="">' +
-        '<div class="admin-field"><label>Image file</label><input type="text" value="' + b.image + '" data-role="image"></div>' +
+        '<div class="admin-field"><label>Image file (desktop, wide)</label><input type="text" value="' + b.image + '" data-role="image"></div>' +
+        '<div class="admin-field"><label>Mobile image (portrait, optional)</label><input type="text" value="' + (b.mobileImage || '') + '" data-role="mobileImage" placeholder="Empty = reuse desktop image"></div>' +
         '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
         '<div class="admin-banner-controls">' +
           '<button type="button" data-action="up" title="Move up">&uarr;</button>' +
@@ -891,6 +892,7 @@ function initBannersEditor(token) {
     banners = Array.from(rows).map(function (row) {
       return {
         image: row.querySelector('[data-role="image"]').value.trim(),
+        mobileImage: row.querySelector('[data-role="mobileImage"]').value.trim(),
         link: row.querySelector('[data-role="link"]').value.trim() || 'collections.html'
       };
     });
