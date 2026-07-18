@@ -942,7 +942,7 @@ window.PRODUCTS = [
     "pattern": "Plain",
     "design": "Modern",
     "price": 190,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQ1EdQq3RRrPz4ninQgU.jpg",
