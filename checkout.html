@@ -1,242 +1,569 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-(function () {
-  function getCookie(name) {
-    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return m ? m[2] : null;
-  }
-  if (getCookie('pavnika_verified') !== '1') {
-    window.location.replace('index.html');
-  }
-})();
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Checkout — Pavnika by Saranya</title>
-<meta name="description" content="Review your order and check out with Pavnika by Saranya.">
+<meta name="robots" content="noindex, nofollow">
+<title>Admin — Pavnika by Saranya</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<style>
+  body.admin-body { background: var(--ivory-deep); min-height: 100vh; }
+  .admin-shell { display: flex; min-height: 100vh; }
+  .admin-sidebar {
+    width: 210px;
+    background: var(--green-deep);
+    padding: 24px 18px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .admin-sidebar .brand-text {
+    font-family: var(--display);
+    color: var(--ivory);
+    font-size: 15px;
+    margin-bottom: 28px;
+    display: block;
+  }
+  .admin-nav-item {
+    padding: 10px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--ivory);
+    opacity: 0.6;
+    margin-bottom: 4px;
+  }
+  .admin-nav-item.active { background: var(--gold-light); color: var(--green-deep); opacity: 1; font-weight: 600; }
+  .admin-nav-item { cursor: pointer; }
+  .admin-nav-item:hover:not(.active) { background: rgba(250,247,239,0.08); opacity: 0.85; }
+
+  .admin-promo-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #FFFFFF; border: 1px solid var(--stone); border-radius: 6px;
+    padding: 14px 16px; margin-bottom: 10px;
+  }
+  .admin-promo-item .code { font-family: monospace; font-size: 0.9rem; font-weight: 700; color: var(--green-deep); margin: 0; }
+  .admin-promo-item .meta { font-size: 0.72rem; color: var(--ink); opacity: 0.65; margin: 3px 0 0; }
+  .admin-promo-item .deactivate-link { font-size: 0.72rem; color: #B8142A; cursor: pointer; text-decoration: underline; }
+  .admin-promo-item .copy-link { font-size: 0.72rem; color: var(--green); cursor: pointer; text-decoration: underline; }
+
+  .admin-sortable { cursor: pointer; user-select: none; }
+  .admin-sortable:hover { color: var(--green); }
+  .admin-sortable::after { content: ' \2195'; opacity: 0.4; font-size: 0.65rem; }
+
+  #admin-orders-status-filter, #admin-orders-search {
+    padding: 8px 12px; border: 1px solid var(--stone); border-radius: 3px;
+    font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+  }
+  #admin-orders-search { flex: 1; min-width: 180px; }
+
+  .admin-order-status-select {
+    padding: 5px 8px; border: 1px solid var(--stone); border-radius: 3px;
+    font-family: var(--body); font-size: 0.76rem; background: var(--ivory);
+  }
+
+  .admin-pending-card {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #fdf3df; border: 1px solid #E3C976; border-radius: 6px;
+    padding: 10px 14px; margin-bottom: 8px; font-size: 0.82rem;
+  }
+  .admin-pending-card .elapsed { font-weight: 600; color: var(--gold); }
+
+  .admin-toggle-label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; }
+  .admin-toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
+  .admin-toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .admin-toggle-slider { position: absolute; inset: 0; background: var(--stone); border-radius: 999px; transition: background 0.2s ease; }
+  .admin-toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: transform 0.2s ease; }
+  .admin-toggle-switch input:checked + .admin-toggle-slider { background: var(--green); }
+  .admin-toggle-switch input:checked + .admin-toggle-slider::before { transform: translateX(16px); }
+
+  .admin-banner-item {
+    display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
+    border-radius: 6px; background: var(--ivory); margin-bottom: 10px;
+  }
+  .admin-banner-item img { width: 90px; height: 34px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+  .admin-banner-item .admin-field { flex: 1; margin-bottom: 0; }
+  .admin-banner-item .admin-banner-controls { display: flex; gap: 6px; flex-shrink: 0; }
+  .admin-banner-item .admin-banner-controls button {
+    background: var(--ivory-deep); border: 1px solid var(--stone); border-radius: 3px;
+    width: 28px; height: 28px; cursor: pointer; font-size: 0.8rem;
+  }
+  .admin-banner-item .admin-banner-remove { color: #B8142A; }
+
+  .admin-video-item {
+    display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
+    border-radius: 6px; background: var(--ivory); margin-bottom: 10px;
+  }
+  .admin-video-item .video-thumb {
+    width: 34px; height: 46px; border-radius: 3px; flex-shrink: 0;
+    background: linear-gradient(160deg, var(--green), var(--green-deep));
+    display: flex; align-items: center; justify-content: center; color: var(--gold-light); font-size: 0.8rem;
+  }
+  .admin-video-item .video-info { flex: 1; font-size: 0.82rem; }
+  .admin-video-item .video-order { color: var(--ink); opacity: 0.55; font-size: 0.76rem; }
+  .admin-video-slot-input {
+    width: 100%; box-sizing: border-box; margin-top: 6px; padding: 7px 10px;
+    border: 1px solid var(--stone); border-radius: 3px; font-family: var(--body); font-size: 0.82rem;
+  }
+
+  .admin-metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .admin-metric-card {
+    background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px;
+    padding: 16px 18px; border-left: 3px solid var(--green);
+  }
+  .admin-metric-card.accent-red { border-left-color: #B8142A; }
+  .admin-metric-card.accent-gold { border-left-color: var(--gold); }
+  .admin-metric-card .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.6; margin: 0 0 8px; }
+  .admin-metric-card .value { font-size: 1.5rem; font-weight: 600; color: var(--green-deep); margin: 0; }
+  .admin-metric-card.accent-red .value { color: #B8142A; }
+
+  .admin-stats-cols { display: grid; grid-template-columns: 1.1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .admin-stats-card {
+    background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px; padding: 18px 20px;
+  }
+  .admin-stats-subheading { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; font-weight: 600; }
+
+  .admin-rank-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ivory-deep); font-size: 0.82rem; }
+  .admin-rank-row:last-child { border-bottom: none; }
+  .admin-rank-row .rank-value { font-weight: 600; color: var(--green-deep); font-size: 0.78rem; }
+
+  .admin-bar-row { margin-bottom: 12px; }
+  .admin-bar-row:last-child { margin-bottom: 0; }
+  .admin-bar-row .bar-label { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 5px; }
+  .admin-bar-row .bar-label .bar-count { font-weight: 600; }
+  .admin-bar-track { height: 6px; background: var(--ivory-deep); border-radius: 3px; overflow: hidden; }
+  .admin-bar-fill { height: 100%; border-radius: 3px; background: var(--green); }
+
+  .admin-logins-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .admin-email-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--ink); opacity: 0.75; cursor: pointer; }
+
+  @media (max-width: 880px) {
+    .admin-metric-grid { grid-template-columns: repeat(2, 1fr); }
+    .admin-stats-cols { grid-template-columns: 1fr; }
+  }
+  .admin-sidebar-footer {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(250,247,239,0.15);
+  }
+  .admin-sidebar-footer p { font-size: 10px; color: var(--gold-light); opacity: 0.8; margin: 0 0 2px; }
+  .admin-sidebar-footer .admin-email { font-size: 11px; color: var(--ivory); margin: 0 0 10px; word-break: break-all; }
+  .admin-logout-btn {
+    background: none; border: 1px solid rgba(250,247,239,0.3); color: var(--ivory);
+    font-size: 11px; padding: 7px 12px; border-radius: 3px; cursor: pointer; width: 100%;
+  }
+  .admin-main { flex: 1; padding: 28px 36px; max-width: 980px; }
+  .admin-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
+  .admin-heading h1 { font-size: 1.3rem; margin: 0; flex-shrink: 0; }
+  .admin-search-input {
+    flex: 1; max-width: 320px; box-sizing: border-box; padding: 9px 14px; border: 1px solid var(--stone);
+    border-radius: 999px; font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+  }
+  .admin-search-input:focus { outline: 2px solid var(--gold); outline-offset: 1px; border-color: var(--green); }
+
+  .admin-pagination { display: flex; justify-content: center; gap: 6px; margin: -8px 0 24px; flex-wrap: wrap; }
+  .admin-page-btn {
+    min-width: 32px; height: 32px; border: 1px solid var(--stone); background: var(--ivory);
+    border-radius: 999px; font-size: 0.78rem; cursor: pointer;
+  }
+  .admin-page-btn.active { background: var(--green); border-color: var(--green); color: var(--ivory); }
+  .admin-page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .admin-id-warning { font-size: 0.72rem; color: #B8142A; margin: -6px 0 12px; font-weight: 600; }
+  #admin-f-id-wrap.has-duplicate input { border-color: #B8142A; }
+
+  .admin-csv-row { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 0.8rem; border-bottom: 1px solid var(--ivory-deep); }
+  .admin-csv-row:last-child { border-bottom: none; }
+  .admin-csv-row .tag { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
+  .admin-csv-row .tag.new { background: #e6efe2; color: var(--green); }
+  .admin-csv-row .tag.edit { background: #fdf3df; color: var(--gold); }
+
+  .admin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--stone); border-radius: 6px; overflow: hidden; margin-bottom: 26px; font-size: 0.82rem; }
+  .admin-table th { background: var(--ivory-deep); text-align: left; padding: 9px 12px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); opacity: 0.7; }
+  .admin-table td { padding: 9px 12px; border-top: 1px solid var(--stone); vertical-align: middle; }
+  .admin-table tr.is-sold td { opacity: 0.55; }
+  .admin-edit-link { color: var(--gold); cursor: pointer; font-weight: 600; }
+  .admin-delete-link { color: #B8142A; cursor: pointer; font-weight: 600; }
+  .admin-sold-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #f3e3e3; color: #a33; }
+  .admin-avail-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #e6efe2; color: var(--green); }
+
+  .admin-form-card { border: 1px solid var(--green); border-radius: 6px; padding: 20px 24px; background: var(--ivory); margin-bottom: 20px; }
+  .admin-form-card h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; }
+  .admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .admin-field label { font-size: 0.7rem; color: var(--ink); opacity: 0.7; display: block; margin-bottom: 4px; }
+  .admin-field input, .admin-field select, .admin-field textarea {
+    width: 100%; box-sizing: border-box; padding: 8px 10px; border: 1px solid var(--stone);
+    border-radius: 3px; font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+  }
+  .admin-field.readonly input { background: var(--ivory-deep); color: var(--green-deep); font-weight: 600; border-style: dashed; }
+  .admin-id-hint { font-size: 0.7rem; color: var(--ink); opacity: 0.55; margin: -6px 0 12px; }
+  .admin-images-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  .admin-images-list input { flex: 1; }
+  .admin-image-row { display: flex; gap: 6px; align-items: center; }
+  .admin-image-row button { flex-shrink: 0; background: none; border: 1px solid var(--stone); border-radius: 3px; cursor: pointer; padding: 6px 10px; font-size: 0.75rem; }
+  .admin-checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+  .admin-checkbox-row label { font-size: 0.8rem; }
+
+  .admin-status-msg { padding: 12px 16px; border-radius: 4px; font-size: 0.82rem; margin-bottom: 20px; display: none; }
+  .admin-status-msg.success { background: #eaf3de; color: #27500a; display: block; }
+  .admin-status-msg.error { background: #fcebeb; color: #791f1f; display: block; }
+  .admin-status-msg a { color: inherit; text-decoration: underline; }
+
+  @media (max-width: 880px) {
+    .admin-shell { flex-direction: column; }
+    .admin-sidebar { width: auto; flex-direction: row; align-items: center; gap: 16px; overflow-x: auto; }
+    .admin-sidebar .brand-text { margin-bottom: 0; }
+    .admin-sidebar-footer { display: none; }
+    .admin-form-grid { grid-template-columns: 1fr; }
+    .admin-main { padding: 20px; }
+  }
+</style>
 </head>
-<body>
-<header class="site-header">
-  <div class="nav-row">
-    <a href="home.html" class="brand">
-      <img src="assets/logo.png" alt="Pavnika by Saranya logo">
-      <span class="brand-text">Pavnika <small>by Saranya</small></span>
-    </a>
-    <div class="nav-controls">
-      <button type="button" class="nav-icon-btn" id="nav-search-btn" aria-label="Search sarees">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      </button>
-      <div class="nav-account">
-        <button type="button" class="nav-icon-btn" id="nav-account-btn" aria-label="Account">
-          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
-        </button>
-        <div class="account-dropdown" id="account-dropdown">
-          <p class="account-label">Signed in as</p>
-          <p class="account-email" id="account-email">&nbsp;</p>
-          <div class="account-divider"></div>
-          <button type="button" class="account-logout" id="account-logout">Logout</button>
-        </div>
-      </div>
-      <button type="button" class="nav-icon-btn nav-cart-btn" id="nav-cart-btn" aria-label="Cart">
-        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        <span class="nav-cart-badge" id="nav-cart-badge" style="display:none;">0</span>
-      </button>
-      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+<body class="admin-body login-page">
+
+<div class="login-bg" id="admin-login-bg" aria-hidden="true"></div>
+<div class="login-wrap" id="admin-login-wrap">
+  <div class="gate-card" id="admin-login-form">
+    <img src="assets/logo.png" alt="Pavnika by Saranya" class="gate-logo">
+    <div id="admin-step-details">
+      <h2>Admin Sign In</h2>
+      <p>This area is restricted. Enter the admin email to continue.</p>
+      <div class="field"><label>Email</label><input type="email" id="admin-gate-email" autocomplete="email"></div>
+      <button type="button" id="admin-send-btn" class="btn btn-primary">Send Verification Code</button>
+      <p class="gate-error" id="admin-error-1"></p>
     </div>
-    <nav class="main-nav">
-      <a href="home.html">Home</a>
-      <a href="about.html">About</a>
-      <a href="collections.html">Collections</a>
-      <a href="contact.html">Contact</a>
-      <a href="contact.html" class="nav-cta">Book Appointment</a>
-    </nav>
-  </div>
-</header>
-<div class="search-panel" id="search-panel">
-  <div class="search-panel-inner">
-    <div class="search-input-row">
-      <input type="text" id="search-input" class="search-input" placeholder="Search by design, colour, pattern, series..." autocomplete="off">
-      <button type="button" class="search-close" id="search-close" aria-label="Close search">&times;</button>
+    <div id="admin-step-code" style="display:none;">
+      <h2>Enter Verification Code</h2>
+      <p>We sent a 4-digit code to your email — it expires in 10 minutes.</p>
+      <input type="text" id="admin-gate-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
+      <button type="button" id="admin-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>
+      <p class="gate-error" id="admin-error-2"></p>
     </div>
-    <div class="search-results" id="search-results"></div>
-    <p class="search-empty" id="search-empty" style="display:none;">No sarees match your search.</p>
   </div>
 </div>
 
-<section class="page-hero">
-  <div class="container">
-    <span class="eyebrow">Checkout</span>
-    <h1>Review Your Order</h1>
+<div class="admin-shell" id="admin-shell" style="display:none;">
+  <div class="admin-sidebar">
+    <span class="brand-text">Pavnika Admin</span>
+    <div class="admin-nav-item active" data-view="stats">Dashboard &amp; Stats</div>
+    <div class="admin-nav-item" data-view="orders">Orders</div>
+    <div class="admin-nav-item" data-view="sarees">Saree Editor</div>
+    <div class="admin-nav-item" data-view="reviews">Reviews</div>
+    <div class="admin-nav-item" data-view="banners">Banners</div>
+    <div class="admin-nav-item" data-view="promos">Promo Codes</div>
+    <div class="admin-sidebar-footer">
+      <p>Signed in as</p>
+      <p class="admin-email" id="admin-email-display">&nbsp;</p>
+      <button type="button" class="admin-logout-btn" id="admin-logout-btn">Logout</button>
+    </div>
   </div>
-</section>
 
-<section style="padding-top:0;">
-  <div class="container">
-    <div class="checkout-box" id="checkout-box">
+  <div class="admin-main">
+    <div class="admin-view" id="admin-view-orders" style="display:none;">
+      <div class="admin-heading"><h1>Orders</h1></div>
+      <p class="admin-status-msg" id="admin-orders-status-msg"></p>
 
-      <div id="checkout-empty" style="display:none;">
-        <p style="text-align:center; opacity:0.7; padding:20px 0 28px;">Your cart is empty.</p>
-        <div style="text-align:center;"><a href="collections.html" class="btn btn-primary">Browse the Collection</a></div>
+      <div class="admin-metric-grid" id="admin-orders-summary"></div>
+
+      <div id="admin-pending-list" style="margin-bottom:24px;"></div>
+
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <select id="admin-orders-status-filter">
+          <option value="">All statuses</option>
+          <option value="pending">Pending</option>
+          <option value="paid">Paid</option>
+          <option value="shipped">Shipped</option>
+          <option value="delivered">Delivered</option>
+          <option value="payment_error">Payment error</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="refunded">Refunded</option>
+        </select>
+        <input type="text" id="admin-orders-search" placeholder="Search order #, name, email...">
       </div>
 
-      <div id="checkout-content" style="display:none;">
-        <div id="checkout-items"></div>
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th class="admin-sortable" data-sort="order_number">Order #</th>
+            <th class="admin-sortable" data-sort="created_at">Date</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th class="admin-sortable" data-sort="total">Total</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="admin-orders-rows"></tbody>
+      </table>
+    </div>
 
-        <div class="checkout-promo-row">
-          <input type="text" id="checkout-promo-input" placeholder="Promo code">
-          <button type="button" class="btn btn-ghost" id="checkout-promo-apply">Apply</button>
-        </div>
-        <p class="checkout-promo-msg" id="checkout-promo-msg"></p>
+    <div class="admin-view" id="admin-view-sarees" style="display:none;">
+    <div class="admin-heading">
+      <h1>Saree Editor</h1>
+      <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Search by ID, design, series...">
+      <span class="btn btn-primary" id="admin-add-new-btn" style="cursor:pointer;">+ Add New Saree</span>
+    </div>
 
-        <div class="checkout-summary-row">
-          <span>Subtotal (AED)</span>
-          <span id="checkout-subtotal">0</span>
-        </div>
-        <div class="checkout-summary-row checkout-discount-row" id="checkout-discount-row" style="display:none;">
-          <span id="checkout-discount-label">Discount</span>
-          <span id="checkout-discount-amount">-AED 0</span>
-        </div>
-        <div class="checkout-total-row">
-          <span>Total (AED)</span>
-          <span id="checkout-total">0</span>
-        </div>
+    <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
+      <button type="button" class="btn btn-ghost" id="admin-download-csv-btn">Download as CSV</button>
+      <button type="button" class="btn btn-ghost" id="admin-upload-csv-btn">Upload CSV for bulk add/edit</button>
+      <input type="file" id="admin-csv-file-input" accept=".csv" style="display:none;">
+      <label class="admin-toggle-label">
+        <span class="admin-toggle-switch"><input type="checkbox" id="admin-hide-sold-toggle"><span class="admin-toggle-slider"></span></span>
+        Hide sold out
+      </label>
+    </div>
 
-        <div class="checkout-customer-fields">
-          <div class="checkout-field"><label>First Name</label><input type="text" id="checkout-first-name" placeholder="First name"></div>
-          <div class="checkout-field"><label>Last Name</label><input type="text" id="checkout-last-name" placeholder="Last name"></div>
-          <div class="checkout-field"><label>Mobile Number</label><input type="tel" id="checkout-phone" placeholder="+971..."></div>
-        </div>
+    <p class="admin-status-msg" id="admin-status-msg"></p>
 
-        <h3 class="checkout-address-heading">Billing Address</h3>
-        <div class="checkout-customer-fields" id="checkout-billing-fields">
-          <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="billing-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
-          <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="billing-street" placeholder="e.g. Near Dubai Marina Mall"></div>
-          <div class="checkout-field"><label>City</label><input type="text" id="billing-city" placeholder="e.g. Dubai"></div>
-          <div class="checkout-field"><label>State / Province</label><input type="text" id="billing-state" placeholder="e.g. Dubai"></div>
-          <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="billing-pincode" placeholder="e.g. 00000"></div>
-          <div class="checkout-field">
-            <label>Country / Region</label>
-            <select id="billing-country"></select>
+    <table class="admin-table">
+      <thead>
+        <tr><th>Image</th><th>ID</th><th>Design / Series</th><th>Category</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody id="admin-product-rows"></tbody>
+    </table>
+
+    <div class="admin-pagination" id="admin-pagination"></div>
+
+    <div class="admin-form-card" id="admin-form-card" style="display:none;">
+      <h3 id="admin-form-title">Add New Saree</h3>
+      <form id="admin-product-form">
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Series</label>
+            <select id="admin-f-series"></select>
+          </div>
+          <div class="admin-field" id="admin-f-id-wrap">
+            <label>ID</label>
+            <input type="text" id="admin-f-id" placeholder="Generated on save, or type your own">
+          </div>
+        </div>
+        <p class="admin-id-hint" id="admin-id-hint"></p>
+        <p class="admin-id-warning" id="admin-id-warning" style="display:none;">This ID already exists — choose a different one.</p>
+
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Category</label>
+            <select id="admin-f-category">
+              <option>Budget</option>
+              <option>Mid Range</option>
+              <option>Premium</option>
+              <option>Bridal</option>
+            </select>
+          </div>
+          <div class="admin-field">
+            <label>Type (weave)</label>
+            <input type="text" id="admin-f-type" placeholder="e.g. Kanchipuram">
           </div>
         </div>
 
-        <label class="checkout-checkbox-row">
-          <input type="checkbox" id="checkout-same-address" checked>
-          Ship to the same address
-        </label>
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Saree Type (colour)</label>
+            <input type="text" id="admin-f-sareeType" placeholder="e.g. Light Violet with red border">
+          </div>
+          <div class="admin-field">
+            <label>Pattern</label>
+            <input type="text" id="admin-f-pattern" placeholder="e.g. Floral Pattern">
+          </div>
+        </div>
 
-        <div id="checkout-shipping-block" style="display:none;">
-          <h3 class="checkout-address-heading">Shipping Address</h3>
-          <div class="checkout-customer-fields">
-            <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="shipping-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
-            <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="shipping-street" placeholder="e.g. Near Dubai Marina Mall"></div>
-            <div class="checkout-field"><label>City</label><input type="text" id="shipping-city" placeholder="e.g. Dubai"></div>
-            <div class="checkout-field"><label>State / Province</label><input type="text" id="shipping-state" placeholder="e.g. Dubai"></div>
-            <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="shipping-pincode" placeholder="e.g. 00000"></div>
-            <div class="checkout-field">
-              <label>Country / Region</label>
-              <select id="shipping-country"></select>
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label>Design</label>
+            <input type="text" id="admin-f-design" placeholder="e.g. Traditional">
+          </div>
+          <div class="admin-field">
+            <label>Price (AED, internal only)</label>
+            <input type="number" id="admin-f-price" placeholder="e.g. 990">
+          </div>
+        </div>
+
+        <div class="admin-checkbox-row">
+          <input type="checkbox" id="admin-f-sold">
+          <label for="admin-f-sold">Sold out</label>
+        </div>
+
+        <label style="font-size:0.7rem; color:var(--ink); opacity:0.7; display:block; margin-bottom:6px;">Image URLs</label>
+        <div class="admin-images-list" id="admin-images-list"></div>
+        <button type="button" class="btn btn-ghost" id="admin-add-image-btn" style="margin-bottom:16px;">+ Add image URL</button>
+
+        <div style="display:flex; gap:10px;">
+          <button type="submit" class="btn btn-primary" id="admin-save-btn">Save to GitHub</button>
+          <button type="button" class="btn btn-ghost" id="admin-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="admin-form-card" id="admin-csv-preview-card" style="display:none;">
+      <h3>Confirm bulk changes before saving</h3>
+      <p id="admin-csv-summary" style="font-size:0.85rem; margin-bottom:14px;"></p>
+      <div id="admin-csv-preview-list" style="max-height:280px; overflow-y:auto; border:1px solid var(--stone); border-radius:4px; margin-bottom:16px;"></div>
+      <div style="display:flex; gap:10px;">
+        <button type="button" class="btn btn-primary" id="admin-csv-confirm-btn">Confirm &amp; Save to GitHub</button>
+        <button type="button" class="btn btn-ghost" id="admin-csv-cancel-btn">Cancel, don't save anything</button>
+      </div>
+    </div>
+    </div>
+
+    <div class="admin-view" id="admin-view-reviews" style="display:none;">
+      <div class="admin-heading">
+        <h1>Reviews</h1>
+        <span class="btn btn-primary" id="admin-add-review-btn" style="cursor:pointer;">+ Add New Review</span>
+      </div>
+
+      <p class="admin-status-msg" id="admin-review-status-msg"></p>
+
+      <table class="admin-table">
+        <thead>
+          <tr><th>Name</th><th>Stars</th><th>Quote</th><th></th></tr>
+        </thead>
+        <tbody id="admin-review-rows"></tbody>
+      </table>
+
+      <div class="admin-form-card" id="admin-review-form-card" style="display:none;">
+        <h3 id="admin-review-form-title">Add New Review</h3>
+        <form id="admin-review-form">
+          <div class="admin-form-grid">
+            <div class="admin-field">
+              <label>Reviewer name</label>
+              <input type="text" id="admin-r-name" placeholder="e.g. Priya S.">
+            </div>
+            <div class="admin-field">
+              <label>Stars (1-5)</label>
+              <input type="number" id="admin-r-stars" min="1" max="5" value="5">
             </div>
           </div>
+          <div class="admin-field" style="margin-bottom:12px;">
+            <label>Photo URL (optional)</label>
+            <input type="text" id="admin-r-photo" placeholder="https://... or leave blank">
+          </div>
+          <div class="admin-field" style="margin-bottom:14px;">
+            <label>Review text (leave blank for star-only)</label>
+            <textarea id="admin-r-quote" rows="3" placeholder="What the customer said..."></textarea>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn-primary" id="admin-review-save-btn">Save to GitHub</button>
+            <button type="button" class="btn btn-ghost" id="admin-review-cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="admin-view" id="admin-view-banners" style="display:none;">
+      <div class="admin-heading">
+        <h1>Banners</h1>
+      </div>
+      <p class="admin-status-msg" id="admin-banner-status-msg"></p>
+      <p style="font-size:0.85rem; color:var(--ink); opacity:0.7; margin-bottom:20px; max-width:60ch;">
+        Reorder, edit the link, or remove existing banners here. To add a brand-new banner image, upload the image file to <code>assets/banners/</code> on GitHub first, then click "Refresh from GitHub" below to bring it in and set its link.
+      </p>
+      <button type="button" class="btn btn-ghost" id="admin-banner-refresh-btn" style="margin-bottom:20px;">Refresh from GitHub</button>
+      <div id="admin-banner-list"></div>
+      <button type="button" class="btn btn-primary" id="admin-banner-save-btn" style="margin-top:16px;">Save Banner Changes to GitHub</button>
+
+      <div style="height:1px; background:var(--stone); margin:32px 0 26px;"></div>
+
+      <h1 style="font-size:1.1rem; margin-bottom:8px;">Home Page Videos</h1>
+      <p class="admin-status-msg" id="admin-video-status-msg"></p>
+      <p style="font-size:0.85rem; color:var(--ink); opacity:0.7; margin-bottom:20px; max-width:60ch;">
+        The homepage "In Motion" section has 4 video slots. Slot 1 is your existing brand video. Empty slots show the Pavnika mark with an authenticity note instead. To add a new video, upload the compressed file to <code>assets/videos/</code> on GitHub first, then click "Refresh from GitHub" and enter its filename below.
+      </p>
+      <button type="button" class="btn btn-ghost" id="admin-video-refresh-btn" style="margin-bottom:20px;">Refresh from GitHub</button>
+      <div id="admin-video-list"></div>
+      <button type="button" class="btn btn-primary" id="admin-video-save-btn" style="margin-top:16px;">Save Video Slots to GitHub</button>
+    </div>
+
+    <div class="admin-view" id="admin-view-promos" style="display:none;">
+      <div class="admin-heading"><h1>Promo Codes</h1></div>
+      <p class="admin-status-msg" id="admin-promo-status-msg"></p>
+
+      <div class="admin-form-card">
+        <h3>Create New Code</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="admin-field" style="max-width:120px;">
+            <label>Discount %</label>
+            <input type="number" id="admin-promo-discount" min="1" max="90" value="10">
+          </div>
+          <button type="button" class="btn btn-primary" id="admin-promo-create-btn">Create &amp; Enable Code</button>
         </div>
-
-        <p class="checkout-promo-msg" id="checkout-address-msg"></p>
-
-        <a href="#" class="btn btn-primary" id="checkout-pay-online" style="display:block; text-align:center; margin-bottom:6px;">Pay Online</a>
-        <p class="checkout-note">Choosing Pay Online will take you to our secure payment partner's page to complete payment — where the price will also show in your local currency automatically.</p>
-
-        <button type="button" class="btn btn-ghost" id="checkout-whatsapp-btn" style="width:100%; margin-top:14px;">Checkout via WhatsApp</button>
+        <p style="font-size:0.76rem; color:var(--ink); opacity:0.6; margin:12px 0 0;">Generates a random code, valid for 10 minutes, single-use only.</p>
       </div>
 
+      <h3 class="admin-stats-subheading">Active codes</h3>
+      <div id="admin-promo-active-list" style="margin-bottom:26px;">
+        <p style="font-size:0.85rem; opacity:0.6;">No active codes right now.</p>
+      </div>
+
+      <h3 class="admin-stats-subheading">Recent history</h3>
+      <table class="admin-table">
+        <thead><tr><th>Code</th><th>Discount</th><th>Status</th></tr></thead>
+        <tbody id="admin-promo-history-rows"></tbody>
+      </table>
+    </div>
+
+    <div class="admin-view" id="admin-view-stats">
+      <div class="admin-heading"><h1>Dashboard &amp; Stats</h1></div>
+      <p class="admin-status-msg" id="admin-stats-status-msg"></p>
+
+      <div class="admin-metric-grid" id="admin-metric-grid"></div>
+
+      <div class="admin-form-card" style="margin-bottom:22px;">
+        <h3 style="margin-bottom:12px;">Filter by date range</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+          <div class="admin-field" style="max-width:170px;"><label>From</label><input type="date" id="admin-stats-from"></div>
+          <div class="admin-field" style="max-width:170px;"><label>Till</label><input type="date" id="admin-stats-till"></div>
+          <button type="button" class="btn btn-primary" id="admin-stats-apply-btn">Apply</button>
+          <button type="button" class="btn btn-ghost" id="admin-stats-reset-btn">Reset to all-time</button>
+        </div>
+        <p style="font-size:0.76rem; color:var(--ink); opacity:0.6; margin:10px 0 0;">Applies to visitors, views, regions, and logins below. "In stock" and "Sold out" always reflect current inventory, regardless of this range.</p>
+      </div>
+
+      <div class="admin-stats-cols">
+        <div class="admin-stats-card">
+          <h3 class="admin-stats-subheading">Most viewed sarees</h3>
+          <div id="admin-most-viewed-rows"></div>
+        </div>
+        <div class="admin-stats-card">
+          <h3 class="admin-stats-subheading">Visitor regions</h3>
+          <div id="admin-regions-rows"></div>
+        </div>
+      </div>
+
+      <div class="admin-stats-card" style="margin-bottom:24px;">
+        <div class="admin-logins-header">
+          <h3 class="admin-stats-subheading" style="margin:0;">Recent logins</h3>
+          <label class="admin-email-toggle"><input type="checkbox" id="admin-show-emails-toggle"> Show full emails</label>
+        </div>
+        <div id="admin-logins-rows"></div>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Track sheet — view changes made on GitHub</h3>
+        <div class="admin-form-grid">
+          <div class="admin-field"><label>From</label><input type="date" id="admin-track-from"></div>
+          <div class="admin-field"><label>To</label><input type="date" id="admin-track-to"></div>
+        </div>
+        <button type="button" class="btn btn-primary" id="admin-track-btn">View changes on GitHub</button>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Keep the view log tidy</h3>
+        <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin-bottom:12px;">Not required at your current traffic — purely optional housekeeping.</p>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" id="admin-clear-days" value="180" min="1" style="width:90px; padding:8px 10px; border:1px solid var(--stone); border-radius:3px;">
+          <span style="font-size:0.82rem;">days and older</span>
+          <button type="button" class="btn btn-ghost" id="admin-clear-views-btn">Clear old view logs</button>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-ghost" id="admin-export-stats-btn">Export all stats as text file</button>
     </div>
   </div>
-</section>
-
-<footer class="site-footer">
-  <div class="container">
-    <div class="footer-grid">
-      <div>
-        <div class="footer-brand">
-          <img src="assets/logo.png" alt="Pavnika by Saranya logo">
-          <span>Pavnika by Saranya</span>
-        </div>
-        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
-      </div>
-      <div>
-        <h4>Explore</h4>
-        <ul>
-          <li><a href="home.html">Home</a></li>
-          <li><a href="about.html">About</a></li>
-          <li><a href="collections.html">Collections</a></li>
-          <li><a href="contact.html">Contact</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Reach Us</h4>
-        <p>Dubai based online boutique<br>By appointment</p>
-        <div class="footer-social">
-          <a href="https://wa.me/971526630307" target="_blank" rel="noopener" aria-label="Chat with Pavnika by Saranya on WhatsApp">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.16c-.24.68-1.4 1.3-1.93 1.36-.5.06-1.03.28-3.46-.72-2.91-1.2-4.78-4.14-4.93-4.33-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.01-2.41.27-.29.58-.36.78-.36.19 0 .39 0 .55.01.18.01.42-.07.66.5.24.58.83 1.99.9 2.14.07.14.12.31.02.5-.1.19-.15.31-.3.48-.14.17-.3.37-.43.5-.14.14-.3.29-.13.58.17.29.75 1.24 1.62 2.01 1.11.99 2.05 1.29 2.34 1.43.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.38-.24.64-.14.26.1 1.66.78 1.94.92.29.15.48.22.55.34.07.13.07.72-.17 1.4z"/></svg>
-          </a>
-          <a href="https://www.instagram.com/pavnika_by_saranya?igsh=MWpseTBjODVucHA1cQ==" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on Instagram">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-          </a>
-          <a href="https://youtube.com/@pavnikabysaranya?si=lLIEQ6G0UG-YI7QO" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on YouTube">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
-          </a>
-          <a href="https://m.facebook.com/profile.php?id=61579090843467" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on Facebook">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
-          </a>
-        </div>
-      </div>
-    </div>
-    <div class="footer-grid footer-grid-legal">
-      <div>
-        <h4>Legal</h4>
-        <ul>
-          <li><a href="terms.html">Terms &amp; Conditions</a></li>
-          <li><a href="privacy.html">Privacy &amp; Cookies Policy</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Customer Care</h4>
-        <ul>
-          <li><a href="faq.html">FAQ</a></li>
-          <li><a href="payment.html">Payment Methods</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4>Shipping &amp; Returns</h4>
-        <ul>
-          <li><a href="shipping.html">Shipping &amp; Delivery</a></li>
-          <li><a href="returns.html">Returns &amp; Exchange Policy</a></li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="footer-payment-badges">
-      <span class="pay-badge"><svg viewBox="0 0 60 24" width="46" height="18"><text x="30" y="17" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-style="italic" font-size="15" fill="#1A1F71">VISA</text></svg></span>
-      <span class="pay-badge"><svg viewBox="0 0 100 24" width="70" height="18"><text x="50" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="13" fill="#EB5B2C">mastercard</text></svg></span>
-      <span class="pay-badge"><svg viewBox="0 0 70 24" width="50" height="18"><text x="35" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#22C6AE">tabby</text></svg></span>
-      <span class="pay-badge"><svg viewBox="0 0 80 24" width="56" height="18"><text x="40" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="700" font-size="14" fill="#EE7373">tamara</text></svg></span>
-      <span class="pay-badge"><svg viewBox="0 0 90 24" width="64" height="18"><text x="45" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="600" font-size="12" fill="#1B1B1B">Apple Pay</text></svg></span>
-      <span class="pay-badge"><svg viewBox="0 0 95 24" width="68" height="18"><text x="47" y="17" text-anchor="middle" font-family="Arial,sans-serif" font-weight="600" font-size="12" fill="#5F6368">Google Pay</text></svg></span>
-    </div>
-
-    <div class="footer-bottom">
-      <span>&copy; 2026 Pavnika by Saranya. All sarees shown are illustrative of collection style.</span>
-      <span>Handwoven in Kancheepuram. Curated in Dubai.</span>
-    </div>
-  </div>
-</footer>
+</div>
 
 <script src="products-data.js"></script>
-<script src="script.js"></script>
+<script src="admin.js"></script>
 </body>
 </html>
