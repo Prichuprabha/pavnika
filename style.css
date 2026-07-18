@@ -645,23 +645,26 @@ nav.main-nav a.active {
   padding: 0 34px;
   line-height: 1;
 }
-.hero-whatsapp-btn {
+/* Specificity note: this selector must include .hero-banner-text,
+   otherwise the `.hero-banner-text .btn { justify-content: center }`
+   rule above outweighs it and silently re-centers the icon next to
+   the text instead of pushing it to the right border. */
+.hero-banner-text .hero-whatsapp-btn {
   justify-content: space-between;
   gap: 16px;
   min-width: 240px;
-  padding: 0 7px 0 28px;
+  padding: 0 6px 0 30px;
 }
 /* WhatsApp chip in the site's own palette (gold/green, matching the
-   footer & contact icons — not WhatsApp brand green), sitting flush
-   at the right edge of the pill. Colors invert on hover along with
-   the button so it stays legible. */
+   footer & contact icons — not WhatsApp brand green), tucked just
+   inside the pill's right border. */
 .wa-icon-circle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
   border-radius: 50%;
   background: var(--gold-light);
   color: var(--green-deep);
