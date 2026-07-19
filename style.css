@@ -2588,6 +2588,18 @@ body.login-page {
 }
 .curated-tile:focus-visible .curated-tile-text { transform: translateY(0); }
 
+/* ---------- Checkout: live field validation notes ---------- */
+.checkout-field .field-note {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  margin: 5px 0 0;
+  color: #C24A42;
+}
+.checkout-field .field-note.ok { color: #7a8a80; }
+.checkout-field input.field-invalid {
+  border-color: #C24A42 !important;
+}
+
 /* ---------- Collections page: sidebar filter layout ---------- */
 .collections-layout {
   display: grid;

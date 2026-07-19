@@ -1745,6 +1745,76 @@ function initCheckoutPage() {
     return addr.building && addr.street && addr.city && addr.state && addr.pincode && addr.country;
   }
 
+  /* ---- Live validation for Nomod-bound customer fields ----
+     Nomod's API rejects anything but letters in name fields (its own
+     error: "Customer names can only include letters ... without numbers
+     or special characters" — spaces included, verified empirically),
+     and expects phones in international E.164 format. Validating live
+     here means the customer sees a clear note under the field instead
+     of a generic "Could not start payment" after the API rejects it. */
+  var NAME_RE = /^[A-Za-z\u00C0-\u024F]+$/; // letters only (incl. accented), no spaces/digits/specials
+  var PHONE_RE = /^\+[1-9][0-9]{6,14}$/;      // E.164: + then 7-15 digits
+
+  function attachFieldNote(inputId, validate) {
+    var input = document.getElementById(inputId);
+    if (!input) return;
+    var note = document.createElement('p');
+    note.className = 'field-note';
+    note.style.display = 'none';
+    input.insertAdjacentElement('afterend', note);
+    function check() {
+      var v = input.value.trim();
+      if (!v) { // empty: neutral until submit
+        note.style.display = 'none';
+        input.classList.remove('field-invalid');
+        return true;
+      }
+      var msg = validate(v);
+      if (msg) {
+        note.textContent = msg;
+        note.classList.remove('ok');
+        note.style.display = 'block';
+        input.classList.add('field-invalid');
+        return false;
+      }
+      note.textContent = '\u2713 Looks good';
+      note.classList.add('ok');
+      note.style.display = 'block';
+      input.classList.remove('field-invalid');
+      return true;
+    }
+    input.addEventListener('input', check);
+    input._pavnikaCheck = check;
+    return input;
+  }
+
+  function validateName(v) {
+    if (!NAME_RE.test(v)) {
+      return 'Letters only \u2014 our payment provider does not accept spaces, numbers or special characters in this field.';
+    }
+    return '';
+  }
+  function validatePhone(v) {
+    if (!PHONE_RE.test(v)) {
+      return 'Use international format with no spaces \u2014 e.g. +971501234567';
+    }
+    return '';
+  }
+
+  attachFieldNote('checkout-first-name', validateName);
+  attachFieldNote('checkout-last-name', validateName);
+  attachFieldNote('checkout-phone', validatePhone);
+
+  function customerFieldsValid() {
+    var ids = ['checkout-first-name', 'checkout-last-name', 'checkout-phone'];
+    var allOk = true;
+    ids.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el._pavnikaCheck && !el._pavnikaCheck()) allOk = false;
+    });
+    return allOk;
+  }
+
   document.getElementById('checkout-pay-online').addEventListener('click', function (e) {
     e.preventDefault();
     var payBtn = document.getElementById('checkout-pay-online');
@@ -1759,6 +1829,13 @@ function initCheckoutPage() {
 
     if (!firstName || !lastName || !phone) {
       alert('Please enter your first name, last name, and mobile number before proceeding to payment.');
+      return;
+    }
+
+    if (!customerFieldsValid()) {
+      var firstInvalid = document.querySelector('.checkout-customer-fields input.field-invalid');
+      if (firstInvalid) firstInvalid.focus();
+      alert('Please fix the highlighted fields \u2014 our payment provider only accepts letters in names and international phone numbers (e.g. +971501234567).');
       return;
     }
 
