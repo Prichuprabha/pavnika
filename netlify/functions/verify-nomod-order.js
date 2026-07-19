@@ -308,7 +308,7 @@ async function sendReceiptEmail(order, nomodData) {
   var html = `
     <div style="font-family:sans-serif; max-width:560px; margin:0 auto; background:#FAF7EF;">
       <div style="background:#082E22; padding:28px 24px; text-align:center; border-radius:6px 6px 0 0;">
-        <img src="https://pavnika.ae/assets/email-logo.png" alt="Pavnika by Saranya" width="72" height="72" style="display:block; margin:0 auto 12px; border-radius:50%;">
+        <img src="https://pavnika.ae/assets/email-logo.png" alt="Pavnika by Saranya" width="94" height="90" style="display:block; margin:0 auto 12px;">
         <p style="font-family:Georgia,serif; font-size:20px; color:#FAF7EF; margin:0 0 4px;">Thank you for your purchase!</p>
         <p style="font-size:11.5px; color:#E3C976; margin:0;">Our team will be in touch shortly to arrange shipment.</p>
       </div>

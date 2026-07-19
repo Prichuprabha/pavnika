@@ -874,7 +874,12 @@ function initBannersEditor(token) {
       var row = document.createElement('div');
       row.className = 'admin-banner-item';
       row.innerHTML =
-        '<img src="assets/banners/' + b.image + '" alt="">' +
+        '<div class="admin-banner-thumbs">' +
+          '<img class="thumb-desktop" src="assets/banners/' + b.image + '" alt="desktop">' +
+          (b.mobileImage
+            ? '<img class="thumb-mobile" src="assets/banners/' + b.mobileImage + '" alt="mobile" title="Mobile image: ' + b.mobileImage + '">'
+            : '<span class="thumb-mobile thumb-mobile-empty" title="No mobile image set">&mdash;</span>') +
+        '</div>' +
         '<div class="admin-field"><label>Image file (desktop, wide)</label><input type="text" value="' + b.image + '" data-role="image"></div>' +
         '<div class="admin-field"><label>Mobile image (portrait, optional)</label><input type="text" value="' + (b.mobileImage || '') + '" data-role="mobileImage" placeholder="Empty = reuse desktop image"></div>' +
         '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
@@ -1015,8 +1020,12 @@ function initStatsDashboard(token) {
       '<div class="admin-metric-card accent-gold"><p class="label">Verified visitors</p><p class="value">' + data.totalVisitors + '</p></div>' +
       '<div class="admin-metric-card accent-gold"><p class="label">Saree views logged</p><p class="value">' + data.totalViews + '</p></div>';
 
-    mostViewedRows.innerHTML = data.mostViewed.length
-      ? data.mostViewed.map(function (v) {
+    // Unfiltered view: top 10 only. Filtered (date range): show all,
+    // inside a scrollable box so the page doesn't grow endlessly.
+    var mostViewedList = data.filtered ? data.mostViewed : data.mostViewed.slice(0, 10);
+    mostViewedRows.classList.toggle('admin-scroll-list', !!data.filtered && data.mostViewed.length > 10);
+    mostViewedRows.innerHTML = mostViewedList.length
+      ? mostViewedList.map(function (v) {
           return '<div class="admin-rank-row"><span>' + findProductLabel(v.productId) + '</span><span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span></div>';
         }).join('')
       : '<p style="font-size:0.82rem; opacity:0.6;">No views logged yet.</p>';
@@ -1041,8 +1050,10 @@ function initStatsDashboard(token) {
   function renderLoginsList() {
     if (!latestStats) return;
     var showFull = document.getElementById('admin-show-emails-toggle').checked;
-    loginsRows.innerHTML = latestStats.recentLogins.length
-      ? latestStats.recentLogins.map(function (v) {
+    var loginsList = latestStats.filtered ? latestStats.recentLogins : latestStats.recentLogins.slice(0, 10);
+    loginsRows.classList.toggle('admin-scroll-list', !!latestStats.filtered && latestStats.recentLogins.length > 10);
+    loginsRows.innerHTML = loginsList.length
+      ? loginsList.map(function (v) {
           var emailDisplay = showFull ? (v.email || '') : maskEmail(v.email);
           var location = v.country ? (v.region ? v.region + ', ' + v.country : v.country) : 'Unknown';
           return '<div class="admin-rank-row"><span>' + emailDisplay + '<br><span style="font-size:0.7rem; opacity:0.6;">' + location + '</span></span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
@@ -1248,6 +1259,27 @@ function initPromoCodesEditor(token) {
     var mins = Math.floor(msLeft / 60000);
     var secs = Math.floor((msLeft % 60000) / 1000);
     return mins + ':' + (secs < 10 ? '0' : '') + secs;
+  }
+
+  var clearBtn = document.getElementById('admin-promo-clear-history-btn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', function () {
+      if (!confirm('Clear promo history? This permanently deletes USED and EXPIRED codes only \u2014 any still-active code is kept and remains usable.')) return;
+      clearBtn.textContent = 'Clearing...';
+      fetch('/.netlify/functions/admin-clear-promo-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          clearBtn.textContent = 'Clear history';
+          if (!result.ok) { showStatus('error', result.data.error || 'Could not clear history.'); return; }
+          showStatus('success', 'Removed ' + result.data.deleted + ' used/expired code' + (result.data.deleted === 1 ? '' : 's') + ' from history.');
+          loadPromos();
+        })
+        .catch(function () { clearBtn.textContent = 'Clear history'; showStatus('error', 'Network error \u2014 history was not cleared.'); });
+    });
   }
 
   function renderPromos(data) {
