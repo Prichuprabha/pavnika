@@ -123,13 +123,14 @@ async function markSareesSold(sareeIds) {
   });
 }
 
-// Builds an order number like "0231062601": HH + MM + DD + YY (UAE time)
+// Builds an order number like "131819072601": HH + MM + DD + Month + YY (UAE time)
 // + 2-digit same-day sequence. Same scheme as create-nomod-checkout.
 async function generateOrderNumber() {
   var now = new Date(Date.now() + 4 * 60 * 60 * 1000);
   var hh = String(now.getUTCHours()).padStart(2, '0');
   var mm = String(now.getUTCMinutes()).padStart(2, '0');
   var dd = String(now.getUTCDate()).padStart(2, '0');
+  var mo = String(now.getUTCMonth() + 1).padStart(2, '0');
   var yy = String(now.getUTCFullYear()).slice(-2);
 
   var dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -4, 0, 0)).toISOString();
@@ -148,7 +149,7 @@ async function generateOrderNumber() {
   } catch (e) {
     console.error('Could not count today\'s orders, defaulting sequence to 1:', e);
   }
-  return hh + mm + dd + yy + String(seq).padStart(2, '0');
+  return hh + mm + dd + mo + yy + String(seq).padStart(2, '0');
 }
 
 // RECOVERY: the pending order row is missing but the browser remembered
@@ -343,13 +344,25 @@ async function sendReceiptEmail(order, nomodData) {
       </table>
 
       <div style="border-top:1px solid #ece8de; padding-top:10px; margin-top:6px;">
-        <div style="display:flex; justify-content:space-between; font-size:12.5px; color:#5c6b62; margin-bottom:4px;"><span>Subtotal</span><span>AED ${formatAED(order.subtotal || order.total)}</span></div>
-        ${(order.discount_amount && Number(order.discount_amount) > 0) ? `<div style="display:flex; justify-content:space-between; font-size:12.5px; color:#3B6D11; font-weight:600; margin-bottom:4px;"><span>${order.promo_code ? order.promo_code + ' discount' : 'Discount'}</span><span>-AED ${formatAED(order.discount_amount)}</span></div>` : ''}
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-size:12.5px; color:#5c6b62; padding-bottom:4px;">Subtotal</td>
+            <td align="right" style="font-size:12.5px; color:#5c6b62; padding-bottom:4px;">AED ${formatAED(order.subtotal || order.total)}</td>
+          </tr>
+          ${(order.discount_amount && Number(order.discount_amount) > 0) ? `<tr>
+            <td style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">${order.promo_code ? order.promo_code + ' discount' : 'Discount'}</td>
+            <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.discount_amount)}</td>
+          </tr>` : ''}
+        </table>
       </div>
       ${paymentMethod ? `
-      <div style="border:1px solid #ece8de; border-radius:6px; padding:10px 14px; margin:14px 0; display:flex; justify-content:space-between; align-items:center;">
-        <span style="font-size:12px; color:#5c6b62;">Payment method</span>
-        <span style="font-size:13px; font-weight:600; color:#1B241E;">${paymentMethod}</span>
+      <div style="border:1px solid #ece8de; border-radius:6px; padding:10px 14px; margin:14px 0;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="font-size:12px; color:#5c6b62;">Payment method:</td>
+            <td align="right" style="font-size:13px; font-weight:600; color:#1B241E;">${paymentMethod}</td>
+          </tr>
+        </table>
       </div>` : ''}
       <p style="font-size:20px; font-weight:bold; color:#0E4B39; margin-top:18px;">Total paid: AED ${formatAED(order.total)}</p>
       </div>

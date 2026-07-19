@@ -24,6 +24,7 @@ async function generateOrderNumber() {
   var hh = String(now.getUTCHours()).padStart(2, '0');
   var mm = String(now.getUTCMinutes()).padStart(2, '0');
   var dd = String(now.getUTCDate()).padStart(2, '0');
+  var mo = String(now.getUTCMonth() + 1).padStart(2, '0');
   var yy = String(now.getUTCFullYear()).slice(-2);
 
   var dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -4, 0, 0)).toISOString();
@@ -49,7 +50,8 @@ async function generateOrderNumber() {
   }
 
   var xx = String(seq).padStart(2, '0');
-  return hh + mm + dd + yy + xx;
+  // Format: HH MM DD Month YY Seq — e.g. 13:18 on 19/07/2026, first order -> 131819072601
+  return hh + mm + dd + mo + yy + xx;
 }
 
 exports.handler = async function (event) {
