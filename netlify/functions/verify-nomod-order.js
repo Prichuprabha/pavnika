@@ -32,7 +32,7 @@ const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const PRODUCTS_PATH = 'products-data.js';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'verify@mail.pavnika.ae';
+const FROM_EMAIL = 'verify@pavnika.ae';
 const ADMIN_EMAIL = 'pavnikabysaranya@gmail.com';
 
 function githubHeaders() {

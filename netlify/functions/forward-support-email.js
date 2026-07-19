@@ -4,7 +4,7 @@
 // to any address @pavnika.ae (e.g. support@pavnika.ae), retrieves the
 // full message body from Resend's Received Emails API, and forwards a
 // copy to the shop's Gmail — using the same Resend account and the
-// already-verified mail.pavnika.ae sending domain. Reply-To is set to
+// verified pavnika.ae sending domain. Reply-To is set to
 // the original sender, so replying from Gmail goes back to the customer.
 //
 // Required env vars:
@@ -23,7 +23,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const WEBHOOK_SECRET = process.env.RESEND_WEBHOOK_SECRET || '';
 
 const FORWARD_TO = 'pavnikabysaranya@gmail.com';
-const FORWARD_FROM = 'Pavnika Support <support@mail.pavnika.ae>';
+const FORWARD_FROM = 'Pavnika Support <support@pavnika.ae>';
 
 function verifySvixSignature(headers, rawBody) {
   // Svix scheme: base64-HMAC-SHA256 of "{id}.{timestamp}.{payload}"
