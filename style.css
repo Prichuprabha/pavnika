@@ -2588,6 +2588,24 @@ body.login-page {
 }
 .curated-tile:focus-visible .curated-tile-text { transform: translateY(0); }
 
+/* ---------- Brand tagline (login page + footer) ---------- */
+.brand-tagline {
+  font-family: var(--display);
+  font-style: italic;
+  letter-spacing: 0.03em;
+}
+.login-tagline {
+  color: var(--gold);
+  font-size: 1.02rem;
+  margin: -6px 0 14px;
+}
+.footer-tagline {
+  color: var(--gold-light);
+  font-size: 0.95rem;
+  margin: 6px 0 10px;
+  opacity: 0.9;
+}
+
 /* ---------- Admin: scrollable stats lists & banner thumbs ---------- */
 .admin-scroll-list {
   max-height: 430px;
