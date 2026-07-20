@@ -340,6 +340,7 @@ function initSareeEditor(token) {
     document.getElementById('admin-f-sareeType').value = product.sareeType || '';
     document.getElementById('admin-f-pattern').value = product.pattern || '';
     document.getElementById('admin-f-design').value = product.design || '';
+    document.getElementById('admin-f-material').value = product.material || '';
     document.getElementById('admin-f-price').value = product.price || '';
     document.getElementById('admin-f-sold').checked = !!product.sold;
     imagesList.innerHTML = '';
@@ -354,7 +355,7 @@ function initSareeEditor(token) {
 
   /* ----- CSV download ----- */
   var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sold',
-    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Selling Cost'];
+    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material'];
 
   function csvEscape(val) {
     val = val === undefined || val === null ? '' : String(val);
@@ -372,7 +373,7 @@ function initSareeEditor(token) {
         p.id, p.series, p.category, p.type, p.sareeType, p.pattern, p.design, p.price,
         p.sold ? 'TRUE' : 'FALSE',
         images[0] || '', images[1] || '', images[2] || '', images[3] || '', images[4] || '', images[5] || '', images[6] || '',
-        '', ''
+        '', p.material || ''
       ].map(csvEscape);
       rows.push(row.join(','));
     });
@@ -442,6 +443,7 @@ function initSareeEditor(token) {
       sareeType: row['Saree Type'] || '',
       pattern: row['Pattern'] || '',
       design: row['Design'] || '',
+      material: row['Material'] || '',
       price: parseInt(row['Cost AED'], 10) || 0,
       sold: soldRaw === 'true' || soldRaw === '1' || soldRaw === 'yes',
       images: images,
@@ -645,6 +647,7 @@ function initSareeEditor(token) {
       series: seriesSelect.value,
       category: document.getElementById('admin-f-category').value,
       type: document.getElementById('admin-f-type').value.trim(),
+      material: document.getElementById('admin-f-material').value.trim(),
       sareeType: document.getElementById('admin-f-sareeType').value.trim(),
       pattern: document.getElementById('admin-f-pattern').value.trim(),
       design: document.getElementById('admin-f-design').value.trim(),

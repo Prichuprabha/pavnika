@@ -142,7 +142,7 @@ function seriesTitleCase(s) {
 
 function whatsappLink(product) {
   var msg = 'Hi Pavnika by Saranya, I am interested in the ' + seriesTitleCase(product.series) +
-    ' saree (' + product.id + ') — ' + product.design + '. Is it available?';
+    ' saree (' + product.id + ') — ' + (product.material || product.design) + '. Is it available?';
   return 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
 }
 
@@ -154,11 +154,11 @@ function productCardHTML(p) {
       '<div class="product-photo' + soldClass + '">' +
         '<span class="series-badge">' + seriesTitleCase(p.series) + '</span>' +
         '<span class="id-badge">' + p.id + '</span>' +
-        '<img src="' + p.image + '" alt="' + p.design + ' — ' + seriesTitleCase(p.series) + ' saree" loading="lazy" decoding="async">' +
+        '<img src="' + p.image + '" alt="' + (p.material || p.design) + ' — ' + seriesTitleCase(p.series) + ' saree" loading="lazy" decoding="async">' +
         soldRibbon +
       '</div>' +
       '<div class="product-info">' +
-        '<span class="p-design">' + p.design + '</span>' +
+        '<span class="p-design">' + (p.material || p.design) + '</span>' +
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
         '<span class="p-price">AED ' + formatAED(p.price) + '</span>' +
         '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
@@ -196,7 +196,7 @@ function initHoverCycle(grid) {
         for (var i = 1; i < product.images.length; i++) {
           var extraImg = document.createElement('img');
           extraImg.src = product.images[i];
-          extraImg.alt = product.design + ' — view ' + (i + 1);
+          extraImg.alt = (product.material || product.design) + ' — view ' + (i + 1);
           extraImg.loading = 'eager';
           extraImg.decoding = 'async';
           photoEl.appendChild(extraImg);
@@ -238,12 +238,14 @@ function initCollectionsPage() {
   var categoryGroup = document.getElementById('category-filter');
   var seriesGroup = document.getElementById('series-filter');
   var searchInput = document.getElementById('collections-search-input');
-  var SEARCH_FIELDS = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
+  var SEARCH_FIELDS = ['id', 'material', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
 
   function getFiltered() {
     var q = state.query.trim().toLowerCase();
     return window.PRODUCTS.filter(function (p) {
-      var okCat = state.category === 'all' || p.category === state.category;
+      // NOTE: the first sidebar group is labeled Material and filters on
+      // p.material — internal state/ids kept as 'category' to avoid churn.
+      var okCat = state.category === 'all' || p.material === state.category;
       var okSeries = state.series === 'all' || p.series === state.series;
       var okSold = state.showSold || !p.sold;
       var okQuery = !q || SEARCH_FIELDS.some(function (f) {
@@ -260,7 +262,7 @@ function initCollectionsPage() {
   function seriesAvailableFor(category) {
     var set = {};
     window.PRODUCTS.forEach(function (p) {
-      if (category === 'all' || p.category === category) set[p.series] = true;
+      if (category === 'all' || p.material === category) set[p.series] = true;
     });
     return set;
   }
@@ -269,7 +271,7 @@ function initCollectionsPage() {
   function categoriesAvailableFor(series) {
     var set = {};
     window.PRODUCTS.forEach(function (p) {
-      if (series === 'all' || p.series === series) set[p.category] = true;
+      if (series === 'all' || p.series === series) set[p.material] = true;
     });
     return set;
   }
@@ -672,7 +674,7 @@ function buildLightbox() {
   window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
-    document.getElementById('lightbox-design').textContent = product.design || '';
+    document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
     document.getElementById('lightbox-meta').textContent =
       (product.type || '') + (product.pattern ? ' · ' + product.pattern : '') + (product.sold ? ' · Sold Out' : '');
 
