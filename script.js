@@ -91,6 +91,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initAppointmentPopup(wireNetlifyForm);
 
+  initSidebarAdRotator();
+
   initCollectionsPage();
   initHomeSeriesMarquee();
   initHeroBannerCarousel();
@@ -580,13 +582,70 @@ function initCollectionsPage() {
   });
 }
 
+/* ---------- Collections sidebar ad rotator ----------
+   Rotates up to 3 admin-managed media items (assets/ads/) inside the
+   filter sidebar. Images hold for 6 seconds; videos play through to the
+   end before advancing; the sequence loops continuously. Desktop only —
+   the slot is hidden on mobile and media is never loaded there. */
+function initSidebarAdRotator() {
+  var slot = document.getElementById('sidebar-ad-slot');
+  if (!slot) return;
+  if (!window.matchMedia('(min-width: 881px)').matches) return;
+
+  var IMAGE_SECONDS = 6;
+  var VIDEO_EXT = /\.(mp4|webm|mov|m4v)$/i;
+
+  fetch('assets/ads/collections-ads.json?t=' + Date.now())
+    .then(function (res) { return res.json(); })
+    .then(function (list) {
+      var items = (Array.isArray(list) ? list : [])
+        .map(function (x) { return (x && x.file ? String(x.file) : '').trim(); })
+        .filter(Boolean)
+        .slice(0, 3);
+      if (!items.length) return; // nothing configured — slot stays hidden
+
+      slot.style.display = 'block';
+      var idx = -1;
+      var timer = null;
+
+      function next() {
+        if (timer) { clearTimeout(timer); timer = null; }
+        idx = (idx + 1) % items.length;
+        var file = items[idx];
+        slot.innerHTML = '';
+        if (VIDEO_EXT.test(file)) {
+          var v = document.createElement('video');
+          v.src = 'assets/ads/' + file;
+          v.muted = true;
+          v.playsInline = true;
+          v.autoplay = true;
+          v.preload = 'auto';
+          v.addEventListener('ended', next);
+          v.addEventListener('error', next); // bad file: skip on
+          slot.appendChild(v);
+          var p = v.play();
+          if (p && p.catch) p.catch(function () { timer = setTimeout(next, IMAGE_SECONDS * 1000); });
+        } else {
+          var img = document.createElement('img');
+          img.src = 'assets/ads/' + file;
+          img.alt = '';
+          img.addEventListener('error', next);
+          slot.appendChild(img);
+          timer = setTimeout(next, IMAGE_SECONDS * 1000);
+        }
+      }
+      next();
+    })
+    .catch(function () { /* no ads file — slot stays hidden */ });
+}
+
 /* ---------- Book Appointment popup ----------
    The header's "Book Appointment" button opens this popup on every page
    (falling back to contact.html if JS is unavailable). It mirrors the
    contact enquiry form and posts to the SAME Netlify form ("contact"),
    but with the subject "Appointment Request by <name>". */
 function initAppointmentPopup(wireNetlifyForm) {
-  var ctas = document.querySelectorAll('.nav-cta');
+  var ctas = document.querySelectorAll('.nav-cta, .open-appointment');
   if (!ctas.length) return;
 
   var overlay = null;

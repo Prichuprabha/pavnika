@@ -133,6 +133,7 @@ function showAdminPanel(token, email) {
   initSareeEditor(token);
   initReviewsEditor(token);
   initBannersEditor(token);
+  initSidebarAdsEditor(token);
   initVideosEditor(token);
   initPromoCodesEditor(token);
   initStatsDashboard(token);
@@ -857,6 +858,53 @@ function initReviewsEditor(token) {
   });
 
   loadReviews();
+}
+
+/* ---------- Collections sidebar ads editor ---------- */
+function initSidebarAdsEditor(token) {
+  var saveBtn = document.getElementById('admin-ads-save-btn');
+  if (!saveBtn) return;
+  var statusMsg = document.getElementById('admin-ads-status-msg');
+  var inputs = [1, 2, 3].map(function (i) { return document.getElementById('admin-ad-slot-' + i); });
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg ' + type;
+    statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
+  }
+
+  fetch('assets/ads/collections-ads.json?t=' + Date.now())
+    .then(function (res) { return res.json(); })
+    .then(function (list) {
+      (Array.isArray(list) ? list : []).slice(0, 3).forEach(function (item, i) {
+        if (inputs[i]) inputs[i].value = (item && item.file) || '';
+      });
+    })
+    .catch(function () { /* file may not exist yet */ });
+
+  saveBtn.addEventListener('click', function () {
+    var ads = inputs
+      .map(function (inp) { return inp.value.trim(); })
+      .filter(Boolean)
+      .map(function (f) { return { file: f }; });
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    fetch('/.netlify/functions/admin-save-collection-ads', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, ads: ads })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Save failed.'); return; }
+        showStatus('success', 'Sidebar ads saved. Netlify will redeploy the site in a minute or two.');
+      })
+      .catch(function () { showStatus('error', 'Network error — ads were not saved.'); })
+      .finally(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Sidebar Ads to GitHub';
+      });
+  });
 }
 
 /* ---------- Banners editor ---------- */

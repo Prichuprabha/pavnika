@@ -477,6 +477,18 @@
       <button type="button" class="btn btn-ghost" id="admin-video-refresh-btn" style="margin-bottom:20px;">Refresh from GitHub</button>
       <div id="admin-video-list"></div>
       <button type="button" class="btn btn-primary" id="admin-video-save-btn" style="margin-top:16px;">Save Video Slots to GitHub</button>
+
+      <div style="height:1px; background:var(--stone); margin:32px 0 26px;"></div>
+
+      <h1 style="font-size:1.1rem; margin-bottom:8px;">Collections Sidebar Ads</h1>
+      <p class="admin-status-msg" id="admin-ads-status-msg"></p>
+      <p style="font-size:0.85rem; color:var(--ink); opacity:0.7; margin-bottom:20px; max-width:60ch;">
+        Up to 3 images or videos rotate in the Collections page filter sidebar (desktop only). Images show for 6 seconds; videos play to the end before the next item. Upload the media files to <code>assets/ads/</code> on GitHub first, then enter their filenames below (e.g. <code>promo1.jpg</code> or <code>reel.mp4</code>). Leave a box empty to skip it.
+      </p>
+      <div class="admin-field"><label>Slot 1</label><input type="text" id="admin-ad-slot-1" placeholder="filename in assets/ads/"></div>
+      <div class="admin-field"><label>Slot 2</label><input type="text" id="admin-ad-slot-2" placeholder="filename in assets/ads/"></div>
+      <div class="admin-field"><label>Slot 3</label><input type="text" id="admin-ad-slot-3" placeholder="filename in assets/ads/"></div>
+      <button type="button" class="btn btn-primary" id="admin-ads-save-btn" style="margin-top:16px;">Save Sidebar Ads to GitHub</button>
     </div>
 
     <div class="admin-view" id="admin-view-promos" style="display:none;">
