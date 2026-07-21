@@ -2621,6 +2621,122 @@ body.login-page {
 }
 .appt-close:hover { opacity: 1; }
 
+/* ---------- Step 3: home page redesign ---------- */
+/* Gold flourish under section headings — a touch narrower than the text */
+.head-flourish {
+  display: block;
+  width: clamp(170px, 22vw, 290px);
+  margin: 10px auto 0;
+  opacity: 0.9;
+}
+
+/* Curated: only 4 sarees on mobile (5th hidden) */
+@media (max-width: 640px) {
+  .curated-grid > *:nth-child(5) { display: none; }
+}
+
+/* Follow the Drape — burgundy band, copy left / videos right */
+.drape-section {
+  background: var(--green);
+  padding: 64px 0;
+}
+.drape-band {
+  display: flex;
+  align-items: center;
+  gap: 44px;
+}
+.drape-copy { flex: 0 0 240px; }
+.drape-copy h2 {
+  color: var(--ivory);
+  font-size: clamp(1.7rem, 2.6vw, 2.3rem);
+  margin: 0 0 10px;
+}
+.drape-handle {
+  color: var(--gold-light);
+  font-size: 0.92rem;
+  margin: 0 0 26px;
+}
+.drape-handle a { color: var(--gold-light); text-decoration: none; }
+.drape-handle a:hover { text-decoration: underline; }
+.drape-follow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  border-color: var(--gold-light);
+  color: var(--gold-light);
+}
+.drape-follow-btn:hover { background: var(--gold-light); color: var(--green-deep); }
+.drape-band .home-video-grid { flex: 1; }
+@media (max-width: 880px) {
+  .drape-section { padding: 48px 0; }
+  .drape-band { flex-direction: column; align-items: stretch; gap: 0; }
+  .drape-copy { display: contents; }
+  .drape-copy h2 { order: 1; text-align: center; margin-bottom: 6px; }
+  .drape-handle { order: 2; text-align: center; margin-bottom: 22px; }
+  .drape-band .home-video-grid { order: 3; }
+  .drape-follow-btn { order: 4; align-self: center; margin-top: 24px; }
+}
+
+/* Word of Mouth — lamp left, flower right, reviews flowing over */
+.wom-section { position: relative; overflow: hidden; }
+.wom-decor {
+  position: absolute;
+  bottom: 0;
+  pointer-events: none;
+}
+.wom-lamp {
+  left: 0;
+  height: 78%;
+  max-height: 340px;
+  /* fade the photo's edges into the burgundy section */
+  -webkit-mask-image: linear-gradient(90deg, #000 62%, transparent 96%);
+  mask-image: linear-gradient(90deg, #000 62%, transparent 96%);
+}
+.wom-flower {
+  right: 0;
+  height: 92%;
+  /* cream background disappears into the burgundy via multiply */
+  mix-blend-mode: multiply;
+  opacity: 0.85;
+}
+.wom-section .reviews-marquee { position: relative; z-index: 2; }
+@media (min-width: 881px) {
+  .wom-section .reviews-marquee { padding-left: 170px; }
+}
+@media (max-width: 880px) {
+  .wom-lamp { display: none; }
+  .wom-flower { height: 70%; opacity: 0.55; }
+}
+
+/* How a saree reaches you — icon circles */
+.journey-icons .step {
+  padding-top: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.journey-icons .step::before { content: none; }
+.step-icon {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+  background: var(--ivory);
+}
+.journey-icons .step h4 { margin-top: 4px; }
+@media (max-width: 880px) {
+  .journey-icons .step {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}
+
 /* ---------- Brand tagline (login page + footer) ---------- */
 .brand-tagline {
   font-family: var(--display);
