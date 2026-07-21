@@ -599,8 +599,8 @@ function initAppointmentPopup(wireNetlifyForm) {
       '<div class="appt-modal" role="dialog" aria-modal="true" aria-label="Book a private viewing">' +
         '<button type="button" class="appt-close" aria-label="Close">&times;</button>' +
         '<h2>Book a private viewing</h2>' +
-        '<form class="contact-form" name="contact" method="POST" data-netlify="true" data-subject-prefix="Appointment Request by">' +
-          '<input type="hidden" name="form-name" value="contact">' +
+        '<form class="contact-form" name="appointment" method="POST" data-netlify="true" data-subject-prefix="Appointment Request by">' +
+          '<input type="hidden" name="form-name" value="appointment">' +
           '<input type="hidden" name="subject" value="">' +
           '<p style="display:none;"><label>Leave this field blank: <input name="bot-field"></label></p>' +
           '<div class="field"><label for="appt-name">Full name</label><input type="text" id="appt-name" name="name" required></div>' +
@@ -1623,7 +1623,10 @@ function renderCartDrawer() {
   if (!itemsWrap) return;
 
   if (!ids.length) {
-    itemsWrap.innerHTML = '<p class="cart-drawer-empty">Your cart is empty. Browse the collection to find something you love.</p>';
+    itemsWrap.innerHTML =
+      '<p class="cart-drawer-empty">Your cart is empty. Browse the collection to find something you love.</p>' +
+      continueShoppingHTML();
+    bindContinueShopping();
     if (footer) footer.style.display = 'none';
     return;
   }
@@ -1643,9 +1646,31 @@ function renderCartDrawer() {
         '<span class="item-price">AED ' + formatAED(p.price) + '</span>' +
       '</div>'
     );
-  }).join('') + '<div class="cart-drawer-total"><span>Total (AED)</span><span>' + formatAED(subtotal) + '</span></div>';
+  }).join('') +
+    '<div class="cart-drawer-total"><span>Total (AED)</span><span>' + formatAED(subtotal) + '</span></div>' +
+    continueShoppingHTML();
+  bindContinueShopping();
 
   if (footer) footer.style.display = 'block';
+}
+
+/* Continue Shopping lives inside the cart body (below the total when the
+   cart has items, below the empty-state text otherwise), so it's rebuilt
+   and re-bound on every render. Goes to Collections — or, if the user is
+   already on the Collections page, simply closes the drawer. */
+function continueShoppingHTML() {
+  return '<a href="collections.html" class="btn btn-ghost" id="cart-continue-btn" style="display:block; text-align:center; margin-top:16px;">&larr;&nbsp; Continue Shopping</a>';
+}
+function bindContinueShopping() {
+  var btn = document.getElementById('cart-continue-btn');
+  if (!btn) return;
+  btn.addEventListener('click', function (e) {
+    var path = window.location.pathname;
+    if (/collections\.html$/i.test(path) || /\/collections\/?$/i.test(path)) {
+      e.preventDefault();
+      closeCartDrawer();
+    }
+  });
 }
 
 function initCartDrawer() {
@@ -1666,7 +1691,6 @@ function initCartDrawer() {
       '</div>' +
       '<div class="cart-drawer-items" id="cart-drawer-items-wrap"></div>' +
       '<div class="cart-drawer-footer" id="cart-drawer-footer" style="display:none;">' +
-        '<a href="collections.html" class="btn btn-ghost" id="cart-continue-btn" style="display:block; text-align:center; margin-bottom:10px;">&larr;&nbsp; Continue Shopping</a>' +
         '<a href="checkout.html" class="btn btn-primary" id="cart-proceed-btn" style="display:block; text-align:center; margin-bottom:10px;">Proceed to Checkout</a>' +
         '<button type="button" class="btn btn-ghost" id="cart-checkout-btn" style="width:100%;">Checkout via WhatsApp</button>' +
         '<p>Proceed to Checkout for a full order review, or checkout directly via WhatsApp.</p>' +
@@ -1676,14 +1700,6 @@ function initCartDrawer() {
 
   cartBtn.addEventListener('click', openCartDrawer);
   document.getElementById('cart-drawer-close').addEventListener('click', closeCartDrawer);
-  // Continue Shopping: goes to Collections — unless we're already there,
-  // in which case just close the drawer.
-  document.getElementById('cart-continue-btn').addEventListener('click', function (e) {
-    if (/collections\.html$/i.test(window.location.pathname) || window.location.pathname === '/collections') {
-      e.preventDefault();
-      closeCartDrawer();
-    }
-  });
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeCartDrawer(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeCartDrawer();

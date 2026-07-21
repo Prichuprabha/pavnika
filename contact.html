@@ -22,12 +22,13 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Netlify Forms build-time detection: the Book Appointment popup is
-       injected by JS and can't be seen by Netlify's static scan, so this
-       hidden form declares the full "contact" field set (incl. subject &
-       occasion) to guarantee every field is registered. Not shown/used. -->
-  <form name="contact" data-netlify="true" netlify-honeypot="bot-field" hidden>
-    <input type="hidden" name="form-name" value="contact">
+  <!-- Netlify Forms build-time detection for the Book Appointment popup
+       (which is injected by JS and invisible to Netlify's static scan).
+       Registers the separate "appointment" form WITH the occasion field.
+       The visible enquiry form below registers the "contact" form, which
+       deliberately has no occasion field. Not shown/used. -->
+  <form name="appointment" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="appointment">
     <input type="text" name="name">
     <input type="tel" name="phone">
     <input type="email" name="email">
