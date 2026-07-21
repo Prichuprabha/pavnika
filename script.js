@@ -2272,7 +2272,11 @@ function initCuratedShowcase() {
     var seriesLabel = seriesTitleCase(p.series);
     // Same behavior as clicking a header-search result: land on the
     // collections page with this saree's detail popup already open.
-    var href = 'collections.html?open=' + encodeURIComponent(p.id);
+    // Open this saree's detail popup with the Collections page behind it
+    // pre-filtered to the same series and type as the selected saree.
+    var href = 'collections.html?series=' + encodeURIComponent(p.series) +
+      '&q=' + encodeURIComponent(p.type || '') +
+      '&open=' + encodeURIComponent(p.id);
     var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +

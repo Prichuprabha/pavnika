@@ -22,6 +22,20 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <!-- Netlify Forms build-time detection: the Book Appointment popup is
+       injected by JS and can't be seen by Netlify's static scan, so this
+       hidden form declares the full "contact" field set (incl. subject &
+       occasion) to guarantee every field is registered. Not shown/used. -->
+  <form name="contact" data-netlify="true" netlify-honeypot="bot-field" hidden>
+    <input type="hidden" name="form-name" value="contact">
+    <input type="text" name="name">
+    <input type="tel" name="phone">
+    <input type="email" name="email">
+    <input type="text" name="occasion">
+    <input type="text" name="subject">
+    <textarea name="message"></textarea>
+    <input name="bot-field">
+  </form>
 <header class="site-header">
   <div class="nav-row">
     <a href="home.html" class="brand">
@@ -133,10 +147,6 @@
           <label for="email">Email</label>
           <input type="email" id="email" name="email" required>
         </div>
-        <!-- Occasion moved to the Book Appointment popup; hidden input
-             keeps the field registered with Netlify Forms so the popup's
-             submissions include it. -->
-        <input type="hidden" name="occasion" value="">
         <div class="field">
           <label for="message">Your message</label>
           <textarea id="message" name="message" placeholder="A saree you have your eye on (share the ID), a special request, or any question at all..."></textarea>
