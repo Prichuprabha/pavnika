@@ -3,7 +3,7 @@
     "image": "banner-v2-1.jpg",
     "mobileImage": "banner-v2-1-mobile.jpg",
     "link": "collections.html",
-    "hideText": true
+    "hideText": false
   },
   {
     "image": "banner-v2-2.jpg",
