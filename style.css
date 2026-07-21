@@ -2621,6 +2621,40 @@ body.login-page {
 }
 .appt-close:hover { opacity: 1; }
 
+/* ---------- Step 6: about page ---------- */
+/* Founder quote on burgundy silk — the image is center-cropped by
+   background sizing, so the section keeps its existing height */
+.quote-silk {
+  background-image: url('assets/decor/Textback.png');
+  background-size: cover;
+  background-position: center;
+}
+
+.about-cta-section { position: relative; overflow: hidden; }
+.about-cta-inner { position: relative; z-index: 2; }
+.about-cta-decor {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 115%;
+  max-height: 320px;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+}
+.about-cta-decor.decor-l { left: 0; }
+.about-cta-decor.decor-r { right: 0; }
+.about-cta-note {
+  font-family: var(--display);
+  font-style: italic;
+  color: var(--gold);
+  margin: 0 0 22px;
+}
+@media (max-width: 880px) {
+  .about-cta-decor { max-height: 170px; opacity: 0.55; }
+  .about-cta-decor.decor-l { display: none; }
+}
+
 /* ---------- Step 5: contact page ---------- */
 .contact-hero-inner {
   display: flex;
