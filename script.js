@@ -72,7 +72,7 @@ document.addEventListener('DOMContentLoaded', function () {
         .then(function () {
           if (note) {
             note.textContent = 'Thank you \u2014 your message has been received. We will reach out on WhatsApp or email within one business day.';
-            note.style.color = '#0B5D5A';
+            note.style.color = '#73302E';
           }
           form.reset();
         })
