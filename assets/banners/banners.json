@@ -1,5 +1,20 @@
 [
-  { "image": "banner-v2-1.jpg", "mobileImage": "banner-v2-1-mobile.jpg", "link": "collections.html" },
-  { "image": "banner-v2-2.jpg", "mobileImage": "banner-v2-2-mobile.jpg", "link": "collections.html" },
-  { "image": "banner-v2-3.jpg", "mobileImage": "banner-v2-3-mobile.jpg", "link": "collections.html" }
+  {
+    "image": "banner-v2-1.jpg",
+    "mobileImage": "banner-v2-1-mobile.jpg",
+    "link": "collections.html",
+    "hideText": false
+  },
+  {
+    "image": "banner-v2-2.jpg",
+    "mobileImage": "banner-v2-2-mobile.jpg",
+    "link": "collections.html",
+    "hideText": false
+  },
+  {
+    "image": "banner-v2-3.jpg",
+    "mobileImage": "banner-v2-3-mobile.jpg",
+    "link": "collections.html",
+    "hideText": false
+  }
 ]

@@ -73,7 +73,7 @@ exports.handler = async function (event) {
   try {
     const sha = await getFileSha();
     const cleanBanners = body.banners.map(function (b) {
-      return { image: b.image, mobileImage: String(b.mobileImage || '').trim(), link: b.link || 'collections.html' };
+      return { image: b.image, mobileImage: String(b.mobileImage || '').trim(), link: b.link || 'collections.html', hideText: !!b.hideText };
     });
     const newContent = JSON.stringify(cleanBanners, null, 2) + '\n';
     const result = await putFile(newContent, sha, 'Admin: update banners');

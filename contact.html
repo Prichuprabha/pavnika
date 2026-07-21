@@ -73,7 +73,7 @@
 <section class="page-hero">
   <div class="container">
     <span class="eyebrow">Get in Touch</span>
-    <h1>Book a private viewing</h1>
+    <h1>Questions, requests<br>or a special find</h1>
   </div>
 </section>
 
@@ -115,8 +115,9 @@
 
     <div>
       <h2>Send an enquiry</h2>
-      <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
+      <form class="contact-form" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field" data-subject-prefix="Enquiry by">
         <input type="hidden" name="form-name" value="contact">
+        <input type="hidden" name="subject" value="">
         <p style="display:none;">
           <label>Leave this field blank: <input name="bot-field"></label>
         </p>
@@ -132,21 +133,15 @@
           <label for="email">Email</label>
           <input type="email" id="email" name="email" required>
         </div>
+        <!-- Occasion moved to the Book Appointment popup; hidden input
+             keeps the field registered with Netlify Forms so the popup's
+             submissions include it. -->
+        <input type="hidden" name="occasion" value="">
         <div class="field">
-          <label for="occasion">Occasion</label>
-          <select id="occasion" name="occasion">
-            <option>Bridal / Wedding</option>
-            <option>Festival / Function</option>
-            <option>Everyday Soft Silk</option>
-            <option>Gifting / Corporate</option>
-            <option>Not sure yet</option>
-          </select>
+          <label for="message">Your message</label>
+          <textarea id="message" name="message" placeholder="A saree you have your eye on (share the ID), a special request, or any question at all..."></textarea>
         </div>
-        <div class="field">
-          <label for="message">Tell us what you're looking for</label>
-          <textarea id="message" name="message" placeholder="Saree ID (if any), colours, date needed by..."></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Request Appointment</button>
+        <button type="submit" class="btn btn-primary" style="align-self:flex-start;">Send Enquiry</button>
         <p class="form-status form-note"></p>
       </form>
     </div>

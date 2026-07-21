@@ -581,6 +581,14 @@ nav.main-nav a.active {
   justify-content: center;
   padding-bottom: 8vh;
 }
+/* Per-banner "hide text" mode (admin checkbox): the copy fades with the
+   same 1s ease as the slide crossfade, and the click layer grows to
+   cover the whole banner. On mobile the click layer is normally hidden,
+   but text-hidden banners enable it full-width so the image is tappable. */
+.hero-banner-text { transition: opacity 1s ease; }
+.hero-banner-pinned.text-hidden .hero-banner-text { opacity: 0; pointer-events: none; }
+.hero-banner-pinned.text-hidden .hero-banner-click { left: 0; }
+
 /* Desktop-only clickable area over the right side of the banner (the
    image area beyond the text column) linking to the active slide's
    admin-configured link. Hidden on mobile. */
@@ -595,6 +603,7 @@ nav.main-nav a.active {
 }
 @media (max-width: 880px) {
   .hero-banner-click { display: none; }
+  .hero-banner-pinned.text-hidden .hero-banner-click { display: block; left: 0; }
 }
 /* One shared column for eyebrow, heading, paragraph and buttons —
    everything aligns to the same left AND right edges, and the width
@@ -2587,6 +2596,54 @@ body.login-page {
   opacity: 1;
 }
 .curated-tile:focus-visible .curated-tile-text { transform: translateY(0); }
+
+/* ---------- Book Appointment popup ---------- */
+.appt-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 46, 34, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 200;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.appt-overlay.is-open { opacity: 1; pointer-events: auto; }
+.appt-modal {
+  position: relative;
+  background: var(--ivory);
+  border-radius: 10px;
+  padding: 30px 28px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 88vh;
+  overflow-y: auto;
+  transform: translateY(14px);
+  transition: transform 0.25s ease;
+}
+.appt-overlay.is-open .appt-modal { transform: translateY(0); }
+.appt-modal h2 {
+  font-family: var(--display);
+  color: var(--green);
+  margin: 0 0 18px;
+  font-size: 1.6rem;
+}
+.appt-close {
+  position: absolute;
+  top: 12px;
+  right: 14px;
+  background: none;
+  border: none;
+  font-size: 1.6rem;
+  line-height: 1;
+  color: var(--ink);
+  cursor: pointer;
+  opacity: 0.6;
+}
+.appt-close:hover { opacity: 1; }
 
 /* ---------- Brand tagline (login page + footer) ---------- */
 .brand-tagline {

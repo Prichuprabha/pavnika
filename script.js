@@ -43,12 +43,23 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  var form = document.querySelector('.contact-form');
-  if (form) {
+  // Shared submit handling for every Netlify form on the site (the
+  // contact page enquiry form AND the Book Appointment popup). Each form
+  // declares data-subject-prefix; the hidden "subject" field is filled
+  // with "<prefix> <customer name>" so notification emails arrive with a
+  // meaningful subject line, e.g. "Appointment Request by Saranya".
+  function wireNetlifyForm(form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
       var note = form.querySelector('.form-status');
       var submitBtn = form.querySelector('button[type="submit"]');
+
+      var subjectInput = form.querySelector('input[name="subject"]');
+      var nameInput = form.querySelector('input[name="name"]');
+      if (subjectInput) {
+        var prefix = form.getAttribute('data-subject-prefix') || 'Enquiry by';
+        subjectInput.value = prefix + ' ' + ((nameInput && nameInput.value.trim()) || 'website visitor');
+      }
 
       if (submitBtn) submitBtn.disabled = true;
 
@@ -60,14 +71,14 @@ document.addEventListener('DOMContentLoaded', function () {
       })
         .then(function () {
           if (note) {
-            note.textContent = 'Thank you — your enquiry has been noted. We will reach out on WhatsApp or email within one business day.';
+            note.textContent = 'Thank you \u2014 your message has been received. We will reach out on WhatsApp or email within one business day.';
             note.style.color = '#0B5D5A';
           }
           form.reset();
         })
         .catch(function () {
           if (note) {
-            note.textContent = 'Something went wrong sending your enquiry — please message us directly on WhatsApp instead.';
+            note.textContent = 'Something went wrong \u2014 please message us directly on WhatsApp instead.';
             note.style.color = '#B8142A';
           }
         })
@@ -76,6 +87,9 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
   }
+  document.querySelectorAll('.contact-form').forEach(wireNetlifyForm);
+
+  initAppointmentPopup(wireNetlifyForm);
 
   initCollectionsPage();
   initHomeSeriesMarquee();
@@ -563,6 +577,75 @@ function initCollectionsPage() {
     var id = card.getAttribute('data-id');
     var product = window.PRODUCTS.find(function (p) { return p.id === id; });
     if (product) window.openLightbox(product);
+  });
+}
+
+/* ---------- Book Appointment popup ----------
+   The header's "Book Appointment" button opens this popup on every page
+   (falling back to contact.html if JS is unavailable). It mirrors the
+   contact enquiry form and posts to the SAME Netlify form ("contact"),
+   but with the subject "Appointment Request by <name>". */
+function initAppointmentPopup(wireNetlifyForm) {
+  var ctas = document.querySelectorAll('.nav-cta');
+  if (!ctas.length) return;
+
+  var overlay = null;
+
+  function buildPopup() {
+    if (overlay) return;
+    overlay = document.createElement('div');
+    overlay.className = 'appt-overlay';
+    overlay.innerHTML =
+      '<div class="appt-modal" role="dialog" aria-modal="true" aria-label="Book a private viewing">' +
+        '<button type="button" class="appt-close" aria-label="Close">&times;</button>' +
+        '<h2>Book a private viewing</h2>' +
+        '<form class="contact-form" name="contact" method="POST" data-netlify="true" data-subject-prefix="Appointment Request by">' +
+          '<input type="hidden" name="form-name" value="contact">' +
+          '<input type="hidden" name="subject" value="">' +
+          '<p style="display:none;"><label>Leave this field blank: <input name="bot-field"></label></p>' +
+          '<div class="field"><label for="appt-name">Full name</label><input type="text" id="appt-name" name="name" required></div>' +
+          '<div class="field"><label for="appt-phone">Phone / WhatsApp</label><input type="tel" id="appt-phone" name="phone" required></div>' +
+          '<div class="field"><label for="appt-email">Email</label><input type="email" id="appt-email" name="email" required></div>' +
+          '<div class="field"><label for="appt-occasion">Occasion</label>' +
+            '<select id="appt-occasion" name="occasion">' +
+              '<option>Bridal / Wedding</option>' +
+              '<option>Festival / Function</option>' +
+              '<option>Everyday Soft Silk</option>' +
+              '<option>Gifting / Corporate</option>' +
+              '<option>Not sure yet</option>' +
+            '</select></div>' +
+          '<div class="field"><label for="appt-message">Tell us what you\'re looking for</label>' +
+            '<textarea id="appt-message" name="message" placeholder="Saree ID (if any), colours, date needed by..."></textarea></div>' +
+          '<button type="submit" class="btn btn-primary" style="align-self:flex-start;">Request Appointment</button>' +
+          '<p class="form-status form-note"></p>' +
+        '</form>' +
+      '</div>';
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.appt-close').addEventListener('click', closePopup);
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closePopup(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePopup();
+    });
+    wireNetlifyForm(overlay.querySelector('form'));
+  }
+
+  function openPopup() {
+    buildPopup();
+    overlay.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+  }
+  function closePopup() {
+    if (!overlay) return;
+    overlay.classList.remove('is-open');
+    document.body.style.overflow = '';
+  }
+
+  ctas.forEach(function (cta) {
+    cta.addEventListener('click', function (e) {
+      e.preventDefault();
+      openPopup();
+    });
   });
 }
 
@@ -1213,8 +1296,14 @@ function initHeroBannerCarousel() {
       var clickLink = document.createElement('a');
       clickLink.className = 'hero-banner-click';
       clickLink.setAttribute('aria-label', 'Open this banner\'s collection');
+      var pinnedEl = document.getElementById('hero-banner-pinned');
       function syncClickHref(i) {
         clickLink.href = (banners[i] && banners[i].link) || DEFAULT_LINK;
+        // Per-banner "hide text" mode (admin checkbox): fade the text +
+        // buttons out with the same 1s ease the slides use, and let the
+        // click layer cover the WHOLE banner instead of the right half.
+        var hide = !!(banners[i] && banners[i].hideText);
+        if (pinnedEl) pinnedEl.classList.toggle('text-hidden', hide);
       }
       syncClickHref(0);
       wrap.appendChild(clickLink);
@@ -1577,6 +1666,7 @@ function initCartDrawer() {
       '</div>' +
       '<div class="cart-drawer-items" id="cart-drawer-items-wrap"></div>' +
       '<div class="cart-drawer-footer" id="cart-drawer-footer" style="display:none;">' +
+        '<a href="collections.html" class="btn btn-ghost" id="cart-continue-btn" style="display:block; text-align:center; margin-bottom:10px;">&larr;&nbsp; Continue Shopping</a>' +
         '<a href="checkout.html" class="btn btn-primary" id="cart-proceed-btn" style="display:block; text-align:center; margin-bottom:10px;">Proceed to Checkout</a>' +
         '<button type="button" class="btn btn-ghost" id="cart-checkout-btn" style="width:100%;">Checkout via WhatsApp</button>' +
         '<p>Proceed to Checkout for a full order review, or checkout directly via WhatsApp.</p>' +
@@ -1586,6 +1676,14 @@ function initCartDrawer() {
 
   cartBtn.addEventListener('click', openCartDrawer);
   document.getElementById('cart-drawer-close').addEventListener('click', closeCartDrawer);
+  // Continue Shopping: goes to Collections — unless we're already there,
+  // in which case just close the drawer.
+  document.getElementById('cart-continue-btn').addEventListener('click', function (e) {
+    if (/collections\.html$/i.test(window.location.pathname) || window.location.pathname === '/collections') {
+      e.preventDefault();
+      closeCartDrawer();
+    }
+  });
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeCartDrawer(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeCartDrawer();
@@ -2093,12 +2191,21 @@ function initDraggableMarquee(container, track, options) {
   measure();
   window.addEventListener('resize', measure);
 
+  // Wrap the offset into the seamless range every frame — including
+  // while dragging. Previously wrapping only ran during auto-scroll, so
+  // a click-and-drag could run straight past the duplicated content and
+  // show blank space at either end.
+  function normalize() {
+    if (halfWidth <= 0) return;
+    while (offset <= -halfWidth) offset += halfWidth;
+    while (offset > 0) offset -= halfWidth;
+  }
+
   function tick() {
     if (!reduced && !isHovering && !isDragging && halfWidth > 0) {
       offset += dir * speed;
-      if (offset <= -halfWidth) offset += halfWidth;
-      if (offset > 0) offset -= halfWidth;
     }
+    normalize();
     track.style.transform = 'translateX(' + offset + 'px)';
     requestAnimationFrame(tick);
   }
@@ -2163,7 +2270,9 @@ function initCuratedShowcase() {
 
   grid.innerHTML = picks.map(function (p) {
     var seriesLabel = seriesTitleCase(p.series);
-    var href = 'collections.html?series=' + encodeURIComponent(p.series) + '&q=' + encodeURIComponent(p.type || '');
+    // Same behavior as clicking a header-search result: land on the
+    // collections page with this saree's detail popup already open.
+    var href = 'collections.html?open=' + encodeURIComponent(p.id);
     var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +

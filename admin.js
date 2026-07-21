@@ -886,6 +886,8 @@ function initBannersEditor(token) {
         '<div class="admin-field"><label>Image file (desktop, wide)</label><input type="text" value="' + b.image + '" data-role="image"></div>' +
         '<div class="admin-field"><label>Mobile image (portrait, optional)</label><input type="text" value="' + (b.mobileImage || '') + '" data-role="mobileImage" placeholder="Empty = reuse desktop image"></div>' +
         '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
+        '<div class="admin-field admin-field-check"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;">' +
+          '<input type="checkbox" data-role="hideText"' + (b.hideText ? ' checked' : '') + ' style="width:auto;"> Hide text &amp; buttons (full image clickable)</label></div>' +
         '<div class="admin-banner-controls">' +
           '<button type="button" data-action="up" title="Move up">&uarr;</button>' +
           '<button type="button" data-action="down" title="Move down">&darr;</button>' +
@@ -901,7 +903,8 @@ function initBannersEditor(token) {
       return {
         image: row.querySelector('[data-role="image"]').value.trim(),
         mobileImage: row.querySelector('[data-role="mobileImage"]').value.trim(),
-        link: row.querySelector('[data-role="link"]').value.trim() || 'collections.html'
+        link: row.querySelector('[data-role="link"]').value.trim() || 'collections.html',
+        hideText: row.querySelector('[data-role="hideText"]').checked
       };
     });
   }
