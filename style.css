@@ -2644,11 +2644,11 @@ header.site-header.header-dark.is-scrolled {
 .header-dark .nav-icon-btn:hover { color: var(--gold-light); }
 .header-dark .nav-toggle { color: var(--ivory); }
 .header-dark .nav-cta {
-  background: transparent;
+  background: var(--gold-light); /* filled — strong contrast on burgundy */
   border: 1px solid var(--gold-light);
-  color: var(--gold-light);
+  color: var(--green-deep);
 }
-.header-dark .nav-cta:hover { background: var(--gold-light); color: var(--green-deep); }
+.header-dark .nav-cta:hover { background: var(--gold); border-color: var(--gold); color: var(--ivory); }
 @media (max-width: 880px) {
   .header-dark nav.main-nav { background: var(--green); border-bottom-color: rgba(246, 223, 213, 0.22); }
   .header-dark nav.main-nav a { border-bottom-color: rgba(246, 223, 213, 0.15); }
@@ -2696,7 +2696,7 @@ header.site-header.header-dark.is-scrolled {
 
 /* ---------- Step 5: contact page ---------- */
 .contact-hero {
-  padding: 34px 0 28px;
+  padding: 26px 0 24px;
   background-color: var(--ivory);
   background-image: url('assets/decor/contactus.png');
   background-repeat: no-repeat;
@@ -2705,6 +2705,9 @@ header.site-header.header-dark.is-scrolled {
   background-blend-mode: multiply; /* cream photo melts into the ivory page */
 }
 .contact-hero-inner { display: block; }
+.contact-hero .eyebrow { margin-bottom: 6px; }
+.contact-hero h1 { margin: 0 0 12px; font-size: clamp(1.9rem, 3.4vw, 2.6rem); }
+.contact-hero-sub { color: var(--ink); opacity: 0.8; margin: 0; font-size: 1rem; line-height: 1.5; }
 .contact-hero-copy { text-align: left; }
 .contact-hero .eyebrow { display: inline-block; }
 .contact-hero h1 { text-align: left; }
@@ -2717,8 +2720,11 @@ header.site-header.header-dark.is-scrolled {
 }
 
 /* ---------- Step 4: collections page ---------- */
-.catalogue-hero { position: relative; overflow: hidden; padding: 34px 0 28px; }
+.catalogue-hero { position: relative; overflow: hidden; padding: 20px 0 16px; }
 .catalogue-hero .container { position: relative; z-index: 2; }
+.catalogue-hero .eyebrow { margin-bottom: 4px; }
+.catalogue-hero h1 { margin: 0; font-size: clamp(1.9rem, 3.4vw, 2.6rem); }
+.catalogue-tagline { margin-top: 8px; }
 .catalogue-hero-decor {
   position: absolute;
   top: 0;
@@ -2806,7 +2812,7 @@ header.site-header.header-dark.is-scrolled {
   top: 0;
   left: 0;
   height: 100%;
-  mix-blend-mode: darken;
+  mix-blend-mode: lighten; /* dark ground vanishes, red linework shows */
   -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent 96%);
   mask-image: linear-gradient(90deg, #000 55%, transparent 96%);
   pointer-events: none;
@@ -2871,19 +2877,25 @@ header.site-header.header-dark.is-scrolled {
   bottom: auto;
   right: 0;
   height: 100%;
-  mix-blend-mode: darken;
+  mix-blend-mode: lighten; /* dark ground vanishes, red linework shows */
   -webkit-mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
   mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
 }
 .wom-section .reviews-marquee { position: relative; z-index: 2; }
 @media (min-width: 881px) {
-  /* reviews begin after the lamp image, never over it */
-  .wom-section .reviews-marquee { padding-left: 290px; }
+  /* reviews begin after the lamp image and are clipped there — margin
+     excludes the lamp zone (padding would let cards slide across it) */
+  .wom-section .reviews-marquee {
+    margin-left: 290px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 48px);
+    mask-image: linear-gradient(90deg, transparent 0, #000 48px);
+  }
 }
 @media (max-width: 880px) {
   .wom-lamp { display: none; }
   .wom-flower { opacity: 0.6; }
-  .wom-section .reviews-marquee { padding-left: 0; }
+  .wom-section .reviews-marquee { margin-left: 0; }
 }
 
 /* How a saree reaches you — icon circles */
