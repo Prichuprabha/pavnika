@@ -1163,7 +1163,7 @@ footer.site-footer {
 @media (max-width: 880px) {
   nav.main-nav {
     position: fixed;
-    top: 68px; left: 0; right: 0;
+    left: 0; right: 0;
     background: var(--ivory);
     flex-direction: column;
     align-items: flex-start;
@@ -1177,11 +1177,7 @@ footer.site-footer {
   nav.main-nav a { width: 100%; padding: 16px 32px; border-bottom: 1px solid var(--stone); }
   .nav-toggle { display: block; }
 
-  /* mobile header: hamburger left, brand centered, icons right */
-  .nav-row { position: relative; justify-content: center; }
-  .nav-row .brand { margin: 0 auto; }
-  .nav-controls { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); }
-  .nav-toggle { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); margin: 0; }
+
 
   .hero .container { grid-template-columns: 1fr; }
   .hero { padding: 48px 0; }
@@ -2627,6 +2623,104 @@ body.login-page {
 }
 .appt-close:hover { opacity: 1; }
 
+/* ---------- Brand lockups (header maroon / footer white) ---------- */
+.brand img.brand-lockup {
+  height: 44px;
+  width: auto;
+  border-radius: 0;
+}
+.footer-brand img.footer-lockup {
+  height: 62px;
+  width: auto;
+  border-radius: 0;
+}
+
+/* ---------- Round 5 fixes ---------- */
+/* Never stretch decorative images: the global img max-width squeezes
+   their width while height:100% holds — classic distortion. */
+.drape-decor, .wom-decor, .catalogue-hero-decor, .about-cta-decor {
+  max-width: none;
+  width: auto;
+}
+
+/* Follow the Drape: golden handle + follow button, bigger IG icon */
+.drape-handle, .drape-handle a { color: var(--gold); }
+.drape-follow-btn { border-color: var(--gold); color: var(--gold); }
+.drape-follow-btn:hover { background: var(--gold); color: var(--ivory); }
+.drape-follow-btn svg { width: 20px; height: 20px; }
+
+/* Hero: gold eyebrow, dark main text, no left overlay, gold ghost btn */
+.hero-banner-text .eyebrow { color: var(--gold); }
+.hero-banner-text h1, .hero-banner-text .lede { color: var(--green); }
+.hero-banner-gradient { background: none; }
+.hero-banner-text .hero-whatsapp-btn {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.hero-banner-text .hero-whatsapp-btn:hover { background: transparent; color: var(--gold); }
+.wa-icon-circle { background: var(--gold); color: var(--ivory); }
+
+/* Curated tiles: golden Explore More */
+.curated-explore { color: var(--gold) !important; }
+
+/* Page heroes: heading scale consistent with the home hero */
+.page-hero h1 { font-size: clamp(1.9rem, 2.4vw + 0.85rem, 3.3rem); }
+.catalogue-hero .eyebrow { font-size: 0.95rem; }
+.catalogue-tagline { font-size: 1.15rem; }
+
+/* Contact: align content with the hero copy inset */
+.contact-grid { padding-left: clamp(16px, 5vw, 80px); }
+
+/* Footer: golden column headings */
+.footer-grid h4 { color: var(--gold); }
+
+@media (max-width: 880px) {
+  /* header: burger hard-left, brand truly centered, icons right */
+  .nav-row { position: relative; }
+  .nav-row .brand {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+  }
+  .nav-controls { position: static; transform: none; margin-left: auto; }
+  .nav-toggle {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+  }
+  .brand img.brand-lockup { height: 38px; }
+
+  /* dropdown flush under the header, whatever its height; no gap, no line */
+  .site-header { border-bottom: none; }
+  nav.main-nav { position: absolute; top: 100%; }
+  nav.main-nav a.nav-cta {
+    display: inline-block;
+    width: auto !important;
+    margin: 14px 32px !important;
+    border-bottom: none !important;
+  }
+
+  /* footer: Explore + Help side by side, gold separators */
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 26px; }
+  .footer-grid > div:first-child {
+    grid-column: 1 / -1;
+    border-bottom: 1px solid var(--gold);
+    padding-bottom: 20px;
+  }
+  .footer-grid > div:last-child {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--gold);
+    padding-top: 20px;
+  }
+
+  /* catalogue hero: both side decors visible on mobile too */
+  .catalogue-hero .decor-left { display: block; }
+}
+
 /* ---------- Dark header (home page only) ---------- */
 header.site-header.header-dark,
 header.site-header.header-dark.is-scrolled {
@@ -2754,7 +2848,7 @@ header.site-header.header-dark.is-scrolled {
 .catalogue-hero { position: relative; overflow: hidden; padding: 20px 0 16px; }
 .catalogue-hero .container { position: relative; z-index: 2; }
 .catalogue-hero .eyebrow { margin-bottom: 4px; }
-.catalogue-hero h1 { margin: 0; font-size: clamp(1.9rem, 3.4vw, 2.6rem); }
+.catalogue-hero h1 { margin: 0; }
 .catalogue-tagline { margin-top: 8px; }
 .catalogue-hero-decor {
   position: absolute;
@@ -2774,7 +2868,6 @@ header.site-header.header-dark.is-scrolled {
   mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
 }
 @media (max-width: 880px) {
-  .decor-left { display: none; }
   .catalogue-hero-decor { opacity: 0.9; }
 }
 .catalogue-tagline {

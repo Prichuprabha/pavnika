@@ -2352,14 +2352,14 @@ function initCuratedShowcase() {
     var href = 'collections.html?series=' + encodeURIComponent(p.series) +
       '&q=' + encodeURIComponent(p.type || '') +
       '&open=' + encodeURIComponent(p.id);
-    var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.type || '');
+    var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.material || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +
-        '<div class="curated-tile-media"><img src="' + p.image + '" alt="' + p.type + ' — ' + seriesLabel + ' saree" loading="lazy"><span class="id-badge">' + p.id + '</span></div>' +
+        '<div class="curated-tile-media"><img src="' + p.image + '" alt="' + (p.material || p.type) + ' — ' + seriesLabel + ' saree" loading="lazy"><span class="id-badge">' + p.id + '</span></div>' +
         '<div class="curated-tile-gradient"></div>' +
         '<div class="curated-tile-text">' +
           '<span class="curated-series">' + seriesLabel + '</span>' +
-          '<h3 class="curated-type">' + (p.type || '') + '</h3>' +
+          '<h3 class="curated-type">' + (p.material || p.type || '') + '</h3>' +
           '<p class="curated-hover-detail">' + detail + '</p>' +
           '<span class="curated-explore">Explore More &rarr;</span>' +
         '</div>' +
