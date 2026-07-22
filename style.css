@@ -712,7 +712,6 @@ nav.main-nav a.active {
   .hero-banner-text .hero-whatsapp-btn { min-width: 0; padding: 0 4px 0 13px; gap: 8px; }
   .wa-icon-circle { width: 32px; height: 32px; flex: 0 0 32px; }
   .wa-icon-circle svg { width: 17px; height: 17px; }
-  .hero-banner-gradient { background: none; } /* fade is the scroll-attached .hero-scroll-fade */
 }
 
 .hero-spacer-section {
@@ -1174,7 +1173,7 @@ footer.site-footer {
     overflow: hidden;
     transition: max-height 0.25s ease;
   }
-  nav.main-nav.open { max-height: 320px; }
+  nav.main-nav.open { max-height: 480px; }
   nav.main-nav a { width: 100%; padding: 16px 32px; border-bottom: 1px solid var(--stone); }
   .nav-toggle { display: block; }
 
@@ -2627,19 +2626,6 @@ body.login-page {
 /* ---------- Round 6 ---------- */
 /* Mobile-only ivory fade that scrolls WITH the content over the fixed
    banner, keeping the banner's bottom edge blended into the page. */
-.hero-scroll-fade { display: none; }
-@media (max-width: 880px) {
-  .hero-scroll-fade {
-    display: block;
-    position: relative;
-    z-index: 2;
-    height: 110px;
-    margin-top: -110px;
-    background: linear-gradient(180deg, rgba(252, 245, 237, 0) 0%, var(--ivory) 85%);
-    pointer-events: none;
-  }
-}
-
 /* Unified page-hero typography (about & collections = contact) */
 .page-hero h1 {
   font-size: clamp(2.5rem, 4.6vw, 3.6rem);
@@ -2701,6 +2687,16 @@ body.login-page {
 .hero-banner-text .eyebrow { color: var(--gold); }
 .hero-banner-text h1, .hero-banner-text .lede { color: var(--green); }
 .hero-banner-gradient { background: none; }
+/* Mobile: bottom fade lives ON the existing gradient layer, which sits
+   between the banner image (z1) and the text (z3) inside the pinned
+   banner's own stacking context — so it can never render above the
+   text, unlike a separate page-level element would. */
+@media (max-width: 880px) {
+  .hero-banner-gradient {
+    background: linear-gradient(180deg, transparent 55%, var(--ivory) 96%);
+  }
+}
+
 .hero-banner-text .hero-whatsapp-btn {
   border-color: var(--gold);
   color: var(--gold);
