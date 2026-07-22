@@ -362,6 +362,18 @@ function initCollectionsPage() {
 
     grid.innerHTML = pageItems.map(productCardHTML).join('');
     if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees') + ' found';
+
+    // Active-filter indicator: without it, arriving from header search
+    // gives no visual clue that the grid is already narrowed down.
+    var noteEl = document.getElementById('active-filter-note');
+    if (noteEl) {
+      var parts = [];
+      if (state.category !== 'all') parts.push(state.category);
+      if (state.series !== 'all') parts.push(seriesTitleCase(state.series));
+      if (state.query.trim()) parts.push('\u201C' + state.query.trim() + '\u201D');
+      if (state.priceMin !== null || state.priceMax !== null) parts.push('price range');
+      noteEl.textContent = parts.length ? 'Filtered by: ' + parts.join(' \u00B7 ') : '';
+    }
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
     renderPagination(filtered.length);
     initHoverCycle(grid);
@@ -1467,6 +1479,26 @@ function initAccountMenu() {
       gateSetCookie('pavnika_email', '', -1);
       window.location.href = 'index.html';
     });
+  }
+
+  // Mobile: the account icon is hidden, so Logout lives in the burger
+  // dropdown instead (inserted before the Book Appointment pill).
+  var mainNav = document.querySelector('nav.main-nav');
+  if (mainNav && !document.getElementById('nav-logout-link')) {
+    var lg = document.createElement('a');
+    lg.href = '#';
+    lg.id = 'nav-logout-link';
+    lg.className = 'nav-logout-link';
+    lg.textContent = 'Logout';
+    lg.addEventListener('click', function (e) {
+      e.preventDefault();
+      gateSetCookie('pavnika_verified', '', -1);
+      gateSetCookie('pavnika_email', '', -1);
+      window.location.href = 'index.html';
+    });
+    var cta = mainNav.querySelector('.nav-cta');
+    if (cta) mainNav.insertBefore(lg, cta);
+    else mainNav.appendChild(lg);
   }
 }
 

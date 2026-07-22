@@ -4,6 +4,7 @@
    ============================================================ */
 
 :root {
+  --contact-inset: clamp(16px, 5vw, 80px);
   --ivory: #FCF5ED;
   --ivory-deep: #F8ECE2;
   --green: #3C1223;
@@ -711,7 +712,7 @@ nav.main-nav a.active {
   .hero-banner-text .hero-whatsapp-btn { min-width: 0; padding: 0 4px 0 13px; gap: 8px; }
   .wa-icon-circle { width: 32px; height: 32px; flex: 0 0 32px; }
   .wa-icon-circle svg { width: 17px; height: 17px; }
-  .hero-banner-gradient { background: linear-gradient(180deg, rgba(43,13,26,0.12) 0%, rgba(43,13,26,0.32) 55%, rgba(43,13,26,0.72) 100%); }
+  .hero-banner-gradient { background: none; } /* fade is the scroll-attached .hero-scroll-fade */
 }
 
 .hero-spacer-section {
@@ -1201,7 +1202,7 @@ footer.site-footer {
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: var(--green-deep);
+  background: var(--ivory); /* matches page bg — no dark flash while loading */
 }
 .hero-banner-slide {
   display: block;
@@ -2623,6 +2624,47 @@ body.login-page {
 }
 .appt-close:hover { opacity: 1; }
 
+/* ---------- Round 6 ---------- */
+/* Mobile-only ivory fade that scrolls WITH the content over the fixed
+   banner, keeping the banner's bottom edge blended into the page. */
+.hero-scroll-fade { display: none; }
+@media (max-width: 880px) {
+  .hero-scroll-fade {
+    display: block;
+    position: relative;
+    z-index: 2;
+    height: 110px;
+    margin-top: -110px;
+    background: linear-gradient(180deg, rgba(252, 245, 237, 0) 0%, var(--ivory) 85%);
+    pointer-events: none;
+  }
+}
+
+/* Unified page-hero typography (about & collections = contact) */
+.page-hero h1 {
+  font-size: clamp(2.5rem, 4.6vw, 3.6rem);
+  line-height: 1.08;
+  margin: 0 0 14px;
+}
+.catalogue-hero { padding: 36px 0 32px; }
+
+/* Collections: active-filter indicator beside the sold toggle */
+.filter-toolbar { display: flex; align-items: center; gap: 14px; }
+.filter-toolbar .toggle-switch { margin-left: auto; }
+.active-filter-note {
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--gold);
+}
+
+/* Mobile: account icon out of the header; Logout lives in the dropdown */
+.nav-logout-link { display: none; }
+@media (max-width: 880px) {
+  .nav-account { display: none !important; }
+  nav.main-nav a.nav-logout-link { display: block; }
+}
+
 /* ---------- Brand lockups (header maroon / footer white) ---------- */
 .brand img.brand-lockup {
   height: 44px;
@@ -2644,9 +2686,15 @@ body.login-page {
 }
 
 /* Follow the Drape: golden handle + follow button, bigger IG icon */
-.drape-handle, .drape-handle a { color: var(--gold); }
-.drape-follow-btn { border-color: var(--gold); color: var(--gold); }
-.drape-follow-btn:hover { background: var(--gold); color: var(--ivory); }
+.drape-handle, .drape-handle a { color: var(--gold) !important; }
+.drape-section .btn.drape-follow-btn {
+  border-color: var(--gold) !important;
+  color: var(--gold) !important;
+}
+.drape-section .btn.drape-follow-btn:hover {
+  background: var(--gold) !important;
+  color: var(--ivory) !important;
+}
 .drape-follow-btn svg { width: 20px; height: 20px; }
 
 /* Hero: gold eyebrow, dark main text, no left overlay, gold ghost btn */
@@ -2657,19 +2705,17 @@ body.login-page {
   border-color: var(--gold);
   color: var(--gold);
 }
-.hero-banner-text .hero-whatsapp-btn:hover { background: transparent; color: var(--gold); }
+.hero-banner-text .hero-whatsapp-btn:hover { background: var(--gold); color: var(--ivory); }
+.hero-banner-text .hero-whatsapp-btn:hover .wa-icon-circle { background: var(--ivory); color: var(--gold); }
 .wa-icon-circle { background: var(--gold); color: var(--ivory); }
 
 /* Curated tiles: golden Explore More */
 .curated-explore { color: var(--gold) !important; }
 
-/* Page heroes: heading scale consistent with the home hero */
-.page-hero h1 { font-size: clamp(1.9rem, 2.4vw + 0.85rem, 3.3rem); }
-.catalogue-hero .eyebrow { font-size: 0.95rem; }
 .catalogue-tagline { font-size: 1.15rem; }
 
 /* Contact: align content with the hero copy inset */
-.contact-grid { padding-left: clamp(16px, 5vw, 80px); }
+.contact-grid { padding-left: var(--contact-inset); }
 
 /* Footer: golden column headings */
 .footer-grid h4 { color: var(--gold); }
@@ -2808,7 +2854,7 @@ header.site-header.header-dark.is-scrolled {
   position: relative;
   z-index: 2;
   flex: 0 1 55%;
-  padding: 40px 0 40px clamp(16px, 5vw, 80px); /* nudged toward center */
+  padding: 40px 0 40px var(--contact-inset);
 }
 .contact-hero-inner::after {
   content: '';
@@ -2912,10 +2958,11 @@ header.site-header.header-dark.is-scrolled {
 
 /* ---------- Step 3: home page redesign ---------- */
 /* Gold flourish under section headings — a touch narrower than the text */
+.section-head h2 { margin-bottom: 4px; }
 .head-flourish {
   display: block;
   width: clamp(150px, 18vw, 250px);
-  margin: 4px auto 0;
+  margin: -2px auto 0;
   opacity: 0.9;
 }
 
