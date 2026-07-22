@@ -2806,7 +2806,7 @@ header.site-header.header-dark.is-scrolled {
 /* Founder quote on burgundy silk — the image is center-cropped by
    background sizing, so the section keeps its existing height */
 .quote-silk {
-  background-image: url('assets/decor/Textback.png');
+  background-image: url('assets/decor/Textback.jpg');
   background-size: cover;
   background-position: center;
 }
@@ -2863,7 +2863,7 @@ header.site-header.header-dark.is-scrolled {
   right: 0;
   bottom: 0;
   width: 46%;
-  background: var(--ivory) url('assets/decor/contactus.png') center right / cover no-repeat;
+  background: var(--ivory) url('assets/decor/contactus.jpg') center right / cover no-repeat;
   background-blend-mode: multiply; /* cream photo melts into the ivory page */
   -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%);
   mask-image: linear-gradient(90deg, transparent 0, #000 18%);
@@ -2877,7 +2877,7 @@ header.site-header.header-dark.is-scrolled {
   .contact-hero-inner::after {
     content: none;
   }
-  .contact-hero { background: var(--ivory) url('assets/decor/contactus.png') right bottom / 46% auto no-repeat; background-blend-mode: multiply; }
+  .contact-hero { background: var(--ivory) url('assets/decor/contactus.jpg') right bottom / 46% auto no-repeat; background-blend-mode: multiply; }
 }
 .contact-hero-copy { text-align: left; }
 .contact-hero .eyebrow { display: inline-block; }
@@ -2948,7 +2948,7 @@ header.site-header.header-dark.is-scrolled {
 /* "Ready to see them up close?" — card with floral edge on mobile */
 @media (max-width: 880px) {
   .ready-close-card {
-    background: var(--ivory) url('assets/decor/rightborder.png') right center / auto 100% no-repeat;
+    background: var(--ivory) url('assets/decor/rightborder.jpg') right center / auto 100% no-repeat;
     border: 1px solid var(--stone);
     border-radius: 12px;
     padding: 34px 22px;
