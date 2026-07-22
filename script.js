@@ -1374,7 +1374,8 @@ function initHeroBannerCarousel() {
         // buttons out with the same 1s ease the slides use, and let the
         // click layer cover the WHOLE banner instead of the right half.
         var hide = !!(banners[i] && banners[i].hideText);
-        if (pinnedEl) pinnedEl.classList.toggle('text-hidden', hide);
+        var pinWrapperEl = document.querySelector('.hero-pin-wrapper');
+        if (pinWrapperEl) pinWrapperEl.classList.toggle('text-hidden', hide);
       }
       syncClickHref(0);
       wrap.appendChild(clickLink);
@@ -2251,7 +2252,7 @@ function initRevealAnimations() {
   }
 
   // Tag common static structural elements that exist on page load.
-  var staticSelectors = '.page-hero .eyebrow, .page-hero h1, .section-head, .hero-copy > *, .why-card, .journey-step, .category-tile, .story-banner-overlay > *';
+  var staticSelectors = '.page-hero .eyebrow, .page-hero h1, .section-head, .hero-copy > *, .why-card, .journey-step, .category-tile';
   document.querySelectorAll(staticSelectors).forEach(function (el, i) {
     el.classList.add('reveal');
     el.style.transitionDelay = (Math.min(i % 5, 5) * 0.08) + 's';
@@ -2418,6 +2419,7 @@ function initCuratedShowcase() {
 function initPinnedHero() {
   var wrapper = document.querySelector('.hero-pin-wrapper');
   var hero = document.querySelector('.hero-banner-pinned');
+  var heroText = document.getElementById('hero-banner-text-fixed');
   if (!wrapper || !hero) return;
   var header = document.querySelector('header.site-header');
 
@@ -2447,6 +2449,17 @@ function initPinnedHero() {
     hero.style.right = '0';
     hero.style.height = heroH + 'px';
     wrapper.style.height = heroH + 'px';
+
+    // The text now lives in its own top-level fixed layer (extracted
+    // from the pinned banner so it can render above the scroll-moving
+    // fade regardless of stacking context) — mirror the same box.
+    if (heroText) {
+      heroText.style.position = 'fixed';
+      heroText.style.top = headerH + 'px';
+      heroText.style.left = '0';
+      heroText.style.right = '0';
+      heroText.style.height = heroH + 'px';
+    }
   }
 
   layout();
