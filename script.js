@@ -98,7 +98,6 @@ document.addEventListener('DOMContentLoaded', function () {
   initHeroBannerCarousel();
   initHomeVideoShowcase();
   initPinnedHero();
-  initHeroFadeScroll();
 });
 
 var WHATSAPP_NUMBER = '971526630307';
@@ -2401,39 +2400,6 @@ function initCuratedShowcase() {
   }).join('');
 }
 
-
-/* ---------- Mobile hero fade: grows with scroll ----------
-   The fade element lives INSIDE the pinned banner, between the image
-   and the text (see .hero-fade-mobile CSS) — that nesting is what
-   guarantees it can never render above the text. To still satisfy
-   "moves with scroll", its height is driven by scroll position: it
-   starts small (bottom edge softened) and grows as the user scrolls,
-   capping out once they've scrolled roughly one hero-height down. */
-function initHeroFadeScroll() {
-  var fade = document.getElementById('hero-fade-mobile');
-  if (!fade) return;
-  if (!window.matchMedia('(max-width: 880px)').matches) return;
-
-  var MIN_H = 70;
-  var MAX_H = 260;
-  var ticking = false;
-
-  function update() {
-    ticking = false;
-    var heroH = window.innerHeight * 0.6; // scroll distance to reach max fade
-    var progress = Math.max(0, Math.min(1, window.scrollY / heroH));
-    fade.style.height = Math.round(MIN_H + (MAX_H - MIN_H) * progress) + 'px';
-  }
-
-  window.addEventListener('scroll', function () {
-    if (!ticking) {
-      requestAnimationFrame(update);
-      ticking = true;
-    }
-  }, { passive: true });
-
-  update();
-}
 
 /* ---------- Homepage: JS-driven static hero positioning ----------
    Deliberately not pure CSS position:sticky — sticky silently stops
