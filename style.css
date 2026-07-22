@@ -567,13 +567,10 @@ nav.main-nav a.active {
   pointer-events: none;
 }
 .hero-banner-text {
-  position: fixed; /* fallback; JS sets exact top/left/right/height to
-                       match the pinned banner precisely */
-  z-index: 5; /* above .hero-scroll-fade (3) and the pinned banner (1),
-                 since it now lives in its own top-level stacking
-                 context rather than nested inside the banner's */
+  position: absolute;
+  inset: 0;
+  z-index: 3;
   pointer-events: none;
-  overflow: hidden;
 }
 .hero-banner-text .container {
   pointer-events: none; /* only the copy column itself is interactive,
@@ -590,8 +587,8 @@ nav.main-nav a.active {
    cover the whole banner. On mobile the click layer is normally hidden,
    but text-hidden banners enable it full-width so the image is tappable. */
 .hero-banner-text { transition: opacity 1s ease; }
-.hero-pin-wrapper.text-hidden .hero-banner-text { opacity: 0; pointer-events: none; }
-.hero-pin-wrapper.text-hidden .hero-banner-click { left: 0; }
+.hero-banner-pinned.text-hidden .hero-banner-text { opacity: 0; pointer-events: none; }
+.hero-banner-pinned.text-hidden .hero-banner-click { left: 0; }
 
 /* Desktop-only clickable area over the right side of the banner (the
    image area beyond the text column) linking to the active slide's
@@ -607,7 +604,7 @@ nav.main-nav a.active {
 }
 @media (max-width: 880px) {
   .hero-banner-click { display: none; }
-  .hero-pin-wrapper.text-hidden .hero-banner-click { display: block; left: 0; }
+  .hero-banner-pinned.text-hidden .hero-banner-click { display: block; left: 0; }
 }
 /* One shared column for eyebrow, heading, paragraph and buttons —
    everything aligns to the same left AND right edges, and the width
@@ -2690,23 +2687,25 @@ body.login-page {
 .hero-banner-text .eyebrow { color: var(--gold); }
 .hero-banner-text h1, .hero-banner-text .lede { color: var(--green); }
 .hero-banner-gradient { background: none; }
-/* Mobile-only fade at the top of the scrolling content, softening the
-   pinned banner's bottom edge into the page as the user scrolls. This
-   element lives in NORMAL document flow (so it moves with scroll, per
-   the original ask) and sits at z-index:3 — above the pinned banner's
-   image/gradient (z:1) but below the text's own fixed layer (z:5) —
-   so it can never cover the text, however far the page is scrolled. */
-.hero-scroll-fade { display: none; }
+/* Mobile bottom fade — lives INSIDE the pinned banner between the image
+   and the text (guaranteeing correct stacking: it can never render
+   above the text, since both are scoped to the same local z1/z2/z3
+   stack). Its height is updated by JS as the user scrolls, so it grows
+   — genuinely responding to scroll — while never leaving this safe,
+   correctly-ordered position. */
+.hero-fade-mobile {
+  display: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 70px; /* JS increases this on scroll; this is the resting value */
+  background: linear-gradient(180deg, rgba(252, 245, 237, 0) 0%, var(--ivory) 100%);
+  pointer-events: none;
+}
 @media (max-width: 880px) {
-  .hero-scroll-fade {
-    display: block;
-    position: relative;
-    z-index: 3;
-    height: 110px;
-    margin-top: -110px;
-    background: linear-gradient(180deg, rgba(252, 245, 237, 0) 0%, var(--ivory) 85%);
-    pointer-events: none;
-  }
+  .hero-fade-mobile { display: block; }
 }
 
 .hero-banner-text .hero-whatsapp-btn {
