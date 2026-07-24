@@ -93,6 +93,35 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initSidebarAdRotator();
 
+/* ---------- Mobile "tap to reveal, tap again to open" ----------
+   Touch devices have no hover state, so tapping a curated/signature
+   tile would previously navigate away immediately without ever
+   showing the overlay text. This intercepts the FIRST tap to reveal
+   it (matching the desktop :hover look via .is-revealed), and lets a
+   second tap on the same, already-revealed tile follow the link. */
+function initTouchRevealTiles() {
+  if (!window.matchMedia('(hover: none)').matches) return; // desktop: hover works natively
+
+  function wire(selector) {
+    document.querySelectorAll(selector).forEach(function (tile) {
+      tile.addEventListener('click', function (e) {
+        if (!tile.classList.contains('is-revealed')) {
+          e.preventDefault();
+          document.querySelectorAll(selector + '.is-revealed').forEach(function (t) {
+            if (t !== tile) t.classList.remove('is-revealed');
+          });
+          tile.classList.add('is-revealed');
+        }
+        // else: already revealed — let the tap navigate normally.
+      });
+    });
+  }
+
+  wire('.curated-tile');
+  wire('.category-tile');
+}
+
+
   initCollectionsPage();
   initHomeSeriesMarquee();
   initHeroBannerCarousel();
@@ -954,7 +983,7 @@ function initHomeSeriesMarquee() {
       '<a class="category-tile" href="collections.html?series=' + encodeURIComponent(series) + '">' +
         '<div class="category-tile-media">' +
           imgsHTML +
-          '<div class="tile-hover-overlay"><p>' + hoverText + '</p></div>' +
+          '<div class="tile-hover-overlay"><div><p>' + hoverText + '</p><span class="tile-explore-more">Explore more.</span></div></div>' +
         '</div>' +
         '<div class="category-tile-info">' +
           '<h3>' + label + '</h3>' +
@@ -968,6 +997,7 @@ function initHomeSeriesMarquee() {
 
   // Duplicate the set so the marquee track can loop seamlessly.
   track.innerHTML = tiles.join('') + tiles.join('');
+  initTouchRevealTiles();
 
   // Cycle each tile's images independently.
   track.querySelectorAll('.category-tile-media').forEach(function (media, mediaIndex) {
@@ -1730,7 +1760,7 @@ function renderCartDrawer() {
       '<div class="cart-drawer-item">' +
         '<img src="' + p.image + '" alt="' + p.design + '">' +
         '<div class="item-info">' +
-          '<span class="item-design">' + p.design + ' — ' + p.id + '</span>' +
+          '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
           '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
         '</div>' +
@@ -1805,8 +1835,10 @@ function initCartDrawer() {
     var ids = cartGetItems();
     if (!ids.length) return;
     var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
-    var lines = products.map(function (p) { return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design; });
+    var lines = products.map(function (p) { return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design); });
+    var total = products.reduce(function (sum, p) { return sum + (Number(p.price) || 0); }, 0);
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees from my cart:\n' + lines.join('\n');
+    msg += '\n\nTotal: AED ' + formatAED(total);
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
 
@@ -1844,7 +1876,7 @@ function initCheckoutPage() {
       '<div class="checkout-item">' +
         '<img src="' + p.image + '" alt="' + p.design + '">' +
         '<div class="item-info">' +
-          '<span class="item-design">' + p.design + ' — ' + p.id + '</span>' +
+          '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
         '</div>' +
         '<span class="item-price">AED ' + formatAED(p.price) + '</span>' +
@@ -2063,7 +2095,7 @@ function initCheckoutPage() {
     // shipping is currently only available within the UAE.
     if (shippingAddress.country !== 'United Arab Emirates') {
       addressMsg.className = 'checkout-promo-msg error';
-      addressMsg.innerHTML = 'We currently offer online payment and direct shipping within the UAE only. For international orders, please use "Checkout via WhatsApp" below so we can arrange shipping and payment together.';
+      addressMsg.innerHTML = 'We currently offer online payment and direct shipping within the UAE only. For international orders, please <a href="' + buildOrderWhatsAppUrl() + '" target="_blank" rel="noopener" style="text-decoration:underline;">continue via WhatsApp</a> so we can arrange shipping and payment together.';
       addressMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
       return;
     }
@@ -2123,17 +2155,20 @@ function initCheckoutPage() {
       });
   });
 
-  document.getElementById('checkout-whatsapp-btn').addEventListener('click', function () {
+  // Reusable builder (no dedicated button on this page anymore — that
+  // lives only in the cart drawer now) so the international-order
+  // message above can still offer a working WhatsApp link inline.
+  function buildOrderWhatsAppUrl() {
     var lines = products.map(function (p) {
-      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + p.design + ' — AED ' + formatAED(p.price);
+      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design) + ' — AED ' + formatAED(p.price);
     });
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n');
     if (appliedCode) {
       msg += '\n\nPromo code applied: ' + appliedCode + ' (' + appliedDiscount + '% off)';
     }
     msg += '\n\nTotal: AED ' + formatAED(currentTotal());
-    window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
-  });
+    return 'https://wa.me/971526630307?text=' + encodeURIComponent(msg);
+  }
 }
 
 /* ---------- Order success page ---------- */
@@ -2398,6 +2433,7 @@ function initCuratedShowcase() {
       '</a>'
     );
   }).join('');
+  initTouchRevealTiles();
 }
 
 
