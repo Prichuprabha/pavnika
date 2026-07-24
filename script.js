@@ -93,35 +93,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initSidebarAdRotator();
 
-/* ---------- Mobile "tap to reveal, tap again to open" ----------
-   Touch devices have no hover state, so tapping a curated/signature
-   tile would previously navigate away immediately without ever
-   showing the overlay text. This intercepts the FIRST tap to reveal
-   it (matching the desktop :hover look via .is-revealed), and lets a
-   second tap on the same, already-revealed tile follow the link. */
-function initTouchRevealTiles() {
-  if (!window.matchMedia('(hover: none)').matches) return; // desktop: hover works natively
-
-  function wire(selector) {
-    document.querySelectorAll(selector).forEach(function (tile) {
-      tile.addEventListener('click', function (e) {
-        if (!tile.classList.contains('is-revealed')) {
-          e.preventDefault();
-          document.querySelectorAll(selector + '.is-revealed').forEach(function (t) {
-            if (t !== tile) t.classList.remove('is-revealed');
-          });
-          tile.classList.add('is-revealed');
-        }
-        // else: already revealed — let the tap navigate normally.
-      });
-    });
-  }
-
-  wire('.curated-tile');
-  wire('.category-tile');
-}
-
-
   initCollectionsPage();
   initHomeSeriesMarquee();
   initHeroBannerCarousel();
@@ -268,6 +239,34 @@ function initHoverCycle(grid) {
 
     photoEl.addEventListener('mouseleave', stopCycle);
   });
+}
+
+/* ---------- Mobile "tap to reveal, tap again to open" ----------
+   Touch devices have no hover state, so tapping a curated/signature
+   tile would previously navigate away immediately without ever
+   showing the overlay text. This intercepts the FIRST tap to reveal
+   it (matching the desktop :hover look via .is-revealed), and lets a
+   second tap on the same, already-revealed tile follow the link. */
+function initTouchRevealTiles() {
+  if (!window.matchMedia('(hover: none)').matches) return; // desktop: hover works natively
+
+  function wire(selector) {
+    document.querySelectorAll(selector).forEach(function (tile) {
+      tile.addEventListener('click', function (e) {
+        if (!tile.classList.contains('is-revealed')) {
+          e.preventDefault();
+          document.querySelectorAll(selector + '.is-revealed').forEach(function (t) {
+            if (t !== tile) t.classList.remove('is-revealed');
+          });
+          tile.classList.add('is-revealed');
+        }
+        // else: already revealed — let the tap navigate normally.
+      });
+    });
+  }
+
+  wire('.curated-tile');
+  wire('.category-tile');
 }
 
 function initCollectionsPage() {
