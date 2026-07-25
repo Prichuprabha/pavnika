@@ -1148,6 +1148,8 @@ footer.site-footer {
 .story-banner-overlay h1 {
   color: var(--green-deep);
   margin-bottom: 18px;
+  font-size: clamp(1.7rem, 2.4vw + 0.85rem, 3.3rem);
+  line-height: 1.18;
 }
 @media (max-width: 640px) {
   .story-banner { height: 260px; }
@@ -1155,15 +1157,18 @@ footer.site-footer {
 }
 /* About page: real photo banner, left-aligned copy over the image's own
    built-in left-side fade (no extra translucent wash needed). */
-.story-banner.story-banner-photo { height: 440px; }
+.story-banner.story-banner-photo { height: 340px; }
 .story-banner-photo .story-banner-overlay {
   background: none;
   align-items: flex-start;
   justify-content: center;
   text-align: left;
-  padding: 0 var(--contact-inset);
+  padding-left: var(--contact-inset);
   max-width: 900px;
 }
+.story-banner-contact .story-banner-overlay { padding-left: var(--contact-inset); }
+.container.contact-hero-inner,
+section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op guard */
 .story-banner-photo .story-banner-overlay .eyebrow { color: var(--gold); }
 .story-banner-photo .story-banner-overlay h1 { color: var(--green); }
 .story-banner-photo .story-banner-overlay p.story-banner-sub {
@@ -1180,8 +1185,8 @@ footer.site-footer {
   color: var(--ivory);
 }
 @media (max-width: 640px) {
-  .story-banner.story-banner-photo { height: 340px; }
-  .story-banner-photo .story-banner-overlay { padding: 0 24px; }
+  .story-banner.story-banner-photo { height: 280px; }
+  .story-banner-photo .story-banner-overlay { padding-left: 24px; }
 }
 
 
@@ -2951,25 +2956,27 @@ header.site-header.header-dark.is-scrolled {
 }
 .decor-left {
   left: 0;
-  -webkit-mask-image:
-    linear-gradient(90deg, #000 55%, transparent 95%),
-    linear-gradient(180deg, #000 62%, transparent 92%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(90deg, #000 55%, transparent 95%),
-    linear-gradient(180deg, #000 62%, transparent 92%);
-  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent 95%);
+  mask-image: linear-gradient(90deg, #000 55%, transparent 95%);
 }
 .decor-right {
   right: 0;
-  -webkit-mask-image:
-    linear-gradient(270deg, #000 55%, transparent 95%),
-    linear-gradient(180deg, #000 62%, transparent 92%);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(270deg, #000 55%, transparent 95%),
-    linear-gradient(180deg, #000 62%, transparent 92%);
-  mask-composite: intersect;
+  -webkit-mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
+  mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
+}
+/* Bottom fade as a plain overlay bar rather than a second mask layer
+   — mask-composite: intersect wasn't rendering consistently, so this
+   full-width gradient (above the images, below the text) is the
+   reliable version. */
+.catalogue-hero-fade-bottom {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 45%;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(252, 245, 237, 0) 0%, var(--ivory) 85%);
+  pointer-events: none;
 }
 @media (max-width: 880px) {
   .catalogue-hero { padding: 40px 0 32px; }
