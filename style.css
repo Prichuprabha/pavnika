@@ -1153,6 +1153,37 @@ footer.site-footer {
   .story-banner { height: 260px; }
   .story-banner-overlay h1 { font-size: 1.5rem; line-height: 1.3; }
 }
+/* About page: real photo banner, left-aligned copy over the image's own
+   built-in left-side fade (no extra translucent wash needed). */
+.story-banner.story-banner-photo { height: 440px; }
+.story-banner-photo .story-banner-overlay {
+  background: none;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: left;
+  padding: 0 var(--contact-inset);
+  max-width: 900px;
+}
+.story-banner-photo .story-banner-overlay .eyebrow { color: var(--gold); }
+.story-banner-photo .story-banner-overlay h1 { color: var(--green); }
+.story-banner-photo .story-banner-overlay p.story-banner-sub {
+  color: var(--ink);
+  opacity: 0.85;
+  font-size: 1.05rem;
+  line-height: 1.55;
+  max-width: 46ch;
+  margin: 0;
+}
+.det-license-badge {
+  background: var(--green);
+  border-color: var(--green);
+  color: var(--ivory);
+}
+@media (max-width: 640px) {
+  .story-banner.story-banner-photo { height: 340px; }
+  .story-banner-photo .story-banner-overlay { padding: 0 24px; }
+}
+
 
 /* Utility */
 .mt-0 { margin-top: 0; }
@@ -1616,15 +1647,22 @@ footer.site-footer {
 .category-tile:focus-visible .tile-hover-overlay,
 .category-tile.is-revealed .tile-hover-overlay { opacity: 1; }
 .tile-explore-more {
-  display: block;
-  margin-top: 10px;
+  display: inline-flex;
+  align-items: center;
+  margin-top: 14px;
+  padding: 9px 22px;
+  border-radius: 999px;
+  background: var(--green);
   font-family: var(--body);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-weight: 600;
-  color: var(--gold);
+  color: var(--ivory);
+  transition: background 0.2s ease;
 }
+.category-tile:hover .tile-explore-more,
+.category-tile.is-revealed .tile-explore-more { background: var(--gold); }
 .tile-hover-overlay p {
   font-family: var(--display);
   font-style: italic;
@@ -2881,67 +2919,7 @@ header.site-header.header-dark.is-scrolled {
    centred and capped at max-width) — otherwise "right: 0" only reaches
    the container's edge, not the actual browser edge, leaving a visible
    ivory gap on wide screens. */
-.contact-hero {
-  padding: 0;
-  position: relative;
-  overflow: hidden;
-  min-height: 330px;
-}
-.contact-hero::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 46%;
-  background: var(--ivory) url('assets/decor/contactus.jpg') center right / cover no-repeat;
-  background-blend-mode: multiply; /* cream photo melts into the ivory page */
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 18%);
-  mask-image: linear-gradient(90deg, transparent 0, #000 18%);
-}
-.contact-hero-inner {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  min-height: 330px;
-}
-.contact-hero-copy {
-  flex: 0 1 55%;
-  padding: 40px 0;
-}
-.container.contact-hero-inner { padding-left: var(--contact-inset); }
-.contact-hero .eyebrow { margin-bottom: 6px; }
-.contact-hero h1 { margin: 0 0 16px; font-size: clamp(2.5rem, 4.6vw, 3.6rem); line-height: 1.08; }
-.contact-hero-sub { color: var(--ink); opacity: 0.8; margin: 0; font-size: 1.1rem; line-height: 1.55; }
 
-@media (max-width: 880px) {
-  /* Stacked layout on mobile: text sits above, on plain page background
-     (no image behind it, so nothing can overlap or obscure it), and the
-     photo becomes its own full-width band below with a real left-edge
-     fade — restoring the "faded" look that was missing before. */
-  .contact-hero { min-height: 0; overflow: visible; }
-  .contact-hero::after { content: none; }
-  .contact-hero-inner { display: block; min-height: 0; }
-  .contact-hero-copy { padding: 28px 0 0; }
-  .container.contact-hero-inner { padding-right: var(--contact-inset); }
-  .contact-hero-photo {
-    display: block;
-    height: 200px;
-    margin-top: 22px;
-    background: var(--ivory) url('assets/decor/contactus.jpg') center right / cover no-repeat;
-    background-blend-mode: multiply;
-    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 28%);
-    mask-image: linear-gradient(90deg, transparent 0, #000 28%);
-  }
-}
-@media (min-width: 881px) {
-  .contact-hero-photo { display: none; }
-}
-
-.contact-hero-copy { text-align: left; }
-.contact-hero .eyebrow { display: inline-block; }
-.contact-hero h1 { text-align: left; }
 .info-line .label-icon {
   color: var(--gold);
   display: inline-flex;
@@ -2951,7 +2929,12 @@ header.site-header.header-dark.is-scrolled {
 }
 
 /* ---------- Step 4: collections page ---------- */
-.catalogue-hero { position: relative; overflow: hidden; padding: 20px 0 16px; }
+/* Taller hero, bigger side images. overflow:hidden on the section is
+   what keeps them from ever running down under the search/filter bar
+   below — the images can be sized generously because anything past
+   the section's own bottom edge is simply clipped there, softened by
+   the bottom mask-fade rather than a hard cut. */
+.catalogue-hero { position: relative; overflow: hidden; padding: 56px 0 48px; }
 .catalogue-hero .container { position: relative; z-index: 2; }
 .catalogue-hero .eyebrow { margin-bottom: 4px; }
 .catalogue-hero h1 { margin: 0; }
@@ -2959,22 +2942,38 @@ header.site-header.header-dark.is-scrolled {
 .catalogue-hero-decor {
   position: absolute;
   top: 0;
-  height: 100%;
+  height: 145%; /* deliberately taller than the section — the excess is
+                    clipped by overflow:hidden above, giving the "runs
+                    off the bottom, faded" look rather than a fixed,
+                    smaller image sitting inside empty space */
   pointer-events: none;
   mix-blend-mode: multiply;
 }
 .decor-left {
   left: 0;
-  -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent 95%);
-  mask-image: linear-gradient(90deg, #000 55%, transparent 95%);
+  -webkit-mask-image:
+    linear-gradient(90deg, #000 55%, transparent 95%),
+    linear-gradient(180deg, #000 62%, transparent 92%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(90deg, #000 55%, transparent 95%),
+    linear-gradient(180deg, #000 62%, transparent 92%);
+  mask-composite: intersect;
 }
 .decor-right {
   right: 0;
-  -webkit-mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
-  mask-image: linear-gradient(270deg, #000 55%, transparent 95%);
+  -webkit-mask-image:
+    linear-gradient(270deg, #000 55%, transparent 95%),
+    linear-gradient(180deg, #000 62%, transparent 92%);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(270deg, #000 55%, transparent 95%),
+    linear-gradient(180deg, #000 62%, transparent 92%);
+  mask-composite: intersect;
 }
 @media (max-width: 880px) {
-  .catalogue-hero-decor { opacity: 0.9; }
+  .catalogue-hero { padding: 40px 0 32px; }
+  .catalogue-hero-decor { opacity: 0.9; height: 130%; }
 }
 .catalogue-tagline {
   font-family: var(--display);
