@@ -1164,13 +1164,37 @@ footer.site-footer {
    .container with --contact-inset overriding the base 32px padding —
    so they align by construction, not by coincidence. */
 
-.story-banner-container.container { padding-left: var(--contact-inset); }
+.story-banner-container.container {
+  padding-left: var(--contact-inset);
+  /* Same pattern as the working home hero's .hero-banner-text
+     .container: this element becomes a column flex box to centre its
+     OWN children vertically via justify-content. That does not change
+     how the element's own box is sized/positioned by ITS parent, so
+     max-width + margin:0 auto centring stays completely untouched —
+     identical mechanism to .contact-grid, not just similar. */
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 .story-banner-photo .story-banner-overlay {
   background: none;
   align-items: flex-start;
   justify-content: center;
   text-align: left;
   max-width: 900px;
+  /* The base .story-banner-overlay rule sets position:absolute; inset:0
+     — which positions it relative to .story-banner-photo (the full
+     -width SECTION, since that's the nearest position:relative
+     ancestor), completely bypassing .story-banner-container's padding
+     and centring. This was the actual cause of every previous failed
+     attempt: nothing done to the container mattered, because the
+     overlay was never really inside it for positioning purposes.
+     Overriding back to normal flow makes it a genuine, ordinary child
+     of the now-correctly-centred container instead. */
+  position: static;
+  inset: auto;
+  padding: 0;
 }
 
 .container.contact-hero-inner,
