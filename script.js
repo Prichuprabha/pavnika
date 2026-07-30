@@ -918,14 +918,24 @@ function buildLightbox() {
 
     var careToggle = document.getElementById('care-accordion-toggle');
     var carePanel = document.getElementById('care-accordion-panel');
-    if (careToggle && carePanel && !careToggle._wired) {
-      careToggle._wired = true;
-      careToggle.addEventListener('click', function () {
-        var open = careToggle.getAttribute('aria-expanded') === 'true';
-        careToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
-        careToggle.querySelector('.care-accordion-icon').textContent = open ? '+' : '\u2212';
-        carePanel.hidden = open;
-      });
+    if (careToggle && carePanel) {
+      // The popup's DOM is built once and reused for every saree, so
+      // without this reset the accordion would stay open/closed from
+      // whatever it was left at on the PREVIOUS saree viewed — it must
+      // always start collapsed on every open, per saree, every time.
+      careToggle.setAttribute('aria-expanded', 'false');
+      careToggle.querySelector('.care-accordion-icon').textContent = '+';
+      carePanel.hidden = true;
+
+      if (!careToggle._wired) {
+        careToggle._wired = true;
+        careToggle.addEventListener('click', function () {
+          var open = careToggle.getAttribute('aria-expanded') === 'true';
+          careToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+          careToggle.querySelector('.care-accordion-icon').textContent = open ? '+' : '\u2212';
+          carePanel.hidden = open;
+        });
+      }
     }
 
     function renderCartActions() {
