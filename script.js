@@ -815,6 +815,22 @@ function buildLightbox() {
           '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
           '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
         '</div>' +
+        '<div class="care-accordion">' +
+          '<button type="button" class="care-accordion-toggle" id="care-accordion-toggle" aria-expanded="false">' +
+            '<span>Saree Care &amp; Storage</span>' +
+            '<span class="care-accordion-icon" aria-hidden="true">+</span>' +
+          '</button>' +
+          '<div class="care-accordion-panel" id="care-accordion-panel" hidden>' +
+            '<ul>' +
+              '<li>Dry clean recommended for the first few washes, especially for zari borders and heavily woven pallus.</li>' +
+              '<li>If hand-washing later, use a mild, pH-neutral detergent in cool water, and wash the saree alone the first two or three times to check for colour bleeding.</li>' +
+              '<li>Dry flat or on a padded hanger in the shade — direct sunlight can fade silk and dull the zari over time.</li>' +
+              '<li>Iron on a low, silk-safe setting, ideally with a thin cotton cloth between the iron and the fabric, and avoid pressing directly over zari work.</li>' +
+              '<li>Store folded in a breathable cotton or muslin cloth rather than plastic, and refold along different lines every few months to prevent permanent crease lines.</li>' +
+              '<li>Keep away from direct moisture and humidity; a few neem leaves or silica packets in storage help deter pests without staining the fabric.</li>' +
+            '</ul>' +
+          '</div>' +
+        '</div>' +
         '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
       '</div>' +
     '</div>';
@@ -899,6 +915,18 @@ function buildLightbox() {
     var addCartBtn = document.getElementById('lightbox-add-cart');
     var buyNowBtn = document.getElementById('lightbox-buy-now');
     var actionsWrap = document.getElementById('lightbox-cart-actions');
+
+    var careToggle = document.getElementById('care-accordion-toggle');
+    var carePanel = document.getElementById('care-accordion-panel');
+    if (careToggle && carePanel && !careToggle._wired) {
+      careToggle._wired = true;
+      careToggle.addEventListener('click', function () {
+        var open = careToggle.getAttribute('aria-expanded') === 'true';
+        careToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
+        careToggle.querySelector('.care-accordion-icon').textContent = open ? '+' : '\u2212';
+        carePanel.hidden = open;
+      });
+    }
 
     function renderCartActions() {
       var inCart = cartGetItems().indexOf(product.id) !== -1;

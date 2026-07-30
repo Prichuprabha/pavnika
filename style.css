@@ -1158,15 +1158,20 @@ footer.site-footer {
 /* About page: real photo banner, left-aligned copy over the image's own
    built-in left-side fade (no extra translucent wash needed). */
 .story-banner.story-banner-photo { height: 340px; }
+/* The overlay's container now shares the EXACT same box as the page
+   content below it (.contact-grid / the about-page grid-2), both using
+   .container with --contact-inset overriding the base 32px padding —
+   so they align by construction, not by coincidence. */
+.story-banner-photo { display: flex; align-items: center; }
+.story-banner-container.container { padding-left: var(--contact-inset); width: 100%; }
 .story-banner-photo .story-banner-overlay {
   background: none;
   align-items: flex-start;
   justify-content: center;
   text-align: left;
-  padding-left: var(--contact-inset);
   max-width: 900px;
 }
-.story-banner-contact .story-banner-overlay { padding-left: var(--contact-inset); }
+
 .container.contact-hero-inner,
 section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op guard */
 .story-banner-photo .story-banner-overlay .eyebrow { color: var(--gold); }
@@ -1186,7 +1191,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 @media (max-width: 640px) {
   .story-banner.story-banner-photo { height: 280px; }
-  .story-banner-photo .story-banner-overlay { padding-left: 24px; }
+  .story-banner-container.container { padding-left: 24px; }
 }
 
 
@@ -2697,6 +2702,40 @@ body.login-page {
 }
 .appt-close:hover { opacity: 1; }
 
+/* ---------- Saree Care & Storage accordion (in the detail popup) ---------- */
+.care-accordion { margin-top: 18px; border-top: 1px solid var(--stone); }
+.care-accordion-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 14px 0;
+  font-family: var(--display);
+  font-size: 1.02rem;
+  color: var(--green);
+  text-align: left;
+}
+.care-accordion-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--gold);
+  flex: 0 0 auto;
+  margin-left: 12px;
+}
+.care-accordion-panel { padding: 0 0 16px; }
+.care-accordion-panel ul { margin: 0; padding-left: 20px; }
+.care-accordion-panel li {
+  font-size: 0.88rem;
+  line-height: 1.55;
+  color: var(--ink);
+  opacity: 0.88;
+  margin-bottom: 9px;
+}
+.care-accordion-panel li:last-child { margin-bottom: 0; }
+
 /* ---------- Shade filter: colour swatches instead of text pills ---------- */
 .filter-bar-swatches {
   display: grid;
@@ -2795,12 +2834,28 @@ body.login-page {
 .drape-section .btn.drape-follow-btn {
   border-color: var(--gold) !important;
   color: var(--gold) !important;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 6px !important;
 }
 .drape-section .btn.drape-follow-btn:hover {
-  background: var(--gold) !important;
-  color: var(--ivory) !important;
+  background: transparent !important;
+  color: var(--gold) !important;
 }
-.drape-follow-btn svg { width: 20px; height: 20px; }
+.drape-ig-icon-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: var(--ivory);
+  flex: 0 0 34px;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.drape-follow-btn:hover .drape-ig-icon-circle { background: var(--ivory); color: var(--gold); }
 
 /* Hero: gold eyebrow, dark main text, no left overlay, gold ghost btn */
 .hero-banner-text .eyebrow { color: var(--gold); }
@@ -3123,14 +3178,7 @@ header.site-header.header-dark.is-scrolled {
 }
 .drape-handle a { color: var(--gold-light); text-decoration: none; }
 .drape-handle a:hover { text-decoration: underline; }
-.drape-follow-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  border-color: var(--gold-light);
-  color: var(--gold-light);
-}
-.drape-follow-btn:hover { background: var(--gold-light); color: var(--green-deep); }
+
 .drape-band .home-video-grid { flex: 1; }
 @media (max-width: 880px) {
   .drape-section { padding: 48px 0; }
