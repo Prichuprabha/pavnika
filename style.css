@@ -2164,7 +2164,7 @@ body.login-page {
   color: var(--ivory);
 }
 .login-page .gate-card h2 { color: var(--ivory); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35); }
-.login-page .gate-card > div > p { color: var(--ivory); opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.login-page .gate-card > div > p:not(.login-tagline) { color: var(--ivory); opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
 .login-page .gate-card .field label {
   color: var(--gold-light);
   font-size: 0.74rem;
