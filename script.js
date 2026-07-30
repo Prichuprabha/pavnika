@@ -925,7 +925,8 @@ function buildLightbox() {
       // always start collapsed on every open, per saree, every time.
       careToggle.setAttribute('aria-expanded', 'false');
       careToggle.querySelector('.care-accordion-icon').textContent = '+';
-      carePanel.hidden = true;
+      carePanel.hidden = false; // must stay unhidden so max-height can animate
+      carePanel.classList.remove('is-open');
 
       if (!careToggle._wired) {
         careToggle._wired = true;
@@ -933,7 +934,7 @@ function buildLightbox() {
           var open = careToggle.getAttribute('aria-expanded') === 'true';
           careToggle.setAttribute('aria-expanded', open ? 'false' : 'true');
           careToggle.querySelector('.care-accordion-icon').textContent = open ? '+' : '\u2212';
-          carePanel.hidden = open;
+          carePanel.classList.toggle('is-open', !open);
         });
       }
     }

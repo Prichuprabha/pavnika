@@ -1191,7 +1191,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 @media (max-width: 640px) {
   .story-banner.story-banner-photo { height: 280px; }
-  .story-banner-container.container { padding-left: 24px; position: static; transform: none; }
+  .story-banner-container.container { padding-left: 24px; }
 }
 
 
@@ -1735,7 +1735,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: scroll;
+  scrollbar-gutter: stable;
 }
 .lightbox-close {
   position: absolute;
@@ -2726,7 +2727,13 @@ body.login-page {
   flex: 0 0 auto;
   margin-left: 12px;
 }
-.care-accordion-panel { padding: 0 0 16px; }
+.care-accordion-panel {
+  padding: 0 0 16px;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+.care-accordion-panel.is-open { max-height: 480px; }
 .care-accordion-panel ul { margin: 0; padding-left: 20px; }
 .care-accordion-panel li {
   font-size: 0.88rem;
@@ -2838,7 +2845,7 @@ body.login-page {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  padding-right: 6px !important;
+  padding: 6px 6px 6px 24px !important;
 }
 .drape-section .btn.drape-follow-btn:hover {
   background: var(--gold) !important;
@@ -3352,16 +3359,18 @@ header.site-header.header-dark.is-scrolled {
   margin: 0;
 }
 #clear-all-filters {
-  background: none;
+  background: var(--green);
   border: none;
-  color: var(--gold);
-  font-size: 0.74rem;
+  border-radius: 999px;
+  color: var(--ivory);
+  font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   cursor: pointer;
-  padding: 0;
+  padding: 8px 18px;
+  transition: background 0.2s ease;
 }
-#clear-all-filters:hover { text-decoration: underline; }
+#clear-all-filters:hover { background: var(--green-deep); }
 
 .sidebar-filter-group {
   padding: 20px 0;
