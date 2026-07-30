@@ -1187,12 +1187,17 @@ footer.site-footer {
      — which positions it relative to .story-banner-photo (the full
      -width SECTION, since that's the nearest position:relative
      ancestor), completely bypassing .story-banner-container's padding
-     and centring. This was the actual cause of every previous failed
-     attempt: nothing done to the container mattered, because the
-     overlay was never really inside it for positioning purposes.
-     Overriding back to normal flow makes it a genuine, ordinary child
-     of the now-correctly-centred container instead. */
-  position: static;
+     and centring. Overriding back to normal flow (relative, not
+     static) makes it a genuine child of the now-correctly-centred
+     container for LAYOUT purposes — but it must stay a "positioned"
+     element (position:relative, not static) with an explicit z-index,
+     because the banner <img> is position:absolute, and CSS always
+     paints positioned elements above non-positioned ones regardless
+     of DOM order. Plain position:static here was why the text briefly
+     showed before the image loaded, then vanished underneath it once
+     the image painted. */
+  position: relative;
+  z-index: 1;
   inset: auto;
   padding: 0;
 }
