@@ -2075,17 +2075,65 @@ body.login-page {
   margin: 0;
   overflow: hidden;
 }
-.login-bg {
+.login-bg-cycle {
   position: fixed;
   inset: 0;
   z-index: 0;
   background-color: var(--green-deep);
-  background-image: url("assets/login-banner.jpg");
+}
+.login-bg-layer {
+  position: absolute;
+  inset: 0;
   background-size: cover;
   background-position: center;
+  opacity: 0;
+  animation-duration: 15s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
 }
-.login-bg::after {
-  content: "";
+.login-bg-layer-1 {
+  background-image: url("assets/login-bg-1.jpg");
+  animation-name: loginBgLayer1;
+}
+.login-bg-layer-2 {
+  background-image: url("assets/login-bg-2.jpg");
+  animation-name: loginBgLayer2;
+}
+.login-bg-layer-3 {
+  background-image: url("assets/login-bg-3.jpg");
+  animation-name: loginBgLayer3;
+}
+/* Each layer holds visible for its own 5s "turn" within the shared 15s
+   loop, with a 0.5s cross-fade into and out of that turn, so the three
+   overlap smoothly (fade-out of one lines up with fade-in of the next)
+   instead of hard-cutting between images. */
+@keyframes loginBgLayer1 {
+  0%      { opacity: 1; }
+  30%     { opacity: 1; }
+  33.33%  { opacity: 0; }
+  96.66%  { opacity: 0; }
+  100%    { opacity: 1; }
+}
+@keyframes loginBgLayer2 {
+  0%      { opacity: 0; }
+  30%     { opacity: 0; }
+  33.33%  { opacity: 1; }
+  63.33%  { opacity: 1; }
+  66.66%  { opacity: 0; }
+  100%    { opacity: 0; }
+}
+@keyframes loginBgLayer3 {
+  0%      { opacity: 0; }
+  63.33%  { opacity: 0; }
+  66.66%  { opacity: 1; }
+  96.66%  { opacity: 1; }
+  100%    { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .login-bg-layer { animation: none; opacity: 0; }
+  .login-bg-layer-1 { opacity: 1; }
+}
+.login-bg-overlay {
   position: absolute;
   inset: 0;
   background: radial-gradient(circle at 50% 40%, rgba(43, 13, 26, 0.4), rgba(43, 13, 26, 0.7));
@@ -2135,6 +2183,61 @@ body.login-page {
   background: rgba(255, 255, 255, 0.16);
 }
 .login-page .gate-resend { color: var(--gold-light); }
+
+/* Gold-icon mark (replaces the round photo logo on the standalone login page) */
+.login-page .gate-logo {
+  width: 84px;
+  height: auto;
+  border-radius: 0;
+}
+
+/* Gold accent button */
+.login-page .gate-card .btn-primary {
+  background: linear-gradient(135deg, #C89A2E 0%, #F0D27A 50%, #C89A2E 100%);
+  color: var(--green-deep);
+  border: none;
+}
+.login-page .gate-card .btn-primary:hover {
+  background: linear-gradient(135deg, #D8AC3E 0%, #F7DE96 50%, #D8AC3E 100%);
+  color: var(--green-deep);
+}
+.login-page .gate-card .btn-primary:disabled,
+.login-page .gate-card .btn-primary:disabled:hover {
+  background: linear-gradient(135deg, #C89A2E 0%, #F0D27A 50%, #C89A2E 100%);
+  opacity: 0.45;
+}
+
+/* Ornamental gold divider below the button */
+.gate-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 22px 0 2px;
+}
+.gate-divider-line {
+  flex: 1;
+  max-width: 70px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold-light));
+}
+.gate-divider-line:last-child {
+  background: linear-gradient(to left, transparent, var(--gold-light));
+}
+.gate-divider-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  flex-shrink: 0;
+}
+.gate-divider-diamond {
+  width: 7px;
+  height: 7px;
+  border: 1px solid var(--gold-light);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
 
 @media (prefers-reduced-transparency: reduce) {
   .login-page .gate-card {
