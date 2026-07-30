@@ -2133,6 +2133,12 @@ body.login-page {
   .login-bg-layer { animation: none; opacity: 0; }
   .login-bg-layer-1 { opacity: 1; }
 }
+/* Mobile: just the first image, no cross-fade cycle */
+@media (max-width: 640px) {
+  .login-bg-layer { animation: none; opacity: 0; }
+  .login-bg-layer-1 { opacity: 1; }
+  .login-bg-layer-2, .login-bg-layer-3 { display: none; }
+}
 .login-bg-overlay {
   position: absolute;
   inset: 0;
@@ -3410,7 +3416,7 @@ header.site-header.header-dark.is-scrolled {
   letter-spacing: 0.03em;
 }
 .login-tagline {
-  color: var(--gold);
+  color: #E3B04B;
   font-size: 1.02rem;
   margin: -6px 0 14px;
 }
