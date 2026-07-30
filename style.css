@@ -1157,13 +1157,14 @@ footer.site-footer {
 }
 /* About page: real photo banner, left-aligned copy over the image's own
    built-in left-side fade (no extra translucent wash needed). */
-.story-banner.story-banner-photo { height: 340px; }
+.story-banner.story-banner-photo { height: 340px; display: table; width: 100%; }
+.story-banner-cell { display: table-cell; vertical-align: middle; }
 /* The overlay's container now shares the EXACT same box as the page
    content below it (.contact-grid / the about-page grid-2), both using
    .container with --contact-inset overriding the base 32px padding —
    so they align by construction, not by coincidence. */
-.story-banner-photo { display: flex; align-items: center; }
-.story-banner-container.container { padding-left: var(--contact-inset); width: 100%; }
+
+.story-banner-container.container { padding-left: var(--contact-inset); }
 .story-banner-photo .story-banner-overlay {
   background: none;
   align-items: flex-start;
@@ -2051,7 +2052,7 @@ body.login-page {
   inset: 0;
   z-index: 0;
   background-color: var(--green-deep);
-  background-image: url("assets/login-banner.png");
+  background-image: url("assets/login-banner.jpg");
   background-size: cover;
   background-position: center;
 }
