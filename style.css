@@ -475,7 +475,7 @@ nav.main-nav a.active {
   background: var(--ivory);
   color: var(--ink);
 }
-.search-input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.search-input:focus { outline: none; box-shadow: 0 0 0 2px var(--gold); }
 .search-results { display: flex; flex-direction: column; gap: 8px; }
 .search-result-row {
   display: flex;
@@ -1346,7 +1346,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   opacity: 0.7;
   margin-bottom: 28px;
 }
-.collections-search-row { margin-bottom: 24px; }
+.collections-search-row { margin-bottom: 24px; padding-top: 4px; }
 .collections-search-row .search-input {
   display: block;
   width: 100%;
@@ -1761,6 +1761,12 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   margin: auto;
 }
 
+.lightbox-stage-wrap {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 100%;
+}
 .lightbox-stage {
   position: relative;
   aspect-ratio: 3 / 4;
@@ -1773,7 +1779,6 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   overflow: hidden;
   touch-action: pan-y;
   cursor: grab;
-  flex-shrink: 0;
 }
 .lightbox-stage:active { cursor: grabbing; }
 .lightbox-stage img {
@@ -1807,7 +1812,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 .lightbox-arrow.prev { left: 10px; }
 .lightbox-arrow.next { right: 10px; }
-.lightbox-dots { display: flex; justify-content: center; gap: 7px; }
+.lightbox-dots { display: flex; justify-content: center; gap: 7px; margin-top: 10px; }
 .lightbox-dots span { width: 6px; height: 6px; border-radius: 50%; background: rgba(250, 247, 239, 0.35); display: block; }
 .lightbox-dots span.is-active { background: var(--gold-light); }
 
@@ -1904,11 +1909,11 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
     align-items: flex-start;
     max-height: 82vh;
   }
+  .lightbox-stage-wrap { width: 62%; }
   .lightbox-stage {
-    width: 62%;
+    width: 100%;
     max-height: 82vh;
     margin: 0;
-    flex-shrink: 0;
   }
   .lightbox-side {
     flex: 1;
@@ -2692,6 +2697,51 @@ body.login-page {
 }
 .appt-close:hover { opacity: 1; }
 
+/* ---------- Shade filter: colour swatches instead of text pills ---------- */
+.filter-bar-swatches {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
+  gap: 10px 6px;
+}
+.swatch-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+}
+.swatch-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--stone);
+  box-sizing: border-box;
+}
+.swatch-label {
+  font-size: 0.6rem;
+  line-height: 1.15;
+  color: var(--ink);
+  text-align: center;
+  max-width: 60px;
+}
+.swatch-btn.active .swatch-circle {
+  border: 2px solid var(--green);
+  box-shadow: 0 0 0 2px var(--ivory), 0 0 0 3.5px var(--gold);
+}
+.swatch-btn.active .swatch-label { color: var(--green); font-weight: 700; }
+.swatch-all {
+  background: conic-gradient(#8C1C2A, #C24A42, #B68A69, #3C6B35, #2E5FA3, #6B3FA0, #171313, #eee, #8C1C2A);
+}
+.swatch-white { background: #FBF8F2; border-color: #c9bfae; }
+.swatch-others {
+  background: repeating-conic-gradient(var(--stone) 0% 25%, var(--ivory) 0% 50%) 0 / 60% 60%;
+  border-style: dashed;
+  border-color: var(--gold);
+}
+
 /* ---------- Round 6 ---------- */
 /* Mobile-only ivory fade that scrolls WITH the content over the fixed
    banner, keeping the banner's bottom edge blended into the page. */
@@ -3426,6 +3476,9 @@ header.site-header.header-dark.is-scrolled {
     background: var(--ivory);
     padding: 24px 20px 30px;
     overflow-y: auto;
+    overscroll-behavior: contain; /* stops scrolling this drawer from
+                                      "leaking" into the page behind it */
+    -webkit-overflow-scrolling: touch;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }

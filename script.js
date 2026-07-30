@@ -274,13 +274,14 @@ function initCollectionsPage() {
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
   var PAGE_SIZE = 16;
-  var state = { category: 'all', series: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
+  var state = { category: 'all', series: 'all', shade: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
   var countEl = document.getElementById('results-count');
   var noResults = document.getElementById('no-results');
   var paginationEl = document.getElementById('pagination');
   var hideSoldToggle = document.getElementById('hide-sold-toggle');
   var categoryGroup = document.getElementById('category-filter');
   var seriesGroup = document.getElementById('series-filter');
+  var shadeGroup = document.getElementById('shade-filter');
   var searchInput = document.getElementById('collections-search-input');
   var SEARCH_FIELDS = ['id', 'material', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
 
@@ -291,6 +292,7 @@ function initCollectionsPage() {
       // p.material — internal state/ids kept as 'category' to avoid churn.
       var okCat = state.category === 'all' || p.material === state.category;
       var okSeries = state.series === 'all' || p.series === state.series;
+      var okShade = state.shade === 'all' || p.shade === state.shade;
       var okSold = state.showSold || !p.sold;
       var okQuery = !q || SEARCH_FIELDS.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
@@ -298,7 +300,7 @@ function initCollectionsPage() {
       var price = Number(p.price) || 0;
       var okMinPrice = state.priceMin === null || price >= state.priceMin;
       var okMaxPrice = state.priceMax === null || price <= state.priceMax;
-      return okCat && okSeries && okSold && okQuery && okMinPrice && okMaxPrice;
+      return okCat && okSeries && okShade && okSold && okQuery && okMinPrice && okMaxPrice;
     });
   }
 
@@ -398,6 +400,7 @@ function initCollectionsPage() {
       var parts = [];
       if (state.category !== 'all') parts.push(state.category);
       if (state.series !== 'all') parts.push(seriesTitleCase(state.series));
+      if (state.shade !== 'all') parts.push(state.shade);
       if (state.query.trim()) parts.push('\u201C' + state.query.trim() + '\u201D');
       if (state.priceMin !== null || state.priceMax !== null) parts.push('price range');
       noteEl.textContent = parts.length ? 'Filtered by: ' + parts.join(' \u00B7 ') : '';
@@ -423,6 +426,19 @@ function initCollectionsPage() {
         setActiveButton(seriesGroup, 'all');
       }
 
+      state.page = 1;
+      render();
+    });
+  }
+
+  if (shadeGroup) {
+    shadeGroup.addEventListener('click', function (e) {
+      var btn = e.target.closest('.swatch-btn');
+      if (!btn) return;
+      state.shade = btn.getAttribute('data-value');
+      shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+      });
       state.page = 1;
       render();
     });
@@ -542,6 +558,10 @@ function initCollectionsPage() {
     clearFiltersBtn.addEventListener('click', function () {
       state.category = 'all';
       state.series = 'all';
+      state.shade = 'all';
+      if (shadeGroup) shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-value') === 'all');
+      });
       state.showSold = false;
       state.query = '';
       state.sort = 'default';
@@ -776,9 +796,12 @@ function buildLightbox() {
   overlay.innerHTML =
     '<button type="button" class="lightbox-close" id="lightbox-close">&larr; Back</button>' +
     '<div class="lightbox-body">' +
-      '<div class="lightbox-stage" id="lightbox-stage">' +
-        '<button type="button" class="lightbox-arrow prev" id="lightbox-prev" aria-label="Previous image">&#8249;</button>' +
-        '<button type="button" class="lightbox-arrow next" id="lightbox-next" aria-label="Next image">&#8250;</button>' +
+      '<div class="lightbox-stage-wrap">' +
+        '<div class="lightbox-stage" id="lightbox-stage">' +
+          '<button type="button" class="lightbox-arrow prev" id="lightbox-prev" aria-label="Previous image">&#8249;</button>' +
+          '<button type="button" class="lightbox-arrow next" id="lightbox-next" aria-label="Next image">&#8250;</button>' +
+        '</div>' +
+        '<div class="lightbox-dots" id="lightbox-dots"></div>' +
       '</div>' +
       '<div class="lightbox-side">' +
         '<div class="lightbox-details">' +
@@ -793,7 +816,6 @@ function buildLightbox() {
           '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
         '</div>' +
         '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
-        '<div class="lightbox-dots" id="lightbox-dots"></div>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
@@ -858,7 +880,7 @@ function buildLightbox() {
     state.index = 0;
     document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
     document.getElementById('lightbox-meta').textContent =
-      (product.type || '') + (product.pattern ? ' · ' + product.pattern : '') + (product.sold ? ' · Sold Out' : '');
+      (product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : '');
 
     fetch('/.netlify/functions/log-view', {
       method: 'POST',
@@ -2468,21 +2490,32 @@ function initPinnedHero() {
 
   function layout() {
     var headerH = header ? header.offsetHeight : 0;
-    var maxH = window.innerHeight - headerH;
-    var heroH;
-    if (window.innerWidth <= 880) {
-      heroH = Math.max(maxH, 460);
-    } else {
-      var ratioH = Math.round(window.innerWidth / BANNER_RATIO);
-      heroH = Math.min(Math.max(ratioH, 460), maxH);
-    }
     hero.classList.add('is-fixed');
     hero.style.position = 'fixed';
     hero.style.top = headerH + 'px';
     hero.style.left = '0';
     hero.style.right = '0';
-    hero.style.height = heroH + 'px';
-    wrapper.style.height = heroH + 'px';
+
+    if (window.innerWidth <= 880) {
+      // 100svh = the SMALL viewport height, i.e. the size when the
+      // browser's address bar is fully visible. Unlike
+      // window.innerHeight (which grows as the address bar collapses
+      // during scroll), this value never changes — so the hero can't
+      // suddenly resize mid-scroll and jolt the page. Browsers without
+      // svh support (very old) fall back to the plain vh value above it.
+      var heightExpr = 'calc(100vh - ' + headerH + 'px)';
+      var heightExprSvh = 'calc(100svh - ' + headerH + 'px)';
+      hero.style.height = heightExpr;
+      hero.style.height = heightExprSvh;
+      wrapper.style.height = heightExpr;
+      wrapper.style.height = heightExprSvh;
+    } else {
+      var maxH = window.innerHeight - headerH;
+      var ratioH = Math.round(window.innerWidth / BANNER_RATIO);
+      var heroH = Math.min(Math.max(ratioH, 460), maxH);
+      hero.style.height = heroH + 'px';
+      wrapper.style.height = heroH + 'px';
+    }
   }
 
   layout();

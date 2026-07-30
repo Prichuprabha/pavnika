@@ -13,7 +13,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG",
+    "shade": "Others"
   },
   {
     "id": "VW002",
@@ -29,7 +30,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG",
+    "shade": "Others"
   },
   {
     "id": "VW003",
@@ -45,7 +47,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG",
+    "shade": "Others"
   },
   {
     "id": "VW004",
@@ -61,7 +64,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG",
+    "shade": "Others"
   },
   {
     "id": "VW005",
@@ -77,7 +81,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG",
+    "shade": "Others"
   },
   {
     "id": "VW006",
@@ -95,7 +100,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V9tWzRismyYJBJteEaB1.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZCFWHisgrZ8KiiUP9m6I.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP002",
@@ -117,7 +123,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SfmZBvQnwjAvlHrHbxVs.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MfGIMvM9Duu8AtjxR2r4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP003",
@@ -137,7 +144,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aifsckEShe9tYnVeIBuJ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N2yNbbs8Inz0sjTx3VIr.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP004",
@@ -158,7 +166,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H9MxQ5mkkbRYXosRAaRR.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yHAUf2v2VYZtXBlsewjl.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg",
+    "shade": "Others"
   },
   {
     "id": "GG002",
@@ -180,7 +189,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZBczcj7MuqbmwPsR8AFB.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ooaWzerdryN0QzEsZknp.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU002",
@@ -202,7 +212,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4R1aUBhteAZZD6GIxqkE.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XTKWvJw4sQjuzKvftbRA.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU001",
@@ -218,7 +229,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG",
+    "shade": "Others"
   },
   {
     "id": "SU003",
@@ -234,7 +246,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU004",
@@ -255,7 +268,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zPlNnXnUUeqIsGPxOSt9.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/No5SNvhFU31CWKC6Bahk.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU005",
@@ -275,7 +289,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZcwUbkrAkUMr5ukvjf3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mN282IPLn0UMgV4pQts7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU006",
@@ -291,7 +306,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU007",
@@ -307,7 +323,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU008",
@@ -328,7 +345,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RReD5PeZDy81SwhX25Dz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4SA77fqX2LeqcE0X7en2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU009",
@@ -350,7 +368,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FX0tLpx2LgbGwpx1GuHj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4k2Spq7UABzQWVUwu6QH.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU010",
@@ -368,7 +387,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IhCSkZbyHNLj1FA3Zw2V.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vIKK8DCxMvq4I4rgDumW.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg",
+    "shade": "Others"
   },
   {
     "id": "GG001",
@@ -389,7 +409,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fPxsLPhvAFe83nudKCuQ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vXJwikyHWUbhNhjVacLZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA005",
@@ -405,7 +426,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG",
+    "shade": "Others"
   },
   {
     "id": "SA006",
@@ -421,7 +443,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG",
+    "shade": "Others"
   },
   {
     "id": "SA007",
@@ -442,7 +465,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0u504jUvC6FFfkyMhglE.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PvyXhEmrD25s7bOwKIWR.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg",
+    "shade": "Others"
   },
   {
     "id": "DA001",
@@ -463,7 +487,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/f7FWrUEjO2KYl4WTlQaB.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/s729rlkK0xeoFhT3F56w.png"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA002",
@@ -483,7 +508,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kZBBSpjRUMu2mtYYCt4X.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QmPeRutYAxM1s5z7EXHp.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA003",
@@ -504,7 +530,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/B5m8YxrSRMDEQUs7BJXj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yggcgIbYOulZ0rwsnUEJ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA004",
@@ -525,7 +552,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/flylKDMpGqpjHIE6OyL1.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pIfbFkAzdC5TFdGG7K3y.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA001",
@@ -546,7 +574,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7BbJl3opyfoMd3fz0Lyi.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IDkZLr6eFUPBmvZNJso7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg",
+    "shade": "Others"
   },
   {
     "id": "PS001",
@@ -567,7 +596,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LYBE6IApAUnEsZ2YzIkK.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5W5kRhLeu7NGiURTyiYd.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP001",
@@ -588,7 +618,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ixquBfbsy9e5aAXxd54s.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fnNjn2u0Yk3QxV0Que0e.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png",
+    "shade": "Others"
   },
   {
     "id": "PS002",
@@ -609,7 +640,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CLHNVjYX3sVUYlNe7rj7.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JExiaxeFwveXERGeBXG1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg",
+    "shade": "Others"
   },
   {
     "id": "SS001",
@@ -629,7 +661,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XvfdcGBvAP4BJfynLF8k.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BrkBDt5G9HAI3htvse8k.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg",
+    "shade": "Others"
   },
   {
     "id": "SS002",
@@ -649,7 +682,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tnWxMpq90U298e0ceAg9.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4yu4IL7h60Pfn8UMA6Ey.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW007",
@@ -665,7 +699,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg",
+    "shade": "Others"
   },
   {
     "id": "SS003",
@@ -681,7 +716,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg",
+    "shade": "Others"
   },
   {
     "id": "SO001",
@@ -701,7 +737,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9YsPJZMn9ihkFOnoLXah.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BQ7hCJr9AwJaJTCVWx2T.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW008",
@@ -719,7 +756,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AJbHqF2WAjKkRcIUIftz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pYoWXKBE5cTsFvjuVGRR.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW009",
@@ -737,7 +775,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DpCisJc3WaLNUG3GS0tg.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kQgffYfFFmJBmo3BMM5w.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA008",
@@ -754,7 +793,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/htduwaEZTRPWB03CEwCK.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP009",
@@ -772,7 +812,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3fviqy672sFFC8mN6aRk.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zadMxEkUdi1XJzIrz5JG.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg",
+    "shade": "Others"
   },
   {
     "id": "SO002",
@@ -792,7 +833,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TrzHEn4dAOXycPaIV4nf.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/llkuUX0bW0LHC1jSLAxg.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW010",
@@ -810,7 +852,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H66wOTdFZ4KpLd1TEOkk.png",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17hPhIGxMy34y7Pb6RTz.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP010",
@@ -828,7 +871,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iGJUvAngKmp1VA5TotmB.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2CWEIRrPsZqDFgISWOjN.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW011",
@@ -844,7 +888,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg",
+    "shade": "Others"
   },
   {
     "id": "GG003",
@@ -864,7 +909,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9N7eMLtcQ5oFiFdf4s5F.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/78REAxmmXPsOsQhUyiSo.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
+    "shade": "Others"
   },
   {
     "id": "GG004",
@@ -886,7 +932,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3D9K8ofa1WLvxSCLeEjM.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Z2KBruHYz63w8wIw4tWZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg",
+    "shade": "Others"
   },
   {
     "id": "PP011",
@@ -906,7 +953,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DUqu6ikG8P0url6RVAH2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FpxdQz9lHgk0Xb2KN67j.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW012",
@@ -928,7 +976,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/e8C2Q32mTtleGbstl4xX.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ua6QFX8GlzOxxDIIBJQn.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA009",
@@ -944,7 +993,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV001",
@@ -960,7 +1010,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV002",
@@ -978,7 +1029,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kcW7GR2EM0scKhExUcfz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hPHmtyxxxFuZV3ugnwxj.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV003",
@@ -996,7 +1048,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V4l3AwwIaocXqlidMvF0.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5SHYbc8Mi5w5WGNi6rhN.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV004",
@@ -1014,7 +1067,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQ1EdQq3RRrPz4ninQgU.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XI08IFMS2gIXxJUdVlC2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV005",
@@ -1032,7 +1086,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kkZ3FtGbGqduAH0V6mp3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ktIZL77ok6YDQEAPXvHw.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV006",
@@ -1050,7 +1105,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qAvXVzxL3Bq3sIQJIgaj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AXejsAqELdsKsafdTzQD.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV007",
@@ -1068,7 +1124,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9iJ5ey19WRZRtaavkgGv.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GeeBVxSM0LbmLf2n6VX3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA010",
@@ -1087,7 +1144,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mvsy7iSgaqwe1ieNHOA8.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VjmYmkXi66rjw7CMRSie.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA011",
@@ -1106,7 +1164,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TU7YetKBBXNIWxM8grg2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pWlbikzb5iBPkvs1kuOX.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW013",
@@ -1125,7 +1184,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XIQd5gba1TfVung7Mzt8.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bboyJbQrFKNjPcfWJVei.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW014",
@@ -1141,7 +1201,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW015",
@@ -1161,7 +1222,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nKWcajyDz7vCk8abTHL2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1SEkkaV6AxntYDmUC51a.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA012",
@@ -1179,7 +1241,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Rs5rF8jCcAZz7xuxoZkF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dD0vVYqbvb4j5m9Vktwm.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA013",
@@ -1197,7 +1260,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VeyKrvqofpTEkY8nPUYm.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/O8VXwSEIGDZAwPiFLbP4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW016",
@@ -1219,7 +1283,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qEhzjgf9qT5IGwZgmLE2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kUgNURuxm83C4Ko9ce2x.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW017",
@@ -1239,7 +1304,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/upZ68Mr3FCHCFnQ1ZTU9.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bRbiQsH9BXNBXUqPvzrZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW018",
@@ -1259,7 +1325,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WNKZgAjoPH20Ir85BSAG.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/APRGlUNUOyuxfRO7SQPR.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW019",
@@ -1275,7 +1342,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW020",
@@ -1297,7 +1365,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jThE2xiPgX6KOxpZ6VZR.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qIbBNsTWmcNVXhX4AaV4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW021",
@@ -1319,7 +1388,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UEqsqJMMJTbfF6wgxkVZ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aFZvFHBrPy34gwB4IKnj.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW022",
@@ -1341,7 +1411,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zEbo3eQuzcUhT9DuNmLs.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/eanxcZs1PhndMayYimg3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW023",
@@ -1363,7 +1434,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mzUFRrbMCtepj7XxZtoC.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IGQeYtl4Mzx1OqYheRrq.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW024",
@@ -1385,7 +1457,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AX5j6GX6x7qYt1UNu5Ip.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wX4oqtWe1tXBk3hv53tU.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW025",
@@ -1401,7 +1474,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW026",
@@ -1420,7 +1494,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/D5Zc9irv33gulV5tUSUv.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PlVQbf2NUeOYJ2sZwSmB.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA014",
@@ -1442,7 +1517,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6yEOk8Pg8ZGjlWTdzlpy.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/isrkgqOvdRVCKIiviZRj.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg",
+    "shade": "Others"
   },
   {
     "id": "SO003",
@@ -1464,7 +1540,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p9Hdso7bYA6RYbQK8lMl.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Fag5PVKsFrBrKjSiLgMu.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
+    "shade": "Others"
   },
   {
     "id": "SA015",
@@ -1480,7 +1557,8 @@ window.PRODUCTS = [
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg",
+    "shade": "Others"
   },
   {
     "id": "SO004",
@@ -1502,7 +1580,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vY8rpHTDiceX7SuKXAID.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/u2QBtCalZfObw6VEK9iG.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU011",
@@ -1524,7 +1603,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/M8DUbkRL0XE4pU23ZhtR.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/57NdvAFb9kPJCY9U1JW2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg",
+    "shade": "Others"
   },
   {
     "id": "SU012",
@@ -1545,7 +1625,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bhXbi6n5hfsMP43w98IX.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/82HiirOKqAbayTB7nmtq.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW027",
@@ -1567,7 +1648,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nsZOJJldSUU7I3BlWmW1.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hzdEliU3YYg5OL8gjIwt.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW028",
@@ -1589,7 +1671,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YXhVvx7XonVoTMFeCgM3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HSSBGr5pVHcn70ySSDIZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW029",
@@ -1608,7 +1691,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZQkqSqqLclJmd8D1gRF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AZXF0sGaHesMRITldW4G.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW030",
@@ -1628,7 +1712,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7QwWEfckVGOgspRxd1Ec.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/s417VGy19P1fpLYmhNI2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW031",
@@ -1650,7 +1735,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GhuWN3nCfqRHLbYLycTu.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OuExsW6YMTTEa4gI53xY.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW032",
@@ -1671,7 +1757,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TxPNfmambBCovTlDQ4pa.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DLKvjzfO8Vw77xwWKZxW.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW033",
@@ -1693,7 +1780,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wtbPDgFKkABk8tpNQdqq.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zHQJp0oc5BNTjOs8gmkV.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW034",
@@ -1714,7 +1802,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wHekYXzGON7p8PQoFjlx.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PAKvLQJnjQlOiGrf8Rp8.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg",
+    "shade": "Others"
   },
   {
     "id": "VW035",
@@ -1736,7 +1825,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VHyxFcxcNdvIro9XbHHb.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/opDQvVJYpVEQQk8rE2Vu.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg",
+    "shade": "Others"
   },
   {
     "id": "FV008",
@@ -1758,7 +1848,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7L9XTKIkUoUF26Cwc3yo.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zvPnRQ0WLDzXTD6kEFnK.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
+    "shade": "Others"
   },
   {
     "id": "BB001",
@@ -1778,7 +1869,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WYwbnCZzkib16Y7JOE3V.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J3Gpf4k7pV4u7EO1Ro6T.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
+    "shade": "Others"
   },
   {
     "id": "BB002",
@@ -1800,7 +1892,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/o1ROgfV1wI7VeInOKkWg.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vcgfhVCqH75Pr1XDgpUr.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg",
+    "shade": "Others"
   },
   {
     "id": "BB003",
@@ -1822,7 +1915,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Zl0aMfcE416JLlR6XAOK.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sSjCUAaRygwy1Zf7CXZA.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg",
+    "shade": "Others"
   },
   {
     "id": "BB004",
@@ -1843,7 +1937,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rPRwq8s28ykWCDC4YTpV.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9Xhj0XAy0ROwgT42puE3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg",
+    "shade": "Others"
   },
   {
     "id": "BB005",
@@ -1865,6 +1960,7 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4ubQ5caOTkiYeSILh3L0.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vbN7xByG71IzwZUDEdRv.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg",
+    "shade": "Others"
   }
 ];
