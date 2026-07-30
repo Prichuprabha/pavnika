@@ -1165,17 +1165,15 @@ footer.site-footer {
    so they align by construction, not by coincidence. */
 
 .story-banner-container.container {
-  padding-left: var(--contact-inset);
-  /* Same pattern as the working home hero's .hero-banner-text
-     .container: this element becomes a column flex box to centre its
-     OWN children vertically via justify-content. That does not change
-     how the element's own box is sized/positioned by ITS parent, so
-     max-width + margin:0 auto centring stays completely untouched —
-     identical mechanism to .contact-grid, not just similar. */
+  /* Matches the header logo's position exactly: .nav-row uses the same
+     max-width + margin:0 auto + 32px left padding as base .container,
+     so using that same 32px here (instead of --contact-inset) lines
+     the banner text up with the logo, not with the body content below. */
   height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  align-items: flex-start;
 }
 .story-banner-photo .story-banner-overlay {
   background: none;
@@ -1183,6 +1181,7 @@ footer.site-footer {
   justify-content: center;
   text-align: left;
   max-width: 900px;
+  width: 100%;
   /* The base .story-banner-overlay rule sets position:absolute; inset:0
      — which positions it relative to .story-banner-photo (the full
      -width SECTION, since that's the nearest position:relative
