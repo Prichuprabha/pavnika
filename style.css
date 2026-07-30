@@ -1157,7 +1157,7 @@ footer.site-footer {
 }
 /* About page: real photo banner, left-aligned copy over the image's own
    built-in left-side fade (no extra translucent wash needed). */
-.story-banner.story-banner-photo { height: 340px; display: flex; align-items: center; }
+.story-banner.story-banner-photo { height: 340px; }
 .story-banner-cell { display: contents; } /* was a table-cell wrapper — now a no-op passthrough */
 /* The overlay's container now shares the EXACT same box as the page
    content below it (.contact-grid / the about-page grid-2), both using
