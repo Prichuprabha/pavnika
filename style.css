@@ -2044,7 +2044,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   outline-offset: 1px;
   border-color: var(--gold);
 }
-#gate-code {
+#gate-code,
+#admin-gate-code {
   text-align: center;
   font-size: 1.6rem;
   letter-spacing: 0.5em;
@@ -2075,6 +2076,23 @@ body.login-page {
   margin: 0;
   overflow: hidden;
 }
+/* Admin login gate: single static image, no cycling */
+.login-bg-static {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background-color: var(--green-deep);
+  background-image: url("assets/login-bg-1.jpg");
+  background-size: cover;
+  background-position: center;
+}
+.login-bg-static::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 40%, rgba(43, 13, 26, 0.4), rgba(43, 13, 26, 0.7));
+}
+
 .login-bg-cycle {
   position: fixed;
   inset: 0;
