@@ -1914,7 +1914,11 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   border: 1px solid var(--ivory);
   color: var(--ivory);
 }
-.lightbox-cart-actions .btn-add-cart:hover { background: rgba(250, 247, 239, 0.1); }
+.lightbox-cart-actions .btn-add-cart:hover {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--green-deep);
+}
 .lightbox-cart-actions .btn-buy-now {
   background: var(--gold-light);
   border: 1px solid var(--gold-light);

@@ -815,6 +815,7 @@ function buildLightbox() {
           '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
           '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
         '</div>' +
+        '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
         '<div class="care-accordion">' +
           '<button type="button" class="care-accordion-toggle" id="care-accordion-toggle" aria-expanded="false">' +
             '<span>Saree Care &amp; Storage</span>' +
@@ -831,7 +832,6 @@ function buildLightbox() {
             '</ul>' +
           '</div>' +
         '</div>' +
-        '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
