@@ -3,116 +3,117 @@ window.PRODUCTS = [
     "id": "VW001",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk Korvai",
     "sareeType": "Yellow and Red",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 220,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 227,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
   },
   {
     "id": "VW002",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk Vaira Oosi",
     "sareeType": "Blue and Red strips",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 240,
+    "material": "Semi Kanchipuram",
+    "shade": "Blue",
+    "price": 247,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG"
   },
   {
     "id": "VW003",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk Vaira Oosi",
     "sareeType": "Parrot Green and green check",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 200,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 206,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG"
   },
   {
     "id": "VW004",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk Silver",
     "sareeType": "Green with Silver",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 180,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 186,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG"
   },
   {
     "id": "VW005",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk Vaira Oosi",
     "sareeType": "Parrot Green and Blue Check",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 250,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 257,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG"
   },
   {
     "id": "VW006",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk Vaira Oosi",
     "sareeType": "Blueish Green and Blue",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 220,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 227,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V9tWzRismyYJBJteEaB1.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZCFWHisgrZ8KiiUP9m6I.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg"
   },
   {
     "id": "PP002",
     "series": "PASTEL POETRY",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "German Silver",
     "sareeType": "Peach Pastel round pattern border",
     "pattern": "Buttas Pattern",
     "design": "Modern",
-    "price": 990,
+    "material": "Pure Kanchipuram",
+    "shade": "Beige / Mauve",
+    "price": 1015,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg",
@@ -123,19 +124,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SfmZBvQnwjAvlHrHbxVs.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MfGIMvM9Duu8AtjxR2r4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg",
-    "shade": "Beige / Mauve"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg"
   },
   {
     "id": "PP003",
     "series": "PASTEL POETRY",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "German Silver",
     "sareeType": "Gold pastel slanding design",
     "pattern": "Lines Pattern",
     "design": "Modern",
-    "price": 825,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 846,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
@@ -144,19 +145,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aifsckEShe9tYnVeIBuJ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N2yNbbs8Inz0sjTx3VIr.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg"
   },
   {
     "id": "PP004",
     "series": "PASTEL POETRY",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "German Silver",
     "sareeType": "Pastel Peach",
     "pattern": "Modern Motif Pattern",
     "design": "Modern",
-    "price": 825,
+    "material": "Pure Kanchipuram",
+    "shade": "Beige / Mauve",
+    "price": 846,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg",
@@ -166,19 +167,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H9MxQ5mkkbRYXosRAaRR.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yHAUf2v2VYZtXBlsewjl.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg",
-    "shade": "Beige / Mauve"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg"
   },
   {
     "id": "GG002",
     "series": "GOLDEN GLOW",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "German Silver",
     "sareeType": "Full Gold",
     "pattern": "Floral gold Pattern",
     "design": "Traditional",
-    "price": 780,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 800,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg",
@@ -189,19 +190,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZBczcj7MuqbmwPsR8AFB.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ooaWzerdryN0QzEsZknp.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg"
   },
   {
     "id": "SU002",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "German Silver",
     "sareeType": "Green and Pink very thick border",
     "pattern": "Check Pattern",
     "design": "Traditional",
-    "price": 1090,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 1117,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg",
@@ -212,53 +213,53 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4R1aUBhteAZZD6GIxqkE.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XTKWvJw4sQjuzKvftbRA.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg"
   },
   {
     "id": "SU001",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Light Violet with Rani Pink Border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 950,
+    "material": "Pure Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 974,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG"
   },
   {
     "id": "SU003",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Light Violet with red border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 990,
+    "material": "Pure Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 1015,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg"
   },
   {
     "id": "SU004",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Powder blue with Red border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 1225,
+    "material": "Pure Kanchipuram",
+    "shade": "Blue",
+    "price": 1255,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg",
@@ -268,19 +269,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zPlNnXnUUeqIsGPxOSt9.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/No5SNvhFU31CWKC6Bahk.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg"
   },
   {
     "id": "SU005",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Floral with violet border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 790,
+    "material": "Pure Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 810,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg",
@@ -289,53 +290,53 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZcwUbkrAkUMr5ukvjf3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mN282IPLn0UMgV4pQts7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg"
   },
   {
     "id": "SU006",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Floral Light Violet with pink thick border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 825,
+    "material": "Pure Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 846,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg"
   },
   {
     "id": "SU007",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Floral with Rani Pink Border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 735,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 754,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg"
   },
   {
     "id": "SU008",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Gold floral with violet",
     "pattern": "Gold Floral Pattern",
     "design": "Traditional",
-    "price": 790,
+    "material": "Pure Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 810,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg",
@@ -345,19 +346,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RReD5PeZDy81SwhX25Dz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4SA77fqX2LeqcE0X7en2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg"
   },
   {
     "id": "SU009",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Floral Gold with Red border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 870,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 892,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg",
@@ -368,38 +369,38 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FX0tLpx2LgbGwpx1GuHj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4k2Spq7UABzQWVUwu6QH.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg"
   },
   {
     "id": "SU010",
     "series": "SUMANGALI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "yellowish green with rani pink border",
     "pattern": "Floral Pattern",
     "design": "Traditional",
-    "price": 865,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 887,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IhCSkZbyHNLj1FA3Zw2V.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vIKK8DCxMvq4I4rgDumW.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg"
   },
   {
     "id": "GG001",
     "series": "GOLDEN GLOW",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Gold slanding line with red border",
     "pattern": "Lines Pattern",
     "design": "Traditional",
-    "price": 895,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 918,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg",
@@ -409,53 +410,53 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fPxsLPhvAFe83nudKCuQ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vXJwikyHWUbhNhjVacLZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg"
   },
   {
     "id": "SA005",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Soft Silk",
     "sareeType": "Yellow and baby pink",
     "pattern": "Lines Pattern",
     "design": "Modern",
-    "price": 685,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 703,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG"
   },
   {
     "id": "SA006",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Rusty orange and dark Brown",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 715,
+    "material": "Pure Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 733,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG"
   },
   {
     "id": "SA007",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Light Vadamulla with dark vadamulla border",
     "pattern": "Golden Motif Pattern",
     "design": "Traditional",
-    "price": 750,
+    "material": "Pure Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 769,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg",
@@ -465,19 +466,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0u504jUvC6FFfkyMhglE.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PvyXhEmrD25s7bOwKIWR.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg"
   },
   {
     "id": "DA001",
     "series": "DEVATHA AURA",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Divine Red",
     "pattern": "Motifs Pattern",
     "design": "Traditional",
-    "price": 845,
+    "material": "Pure Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 866,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg",
@@ -487,19 +488,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/f7FWrUEjO2KYl4WTlQaB.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/s729rlkK0xeoFhT3F56w.png"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg",
-    "shade": "Maroon / Red"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg"
   },
   {
     "id": "SA002",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Green and Blue and gold border",
     "pattern": "Mango Motif Pattern",
     "design": "Vintage",
-    "price": 760,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 779,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg",
@@ -508,19 +509,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kZBBSpjRUMu2mtYYCt4X.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QmPeRutYAxM1s5z7EXHp.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg"
   },
   {
     "id": "SA003",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Parrot green plain body and green border",
     "pattern": "Plain Pattern",
     "design": "Vintage",
-    "price": 670,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 687,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg",
@@ -530,19 +531,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/B5m8YxrSRMDEQUs7BJXj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yggcgIbYOulZ0rwsnUEJ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg"
   },
   {
     "id": "SA004",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Green check with brown plain border",
     "pattern": "Check Pattern",
     "design": "Traditional",
-    "price": 490,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 503,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg",
@@ -552,19 +553,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/flylKDMpGqpjHIE6OyL1.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pIfbFkAzdC5TFdGG7K3y.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg"
   },
   {
     "id": "SA001",
     "series": "SANSKRITI",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Vintage",
     "sareeType": "Green Check and Rani Pink Border",
     "pattern": "Check Pattern",
     "design": "Vintage",
-    "price": 610,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 626,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg",
@@ -574,19 +575,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7BbJl3opyfoMd3fz0Lyi.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IDkZLr6eFUPBmvZNJso7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg"
   },
   {
     "id": "PS001",
     "series": "PAVNIKA SIGNATURE",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Jacquard",
     "sareeType": "Green Jacquard",
     "pattern": "Circle Pattern",
     "design": "Modern",
-    "price": 1150,
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 1179,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg",
@@ -596,19 +597,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LYBE6IApAUnEsZ2YzIkK.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5W5kRhLeu7NGiURTyiYd.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg"
   },
   {
     "id": "PP001",
     "series": "PASTEL POETRY",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Jacquard",
     "sareeType": "Full gold with blocks Jacqaurd",
     "pattern": "Blocks Pattern",
     "design": "Modern",
-    "price": 1250,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 1281,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png",
@@ -618,19 +619,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ixquBfbsy9e5aAXxd54s.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fnNjn2u0Yk3QxV0Que0e.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png"
   },
   {
     "id": "PS002",
     "series": "PAVNIKA SIGNATURE",
     "category": "Bridal",
-    "material": "Pure Kanchipuram",
     "type": "Jacquard",
     "sareeType": "Green and Blue Jacquard",
     "pattern": "Hexagon Pattern",
     "design": "Modern",
-    "price": 1270,
+    "material": "Pure Kanchipuram",
+    "shade": "Blue",
+    "price": 1301,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg",
@@ -640,19 +641,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CLHNVjYX3sVUYlNe7rj7.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JExiaxeFwveXERGeBXG1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg"
   },
   {
     "id": "SS001",
     "series": "SHIMMER STORIES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue",
     "sareeType": "Gold and Pink with vertical checks",
     "pattern": "Check",
     "design": "Modern",
-    "price": 245,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 252,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg",
@@ -661,19 +662,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XvfdcGBvAP4BJfynLF8k.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BrkBDt5G9HAI3htvse8k.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg"
   },
   {
     "id": "SS002",
     "series": "SHIMMER STORIES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue",
     "sareeType": "Gold and Baby Pink Plain",
     "pattern": "Plain",
     "design": "Modern",
-    "price": 240,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 247,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg",
@@ -682,53 +683,53 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tnWxMpq90U298e0ceAg9.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4yu4IL7h60Pfn8UMA6Ey.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg"
   },
   {
     "id": "VW007",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Green and Pink",
     "pattern": "Floral Motifs",
     "design": "Traditional",
-    "price": 250,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 257,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg"
   },
   {
     "id": "SS003",
     "series": "SHIMMER STORIES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue",
     "sareeType": "Pink and Blue",
     "pattern": "Geometrical",
     "design": "Modern",
-    "price": 275,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 283,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg"
   },
   {
     "id": "SO001",
     "series": "SOFT SILK",
     "category": "Budget",
-    "material": "Soft Silk",
     "type": "Soft Silk",
     "sareeType": "Lavender",
     "pattern": "Floral Motifs",
     "design": "Traditional",
-    "price": 195,
+    "material": "Soft Silk",
+    "shade": "Purple / Violet",
+    "price": 201,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg",
@@ -737,94 +738,94 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9YsPJZMn9ihkFOnoLXah.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BQ7hCJr9AwJaJTCVWx2T.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg"
   },
   {
     "id": "VW008",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Meroon Double border",
     "pattern": "Double Border",
     "design": "Traditional",
-    "price": 240,
+    "material": "Semi Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 247,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AJbHqF2WAjKkRcIUIftz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pYoWXKBE5cTsFvjuVGRR.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg",
-    "shade": "Maroon / Red"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg"
   },
   {
     "id": "VW009",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Brownish and violet double border",
     "pattern": "Double Border",
     "design": "Traditional",
-    "price": 275,
+    "material": "Semi Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 283,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DpCisJc3WaLNUG3GS0tg.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kQgffYfFFmJBmo3BMM5w.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg"
   },
   {
     "id": "SA008",
     "series": "SANSKRITI",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Coffee Brown",
     "pattern": "Peacock Motif",
     "design": "Traditional",
-    "price": 295,
+    "material": "Semi Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 303,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/htduwaEZTRPWB03CEwCK.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg"
   },
   {
     "id": "PP009",
     "series": "PASTEL POETRY",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue Bridal",
     "sareeType": "Semi Silk Jacquard Baby Pink",
     "pattern": "Silver",
     "design": "Modern",
-    "price": 390,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 401,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3fviqy672sFFC8mN6aRk.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zadMxEkUdi1XJzIrz5JG.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg"
   },
   {
     "id": "SO002",
     "series": "SOFT SILK",
     "category": "Budget",
-    "material": "Soft Silk",
     "type": "Soft Silk",
     "sareeType": "Semi Soft Silk Purple",
     "pattern": "Geometrical",
     "design": "Modern",
-    "price": 195,
+    "material": "Soft Silk",
+    "shade": "Maroon / Red",
+    "price": 201,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg",
@@ -833,74 +834,74 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TrzHEn4dAOXycPaIV4nf.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/llkuUX0bW0LHC1jSLAxg.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg",
-    "shade": "Maroon / Red"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg"
   },
   {
     "id": "VW010",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Small Border Vaira oosi orange and blue",
     "pattern": "Lines Pattern",
     "design": "Traditional",
-    "price": 250,
+    "material": "Semi Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 257,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H66wOTdFZ4KpLd1TEOkk.png",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17hPhIGxMy34y7Pb6RTz.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg",
-    "shade": "Maroon / Red"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg"
   },
   {
     "id": "PP010",
     "series": "PASTEL POETRY",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue Silk",
     "sareeType": "Blended Border Lavender",
     "pattern": "Blended Border",
     "design": "Modern",
-    "price": 385,
+    "material": "Semi Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 395,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iGJUvAngKmp1VA5TotmB.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2CWEIRrPsZqDFgISWOjN.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg"
   },
   {
     "id": "VW011",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Sky Blue lines and meroon border",
     "pattern": "Check",
     "design": "Traditional",
-    "price": 260,
+    "material": "Semi Kanchipuram",
+    "shade": "Blue",
+    "price": 267,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg"
   },
   {
     "id": "GG003",
     "series": "GOLDEN GLOW",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue Bridal",
     "sareeType": "Gold with zig zag Pattern",
     "pattern": "ZigZag Lines",
     "design": "Modern",
-    "price": 390,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 401,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
@@ -909,19 +910,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9N7eMLtcQ5oFiFdf4s5F.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/78REAxmmXPsOsQhUyiSo.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg"
   },
   {
     "id": "GG004",
     "series": "GOLDEN GLOW",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue Bridal",
     "sareeType": "Gold with zig zag Pattern",
     "pattern": "ZigZag Lines",
     "design": "Modern",
-    "price": 390,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 401,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg",
@@ -932,19 +933,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3D9K8ofa1WLvxSCLeEjM.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Z2KBruHYz63w8wIw4tWZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg"
   },
   {
     "id": "PP011",
     "series": "PASTEL POETRY",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue Bridal",
     "sareeType": "Blended border Baby Pink",
     "pattern": "Blended Border",
     "design": "Modern",
-    "price": 375,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 385,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
@@ -953,19 +954,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DUqu6ikG8P0url6RVAH2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FpxdQz9lHgk0Xb2KN67j.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg"
   },
   {
     "id": "VW012",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Orange and green double border",
     "pattern": "Double Border",
     "design": "Traditional",
-    "price": 275,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 283,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg",
@@ -976,167 +977,167 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/e8C2Q32mTtleGbstl4xX.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ua6QFX8GlzOxxDIIBJQn.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg"
   },
   {
     "id": "SA009",
     "series": "SANSKRITI",
     "category": "Mid Range",
-    "material": "Pure Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Rusty Orange Mid Range",
     "pattern": "Motifs Pattern",
     "design": "Traditional",
-    "price": 490,
+    "material": "Pure Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 503,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg"
   },
   {
     "id": "FV001",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Mysore Silk",
     "type": "Mysore Silk",
     "sareeType": "Full black",
     "pattern": "Plain",
     "design": "Modern",
-    "price": 215,
+    "material": "Mysore Silk",
+    "shade": "Black",
+    "price": 221,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg",
-    "shade": "Black"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg"
   },
   {
     "id": "FV002",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Mysore Silk",
     "type": "Mysore Silk",
     "sareeType": "Mango Orange",
     "pattern": "Plain",
     "design": "Modern",
-    "price": 215,
+    "material": "Mysore Silk",
+    "shade": "Yellow / Gold",
+    "price": 221,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kcW7GR2EM0scKhExUcfz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hPHmtyxxxFuZV3ugnwxj.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg"
   },
   {
     "id": "FV003",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Satin",
     "type": "Satin",
     "sareeType": "Dark Green full plain",
     "pattern": "Plain",
     "design": "Modern",
-    "price": 235,
+    "material": "Satin",
+    "shade": "Green",
+    "price": 242,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V4l3AwwIaocXqlidMvF0.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5SHYbc8Mi5w5WGNi6rhN.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg"
   },
   {
     "id": "FV004",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Satin",
     "type": "Satin",
     "sareeType": "Dark Meroon",
     "pattern": "Plain",
     "design": "Modern",
-    "price": 190,
+    "material": "Satin",
+    "shade": "Maroon / Red",
+    "price": 196,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQ1EdQq3RRrPz4ninQgU.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XI08IFMS2gIXxJUdVlC2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
-    "shade": "Maroon / Red"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg"
   },
   {
     "id": "FV005",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Organza",
     "type": "Organza",
     "sareeType": "Multi Colour",
     "pattern": "Round Motifs",
     "design": "Modern",
-    "price": 200,
+    "material": "Organza",
+    "shade": "Others",
+    "price": 206,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kkZ3FtGbGqduAH0V6mp3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ktIZL77ok6YDQEAPXvHw.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
-    "shade": "Others"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg"
   },
   {
     "id": "FV006",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Organza",
     "type": "Organza",
     "sareeType": "Lavender Floral Organza",
     "pattern": "Floral",
     "design": "Modern",
-    "price": 195,
+    "material": "Organza",
+    "shade": "Purple / Violet",
+    "price": 201,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qAvXVzxL3Bq3sIQJIgaj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AXejsAqELdsKsafdTzQD.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg"
   },
   {
     "id": "FV007",
     "series": "FESTIVE VIBES",
     "category": "Budget",
-    "material": "Organza",
     "type": "Organza",
     "sareeType": "Light Green Floral Organza",
     "pattern": "Floral",
     "design": "Modern",
-    "price": 195,
+    "material": "Organza",
+    "shade": "Green",
+    "price": 201,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9iJ5ey19WRZRtaavkgGv.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GeeBVxSM0LbmLf2n6VX3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg"
   },
   {
     "id": "SA010",
     "series": "SANSKRITI",
     "category": "Mid Range",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Black and gold Pure Silk",
     "pattern": "Temple Border",
     "design": "Traditional",
-    "price": 695,
+    "material": "Pure Kanchipuram",
+    "shade": "Black",
+    "price": 713,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
@@ -1144,19 +1145,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mvsy7iSgaqwe1ieNHOA8.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VjmYmkXi66rjw7CMRSie.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
-    "shade": "Black"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg"
   },
   {
     "id": "SA011",
     "series": "SANSKRITI",
     "category": "Mid Range",
-    "material": "Semi Kanchipuram",
     "type": "Kanchipuram Silk Cotton",
     "sareeType": "Black and gold Kanchi Silk Cotton",
     "pattern": "Golden Motif",
     "design": "Traditional",
-    "price": 395,
+    "material": "Semi Kanchipuram",
+    "shade": "Black",
+    "price": 406,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg",
@@ -1164,19 +1165,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TU7YetKBBXNIWxM8grg2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pWlbikzb5iBPkvs1kuOX.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg",
-    "shade": "Black"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg"
   },
   {
     "id": "VW013",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Tissue",
     "sareeType": "Gold Body and Black Border",
     "pattern": "Semi Tissue",
     "design": "Modern",
-    "price": 235,
+    "material": "Semi Kanchipuram",
+    "shade": "Black",
+    "price": 242,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg",
@@ -1184,36 +1185,36 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XIQd5gba1TfVung7Mzt8.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bboyJbQrFKNjPcfWJVei.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg",
-    "shade": "Black"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg"
   },
   {
     "id": "VW014",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Crepe Silk",
     "type": "Crepe Silk",
     "sareeType": "Violet Full Plain and Thin Border",
     "pattern": "Plain",
     "design": "Modern",
-    "price": 290,
+    "material": "Crepe Silk",
+    "shade": "Purple / Violet",
+    "price": 298,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg"
   },
   {
     "id": "VW015",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Organza",
     "type": "Tissue Organza",
     "sareeType": "Baby Pink Tissue Organza",
     "pattern": "Floral",
     "design": "Modern",
-    "price": 285,
+    "material": "Organza",
+    "shade": "Pink",
+    "price": 293,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg",
@@ -1222,57 +1223,57 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nKWcajyDz7vCk8abTHL2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1SEkkaV6AxntYDmUC51a.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg"
   },
   {
     "id": "SA012",
     "series": "SANSKRITI",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Rusty orange and dark Brown",
     "pattern": "Golden Motif Pattern",
     "design": "Vintage",
-    "price": 355,
+    "material": "Semi Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 365,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Rs5rF8jCcAZz7xuxoZkF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dD0vVYqbvb4j5m9Vktwm.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg"
   },
   {
     "id": "SA013",
     "series": "SANSKRITI",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Rusty orange and dark Brown",
     "pattern": "Golden Motif Pattern",
     "design": "Vintage",
-    "price": 240,
+    "material": "Semi Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 247,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VeyKrvqofpTEkY8nPUYm.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/O8VXwSEIGDZAwPiFLbP4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg"
   },
   {
     "id": "VW016",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Yellow and Violet Space Border",
     "pattern": "Space Border",
     "design": "Traditional",
-    "price": 275,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 283,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg",
@@ -1283,19 +1284,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qEhzjgf9qT5IGwZgmLE2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kUgNURuxm83C4Ko9ce2x.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg"
   },
   {
     "id": "VW017",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Lavender and Violet Space Border",
     "pattern": "Space Border",
     "design": "Traditional",
-    "price": 265,
+    "material": "Semi Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 273,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg",
@@ -1304,19 +1305,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/upZ68Mr3FCHCFnQ1ZTU9.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bRbiQsH9BXNBXUqPvzrZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg"
   },
   {
     "id": "VW018",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Green and Rani pink Border",
     "pattern": "Geometrical",
     "design": "Traditional",
-    "price": 250,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 257,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg",
@@ -1325,36 +1326,36 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WNKZgAjoPH20Ir85BSAG.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/APRGlUNUOyuxfRO7SQPR.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg"
   },
   {
     "id": "VW019",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Yellow and Violet silver work space border",
     "pattern": "Space Border",
     "design": "Traditional",
-    "price": 250,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 257,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg"
   },
   {
     "id": "VW020",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Rusty Orange and Coffee Brown Space Border",
     "pattern": "Space Border",
     "design": "Traditional",
-    "price": 160,
+    "material": "Semi Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 165,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg",
@@ -1365,19 +1366,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jThE2xiPgX6KOxpZ6VZR.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qIbBNsTWmcNVXhX4AaV4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg"
   },
   {
     "id": "VW021",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Rani pink with violet border silver work",
     "pattern": "Lines",
     "design": "Modern",
-    "price": 220,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 227,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg",
@@ -1388,19 +1389,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UEqsqJMMJTbfF6wgxkVZ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aFZvFHBrPy34gwB4IKnj.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg"
   },
   {
     "id": "VW022",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Plain Purple with golden Border",
     "pattern": "Mango Motifs",
     "design": "Traditional",
-    "price": 320,
+    "material": "Semi Kanchipuram",
+    "shade": "Purple / Violet",
+    "price": 329,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg",
@@ -1411,19 +1412,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zEbo3eQuzcUhT9DuNmLs.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/eanxcZs1PhndMayYimg3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg"
   },
   {
     "id": "VW023",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Offwhite Body and red border",
     "pattern": "Golden Buttas",
     "design": "Traditional",
-    "price": 235,
+    "material": "Semi Kanchipuram",
+    "shade": "White / Off-white",
+    "price": 242,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg",
@@ -1434,19 +1435,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mzUFRrbMCtepj7XxZtoC.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IGQeYtl4Mzx1OqYheRrq.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg",
-    "shade": "White / Off-white"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg"
   },
   {
     "id": "VW024",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Orange body with violet border",
     "pattern": "Golden Buttas",
     "design": "Traditional",
-    "price": 270,
+    "material": "Semi Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 278,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg",
@@ -1457,36 +1458,36 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AX5j6GX6x7qYt1UNu5Ip.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wX4oqtWe1tXBk3hv53tU.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg"
   },
   {
     "id": "VW025",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Pista Green with Violet Border",
     "pattern": "Golden Buttas",
     "design": "Traditional",
-    "price": 245,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 252,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg"
   },
   {
     "id": "VW026",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Ash Body with Red Border",
     "pattern": "Peacock Design",
     "design": "Traditional",
-    "price": 235,
+    "material": "Semi Kanchipuram",
+    "shade": "Grey",
+    "price": 242,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg",
@@ -1494,19 +1495,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/D5Zc9irv33gulV5tUSUv.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PlVQbf2NUeOYJ2sZwSmB.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg",
-    "shade": "Grey"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg"
   },
   {
     "id": "SA014",
     "series": "SANSKRITI",
     "category": "Mid Range",
-    "material": "Soft Silk",
     "type": "Semi Silk",
     "sareeType": "Dusty Pink with Coffee Brown Lines Border",
     "pattern": "Golden Buttas",
     "design": "Traditional",
-    "price": 390,
+    "material": "Soft Silk",
+    "shade": "Orange / Brown",
+    "price": 401,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg",
@@ -1517,19 +1518,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6yEOk8Pg8ZGjlWTdzlpy.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/isrkgqOvdRVCKIiviZRj.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg"
   },
   {
     "id": "SO003",
     "series": "SOFT SILK",
     "category": "Mid Range",
-    "material": "Soft Silk",
     "type": "Soft Silk",
     "sareeType": "Light Orange with Baby Pink Border",
     "pattern": "Lines",
     "design": "Modern",
-    "price": 365,
+    "material": "Soft Silk",
+    "shade": "Orange / Brown",
+    "price": 375,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
@@ -1540,36 +1541,36 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p9Hdso7bYA6RYbQK8lMl.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Fag5PVKsFrBrKjSiLgMu.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg"
   },
   {
     "id": "SA015",
     "series": "SANSKRITI",
     "category": "Premium",
-    "material": "Pure Kanchipuram",
     "type": "Pure Silk",
     "sareeType": "Yellow and Violet Pure silk",
     "pattern": "Peacock Design",
     "design": "Traditional",
-    "price": 625,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 641,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg"
   },
   {
     "id": "SO004",
     "series": "SOFT SILK",
     "category": "Mid Range",
-    "material": "Soft Silk",
     "type": "Soft Silk",
     "sareeType": "Peacock Blue with Dark green border",
     "pattern": "Peacock Design",
     "design": "Traditional",
-    "price": 350,
+    "material": "Soft Silk",
+    "shade": "Blue",
+    "price": 360,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg",
@@ -1580,19 +1581,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vY8rpHTDiceX7SuKXAID.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/u2QBtCalZfObw6VEK9iG.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg"
   },
   {
     "id": "SU011",
     "series": "SUMANGALI",
     "category": "Premium",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Rusty Orange Bridal Pure Silk",
     "pattern": "Geometrical",
     "design": "Traditional",
-    "price": 895,
+    "material": "Pure Kanchipuram",
+    "shade": "Orange / Brown",
+    "price": 918,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg",
@@ -1603,19 +1604,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/M8DUbkRL0XE4pU23ZhtR.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/57NdvAFb9kPJCY9U1JW2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg",
-    "shade": "Orange / Brown"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg"
   },
   {
     "id": "SU012",
     "series": "SUMANGALI",
     "category": "Premium",
-    "material": "Pure Kanchipuram",
     "type": "Kanchipuram",
     "sareeType": "Golden Body with Magenta Brocade Border",
     "pattern": "Floral with Brocade border",
     "design": "Traditional",
-    "price": 920,
+    "material": "Pure Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 943,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg",
@@ -1625,19 +1626,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bhXbi6n5hfsMP43w98IX.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/82HiirOKqAbayTB7nmtq.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg"
   },
   {
     "id": "VW027",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Yellowish Golden and Meroon Thick Space Border",
     "pattern": "Floral Motifs",
     "design": "Traditional",
-    "price": 275,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 283,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg",
@@ -1648,19 +1649,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nsZOJJldSUU7I3BlWmW1.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hzdEliU3YYg5OL8gjIwt.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg"
   },
   {
     "id": "VW028",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Rani Pink with Skyblue thick border",
     "pattern": "Golden Buttas",
     "design": "Traditional",
-    "price": 245,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 252,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg",
@@ -1671,19 +1672,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YXhVvx7XonVoTMFeCgM3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HSSBGr5pVHcn70ySSDIZ.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg"
   },
   {
     "id": "VW029",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Dark Green with Red Border",
     "pattern": "Mango Motifs",
     "design": "Traditional",
-    "price": 225,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 232,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
@@ -1691,19 +1692,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZQkqSqqLclJmd8D1gRF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AZXF0sGaHesMRITldW4G.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg"
   },
   {
     "id": "VW030",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Pista Green with Red Border",
     "pattern": "Golden Buttas",
     "design": "Traditional",
-    "price": 240,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 247,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg",
@@ -1712,19 +1713,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7QwWEfckVGOgspRxd1Ec.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/s417VGy19P1fpLYmhNI2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg"
   },
   {
     "id": "VW031",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Baby Pink with Blueish Green Border",
     "pattern": "Silver design",
     "design": "Traditional",
-    "price": 235,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 242,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg",
@@ -1735,19 +1736,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GhuWN3nCfqRHLbYLycTu.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OuExsW6YMTTEa4gI53xY.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg"
   },
   {
     "id": "VW032",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Light Peach Body with Red border",
     "pattern": "Floral Design",
     "design": "Traditional",
-    "price": 230,
+    "material": "Semi Kanchipuram",
+    "shade": "Beige / Mauve",
+    "price": 237,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg",
@@ -1757,19 +1758,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TxPNfmambBCovTlDQ4pa.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DLKvjzfO8Vw77xwWKZxW.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg",
-    "shade": "Beige / Mauve"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg"
   },
   {
     "id": "VW033",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Light Green with Red border",
     "pattern": "Floral Motifs",
     "design": "Traditional",
-    "price": 235,
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 242,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg",
@@ -1780,19 +1781,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wtbPDgFKkABk8tpNQdqq.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zHQJp0oc5BNTjOs8gmkV.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg",
-    "shade": "Green"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg"
   },
   {
     "id": "VW034",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Skyblue Vaira Oosi with navy blue border",
     "pattern": "Vaira Oosi Motif",
     "design": "Traditional",
-    "price": 240,
+    "material": "Semi Kanchipuram",
+    "shade": "Blue",
+    "price": 247,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg",
@@ -1802,19 +1803,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wHekYXzGON7p8PQoFjlx.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PAKvLQJnjQlOiGrf8Rp8.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg"
   },
   {
     "id": "VW035",
     "series": "VALUE WEAVES",
     "category": "Budget",
-    "material": "Semi Kanchipuram",
     "type": "Silk Blend",
     "sareeType": "Royal Blue with Golden Border",
     "pattern": "Floral Motifs",
     "design": "Traditional",
-    "price": 295,
+    "material": "Semi Kanchipuram",
+    "shade": "Blue",
+    "price": 303,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg",
@@ -1825,19 +1826,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VHyxFcxcNdvIro9XbHHb.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/opDQvVJYpVEQQk8rE2Vu.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg"
   },
   {
     "id": "FV008",
     "series": "FESTIVE VIBES",
     "category": "Mid Range",
-    "material": "Banarasi",
     "type": "Banarasi",
     "sareeType": "Purple Banarasi",
     "pattern": "Buttas Pattern",
     "design": "Modern",
-    "price": 359,
+    "material": "Banarasi",
+    "shade": "Purple / Violet",
+    "price": 369,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
@@ -1848,19 +1849,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7L9XTKIkUoUF26Cwc3yo.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zvPnRQ0WLDzXTD6kEFnK.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
-    "shade": "Purple / Violet"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg"
   },
   {
     "id": "BB001",
     "series": "BRIDAL BLISS",
     "category": "Mid Range",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Full Red brocade",
     "pattern": "Floral",
     "design": "Traditional",
-    "price": 330,
+    "material": "Semi Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 339,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
@@ -1869,19 +1870,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WYwbnCZzkib16Y7JOE3V.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J3Gpf4k7pV4u7EO1Ro6T.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
-    "shade": "Maroon / Red"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg"
   },
   {
     "id": "BB002",
     "series": "BRIDAL BLISS",
     "category": "Mid Range",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Yellow Brocade in Red Border",
     "pattern": "Leaves Pattern",
     "design": "Traditional",
-    "price": 340,
+    "material": "Semi Kanchipuram",
+    "shade": "Yellow / Gold",
+    "price": 349,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg",
@@ -1892,19 +1893,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/o1ROgfV1wI7VeInOKkWg.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vcgfhVCqH75Pr1XDgpUr.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg",
-    "shade": "Yellow / Gold"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg"
   },
   {
     "id": "BB003",
     "series": "BRIDAL BLISS",
     "category": "Mid Range",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Peacock Green Brocade",
     "pattern": "Floral",
     "design": "Traditional",
-    "price": 340,
+    "material": "Semi Kanchipuram",
+    "shade": "Blue",
+    "price": 349,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg",
@@ -1915,19 +1916,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Zl0aMfcE416JLlR6XAOK.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sSjCUAaRygwy1Zf7CXZA.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg",
-    "shade": "Blue"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg"
   },
   {
     "id": "BB004",
     "series": "BRIDAL BLISS",
     "category": "Mid Range",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Majenta Brocade",
     "pattern": "Leaves Pattern",
     "design": "Traditional",
-    "price": 340,
+    "material": "Semi Kanchipuram",
+    "shade": "Pink",
+    "price": 349,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg",
@@ -1937,19 +1938,19 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rPRwq8s28ykWCDC4YTpV.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9Xhj0XAy0ROwgT42puE3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg",
-    "shade": "Pink"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg"
   },
   {
     "id": "BB005",
     "series": "BRIDAL BLISS",
     "category": "Mid Range",
-    "material": "Semi Kanchipuram",
     "type": "Semi Silk",
     "sareeType": "Off White Body with red border and green pipping border",
     "pattern": "Floral",
     "design": "Traditional",
-    "price": 340,
+    "material": "Semi Kanchipuram",
+    "shade": "White / Off-white",
+    "price": 349,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg",
@@ -1960,7 +1961,426 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4ubQ5caOTkiYeSILh3L0.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vbN7xByG71IzwZUDEdRv.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg",
-    "shade": "White / Off-white"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg"
+  },
+  {
+    "id": "SU013",
+    "series": "SUMANGALI",
+    "category": "Premium",
+    "type": "Pure Silk",
+    "sareeType": "Full Red brocade",
+    "pattern": "Temple Border",
+    "design": "Traditional",
+    "material": "Pure Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 964,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AYIeDHgHw9G0Q2qQ08SA.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8zp14WTQ8emh4MP9IwNf.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WkDEReB8sPNxImyvUxF8.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/y05o3qiRD4rxLAxHUAOi.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JEiNgXnGgf9g7Jku0CZd.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pOtHzIks9OgxBuZy303i.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3QIegA3rlUsOOpmObPG4.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AYIeDHgHw9G0Q2qQ08SA.jpg"
+  },
+  {
+    "id": "FV009",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Banarasi",
+    "sareeType": "Pink and Black Half Half design",
+    "pattern": "Buttas",
+    "design": "Modern",
+    "material": "Banarasi",
+    "shade": "Black",
+    "price": 227,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FGT9JxOQ7dJkO3xhHfHN.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dbn2682pazStgWoUVZTK.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N3wmCgmvMMsJTE7GzP3P.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HAQOwfUXOl3ylDW9hkDj.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tKRjJ1OeGmtkDZ2U2bMZ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/A15sJ8Q57ITNra6NYYMw.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FGT9JxOQ7dJkO3xhHfHN.jpg"
+  },
+  {
+    "id": "FV010",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Banarasi",
+    "sareeType": "Dark red with black thick border",
+    "pattern": "Plain",
+    "design": "Modern",
+    "material": "Banarasi",
+    "shade": "Maroon / Red",
+    "price": 227,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a2jgFreMvcKrCSbYmQZv.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/utZ9q6cxt82bY9513UAz.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S1TbnLr65ZfZcNuioBtV.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Q5x5J6nG5IXTKAmKktl8.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/52KSg0mB3aW2FQuBi0SL.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2xml6wbLsuRZewMPmCZr.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a2jgFreMvcKrCSbYmQZv.jpg"
+  },
+  {
+    "id": "FV011",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Mysore Silk",
+    "sareeType": "Mauve shade body with Wine colour border",
+    "pattern": "Plain",
+    "design": "Modern",
+    "material": "Mysore Silk",
+    "shade": "Beige / Mauve",
+    "price": 221,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CUzDGxj7HFDAxdhjuk11.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GBKxfCxzdSPVnBMK9PYf.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LOhUkLxSUtxwf8akVx2S.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4fgtPUnSNsdFElo1fy7S.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXSZ55hPBWDlsdRW6DZ9.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WXliP2usNeVI4OZ8Mx0M.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CUzDGxj7HFDAxdhjuk11.jpg"
+  },
+  {
+    "id": "FV012",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Mysore Silk",
+    "sareeType": "Dard red with black thin border",
+    "pattern": "Plain",
+    "design": "Modern",
+    "material": "Mysore Silk",
+    "shade": "Maroon / Red",
+    "price": 221,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lvSFkl9f07oxfPUSXHkA.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5jk1gjgF0wZV5RqsHaGv.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cBG0xRfT1cvBGmUfzbVY.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Tt2oteutYSOXjB5cS5vE.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nS328uEJb96b2FiTMjfr.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/x8y31Tw7ukhDpUIz0waV.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lvSFkl9f07oxfPUSXHkA.jpg"
+  },
+  {
+    "id": "SU014",
+    "series": "SUMANGALI",
+    "category": "Premium",
+    "type": "Pure Silk",
+    "sareeType": "Dark Green Pure Silk Brocade",
+    "pattern": "Floral Motifs",
+    "design": "Traditional",
+    "material": "Pure Kanchipuram",
+    "shade": "Green",
+    "price": 907,
+    "sold": true,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vqZdBFqKkGb0Z1jUrqxa.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H0AM1FVfrmR17wgbUXek.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4rBg3nYUAskZeYZKfxoQ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/clITJjL34eLsiLUMBJ6z.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J6blR09pJIsviPxYZJ1p.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/k1hx15W8pKQsHZ9Yu28c.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tQAfAA7A6L2e1D1sOd5m.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vqZdBFqKkGb0Z1jUrqxa.jpg"
+  },
+  {
+    "id": "SO005",
+    "series": "SOFT SILK",
+    "category": "Premium",
+    "type": "Soft Silk",
+    "sareeType": "Yellow body with Skyblue border",
+    "pattern": "Plain",
+    "design": "Traditional",
+    "material": "Soft Silk",
+    "shade": "Yellow / Gold",
+    "price": 575,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yWCeJv2n0pQtUqt7SGdw.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fGxgdanW5mNbpFT5rOwZ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/97Red62oXjynnhiCwjzf.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vsMxtvCTzjSz54ZNYG4W.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/f4la62ZSanXRTMItHi1m.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yWCeJv2n0pQtUqt7SGdw.jpg"
+  },
+  {
+    "id": "SO006",
+    "series": "SOFT SILK",
+    "category": "Premium",
+    "type": "Soft Silk",
+    "sareeType": "Pista Green body with coffee brown border",
+    "pattern": "Plain",
+    "design": "Traditional",
+    "material": "Soft Silk",
+    "shade": "Green",
+    "price": 575,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tENQ78opOdviROlpNZgM.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4UhWSiJeLdVCBxtpKV5A.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wEKC0dBdshmrQJJz4xNc.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GcSEwb2F6Rdn812F9mwE.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dojpKCPRxh3HtERUHlpa.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tENQ78opOdviROlpNZgM.jpg"
+  },
+  {
+    "id": "SO007",
+    "series": "SOFT SILK",
+    "category": "Mid Range",
+    "type": "Soft Silk",
+    "sareeType": "Orange Body with pink small border",
+    "pattern": "Plain",
+    "design": "Traditional",
+    "material": "Soft Silk",
+    "shade": "Orange / Brown",
+    "price": 370,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SxOuDEN3MoAvOaPbcJO5.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/62bvwxL5Mbj4mi8avjMF.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7D1IHxgnsN5Owx10q32D.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/F0cCREq1l7xn37oPZ5Uz.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UT69gYPmcjF3MZU9x4K1.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg"
+  },
+  {
+    "id": "BB007",
+    "series": "BRIDAL BLISS",
+    "category": "Mid Range",
+    "type": "Semi Silk",
+    "sareeType": "Offwhite body with dark green and red pipping border",
+    "pattern": "Leaves",
+    "design": "Traditional",
+    "material": "Semi Kanchipuram",
+    "shade": "White / Off-white",
+    "price": 370,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iISAhXtq7QlsUuzqvJ4R.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rCQlrk1m6bIJYQbZBFFx.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tHVKpm6Z1zHEcjks5Ood.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/h7M5smlTJ6tOusRUKsQ9.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cegW4fMcdIOteXiUN7oo.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p0S5T1YCivm9FK07jKuZ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LlbvcSg4PlReuUu0gvKV.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iISAhXtq7QlsUuzqvJ4R.jpg"
+  },
+  {
+    "id": "BB008",
+    "series": "BRIDAL BLISS",
+    "category": "Mid Range",
+    "type": "Semi Tissue Bridal",
+    "sareeType": "Ivory body with orange border semi tissue",
+    "pattern": "Lines",
+    "design": "Traditional",
+    "material": "Semi Kanchipuram",
+    "shade": "White / Off-white",
+    "price": 375,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zGVD7IFXYbWE3mCdFGgL.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nxXnP2KGAwLnhzv25JOM.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/naeBqk5cZhYu7NnDonBR.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vOTSUA26SO3QmPIwAro4.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TdoWmSykV2YjKnbICWjf.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IPoconRHIxnYd8sBnGmn.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8eH53qIKBfK2yP6cScqA.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zGVD7IFXYbWE3mCdFGgL.jpg"
+  },
+  {
+    "id": "BB009",
+    "series": "BRIDAL BLISS",
+    "category": "Mid Range",
+    "type": "Semi Silk",
+    "sareeType": "Ivory body with purple border semi tissue",
+    "pattern": "Vaira Oosi Motif",
+    "design": "Traditional",
+    "material": "Semi Kanchipuram",
+    "shade": "White / Off-white",
+    "price": 365,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LX6V68P1rJ8hFIsHTYgZ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hZ2VhkbzD035nwMqPCca.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OnFr9ZGV09jYvdNz1uzu.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yKQ04AUS3MKriL2xLXyH.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/h2FQWPQKWT5XdjvzLUt7.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6fmv65mtCxmKarFtmMQp.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LX6V68P1rJ8hFIsHTYgZ.jpg"
+  },
+  {
+    "id": "BB010",
+    "series": "BRIDAL BLISS",
+    "category": "Mid Range",
+    "type": "Semi Silk",
+    "sareeType": "Red Semi silk Brocade Bridal",
+    "pattern": "Geometrical",
+    "design": "Traditional",
+    "material": "Semi Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 349,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2JKkNxNppL8N5VARACQS.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kmV5C9iQ2hiv717pYIrf.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JvhPT28ndD32bggUcjSW.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/h6mNAGCLbudZ2Rc4Fv4A.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KXrssLjWDQbUYhPpOiiy.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2JKkNxNppL8N5VARACQS.jpg"
+  },
+  {
+    "id": "SU015",
+    "series": "SUMANGALI",
+    "category": "Premium",
+    "type": "Kanchipuram",
+    "sareeType": "Peacock blue and green Pure Silk Bridal",
+    "pattern": "Geometrical",
+    "design": "Traditional",
+    "material": "Pure Kanchipuram",
+    "shade": "Blue",
+    "price": 1005,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sjvsUVNJJnfDNvJqM1CG.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8gkdsroBVWPEmp8rUXaJ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gJhXCLtQWMPO8Cwt8QBk.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mRrhe3jh0KjVb5VoYxHn.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HM0wOBi4wAqUGXGd8bMj.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jKPHQ875PzrmhBg2vKse.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BGDYD3BLJy5J5mXogTif.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sjvsUVNJJnfDNvJqM1CG.jpg"
+  },
+  {
+    "id": "BB011",
+    "series": "BRIDAL BLISS",
+    "category": "Mid Range",
+    "type": "Semi Tissue Bridal",
+    "sareeType": "Mauve shade body with Pink colour border Semi Tissue",
+    "pattern": "Floral Motifs",
+    "design": "Traditional",
+    "material": "Semi Kanchipuram",
+    "shade": "White / Off-white",
+    "price": 385,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QfCSsjpQs3AqOsQPTVgd.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V0aGcM4cIjh24fjUPCdH.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9YPAVCblK31JP69t8nTJ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ImJXcHwMm8ALVS1y2vvh.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHop2nJ15DwdG3fs9D5x.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hVmf3gIUsQLG3qmQpl6f.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg"
+  },
+  {
+    "id": "FV013",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Semi Silk",
+    "sareeType": "Dark Blue checks pattern Festive Nakoda Silk",
+    "pattern": "Check",
+    "design": "Modern",
+    "material": "Semi Kanchipuram",
+    "shade": "Blue",
+    "price": 164,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IEosUdAdPsD3iDszwM9P.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mRPkXL5JRem8fruylwoK.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/16myfpkQf8Lqgxv45XU5.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NZAvBfIq1jQodto0UALG.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hnTDcyFQhT6dIGeFlR7e.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/x9fKTAS24gZZT2hbk1tQ.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IEosUdAdPsD3iDszwM9P.jpg"
+  },
+  {
+    "id": "FV014",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Semi Silk",
+    "sareeType": "Green Lines pattern Festive Silk",
+    "pattern": "Lines",
+    "design": "Modern",
+    "material": "Semi Kanchipuram",
+    "shade": "Green",
+    "price": 164,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UGPlwwnIK3jmRe7FSBKz.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PzSTMM3hzlU0qcX1ujTI.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ECv9LD4WAOSKPCW1b5cy.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GkhW3yzAQ9PUOo60FXxj.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zJ1w2LfnjjYQApXOQ5cX.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UGPlwwnIK3jmRe7FSBKz.jpg"
+  },
+  {
+    "id": "FV015",
+    "series": "FESTIVE VIBES",
+    "category": "Budget",
+    "type": "Silk Blend",
+    "sareeType": "Violet Lines pattern Festive Silk",
+    "pattern": "Lines",
+    "design": "Modern",
+    "material": "Organza",
+    "shade": "Purple / Violet",
+    "price": 164,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6w4GJt3XYud879xPTwBx.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JLwFcK1YiuFUG4cjSzuG.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zMu1FNBYqr96VvYt0RKj.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7qWvqey7LYe4xdPepfsV.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yS8vZWCtn8WVhFy6U0sZ.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cPdVDOcIc1ozwullJHpI.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6w4GJt3XYud879xPTwBx.jpg"
+  },
+  {
+    "id": "VW036",
+    "series": "VALUE WEAVES",
+    "category": "Budget",
+    "type": "Semi Silk",
+    "sareeType": "Full Red with temple border",
+    "pattern": "Temple Border",
+    "design": "Traditional",
+    "material": "Semi Kanchipuram",
+    "shade": "Maroon / Red",
+    "price": 247,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IB333whjtsIERcFonomI.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wGnWLSZgmkJ0yuuw3jip.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zgGzzHHJzCg2riC3LaCT.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/EA07seJAkfsDvXSv41fv.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MiSGxkA22mg2Q8H1bxO2.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/F4HYc2sWGrs0hbo9qItJ.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IB333whjtsIERcFonomI.jpg"
   }
 ];
