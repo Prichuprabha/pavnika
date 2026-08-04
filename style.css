@@ -2970,10 +2970,11 @@ body.login-page {
   color: var(--gold);
 }
 
-/* Mobile: account icon out of the header; Logout lives in the dropdown */
+/* Mobile: account icon back in the header (see nav-controls mobile
+   block below for its position); Logout link also stays available in
+   the nav dropdown as a second, redundant path to it. */
 .nav-logout-link { display: none; }
 @media (max-width: 880px) {
-  .nav-account { display: none !important; }
   nav.main-nav a.nav-logout-link { display: block; color: #B8142A !important; }
 }
 
@@ -3071,7 +3072,8 @@ body.login-page {
 .footer-grid h4 { color: var(--gold); }
 
 @media (max-width: 880px) {
-  /* header: burger hard-left, brand truly centered, icons right */
+  /* header: burger + search hard-left, brand truly centered,
+     profile + cart on the right */
   .nav-row { position: relative; }
   .nav-row .brand {
     position: absolute;
@@ -3081,6 +3083,15 @@ body.login-page {
     margin: 0;
   }
   .nav-controls { position: static; transform: none; margin-left: auto; }
+  .nav-account { order: 1; }
+  .nav-cart-btn { order: 2; }
+  #nav-search-btn {
+    position: absolute;
+    left: 54px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin: 0;
+  }
   .nav-toggle {
     position: absolute;
     left: 14px;

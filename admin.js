@@ -914,7 +914,25 @@ function initSidebarAdsEditor(token) {
 function initBannersEditor(token) {
   var listEl = document.getElementById('admin-banner-list');
   var statusMsg = document.getElementById('admin-banner-status-msg');
+  var SLOT_COUNT = 5;
   var banners = [];
+
+  function emptySlot() {
+    return { image: '', mobileImage: '', link: 'collections.html', hideText: false };
+  }
+
+  function normalizeSlots(list) {
+    var out = (Array.isArray(list) ? list.slice(0, SLOT_COUNT) : []).map(function (b) {
+      return {
+        image: (b && b.image) || '',
+        mobileImage: (b && b.mobileImage) || '',
+        link: (b && b.link) || 'collections.html',
+        hideText: !!(b && b.hideText)
+      };
+    });
+    while (out.length < SLOT_COUNT) out.push(emptySlot());
+    return out;
+  }
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
@@ -925,16 +943,20 @@ function initBannersEditor(token) {
   function renderList() {
     listEl.innerHTML = '';
     banners.forEach(function (b, i) {
+      var isEmpty = !b.image;
       var row = document.createElement('div');
-      row.className = 'admin-banner-item';
+      row.className = 'admin-banner-item' + (isEmpty ? ' admin-banner-item-empty' : '');
       row.innerHTML =
+        '<strong style="display:block; margin-bottom:8px;">Slot ' + (i + 1) + (isEmpty ? ' — empty (skipped on the live site)' : '') + '</strong>' +
         '<div class="admin-banner-thumbs">' +
-          '<img class="thumb-desktop" src="assets/banners/' + b.image + '" alt="desktop">' +
+          (b.image
+            ? '<img class="thumb-desktop" src="assets/banners/' + b.image + '" alt="desktop">'
+            : '<span class="thumb-desktop thumb-mobile-empty" title="No image assigned">&mdash;</span>') +
           (b.mobileImage
             ? '<img class="thumb-mobile" src="assets/banners/' + b.mobileImage + '" alt="mobile" title="Mobile image: ' + b.mobileImage + '">'
             : '<span class="thumb-mobile thumb-mobile-empty" title="No mobile image set">&mdash;</span>') +
         '</div>' +
-        '<div class="admin-field"><label>Image file (desktop, wide)</label><input type="text" value="' + b.image + '" data-role="image"></div>' +
+        '<div class="admin-field"><label>Image file (desktop, wide)</label><input type="text" value="' + b.image + '" data-role="image" placeholder="Empty — this slot is skipped"></div>' +
         '<div class="admin-field"><label>Mobile image (portrait, optional)</label><input type="text" value="' + (b.mobileImage || '') + '" data-role="mobileImage" placeholder="Empty = reuse desktop image"></div>' +
         '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
         '<div class="admin-field admin-field-check"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;">' +
@@ -942,7 +964,7 @@ function initBannersEditor(token) {
         '<div class="admin-banner-controls">' +
           '<button type="button" data-action="up" title="Move up">&uarr;</button>' +
           '<button type="button" data-action="down" title="Move down">&darr;</button>' +
-          '<button type="button" data-action="remove" class="admin-banner-remove" title="Remove">&times;</button>' +
+          '<button type="button" data-action="remove" class="admin-banner-remove" title="Clear this slot">&times;</button>' +
         '</div>';
       listEl.appendChild(row);
     });
@@ -964,7 +986,7 @@ function initBannersEditor(token) {
     fetch('assets/banners/banners.json?_=' + Date.now())
       .then(function (res) { return res.json(); })
       .then(function (data) {
-        banners = data || [];
+        banners = normalizeSlots(data);
         renderList();
       })
       .catch(function () { listEl.innerHTML = '<p>Could not load banners.</p>'; });
@@ -987,20 +1009,20 @@ function initBannersEditor(token) {
       banners[idx + 1] = banners[idx];
       banners[idx] = tmp2;
     } else if (action === 'remove') {
-      banners.splice(idx, 1);
+      banners[idx] = emptySlot();
     }
     renderList();
   });
 
   document.getElementById('admin-banner-refresh-btn').addEventListener('click', function () {
     loadBanners();
-    showStatus('success', 'Reloaded the current banner list from GitHub.');
+    showStatus('success', 'Reloaded the current banner slots from GitHub.');
   });
 
   document.getElementById('admin-banner-save-btn').addEventListener('click', function () {
     readListFromDom();
-    if (!banners.length) {
-      showStatus('error', 'At least one banner is required — use Refresh to restore the list if you removed them all by mistake.');
+    if (!banners.some(function (b) { return b.image; })) {
+      showStatus('error', 'At least one slot needs an image — use Refresh to restore the list if you cleared them all by mistake.');
       return;
     }
 

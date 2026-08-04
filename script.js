@@ -1399,12 +1399,14 @@ function initReviewsMarquee() {
 }
 
 /* ---------- Homepage: hero banner carousel ----------
-   Reads assets/banners/banners.json, an array of { image, link }
-   entries living in assets/banners/. Displays them full-width at the
-   top of the page, auto-rotating with a crossfade if there's more than
-   one, and links each slide through to its "link" (or Collections by
-   default). To add a banner: drop the image in assets/banners/ and add
-   an entry to banners.json. To remove one: delete both. */
+   Reads assets/banners/banners.json — a fixed array of 5 slots, each
+   { image, mobileImage, link, hideText }. A slot with an empty "image"
+   is unassigned and is skipped entirely (no blank banner is shown).
+   Displays the assigned slides full-width at the top of the page,
+   auto-rotating with a crossfade if there's more than one, and links
+   each slide through to its "link" (or Collections by default).
+   Slot assignment (which of the 5 has which image) is managed from
+   the admin panel's Banners tab. */
 function initHeroBannerCarousel() {
   var wrap = document.getElementById('hero-banner');
   if (!wrap) return;
@@ -1414,8 +1416,9 @@ function initHeroBannerCarousel() {
 
   fetch(FOLDER + 'banners.json')
     .then(function (res) { return res.ok ? res.json() : []; })
-    .then(function (banners) {
-      if (!banners || !banners.length) return;
+    .then(function (allSlots) {
+      var banners = (allSlots || []).filter(function (b) { return b && b.image; });
+      if (!banners.length) return;
 
       var slidesHTML = banners.map(function (b, i) {
         var loading = i === 0 ? 'eager' : 'lazy';

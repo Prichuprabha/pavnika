@@ -5,6 +5,9 @@
 //   the order given — covers reordering, link edits, and removals in
 //   a single commit, since the admin panel edits the list client-side
 //   first and submits the whole result at once.
+// - This is a fixed 5-slot array. A slot with an empty "image" is
+//   unassigned; the homepage skips it rather than showing a blank
+//   banner (see initHeroBannerCarousel in script.js).
 // - Does not handle uploading new image files — that still goes
 //   through a normal GitHub upload, by design (see admin.html note).
 
@@ -68,6 +71,9 @@ exports.handler = async function (event) {
 
   if (!Array.isArray(body.banners) || !body.banners.length) {
     return { statusCode: 400, body: JSON.stringify({ error: 'At least one banner is required.' }) };
+  }
+  if (!body.banners.some(function (b) { return b && b.image; })) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'At least one slot needs an image assigned.' }) };
   }
 
   try {
