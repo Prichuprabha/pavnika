@@ -851,6 +851,7 @@ function buildLightbox() {
   var state = { images: [], index: 0 };
 
   function renderStage() {
+    stage.classList.remove('is-zoomed');
     stage.querySelectorAll('img').forEach(function (img) { img.remove(); });
     state.images.forEach(function (src, i) {
       var img = document.createElement('img');
@@ -1013,10 +1014,14 @@ function buildLightbox() {
 
   // Hover-zoom: moving the mouse over the stage zooms into whatever
   // part of the image is under the cursor, in place (replaces the
-  // earlier "open full size in a new tab" expand button). Mouse-only
-  // by nature (there's no hover on touch), so it simply does nothing
-  // extra on mobile — swipe/drag navigation there is untouched.
+  // earlier "open full size in a new tab" expand button). Guarded by
+  // hasTouch below — touch devices get a dedicated tap-to-toggle
+  // version further down instead, since mobile browsers fire a
+  // synthetic mouseenter (but not a following mouseleave) after a
+  // real tap, which is what left the zoom permanently stuck on.
+  var hasTouch = false;
   stage.addEventListener('mousemove', function (e) {
+    if (hasTouch) return;
     var activeImg = stage.querySelector('img.is-active');
     if (!activeImg) return;
     var r = stage.getBoundingClientRect();
@@ -1024,8 +1029,8 @@ function buildLightbox() {
     var y = ((e.clientY - r.top) / r.height) * 100;
     activeImg.style.transformOrigin = x + '% ' + y + '%';
   });
-  stage.addEventListener('mouseenter', function () { stage.classList.add('is-zoomed'); });
-  stage.addEventListener('mouseleave', function () { stage.classList.remove('is-zoomed'); });
+  stage.addEventListener('mouseenter', function () { if (!hasTouch) stage.classList.add('is-zoomed'); });
+  stage.addEventListener('mouseleave', function () { if (!hasTouch) stage.classList.remove('is-zoomed'); });
   document.addEventListener('keydown', function (e) {
     if (overlay.style.display !== 'flex') return;
     if (e.key === 'Escape') closeLightbox();
@@ -1033,22 +1038,43 @@ function buildLightbox() {
     if (e.key === 'ArrowRight') goTo(1);
   });
 
-  // Touch swipe support for mobile
+  // Touch swipe support for mobile — a genuine swipe (>40px) still
+  // navigates between images; a tap that barely moves toggles the
+  // zoom on/off instead, centred on where it was tapped.
   var touchStartX = null;
+  var touchStartY = null;
   stage.addEventListener('touchstart', function (e) {
+    hasTouch = true;
+    stage.classList.remove('is-zoomed'); // mouse-hover state never applies once real touch is seen
     touchStartX = e.changedTouches[0].clientX;
+    touchStartY = e.changedTouches[0].clientY;
   }, { passive: true });
   stage.addEventListener('touchend', function (e) {
     if (touchStartX === null) return;
-    var dx = e.changedTouches[0].clientX - touchStartX;
-    if (Math.abs(dx) > 40) goTo(dx < 0 ? 1 : -1);
+    var touch = e.changedTouches[0];
+    var dx = touch.clientX - touchStartX;
+    var dy = touch.clientY - touchStartY;
+    if (Math.abs(dx) > 40) {
+      goTo(dx < 0 ? 1 : -1);
+    } else if (Math.abs(dx) < 12 && Math.abs(dy) < 12) {
+      var activeImg = stage.querySelector('img.is-active');
+      if (activeImg) {
+        var r = stage.getBoundingClientRect();
+        var x = ((touch.clientX - r.left) / r.width) * 100;
+        var y = ((touch.clientY - r.top) / r.height) * 100;
+        activeImg.style.transformOrigin = x + '% ' + y + '%';
+      }
+      stage.classList.toggle('is-zoomed');
+    }
     touchStartX = null;
+    touchStartY = null;
   }, { passive: true });
 
   // Mouse-drag swipe support for desktop (no touchscreen)
   var mouseStartX = null;
   var isDragging = false;
   stage.addEventListener('mousedown', function (e) {
+    if (hasTouch) return;
     mouseStartX = e.clientX;
     isDragging = true;
     e.preventDefault();
