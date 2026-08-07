@@ -385,6 +385,12 @@ function initCollectionsPage() {
       filtered = filtered.slice().sort(function (a, b) { return (Number(a.price) || 0) - (Number(b.price) || 0); });
     } else if (state.sort === 'price-desc') {
       filtered = filtered.slice().sort(function (a, b) { return (Number(b.price) || 0) - (Number(a.price) || 0); });
+    } else if (state.sort === 'newest') {
+      // No "date added" field exists — "newest" is approximated as
+      // reverse catalogue order, so whatever was appended last in
+      // products-data.js (last row in the admin CSV / editor) surfaces
+      // first, on the assumption new sarees are added to the end.
+      filtered = filtered.slice().reverse();
     }
 
     var start = (state.page - 1) * PAGE_SIZE;
@@ -794,42 +800,50 @@ function buildLightbox() {
   var overlay = document.createElement('div');
   overlay.className = 'lightbox-overlay';
   overlay.innerHTML =
-    '<button type="button" class="lightbox-close" id="lightbox-close">&larr; Back</button>' +
     '<div class="lightbox-body">' +
-      '<div class="lightbox-stage-wrap">' +
-        '<div class="lightbox-stage" id="lightbox-stage">' +
-          '<button type="button" class="lightbox-arrow prev" id="lightbox-prev" aria-label="Previous image">&#8249;</button>' +
-          '<button type="button" class="lightbox-arrow next" id="lightbox-next" aria-label="Next image">&#8250;</button>' +
+      '<a href="javascript:void(0)" class="lightbox-back" id="lightbox-close">&larr; Back to Collection</a>' +
+      '<div class="lightbox-main-grid">' +
+        '<div class="lightbox-thumb-rail" id="lightbox-thumb-rail">' +
+          '<button type="button" class="thumb-nav up" id="lightbox-thumb-up" aria-label="Previous image">&#9650;</button>' +
+          '<div class="thumb-rail-track" id="lightbox-thumb-track"></div>' +
+          '<button type="button" class="thumb-nav down" id="lightbox-thumb-down" aria-label="Next image">&#9660;</button>' +
         '</div>' +
-        '<div class="lightbox-dots" id="lightbox-dots"></div>' +
-      '</div>' +
-      '<div class="lightbox-side">' +
-        '<div class="lightbox-details">' +
-          '<span class="p-design" id="lightbox-design"></span>' +
-          '<span class="p-meta" id="lightbox-meta"></span>' +
+        '<div class="lightbox-stage-wrap">' +
+          '<div class="lightbox-stage" id="lightbox-stage"></div>' +
+          '<div class="lightbox-watermark" aria-hidden="true">' +
+            '<span class="brand-word">PAVNIKA</span>' +
+            '<span class="whatsapp-line">DM / Whatsapp to order &nbsp;+971 52 66 30307</span>' +
+          '</div>' +
+          '<button type="button" class="lightbox-expand" id="lightbox-expand" aria-label="View full size image">&#10021;</button>' +
         '</div>' +
-        '<div class="lightbox-tags" id="lightbox-tags"></div>' +
-        '<p class="lightbox-description" id="lightbox-description"></p>' +
-        '<p class="lightbox-price" id="lightbox-price"></p>' +
-        '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
-          '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
-          '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
-        '</div>' +
-        '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
-        '<div class="care-accordion">' +
-          '<button type="button" class="care-accordion-toggle" id="care-accordion-toggle" aria-expanded="false">' +
-            '<span>Saree Care &amp; Storage</span>' +
-            '<span class="care-accordion-icon" aria-hidden="true">+</span>' +
-          '</button>' +
-          '<div class="care-accordion-panel" id="care-accordion-panel" hidden>' +
-            '<ul>' +
-              '<li>Dry clean recommended for the first few washes, especially for zari borders and heavily woven pallus.</li>' +
-              '<li>If hand-washing later, use a mild, pH-neutral detergent in cool water, and wash the saree alone the first two or three times to check for colour bleeding.</li>' +
-              '<li>Dry flat or on a padded hanger in the shade — direct sunlight can fade silk and dull the zari over time.</li>' +
-              '<li>Iron on a low, silk-safe setting, ideally with a thin cotton cloth between the iron and the fabric, and avoid pressing directly over zari work.</li>' +
-              '<li>Store folded in a breathable cotton or muslin cloth rather than plastic, and refold along different lines every few months to prevent permanent crease lines.</li>' +
-              '<li>Keep away from direct moisture and humidity; a few neem leaves or silica packets in storage help deter pests without staining the fabric.</li>' +
-            '</ul>' +
+        '<div class="lightbox-side">' +
+          '<div class="lightbox-details">' +
+            '<span class="p-title" id="lightbox-design"></span>' +
+            '<span class="p-subtitle" id="lightbox-meta"></span>' +
+          '</div>' +
+          '<div class="lightbox-tags" id="lightbox-tags"></div>' +
+          '<p class="lightbox-description" id="lightbox-description"></p>' +
+          '<p class="lightbox-price" id="lightbox-price"></p>' +
+          '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
+            '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
+            '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
+          '</div>' +
+          '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
+          '<div class="care-accordion">' +
+            '<button type="button" class="care-accordion-toggle" id="care-accordion-toggle" aria-expanded="false">' +
+              '<span>Saree Care &amp; Storage</span>' +
+              '<span class="care-accordion-icon" aria-hidden="true">+</span>' +
+            '</button>' +
+            '<div class="care-accordion-panel" id="care-accordion-panel" hidden>' +
+              '<ul>' +
+                '<li>Dry clean recommended for the first few washes, especially for zari borders and heavily woven pallus.</li>' +
+                '<li>If hand-washing later, use a mild, pH-neutral detergent in cool water, and wash the saree alone the first two or three times to check for colour bleeding.</li>' +
+                '<li>Dry flat or on a padded hanger in the shade — direct sunlight can fade silk and dull the zari over time.</li>' +
+                '<li>Iron on a low, silk-safe setting, ideally with a thin cotton cloth between the iron and the fabric, and avoid pressing directly over zari work.</li>' +
+                '<li>Store folded in a breathable cotton or muslin cloth rather than plastic, and refold along different lines every few months to prevent permanent crease lines.</li>' +
+                '<li>Keep away from direct moisture and humidity; a few neem leaves or silica packets in storage help deter pests without staining the fabric.</li>' +
+              '</ul>' +
+            '</div>' +
           '</div>' +
         '</div>' +
       '</div>' +
@@ -837,7 +851,8 @@ function buildLightbox() {
   document.body.appendChild(overlay);
 
   var stage = document.getElementById('lightbox-stage');
-  var dotsWrap = document.getElementById('lightbox-dots');
+  var thumbTrack = document.getElementById('lightbox-thumb-track');
+  var thumbRail = document.getElementById('lightbox-thumb-rail');
   var state = { images: [], index: 0 };
 
   function renderStage() {
@@ -849,17 +864,28 @@ function buildLightbox() {
       if (i === state.index) img.classList.add('is-active');
       stage.appendChild(img);
     });
-    dotsWrap.innerHTML = state.images.map(function (_, i) {
-      return '<span class="' + (i === state.index ? 'is-active' : '') + '"></span>';
+
+    thumbTrack.innerHTML = state.images.map(function (src, i) {
+      return '<button type="button" class="thumb-item' + (i === state.index ? ' is-active' : '') +
+        '" data-index="' + i + '"><img src="' + src + '" alt="View ' + (i + 1) + ' thumbnail"></button>';
     }).join('');
-    dotsWrap.style.display = state.images.length > 1 ? 'flex' : 'none';
-    var arrows = document.querySelectorAll('.lightbox-arrow');
-    arrows.forEach(function (a) { a.style.display = state.images.length > 1 ? 'flex' : 'none'; });
+
+    var multi = state.images.length > 1;
+    thumbRail.style.display = multi ? 'flex' : 'none';
+
+    var activeThumb = thumbTrack.querySelector('.thumb-item.is-active');
+    if (activeThumb) activeThumb.scrollIntoView({ block: 'nearest' });
   }
 
   function goTo(delta) {
     if (!state.images.length) return;
     state.index = (state.index + delta + state.images.length) % state.images.length;
+    renderStage();
+  }
+
+  function goToIndex(i) {
+    if (i < 0 || i >= state.images.length) return;
+    state.index = i;
     renderStage();
   }
 
@@ -982,8 +1008,15 @@ function buildLightbox() {
   }
 
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
-  document.getElementById('lightbox-prev').addEventListener('click', function () { goTo(-1); });
-  document.getElementById('lightbox-next').addEventListener('click', function () { goTo(1); });
+  document.getElementById('lightbox-thumb-up').addEventListener('click', function () { goTo(-1); });
+  document.getElementById('lightbox-thumb-down').addEventListener('click', function () { goTo(1); });
+  document.getElementById('lightbox-expand').addEventListener('click', function () {
+    if (state.images.length) window.open(state.images[state.index], '_blank', 'noopener');
+  });
+  thumbTrack.addEventListener('click', function (e) {
+    var btn = e.target.closest('.thumb-item');
+    if (btn) goToIndex(Number(btn.getAttribute('data-index')));
+  });
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeLightbox(); });
   document.addEventListener('keydown', function (e) {
     if (overlay.style.display !== 'flex') return;
