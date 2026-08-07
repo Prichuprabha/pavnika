@@ -1783,8 +1783,9 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: #ECB857;
-  color: var(--green-deep);
+  background: transparent;
+  color: #ECB857;
+  border: 1px solid #ECB857;
   font-family: var(--body);
   font-size: 0.74rem;
   text-transform: uppercase;
@@ -1792,12 +1793,12 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  padding: 11px 22px;
+  padding: 8px 20px;
   border-radius: 999px;
   margin-bottom: 16px;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-.lightbox-back:hover { background: #F7DB9A; }
+.lightbox-back:hover { background: #ECB857; color: var(--green-deep); }
 
 .lightbox-main-grid {
   display: grid;
