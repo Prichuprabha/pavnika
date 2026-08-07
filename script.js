@@ -1044,8 +1044,10 @@ function buildLightbox() {
   var touchStartX = null;
   var touchStartY = null;
   stage.addEventListener('touchstart', function (e) {
-    hasTouch = true;
-    stage.classList.remove('is-zoomed'); // mouse-hover state never applies once real touch is seen
+    if (!hasTouch) {
+      hasTouch = true;
+      stage.classList.remove('is-zoomed'); // clear any stale mouse-hover zoom, once only
+    }
     touchStartX = e.changedTouches[0].clientX;
     touchStartY = e.changedTouches[0].clientY;
   }, { passive: true });
