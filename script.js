@@ -809,7 +809,9 @@ function buildLightbox() {
           '<button type="button" class="thumb-nav down" id="lightbox-thumb-down" aria-label="Next image">&#9660;</button>' +
         '</div>' +
         '<div class="lightbox-stage-wrap">' +
-          '<div class="lightbox-stage" id="lightbox-stage"></div>' +
+          '<div class="lightbox-stage" id="lightbox-stage">' +
+            '<span class="zoom-hint" id="lightbox-zoom-hint">Click to zoom</span>' +
+          '</div>' +
         '</div>' +
         '<div class="lightbox-side">' +
           '<div class="lightbox-details">' +
@@ -993,6 +995,8 @@ function buildLightbox() {
 
     loadInterestBadge(product.id, document.getElementById('lightbox-interest'));
 
+    zoomEnabled = false;
+    stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
@@ -1012,16 +1016,31 @@ function buildLightbox() {
   });
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeLightbox(); });
 
-  // Hover-zoom: moving the mouse over the stage zooms into whatever
-  // part of the image is under the cursor, in place (replaces the
-  // earlier "open full size in a new tab" expand button). Guarded by
-  // hasTouch below — touch devices get a dedicated tap-to-toggle
-  // version further down instead, since mobile browsers fire a
-  // synthetic mouseenter (but not a following mouseleave) after a
-  // real tap, which is what left the zoom permanently stuck on.
+  // Hover-zoom: the first time the mouse hovers the image for this
+  // saree, nothing zooms yet — a small "Click to zoom" label follows
+  // the cursor instead. One click unlocks it: zooms in immediately at
+  // that spot, and from then on (for as long as this saree stays
+  // open, including swiping between its other photos) hovering zooms
+  // normally with no more clicking. This avoids the image appearing
+  // to zoom in unprompted right as the popup opens, since the cursor
+  // is often already sitting over where the image renders at that
+  // moment. zoomEnabled is reset to false each time openLightbox runs
+  // (see below). Guarded by hasTouch — touch devices get a dedicated
+  // tap-to-toggle version further down instead, since mobile browsers
+  // fire a synthetic mouseenter (but not a following mouseleave)
+  // after a real tap, which doesn't suit this same approach.
   var hasTouch = false;
+  var zoomEnabled = false;
+  var zoomHint = document.getElementById('lightbox-zoom-hint');
+
+  function positionHint(e) {
+    var r = stage.getBoundingClientRect();
+    zoomHint.style.transform = 'translate(' + (e.clientX - r.left + 14) + 'px,' + (e.clientY - r.top + 14) + 'px)';
+  }
+
   stage.addEventListener('mousemove', function (e) {
     if (hasTouch) return;
+    if (!zoomEnabled) { positionHint(e); return; }
     var activeImg = stage.querySelector('img.is-active');
     if (!activeImg) return;
     var r = stage.getBoundingClientRect();
@@ -1029,8 +1048,29 @@ function buildLightbox() {
     var y = ((e.clientY - r.top) / r.height) * 100;
     activeImg.style.transformOrigin = x + '% ' + y + '%';
   });
-  stage.addEventListener('mouseenter', function () { if (!hasTouch) stage.classList.add('is-zoomed'); });
-  stage.addEventListener('mouseleave', function () { if (!hasTouch) stage.classList.remove('is-zoomed'); });
+  stage.addEventListener('mouseenter', function () {
+    if (hasTouch) return;
+    if (zoomEnabled) stage.classList.add('is-zoomed');
+    else stage.classList.add('show-zoom-hint');
+  });
+  stage.addEventListener('mouseleave', function () {
+    if (hasTouch) return;
+    stage.classList.remove('is-zoomed');
+    stage.classList.remove('show-zoom-hint');
+  });
+  stage.addEventListener('click', function (e) {
+    if (hasTouch || zoomEnabled) return;
+    zoomEnabled = true;
+    stage.classList.remove('show-zoom-hint');
+    stage.classList.add('is-zoomed');
+    var activeImg = stage.querySelector('img.is-active');
+    if (activeImg) {
+      var r = stage.getBoundingClientRect();
+      var x = ((e.clientX - r.left) / r.width) * 100;
+      var y = ((e.clientY - r.top) / r.height) * 100;
+      activeImg.style.transformOrigin = x + '% ' + y + '%';
+    }
+  });
   document.addEventListener('keydown', function (e) {
     if (overlay.style.display !== 'flex') return;
     if (e.key === 'Escape') closeLightbox();
