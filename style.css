@@ -1161,16 +1161,17 @@ footer.site-footer {
    built-in left-side fade (no extra translucent wash needed). */
 .story-banner.story-banner-photo { height: 340px; }
 .story-banner-cell { display: contents; } /* was a table-cell wrapper — now a no-op passthrough */
-/* The overlay's container now shares the EXACT same box as the page
-   content below it (.contact-grid / the about-page grid-2), both using
-   .container with --contact-inset overriding the base 32px padding —
-   so they align by construction, not by coincidence. */
+
+/* The overlay's container now shares the EXACT same left padding as
+   the page content below it (.contact-grid / .about-body-container),
+   both driven by --contact-inset — so the "Get in Touch" / "Our
+   Story" heading lines up with "Let's Connect" / "Why we started..."
+   beneath it, at every screen width. (Earlier this intentionally
+   matched the header logo's 32px instead — that was superseded by an
+   explicit request to align with the body copy instead.) */
 
 .story-banner-container.container {
-  /* Matches the header logo's position exactly: .nav-row uses the same
-     max-width + margin:0 auto + 32px left padding as base .container,
-     so using that same 32px here (instead of --contact-inset) lines
-     the banner text up with the logo, not with the body content below. */
+  padding-left: var(--contact-inset);
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -1222,7 +1223,6 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 @media (max-width: 640px) {
   .story-banner.story-banner-photo { height: 280px; }
-  .story-banner-container.container { padding-left: 24px; }
 }
 
 
@@ -1788,7 +1788,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   cursor: pointer;
   margin-bottom: 16px;
 }
-.lightbox-back:hover { color: var(--ivory); }
+.lightbox-back:hover { color: #ECB857; }
 
 .lightbox-main-grid {
   display: grid;
@@ -1849,7 +1849,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   width: 100%;
   max-width: 100%;
   margin: 0 auto;
-  background: var(--green-deep);
+  background: transparent;
   border-radius: 3px;
   overflow: hidden;
   touch-action: pan-y;
@@ -1863,52 +1863,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   height: 100%;
   object-fit: contain;
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transform-origin: center center;
+  transition: opacity 0.25s ease, transform 0.35s ease;
   z-index: 1;
   pointer-events: none;
 }
 .lightbox-stage img.is-active { opacity: 1; }
-
-.lightbox-watermark {
-  position: absolute;
-  left: 0; right: 0; bottom: 0;
-  padding: 40px 16px 16px;
-  background: linear-gradient(to top, rgba(15, 4, 9, 0.85), transparent);
-  text-align: center;
-  pointer-events: none;
-  z-index: 4;
-}
-.lightbox-watermark .brand-word {
-  font-family: var(--display);
-  font-size: 1.5rem;
-  letter-spacing: 0.12em;
-  color: var(--ivory);
-  display: block;
-}
-.lightbox-watermark .whatsapp-line {
-  font-size: 0.68rem;
-  color: var(--gold-light);
-  margin-top: 4px;
-  display: block;
-}
-.lightbox-expand {
-  position: absolute;
-  right: 12px;
-  bottom: 12px;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: rgba(43, 13, 26, 0.55);
-  border: 1px solid rgba(250, 247, 239, 0.4);
-  color: var(--ivory);
-  font-size: 0.85rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-}
-.lightbox-expand:hover { background: rgba(43, 13, 26, 0.8); }
+.lightbox-stage.is-zoomed img.is-active { transform: scale(2.2); }
 
 .lightbox-side { grid-area: side; color: var(--ivory); text-align: center; }
 .lightbox-details { text-align: center; color: var(--ivory); }

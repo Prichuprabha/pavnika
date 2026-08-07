@@ -810,11 +810,6 @@ function buildLightbox() {
         '</div>' +
         '<div class="lightbox-stage-wrap">' +
           '<div class="lightbox-stage" id="lightbox-stage"></div>' +
-          '<div class="lightbox-watermark" aria-hidden="true">' +
-            '<span class="brand-word">PAVNIKA</span>' +
-            '<span class="whatsapp-line">DM / Whatsapp to order &nbsp;+971 52 66 30307</span>' +
-          '</div>' +
-          '<button type="button" class="lightbox-expand" id="lightbox-expand" aria-label="View full size image">&#10021;</button>' +
         '</div>' +
         '<div class="lightbox-side">' +
           '<div class="lightbox-details">' +
@@ -1010,14 +1005,27 @@ function buildLightbox() {
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
   document.getElementById('lightbox-thumb-up').addEventListener('click', function () { goTo(-1); });
   document.getElementById('lightbox-thumb-down').addEventListener('click', function () { goTo(1); });
-  document.getElementById('lightbox-expand').addEventListener('click', function () {
-    if (state.images.length) window.open(state.images[state.index], '_blank', 'noopener');
-  });
   thumbTrack.addEventListener('click', function (e) {
     var btn = e.target.closest('.thumb-item');
     if (btn) goToIndex(Number(btn.getAttribute('data-index')));
   });
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeLightbox(); });
+
+  // Hover-zoom: moving the mouse over the stage zooms into whatever
+  // part of the image is under the cursor, in place (replaces the
+  // earlier "open full size in a new tab" expand button). Mouse-only
+  // by nature (there's no hover on touch), so it simply does nothing
+  // extra on mobile — swipe/drag navigation there is untouched.
+  stage.addEventListener('mousemove', function (e) {
+    var activeImg = stage.querySelector('img.is-active');
+    if (!activeImg) return;
+    var r = stage.getBoundingClientRect();
+    var x = ((e.clientX - r.left) / r.width) * 100;
+    var y = ((e.clientY - r.top) / r.height) * 100;
+    activeImg.style.transformOrigin = x + '% ' + y + '%';
+  });
+  stage.addEventListener('mouseenter', function () { stage.classList.add('is-zoomed'); });
+  stage.addEventListener('mouseleave', function () { stage.classList.remove('is-zoomed'); });
   document.addEventListener('keydown', function (e) {
     if (overlay.style.display !== 'flex') return;
     if (e.key === 'Escape') closeLightbox();
