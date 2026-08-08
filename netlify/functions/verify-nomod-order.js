@@ -18,6 +18,14 @@
 //     - Emails a receipt to pavnikabysaranya@gmail.com via Resend.
 // - Safe to call more than once for the same order — if it's already
 //   marked paid, it won't repeat the saree-marking or email steps.
+// - The receipt email (sendReceiptEmail) includes the fields required
+//   by UAE Consumer Protection Law for a consumer invoice: seller
+//   trade name/address/licence number/contact, the order date, item
+//   quantity/condition, and Arabic alongside the English labels. This
+//   business is not VAT-registered (turnover under the AED 375,000
+//   threshold), so no TRN/tax-invoice fields are included — if that
+//   ever changes, this template needs a proper Tax Invoice layout
+//   (TRN, VAT rate, VAT amount shown separately) added.
 
 const NOMOD_API_KEY = process.env.NOMOD_API_KEY;
 const NOMOD_BASE = 'https://api.nomod.com/v1';
@@ -284,8 +292,16 @@ async function sendReceiptEmail(order, nomodData) {
   var paymentMethod = extractPaymentMethod(nomodData);
 
   function addressHtml(addr) {
-    if (!addr.building && !addr.city) return '<span style="color:#8a8880;">(not provided)</span>';
+    if (!addr.building && !addr.city) return '<span style="color:#a08b7f;">(not provided)</span>';
     return `${addr.building || ''}, ${addr.street || ''}<br>${addr.city || ''}, ${addr.state || ''} ${addr.pincode || ''}<br>${addr.country || ''}`;
+  }
+
+  function formatOrderDate(iso) {
+    var d = iso ? new Date(iso) : new Date();
+    if (isNaN(d.getTime())) d = new Date();
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${d.getFullYear()}`;
   }
 
   var sameAddress = JSON.stringify(billing) === JSON.stringify(shipping);
@@ -293,78 +309,109 @@ async function sendReceiptEmail(order, nomodData) {
   var itemRows = items.map(function (it) {
     return `
       <tr>
-        <td style="padding:10px; border-bottom:1px solid #ece8de;">
+        <td style="padding:10px; border-bottom:1px solid #DED0C7;">
           ${it.image ? `<img src="${it.image}" alt="${it.id}" width="60" style="border-radius:3px; display:block;">` : ''}
         </td>
-        <td style="padding:10px; border-bottom:1px solid #ece8de; font-size:13px; color:#1B241E;">
+        <td style="padding:10px; border-bottom:1px solid #DED0C7; font-size:13px; color:#3B2528;">
           ${buildItemDescription(it)}
+          <br><span style="font-size:10px; color:#a08b7f;">Qty: ${it.qty || 1} &middot; Condition: New</span>
         </td>
-        <td style="padding:10px; border-bottom:1px solid #ece8de; font-size:13px; font-weight:bold; color:#0E4B39; white-space:nowrap;">
+        <td style="padding:10px; border-bottom:1px solid #DED0C7; font-size:13px; font-weight:bold; color:#B68A69; white-space:nowrap;">
           AED ${formatAED(it.price)}
         </td>
       </tr>`;
   }).join('');
 
   var html = `
-    <div style="font-family:sans-serif; max-width:560px; margin:0 auto; background:#FAF7EF;">
-      <div style="background:#082E22; padding:28px 24px; text-align:center; border-radius:6px 6px 0 0;">
+    <div style="font-family:sans-serif; max-width:560px; margin:0 auto; background:#FCF5ED;">
+      <div style="background:#3C1223; padding:28px 24px; text-align:center; border-radius:6px 6px 0 0;">
         <img src="https://pavnika.ae/assets/email-logo.png" alt="Pavnika by Saranya" width="94" height="90" style="display:block; margin:0 auto 12px;">
-        <p style="font-family:Georgia,serif; font-size:20px; color:#FAF7EF; margin:0 0 4px;">Thank you for your purchase!</p>
-        <p style="font-size:11.5px; color:#E3C976; margin:0;">Our team will be in touch shortly to arrange shipment.</p>
+        <p style="font-family:Georgia,serif; font-size:20px; color:#FCF5ED; margin:0 0 4px;">Thank you for your purchase!</p>
+        <p style="font-family:Georgia,serif; font-size:15px; color:#FCF5ED; margin:0 0 8px;" dir="rtl">شكراً لشرائك!</p>
+        <p style="font-size:11.5px; color:#F6DFD5; margin:0;">Our team will be in touch shortly to arrange shipment.</p>
+        <p style="font-size:11px; color:#F6DFD5; margin:2px 0 0;" dir="rtl">سيتواصل معك فريقنا قريباً لترتيب الشحن.</p>
       </div>
-      <div style="padding:22px 24px; color:#1B241E;">
-      <p style="color:#666666; font-size:13px; margin-top:0;">Order #${order.order_number || order.nomod_checkout_id}</p>
+      <div style="padding:22px 24px; color:#3B2528;">
 
-      <div style="background:#F0EAD9; border-radius:6px; padding:14px 18px; margin:16px 0;">
-        <p style="margin:0 0 4px; color:#1B241E;"><strong>Customer:</strong> ${order.customer_name || '(not provided)'}</p>
-        <p style="margin:0 0 4px; color:#1B241E;"><strong>Email:</strong> ${order.customer_email || '(not provided)'}</p>
-        <p style="margin:0; color:#1B241E;"><strong>Phone:</strong> ${order.customer_phone || '(not provided)'}</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+        <tr>
+          <td style="font-size:13px; color:#8a6f63;">Order No. / رقم الطلب<br><strong style="color:#3B2528;">${order.order_number || order.nomod_checkout_id}</strong></td>
+          <td align="right" style="font-size:13px; color:#8a6f63;">Date / التاريخ<br><strong style="color:#3B2528;">${formatOrderDate(order.created_at)}</strong></td>
+        </tr>
+      </table>
+
+      <div style="background:#FFFFFF; border:1px solid #DED0C7; border-radius:6px; padding:14px 16px; margin:0 0 16px;">
+        <p style="margin:0 0 6px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Sold by / <span dir="rtl" style="text-transform:none;">البائع</span></p>
+        <p style="margin:0 0 3px; font-size:13px; font-weight:600; color:#3B2528;">Pavnika Online Seller, trading as Pavnika by Saranya</p>
+        <p style="margin:0 0 3px; font-size:12px; color:#3B2528; line-height:1.6;">Al Barsha South 4, Dubai, United Arab Emirates</p>
+        <p style="margin:0 0 3px; font-size:12px; color:#3B2528;">Licensed by Dubai Department of Economy &amp; Tourism — License No. 1563920</p>
+        <p style="margin:0; font-size:12px; color:#3B2528;">support@pavnika.ae &nbsp;&middot;&nbsp; +971 52 66 30307</p>
+      </div>
+
+      <div style="background:#F8ECE2; border-radius:6px; padding:14px 18px; margin:16px 0;">
+        <p style="margin:0 0 2px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Customer / <span dir="rtl" style="text-transform:none;">العميل</span></p>
+        <p style="margin:0 0 4px; color:#3B2528;"><strong>${order.customer_name || '(not provided)'}</strong></p>
+        <p style="margin:0 0 4px; color:#3B2528; font-size:13px;">${order.customer_email || '(not provided)'}</p>
+        <p style="margin:0; color:#3B2528; font-size:13px;">${order.customer_phone || '(not provided)'}</p>
       </div>
 
       <div style="display:flex; gap:16px; margin:16px 0; flex-wrap:wrap;">
-        <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #ece8de; border-radius:6px; padding:14px 16px;">
-          <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Billing Address</p>
-          <p style="margin:0; font-size:13px; line-height:1.6; color:#1B241E;">${addressHtml(billing)}</p>
+        <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #DED0C7; border-radius:6px; padding:14px 16px;">
+          <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Billing Address / <span dir="rtl" style="text-transform:none;">عنوان الفاتورة</span></p>
+          <p style="margin:0; font-size:13px; line-height:1.6; color:#3B2528;">${addressHtml(billing)}</p>
         </div>
-        <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #ece8de; border-radius:6px; padding:14px 16px;">
-          <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Shipping Address ${sameAddress ? '(same as billing)' : ''}</p>
-          <p style="margin:0; font-size:13px; line-height:1.6; color:#1B241E;">${addressHtml(shipping)}</p>
+        <div style="flex:1; min-width:220px; background:#FFFFFF; border:1px solid #DED0C7; border-radius:6px; padding:14px 16px;">
+          <p style="margin:0 0 8px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Shipping Address ${sameAddress ? '(same as billing)' : ''} / <span dir="rtl" style="text-transform:none;">عنوان الشحن</span></p>
+          <p style="margin:0; font-size:13px; line-height:1.6; color:#3B2528;">${addressHtml(shipping)}</p>
         </div>
       </div>
 
       <table style="border-collapse:collapse; width:100%; margin:16px 0;">
         <thead>
           <tr style="text-align:left;">
-            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Saree</th>
-            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Description</th>
-            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#5c6b62;">Price</th>
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Saree</th>
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Description / <span dir="rtl" style="text-transform:none;">الوصف</span></th>
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Price / <span dir="rtl" style="text-transform:none;">السعر</span></th>
           </tr>
         </thead>
         <tbody>${itemRows}</tbody>
       </table>
 
-      <div style="border-top:1px solid #ece8de; padding-top:10px; margin-top:6px;">
+      <div style="border-top:1px solid #DED0C7; padding-top:10px; margin-top:6px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="font-size:12.5px; color:#5c6b62; padding-bottom:4px;">Subtotal</td>
-            <td align="right" style="font-size:12.5px; color:#5c6b62; padding-bottom:4px;">AED ${formatAED(order.subtotal || order.total)}</td>
+            <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Subtotal / <span dir="rtl" style="text-transform:none;">المجموع الفرعي</span></td>
+            <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(order.subtotal || order.total)}</td>
           </tr>
           ${(order.discount_amount && Number(order.discount_amount) > 0) ? `<tr>
-            <td style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">${order.promo_code ? order.promo_code + ' discount' : 'Discount'}</td>
-            <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.discount_amount)}</td>
+            <td style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">${order.promo_code ? order.promo_code + ' discount' : 'Discount'} / <span dir="rtl" style="text-transform:none; font-weight:400;">الخصم</span></td>
+            <td align="right" style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.discount_amount)}</td>
           </tr>` : ''}
         </table>
       </div>
       ${paymentMethod ? `
-      <div style="border:1px solid #ece8de; border-radius:6px; padding:10px 14px; margin:14px 0;">
+      <div style="border:1px solid #DED0C7; border-radius:6px; padding:10px 14px; margin:14px 0;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="font-size:12px; color:#5c6b62;">Payment method:</td>
-            <td align="right" style="font-size:13px; font-weight:600; color:#1B241E;">${paymentMethod}</td>
+            <td style="font-size:12px; color:#8a6f63;">Payment method / <span dir="rtl" style="text-transform:none;">طريقة الدفع</span>:</td>
+            <td align="right" style="font-size:13px; font-weight:600; color:#3B2528;">${paymentMethod}</td>
           </tr>
         </table>
       </div>` : ''}
-      <p style="font-size:20px; font-weight:bold; color:#0E4B39; margin-top:18px;">Total paid: AED ${formatAED(order.total)}</p>
+      <p style="font-size:20px; font-weight:bold; color:#B68A69; margin-top:18px; margin-bottom:2px;">Total paid: AED ${formatAED(order.total)}</p>
+      <p style="font-size:14px; font-weight:bold; color:#B68A69; margin:0 0 18px;" dir="rtl">المبلغ المدفوع: ${formatAED(order.total)} درهم إماراتي</p>
+
+      <div style="border-top:1px solid #DED0C7; padding-top:14px; margin-top:6px;">
+        <p style="font-size:11px; color:#a08b7f; line-height:1.7; margin:0 0 4px;">
+          This document serves as your purchase receipt. For our Returns &amp; Exchange Policy, visit
+          <a href="https://pavnika.ae/returns.html" style="color:#B68A69;">pavnika.ae/returns.html</a>.
+          For any concern about this order, contact support@pavnika.ae or WhatsApp +971 52 66 30307.
+        </p>
+        <p style="font-size:11px; color:#a08b7f; line-height:1.7; margin:0;" dir="rtl">
+          هذا المستند بمثابة إيصال الشراء الخاص بك. لسياسة الإرجاع والاستبدال، تفضل بزيارة
+          pavnika.ae/returns.html. لأي استفسار بخصوص هذا الطلب، يرجى التواصل عبر support@pavnika.ae أو واتساب على 30307 66 52 971+.
+        </p>
+      </div>
       </div>
     </div>
   `;
