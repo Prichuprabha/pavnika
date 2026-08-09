@@ -2017,6 +2017,12 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   .thumb-item { width: 100%; height: 76px; }
   .lightbox-stage { max-height: 66vh; }
   .lightbox-side { padding-top: 6px; }
+
+  /* Desktop only: let the Collections page show through behind the
+     popup. Kept fully solid on mobile (see .lightbox-overlay above) —
+     that was made opaque specifically to fix a backdrop flicker while
+     scrolling on mobile Safari, which this would risk reintroducing. */
+  .lightbox-overlay { background: rgba(43, 13, 26, 0.90); }
 }
 
 @media (max-width: 640px) {

@@ -2570,8 +2570,9 @@ function initDraggableMarquee(container, track, options) {
 
 /* ---------- Homepage: Curated Excellence saree showcase ----------
    Shows 5 random, currently-available sarees — a different set on every
-   page load. Clicking one goes to Collections filtered to that saree's
-   series and type. */
+   page load. Clicking one goes to Collections with that saree's detail
+   popup open, but the grid behind it stays fully unfiltered (the whole
+   catalogue) — it's just the entry point, not a narrowed view. */
 function initCuratedShowcase() {
   var grid = document.getElementById('curated-showcase');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
@@ -2584,13 +2585,9 @@ function initCuratedShowcase() {
 
   grid.innerHTML = picks.map(function (p) {
     var seriesLabel = seriesTitleCase(p.series);
-    // Same behavior as clicking a header-search result: land on the
-    // collections page with this saree's detail popup already open.
-    // Open this saree's detail popup with the Collections page behind it
-    // pre-filtered to the same series and type as the selected saree.
-    var href = 'collections.html?series=' + encodeURIComponent(p.series) +
-      '&q=' + encodeURIComponent(p.type || '') +
-      '&open=' + encodeURIComponent(p.id);
+    // Open this saree's detail popup with the Collections grid behind
+    // it showing the full, unfiltered catalogue.
+    var href = 'collections.html?open=' + encodeURIComponent(p.id);
     var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.material || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +
