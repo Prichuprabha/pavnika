@@ -1034,6 +1034,14 @@ form.contact-form { display: flex; flex-direction: column; gap: 18px; }
   border-color: var(--gold);
 }
 
+.appt-phone-row { display: flex; gap: 8px; }
+.appt-phone-row select { flex: 0 0 150px; width: 150px; }
+.appt-phone-row input { flex: 1; width: auto; min-width: 0; }
+.appt-phone-row.has-error select,
+.appt-phone-row.has-error input { border-color: #B8142A; }
+.appt-phone-hint { display: block; font-size: 0.72rem; color: var(--ink); opacity: 0.6; margin-top: 6px; }
+.appt-phone-hint.is-error { color: #B8142A; opacity: 1; font-weight: 600; }
+
 .field textarea { resize: vertical; min-height: 110px; }
 
 .form-note { font-size: 0.82rem; color: var(--ink); opacity: 0.75; }

@@ -48,6 +48,47 @@ document.addEventListener('DOMContentLoaded', function () {
   // declares data-subject-prefix; the hidden "subject" field is filled
   // with "<prefix> <customer name>" so notification emails arrive with a
   // meaningful subject line, e.g. "Appointment Request by Saranya".
+  // Builds the two "quick action" links appended to an appointment
+  // request's message field (calendar invite + WhatsApp), so both are
+  // already clickable in the notification email without any manual
+  // find-and-replace. Returns null for any other form (this only
+  // applies to the appointment popup, not the general contact form,
+  // even though both share wireNetlifyForm).
+  function buildAppointmentQuickLinks(form) {
+    if (form.getAttribute('name') !== 'appointment') return null;
+
+    var name = (form.querySelector('[name="name"]') || {}).value || '';
+    var email = (form.querySelector('[name="email"]') || {}).value || '';
+    var codeInput = form.querySelector('[name="phone_country_code"]');
+    var numberInput = form.querySelector('[name="phone_number"]');
+    if (!name.trim() || !email.trim() || !codeInput || !numberInput) return null;
+
+    var fullPhone = codeInput.value + numberInput.value.replace(/[^\d]/g, '');
+
+    var calTitle = 'Viewing Confirmation \u2014 Pavnika by Saranya \u2014 ' + name.trim();
+    var calDetails = 'Your saree viewing appointment with Pavnika by Saranya has been booked for this time slot.\n\n' +
+      'If you need to change the date or time, simply reply to this email with your preferred alternative and we will be happy to accommodate you.\n\n' +
+      'Location: https://maps.app.goo.gl/ZQyP6srGwxG7M6pbA';
+    var calParams = new URLSearchParams({
+      action: 'TEMPLATE',
+      text: calTitle,
+      details: calDetails,
+      location: 'Al Barsha South 4, Dubai, UAE',
+      add: email.trim()
+    });
+    var calLink = 'https://calendar.google.com/calendar/render?' + calParams.toString();
+
+    var firstName = name.trim().split(' ')[0] || 'there';
+    var waMsg = 'Hi ' + firstName + ', this is Pavnika by Saranya. Your saree viewing appointment has been booked. ' +
+      'You should also see a calendar invite from us by email \u2014 if you need to change the date or time, ' +
+      'just reply here on WhatsApp and we will sort out a time that works.';
+    var waLink = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(waMsg);
+
+    return '\n\n---\nQuick actions for this booking:\n' +
+      'Add to Calendar & invite: ' + calLink + '\n' +
+      'Message on WhatsApp: ' + waLink;
+  }
+
   function wireNetlifyForm(form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
@@ -60,6 +101,10 @@ document.addEventListener('DOMContentLoaded', function () {
         var prefix = form.getAttribute('data-subject-prefix') || 'Enquiry by';
         subjectInput.value = prefix + ' ' + ((nameInput && nameInput.value.trim()) || 'website visitor');
       }
+
+      var messageInput = form.querySelector('[name="message"]');
+      var quickLinks = buildAppointmentQuickLinks(form);
+      if (messageInput && quickLinks) messageInput.value = messageInput.value + quickLinks;
 
       if (submitBtn) submitBtn.disabled = true;
 
@@ -146,6 +191,23 @@ var COUNTRY_LIST = [
   'United Kingdom', 'United States', 'Canada', 'Australia', 'Singapore', 'Pakistan',
   'Sri Lanka', 'Bangladesh', 'Malaysia', 'Egypt', 'Jordan', 'Lebanon', 'South Africa',
   'Germany', 'France', 'Italy', 'Spain', 'Netherlands', 'Other'
+];
+
+// Dial codes for the appointment form's phone field. UAE first/default —
+// most bookings are local. "leadingZero" flags codes where the local
+// mobile format conventionally starts with 0 that must be dropped once
+// the country code is added (true for UAE at minimum; left off for
+// others here since it isn't needed for validation beyond UAE today).
+var PHONE_COUNTRY_CODES = [
+  { code: '971', label: '\uD83C\uDDE6\uD83C\uDDEA UAE +971', leadingZero: true },
+  { code: '91', label: '\uD83C\uDDEE\uD83C\uDDF3 India +91', leadingZero: false },
+  { code: '966', label: '\uD83C\uDDF8\uD83C\uDDE6 Saudi Arabia +966', leadingZero: false },
+  { code: '968', label: '\uD83C\uDDF4\uD83C\uDDF2 Oman +968', leadingZero: false },
+  { code: '974', label: '\uD83C\uDDF6\uD83C\uDDE6 Qatar +974', leadingZero: false },
+  { code: '973', label: '\uD83C\uDDE7\uD83C\uDDED Bahrain +973', leadingZero: false },
+  { code: '965', label: '\uD83C\uDDF0\uD83C\uDDFC Kuwait +965', leadingZero: false },
+  { code: '44', label: '\uD83C\uDDEC\uD83C\uDDE7 UK +44', leadingZero: false },
+  { code: '1', label: '\uD83C\uDDFA\uD83C\uDDF8 USA/Canada +1', leadingZero: false }
 ];
 
 function formatAED(n) {
@@ -794,7 +856,17 @@ function initAppointmentPopup(wireNetlifyForm) {
           '<input type="hidden" name="subject" value="">' +
           '<p style="display:none;"><label>Leave this field blank: <input name="bot-field"></label></p>' +
           '<div class="field"><label for="appt-name">Full name</label><input type="text" id="appt-name" name="name" required></div>' +
-          '<div class="field"><label for="appt-phone">Phone / WhatsApp</label><input type="tel" id="appt-phone" name="phone" required></div>' +
+          '<div class="field"><label for="appt-phone-number">Phone / WhatsApp</label>' +
+            '<div class="appt-phone-row">' +
+              '<select id="appt-phone-code" name="phone_country_code">' +
+                PHONE_COUNTRY_CODES.map(function (c, i) {
+                  return '<option value="' + c.code + '"' + (i === 0 ? ' selected' : '') + '>' + c.label + '</option>';
+                }).join('') +
+              '</select>' +
+              '<input type="tel" id="appt-phone-number" name="phone_number" placeholder="50 123 4567" required>' +
+            '</div>' +
+            '<span class="appt-phone-hint" id="appt-phone-hint"></span>' +
+          '</div>' +
           '<div class="field"><label for="appt-email">Email</label><input type="email" id="appt-email" name="email" required></div>' +
           '<div class="field"><label for="appt-occasion">Occasion</label>' +
             '<select id="appt-occasion" name="occasion">' +
@@ -817,7 +889,37 @@ function initAppointmentPopup(wireNetlifyForm) {
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('is-open')) closePopup();
     });
-    wireNetlifyForm(overlay.querySelector('form'));
+
+    var form = overlay.querySelector('form');
+    var codeSelect = form.querySelector('#appt-phone-code');
+    var numberInput = form.querySelector('#appt-phone-number');
+    var phoneRow = form.querySelector('.appt-phone-row');
+    var phoneHint = form.querySelector('#appt-phone-hint');
+    var submitBtn = form.querySelector('button[type="submit"]');
+
+    function validatePhone() {
+      var codeEntry = PHONE_COUNTRY_CODES.find(function (c) { return c.code === codeSelect.value; });
+      var digits = numberInput.value.replace(/[^\d]/g, '');
+      var startsWithZero = digits.charAt(0) === '0';
+
+      if (codeEntry && codeEntry.leadingZero && startsWithZero) {
+        phoneRow.classList.add('has-error');
+        phoneHint.textContent = 'Don\u2019t include the leading 0 \u2014 with +' + codeEntry.code + ' already selected, just enter e.g. "50 123 4567".';
+        phoneHint.classList.add('is-error');
+        submitBtn.disabled = true;
+        return null;
+      }
+      phoneRow.classList.remove('has-error');
+      phoneHint.textContent = digits ? ('Full number: +' + codeSelect.value + ' ' + digits) : '';
+      phoneHint.classList.remove('is-error');
+      submitBtn.disabled = false;
+      return codeSelect.value + digits;
+    }
+    codeSelect.addEventListener('change', validatePhone);
+    numberInput.addEventListener('input', validatePhone);
+    validatePhone();
+
+    wireNetlifyForm(form);
   }
 
   function openPopup() {
