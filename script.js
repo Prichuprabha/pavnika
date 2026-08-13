@@ -286,8 +286,14 @@ function initCollectionsPage() {
   // stretching or shrinking the page size to chase a "full row" isn't
   // worth the inconsistency it'd introduce.
   function isUnfiltered() {
+    // priceMin/priceMax are never actually null — the slider pre-fills
+    // to the full catalogue's min/max on load (see dataMin/dataMax
+    // below), so "no price filter" means the slider is still sitting
+    // at that full span, not that these are unset.
+    var priceIsFullRange = (typeof dataMin === 'undefined') ||
+      (state.priceMin === dataMin && state.priceMax === dataMax);
     return state.category === 'all' && state.series === 'all' && state.shade === 'all' &&
-      !state.showSold && !state.query.trim() && state.priceMin === null && state.priceMax === null;
+      !state.showSold && !state.query.trim() && priceIsFullRange;
   }
 
   // Measures how many saree cards actually fit per row right now (the
