@@ -154,6 +154,12 @@
     background: none; border: 1px solid rgba(250,247,239,0.3); color: var(--ivory);
     font-size: 11px; padding: 7px 12px; border-radius: 3px; cursor: pointer; width: 100%;
   }
+  .admin-view-site-link {
+    display: block; text-align: center; background: none; border: 1px solid var(--gold-light); color: var(--gold-light);
+    font-size: 11px; padding: 7px 12px; border-radius: 3px; text-decoration: none; width: 100%;
+    box-sizing: border-box; margin-bottom: 8px;
+  }
+  .admin-view-site-link:hover { background: var(--gold-light); color: var(--green-deep); }
   .admin-main { flex: 1; padding: 28px 36px; max-width: 980px; }
   .admin-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
   .admin-heading h1 { font-size: 1.3rem; margin: 0; flex-shrink: 0; }
@@ -256,6 +262,7 @@
     <div class="admin-sidebar-footer">
       <p>Signed in as</p>
       <p class="admin-email" id="admin-email-display">&nbsp;</p>
+      <a href="https://pavnika.ae" target="_blank" rel="noopener" class="admin-view-site-link">View Live Site &#8599;</a>
       <button type="button" class="admin-logout-btn" id="admin-logout-btn">Logout</button>
     </div>
   </div>
@@ -410,7 +417,7 @@
         <div class="admin-images-list" id="admin-images-list"></div>
         <button type="button" class="btn btn-ghost" id="admin-add-image-btn" style="margin-bottom:16px;">+ Add image URL</button>
 
-        <div style="display:flex; gap:10px;">
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button type="submit" class="btn btn-primary" id="admin-save-btn">Save to GitHub</button>
           <button type="button" class="btn btn-ghost" id="admin-cancel-btn">Cancel</button>
         </div>
@@ -421,7 +428,7 @@
       <h3>Confirm bulk changes before saving</h3>
       <p id="admin-csv-summary" style="font-size:0.85rem; margin-bottom:14px;"></p>
       <div id="admin-csv-preview-list" style="max-height:280px; overflow-y:auto; border:1px solid var(--stone); border-radius:4px; margin-bottom:16px;"></div>
-      <div style="display:flex; gap:10px;">
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
         <button type="button" class="btn btn-primary" id="admin-csv-confirm-btn">Confirm &amp; Save to GitHub</button>
         <button type="button" class="btn btn-ghost" id="admin-csv-cancel-btn">Cancel, don't save anything</button>
       </div>
@@ -464,7 +471,7 @@
             <label>Review text (leave blank for star-only)</label>
             <textarea id="admin-r-quote" rows="3" placeholder="What the customer said..."></textarea>
           </div>
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button type="submit" class="btn btn-primary" id="admin-review-save-btn">Save to GitHub</button>
             <button type="button" class="btn btn-ghost" id="admin-review-cancel-btn">Cancel</button>
           </div>

@@ -273,8 +273,55 @@ function initCollectionsPage() {
   var grid = document.getElementById('product-grid');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
-  var PAGE_SIZE = 16;
+  var DEFAULT_PAGE_SIZE = 16;
+  var PAGE_SIZE = DEFAULT_PAGE_SIZE;
   var state = { category: 'all', series: 'all', shade: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
+
+  // No filter applied = the plain "browse everything" view (default
+  // category/series/shade, no search text, no price range, default
+  // sort). Only in that view do we flex the page size to guarantee a
+  // full last row — see updatePageSize() below. The moment any filter
+  // narrows the results, we fall back to a plain fixed 16 per page;
+  // with a filtered (often much smaller, unpredictable) result count,
+  // stretching or shrinking the page size to chase a "full row" isn't
+  // worth the inconsistency it'd introduce.
+  function isUnfiltered() {
+    return state.category === 'all' && state.series === 'all' && state.shade === 'all' &&
+      !state.showSold && !state.query.trim() && state.priceMin === null && state.priceMax === null;
+  }
+
+  // Measures how many saree cards actually fit per row right now (the
+  // grid is a responsive auto-fill layout, so this changes continuously
+  // as the window is resized — there's no fixed set of breakpoints to
+  // hook), then picks a page size that's a whole multiple of that
+  // column count, as close to DEFAULT_PAGE_SIZE as possible:
+  //   - if capping at DEFAULT_PAGE_SIZE would leave 1 or 2 sarees alone
+  //     on a weak last row, drop them (page size rounds down)
+  //   - if it would leave 3 or 4 (closer to a full row), pull enough
+  //     forward to complete it instead (page size rounds up)
+  // This only ever changes which fixed number of items we page by; it
+  // never hides real inventory except for the single unavoidable case
+  // explained where render() is called — the true last page of the
+  // whole result set, where there just aren't more sarees to show.
+  function currentColumnCount() {
+    var cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+    return cols || 1;
+  }
+  function updatePageSize() {
+    if (!isUnfiltered()) {
+      var changed = PAGE_SIZE !== DEFAULT_PAGE_SIZE;
+      PAGE_SIZE = DEFAULT_PAGE_SIZE;
+      return changed;
+    }
+    var cols = currentColumnCount();
+    var rows = Math.max(1, Math.round(DEFAULT_PAGE_SIZE / cols));
+    var next = cols * rows;
+    if (next !== PAGE_SIZE) {
+      PAGE_SIZE = next;
+      return true;
+    }
+    return false;
+  }
   var countEl = document.getElementById('results-count');
   var noResults = document.getElementById('no-results');
   var paginationEl = document.getElementById('pagination');
@@ -379,6 +426,7 @@ function initCollectionsPage() {
 
   function render() {
     updateFilterAvailability();
+    updatePageSize();
     var filtered = getFiltered();
 
     if (state.sort === 'price-asc') {
@@ -630,6 +678,17 @@ function initCollectionsPage() {
 
   render();
   buildLightbox();
+
+  // Re-check page size on resize (debounced) — only actually re-renders
+  // if the number of columns that fit has genuinely changed, not on
+  // every pixel of dragging.
+  var resizeDebounce = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeDebounce);
+    resizeDebounce = setTimeout(function () {
+      if (updatePageSize()) render();
+    }, 200);
+  });
 
   if (openParam) {
     var openProduct = window.PRODUCTS.find(function (p) { return p.id === openParam; });
