@@ -2125,12 +2125,14 @@ function cartAddItem(product) {
     }).catch(function () {});
   }
   renderCartDrawer();
+  renderWishlistDrawer(); // keep wishlist "View Cart"/"Add to Cart" buttons in sync — the cart can change from several places (cart drawer, this wishlist itself, the saree detail popup), not just the wishlist's own button
 }
 
 function cartRemoveItem(id) {
   var ids = cartGetItems().filter(function (x) { return x !== id; });
   cartSaveItems(ids);
   renderCartDrawer();
+  renderWishlistDrawer(); // same reasoning as cartAddItem above — this is exactly the path that was going stale (remove via the cart drawer left an already-open/already-rendered wishlist showing "View Cart" for an item no longer in the cart)
 }
 
 function openCartDrawer() {
@@ -2182,6 +2184,7 @@ function wishlistRemoveItem(id) {
 
 function openWishlistDrawer() {
   var overlay = document.getElementById('wishlist-drawer-overlay');
+  renderWishlistDrawer(); // always reflect current cart state the moment it's actually opened, not whatever it happened to show last time it rendered
   if (overlay) overlay.classList.add('is-open');
   document.body.style.overflow = 'hidden';
 }
