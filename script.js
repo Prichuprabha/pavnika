@@ -1200,6 +1200,22 @@ function buildLightbox() {
       refreshHeartState();
     };
 
+    // Position the mobile wishlist heart just to the left of the "Back"
+    // pill, measured from its actual rendered width rather than a
+    // guessed fixed pixel offset — a guess is exactly what caused the
+    // two to overlap before, since pill width varies slightly by font
+    // rendering/zoom level.
+    function positionMobileHeart() {
+      if (window.innerWidth > 899) return; // desktop positions the heart via normal document flow next to the price, not here
+      var backBtn = document.getElementById('lightbox-close-mobile');
+      if (!backBtn || !wishlistHeart) return;
+      var inset = window.innerWidth <= 640 ? 8 : 4;
+      var gap = 8;
+      wishlistHeart.style.right = (inset + backBtn.offsetWidth + gap) + 'px';
+    }
+    positionMobileHeart();
+    window.addEventListener('resize', positionMobileHeart);
+
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
@@ -2221,12 +2237,14 @@ function renderWishlistDrawer() {
   }
 
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+  var cartIds = cartGetItems();
 
   itemsWrap.innerHTML = '<div class="wishlist-grid">' + products.map(function (p) {
     var soldRibbon = p.sold ? '<div class="wl-sold-ribbon"><span>Sold Out</span></div>' : '';
+    var inCart = cartIds.indexOf(p.id) !== -1;
     var addCartBtn = p.sold
       ? '<button type="button" class="wl-add-btn" disabled>Sold Out</button>'
-      : '<button type="button" class="wl-add-btn" data-id="' + p.id + '">Add to Cart</button>';
+      : '<button type="button" class="wl-add-btn" data-id="' + p.id + '">' + (inCart ? 'View Cart' : 'Add to Cart') + '</button>';
     return (
       '<div class="wl-card">' +
         '<img src="' + p.image + '" alt="' + p.design + '" class="wl-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + (p.material || p.design) + '">' +
@@ -2235,7 +2253,7 @@ function renderWishlistDrawer() {
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
         '</button>' +
         '<div class="wl-info">' +
-          '<span class="wl-name">' + (p.material || p.design) + '</span>' +
+          '<span class="wl-name">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
           '<span class="wl-price">AED ' + formatAED(p.price) + '</span>' +
           addCartBtn +
         '</div>' +
@@ -2247,13 +2265,22 @@ function renderWishlistDrawer() {
     btn.addEventListener('click', function () { wishlistRemoveItem(btn.getAttribute('data-id')); });
   });
 
+  // "Add to Cart" persists as "View Cart" once the saree is actually in
+  // the cart, same as the saree detail popup already does — no more
+  // flashing "Added" text that quietly reverts a second later, which
+  // looked like a glitch since it didn't reflect the real state.
   itemsWrap.querySelectorAll('.wl-add-btn:not(:disabled)').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      var product = (window.PRODUCTS || []).find(function (p) { return p.id === btn.getAttribute('data-id'); });
+      var id = btn.getAttribute('data-id');
+      if (cartGetItems().indexOf(id) !== -1) {
+        closeWishlistDrawer();
+        openCartDrawer();
+        return;
+      }
+      var product = (window.PRODUCTS || []).find(function (p) { return p.id === id; });
       if (product) {
         cartAddItem(product);
-        btn.textContent = 'Added \u2713';
-        setTimeout(function () { btn.textContent = 'Add to Cart'; }, 1500);
+        btn.textContent = 'View Cart';
       }
     });
   });

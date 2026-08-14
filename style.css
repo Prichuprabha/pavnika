@@ -2312,15 +2312,18 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   .lightbox-wishlist-heart {
     position: absolute;
     top: 4px;
-    right: 84px;
     z-index: 10;
+    /* right offset is set by JS (positionMobileLightboxControls), not
+       a guessed fixed value — it's measured from the Back pill's own
+       actual rendered width each time, since a fixed px guess here is
+       exactly what caused the two to overlap before. */
   }
 }
 
 @media (max-width: 640px) {
   .lightbox-close-mobile, .lightbox-wishlist-heart { top: 8px; }
   .lightbox-close-mobile { right: 8px; }
-  .lightbox-wishlist-heart { right: 60px; width: 30px; height: 30px; }
+  .lightbox-wishlist-heart { width: 30px; height: 30px; }
   .lightbox-stage { max-height: 52vh; }
   .thumb-item { width: 44px; height: 58px; }
 }
@@ -3002,7 +3005,7 @@ body.login-page {
 .checkout-section-head h3 { font-family: var(--display); color: var(--green); font-size: 1.1rem; margin: 0; }
 
 .checkout-phone-row { display: flex; gap: 8px; }
-.checkout-phone-row select { flex: 0 0 110px; padding: 11px 8px; border: 1px solid var(--stone); border-radius: 3px; font-family: var(--body); font-size: 0.86rem; }
+.checkout-phone-row select { flex: 0 0 150px; padding: 11px 8px; border: 1px solid var(--stone); border-radius: 3px; font-family: var(--body); font-size: 0.82rem; }
 .checkout-phone-row input { flex: 1; min-width: 0; }
 
 .checkout-summary-row {
@@ -3508,7 +3511,13 @@ body.login-page {
     transform: translate(-50%, -50%);
     margin: 0;
   }
-  .nav-controls { position: static; transform: none; margin-left: auto; }
+  .nav-controls {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    margin-left: 0;
+  }
   .nav-cart-btn { display: none; }
   .nav-wishlist-btn { display: none; }
   .nav-toggle {
