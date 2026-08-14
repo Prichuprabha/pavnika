@@ -526,6 +526,12 @@ nav.main-nav a.active {
 }
 .wl-add-btn:hover { background: var(--green-deep); }
 .wl-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.wl-add-btn.is-in-cart {
+  background: var(--gold-light);
+  color: var(--green-deep);
+  border: 1.5px solid var(--gold);
+}
+.wl-add-btn.is-in-cart:hover { background: var(--gold); }
 
 /* Product card buy buttons + interest indicator (Collections page) */
 .product-card-actions {
@@ -3119,8 +3125,14 @@ body.login-page {
   .checkout-bottom-row { flex-direction: column; }
 }
 
-.checkout-customer-fields { margin-bottom: 18px; }
-.checkout-field { margin-bottom: 12px; }
+.checkout-customer-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 12px;
+  margin-bottom: 18px;
+}
+.checkout-field { margin-bottom: 12px; min-width: 0; }
+.checkout-field.full-width { grid-column: 1 / -1; }
 .checkout-field label {
   font-size: 0.76rem;
   color: var(--ink);
