@@ -232,6 +232,22 @@ nav.main-nav a.active {
   justify-content: center;
   padding: 0 2px;
 }
+.nav-wishlist-btn { position: relative; }
+.nav-wishlist-badge {
+  position: absolute;
+  top: 2px; right: 2px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+}
 
 /* Cart drawer */
 .cart-drawer-overlay {
@@ -390,6 +406,126 @@ nav.main-nav a.active {
   margin: 10px 0 0;
 }
 .cart-drawer-footer .btn { width: 100%; text-align: center; }
+
+/* Wishlist drawer — same slide-in mechanism as the cart drawer, but
+   noticeably wider so several sarees are visible at once instead of a
+   single narrow column. */
+.wishlist-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  background: rgba(43, 13, 26, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+.wishlist-drawer-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+.wishlist-drawer {
+  position: fixed;
+  top: 0; right: 0; bottom: 0;
+  width: 100%;
+  max-width: 720px;
+  background: var(--ivory);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.15);
+  z-index: 251;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+}
+.wishlist-drawer-overlay.is-open .wishlist-drawer { transform: translateX(0); }
+@media (min-width: 900px) {
+  .wishlist-drawer { width: 60vw; }
+}
+.wishlist-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--stone);
+}
+.wishlist-drawer-header h3 { margin: 0; font-size: 1.15rem; }
+.wishlist-drawer-items {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 24px;
+}
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+.wl-card {
+  position: relative;
+  background: #fff;
+  border: 1px solid var(--stone);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.wl-card img.wl-item-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; cursor: pointer; }
+.wl-sold-ribbon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(43, 13, 26, 0.35);
+  pointer-events: none;
+}
+.wl-sold-ribbon span {
+  font-family: var(--body);
+  font-weight: 600;
+  font-size: 0.66rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  border-top: 1px solid var(--gold-light);
+  border-bottom: 1px solid var(--gold-light);
+  padding: 6px 4px;
+}
+.wl-trash {
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(43, 13, 26, 0.55);
+  color: #fff;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+.wl-trash svg { width: 13px; height: 13px; }
+.wl-trash:hover { background: #B8142A; }
+.wl-info { padding: 10px 12px; }
+.wl-name { font-size: 0.82rem; font-weight: 600; color: var(--green-deep); display: block; }
+.wl-price { font-size: 0.82rem; color: var(--gold); font-weight: 700; margin-top: 3px; display: block; }
+.wl-add-btn {
+  display: block;
+  width: 100%;
+  margin-top: 10px;
+  background: var(--green);
+  color: var(--ivory);
+  border: none;
+  padding: 9px;
+  border-radius: 999px;
+  font-family: var(--body);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.wl-add-btn:hover { background: var(--green-deep); }
+.wl-add-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Product card buy buttons + interest indicator (Collections page) */
 .product-card-actions {
@@ -1880,6 +2016,48 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-close-x svg { width: 14px; height: 14px; }
 .lightbox-close-x:hover { background: var(--gold); color: var(--green-deep); }
 
+.lightbox-close-mobile {
+  display: none;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  align-items: center;
+  gap: 4px;
+  background: var(--gold);
+  color: var(--green-deep);
+  border: none;
+  font-family: var(--body);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  padding: 7px 16px;
+  border-radius: 999px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.lightbox-price-row { display: flex; align-items: center; gap: 10px; margin: 16px 0 14px; }
+.lightbox-price-row .lightbox-price { margin: 0; }
+.lightbox-wishlist-heart {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: transparent;
+  border: 1.5px solid var(--gold);
+  color: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.lightbox-wishlist-heart svg { width: 16px; height: 16px; }
+.lightbox-wishlist-heart:hover { background: rgba(182, 138, 105, 0.16); }
+.lightbox-wishlist-heart.is-active { background: var(--gold); color: var(--green-deep); }
+.lightbox-wishlist-heart.is-active svg { fill: currentColor; stroke: none; }
+
 .lightbox-main-grid {
   display: grid;
   grid-template-areas: "stage" "thumbs" "side";
@@ -2126,11 +2304,23 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    top:4px/right:4px as everywhere) would otherwise sit directly on top
    of the saree photo. Reserve a clear strip above the content instead. */
 @media (max-width: 899px) {
-  .lightbox-body { padding-top: 40px; }
+  /* 60px instead of 40px — the earlier value matched the close
+     button's own bottom edge exactly, leaving zero visible gap. */
+  .lightbox-body { padding-top: 60px; }
+  .lightbox-close-x { display: none; }
+  .lightbox-close-mobile { display: inline-flex; }
+  .lightbox-wishlist-heart {
+    position: absolute;
+    top: 4px;
+    right: 84px;
+    z-index: 10;
+  }
 }
 
 @media (max-width: 640px) {
-  .lightbox-close-x { top: 8px; right: 8px; }
+  .lightbox-close-mobile, .lightbox-wishlist-heart { top: 8px; }
+  .lightbox-close-mobile { right: 8px; }
+  .lightbox-wishlist-heart { right: 60px; width: 30px; height: 30px; }
   .lightbox-stage { max-height: 52vh; }
   .thumb-item { width: 44px; height: 58px; }
 }
@@ -2743,27 +2933,77 @@ body.login-page {
   display: flex;
   gap: 14px;
   align-items: center;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--ivory-deep);
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--stone);
+  border-radius: 10px;
 }
-.checkout-item img { width: 52px; height: 66px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+.checkout-item img { width: 52px; height: 66px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
 .checkout-item .item-info { flex: 1; min-width: 0; }
 .checkout-item .item-design { font-size: 0.9rem; font-weight: 600; color: var(--green-deep); display: block; }
 .checkout-item .item-series { font-size: 0.78rem; color: var(--ink); opacity: 0.6; display: block; margin-top: 2px; }
 .checkout-item .item-price { font-size: 0.9rem; font-weight: 700; color: var(--green-deep); white-space: nowrap; }
 
-.checkout-promo-row { display: flex; gap: 8px; margin: 20px 0 6px; }
-.checkout-promo-row input {
-  flex: 1;
-  padding: 11px 14px;
+.checkout-promo-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ivory-deep);
   border: 1px solid var(--stone);
-  border-radius: 3px;
-  font-family: var(--body);
-  font-size: 0.88rem;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin: 18px 0 6px;
+  flex-wrap: wrap;
 }
-.checkout-promo-msg { font-size: 0.8rem; margin: 0 0 16px; min-height: 1.2em; }
+.checkout-promo-tag-icon { color: var(--gold); flex-shrink: 0; display: flex; }
+.checkout-promo-tag-icon svg { width: 17px; height: 17px; }
+.checkout-promo-label { font-size: 0.84rem; font-weight: 600; color: var(--ink); flex-shrink: 0; }
+.checkout-promo-card input {
+  flex: 1;
+  min-width: 100px;
+  padding: 9px 12px;
+  border: 1px solid var(--stone);
+  border-radius: 6px;
+  font-family: var(--body);
+  font-size: 0.84rem;
+}
+.checkout-promo-card button {
+  background: var(--green);
+  color: var(--ivory);
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-family: var(--body);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  cursor: pointer;
+}
+.checkout-promo-card button:hover { background: var(--green-deep); }
+.checkout-promo-msg { font-size: 0.8rem; margin: 8px 0 16px; min-height: 1.2em; }
 .checkout-promo-msg.error { color: #B8142A; }
 .checkout-promo-msg.success { color: var(--green); }
+
+.checkout-section { margin-bottom: 24px; padding-top: 8px; border-top: 1px solid var(--ivory-deep); }
+.checkout-section-head { display: flex; align-items: center; gap: 10px; margin: 14px 0 16px; }
+.checkout-badge-num {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--green);
+  color: var(--ivory);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.72rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.checkout-section-head h3 { font-family: var(--display); color: var(--green); font-size: 1.1rem; margin: 0; }
+
+.checkout-phone-row { display: flex; gap: 8px; }
+.checkout-phone-row select { flex: 0 0 110px; padding: 11px 8px; border: 1px solid var(--stone); border-radius: 3px; font-family: var(--body); font-size: 0.86rem; }
+.checkout-phone-row input { flex: 1; min-width: 0; }
 
 .checkout-summary-row {
   display: flex;
@@ -2778,6 +3018,7 @@ body.login-page {
   font-weight: 600;
   opacity: 1;
 }
+.checkout-shipping-row .checkout-free { color: #3B6D11; font-weight: 600; }
 .checkout-total-row {
   display: flex;
   justify-content: space-between;
@@ -2787,9 +3028,31 @@ body.login-page {
   color: var(--green-deep);
   padding-top: 16px;
   border-top: 1px solid var(--stone);
-  margin-bottom: 22px;
 }
-.checkout-note { font-size: 0.76rem; color: var(--ink); opacity: 0.65; text-align: center; margin: 0; }
+.checkout-note { font-size: 0.76rem; color: var(--ink); opacity: 0.65; text-align: center; margin: 0 0 8px; line-height: 1.5; }
+.checkout-agree { font-size: 0.74rem; color: var(--ink); opacity: 0.65; text-align: center; margin: 0 0 18px; line-height: 1.5; }
+.checkout-agree a { color: var(--gold); text-decoration: underline; }
+
+.checkout-bottom-row { display: flex; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+.checkout-summary-box { flex: 1.3; min-width: 220px; background: var(--ivory-deep); border-radius: 10px; padding: 16px 18px; }
+.checkout-trust-box { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 12px; justify-content: center; }
+.checkout-trust-item { display: flex; align-items: center; gap: 8px; font-size: 0.76rem; color: var(--ink); }
+.checkout-trust-icon {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--gold-light);
+  color: var(--green-deep);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.checkout-trust-icon svg { width: 14px; height: 14px; }
+.checkout-trust-item strong { display: block; color: var(--green-deep); font-size: 0.78rem; }
+.checkout-trust-sub { opacity: 0.7; font-size: 0.7rem; }
+@media (max-width: 640px) {
+  .checkout-bottom-row { flex-direction: column; }
+}
 
 .checkout-customer-fields { margin-bottom: 18px; }
 .checkout-field { margin-bottom: 12px; }
@@ -3232,10 +3495,11 @@ body.login-page {
 .footer-grid h4 { color: var(--gold); }
 
 @media (max-width: 880px) {
-  /* header: burger hard-left, brand truly centered, profile on the
-     right. Search and Cart are hidden here — both now live exclusively
-     in the mobile bottom nav bar (see initMobileBottomBar in script.js)
-     to avoid showing the same actions twice. */
+  /* header: burger hard-left, brand truly centered, Search then
+     Profile on the right (in that reading order). Cart and Wishlist
+     are hidden here — both live exclusively in the mobile bottom nav
+     bar (see initMobileBottomBar in script.js) to avoid duplicating
+     the same actions in two places. */
   .nav-row { position: relative; }
   .nav-row .brand {
     position: absolute;
@@ -3245,9 +3509,8 @@ body.login-page {
     margin: 0;
   }
   .nav-controls { position: static; transform: none; margin-left: auto; }
-  .nav-account { order: 1; }
   .nav-cart-btn { display: none; }
-  #nav-search-btn { display: none; }
+  .nav-wishlist-btn { display: none; }
   .nav-toggle {
     position: absolute;
     left: 14px;

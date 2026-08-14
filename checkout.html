@@ -42,6 +42,10 @@
           <button type="button" class="account-logout" id="account-logout">Logout</button>
         </div>
       </div>
+      <button type="button" class="nav-icon-btn nav-wishlist-btn" id="nav-wishlist-btn" aria-label="Wishlist">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>
+        <span class="nav-wishlist-badge" id="nav-wishlist-badge" style="display:none;">0</span>
+      </button>
       <button type="button" class="nav-icon-btn nav-cart-btn" id="nav-cart-btn" aria-label="Cart">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
         <span class="nav-cart-badge" id="nav-cart-badge" style="display:none;">0</span>
@@ -87,68 +91,105 @@
       <div id="checkout-content" style="display:none;">
         <div id="checkout-items"></div>
 
-        <div class="checkout-promo-row">
-          <input type="text" id="checkout-promo-input" placeholder="Promo code">
-          <button type="button" class="btn btn-ghost" id="checkout-promo-apply">Apply</button>
+        <div class="checkout-promo-card">
+          <span class="checkout-promo-tag-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+          </span>
+          <span class="checkout-promo-label">Have a promo code?</span>
+          <input type="text" id="checkout-promo-input" placeholder="Enter code">
+          <button type="button" id="checkout-promo-apply">Apply</button>
         </div>
         <p class="checkout-promo-msg" id="checkout-promo-msg"></p>
 
-        <div class="checkout-summary-row">
-          <span>Subtotal (AED)</span>
-          <span id="checkout-subtotal">0</span>
-        </div>
-        <div class="checkout-summary-row checkout-discount-row" id="checkout-discount-row" style="display:none;">
-          <span id="checkout-discount-label">Discount</span>
-          <span id="checkout-discount-amount">-AED 0</span>
-        </div>
-        <div class="checkout-total-row">
-          <span>Total (AED)</span>
-          <span id="checkout-total">0</span>
-        </div>
-
-        <div class="checkout-customer-fields">
-          <div class="checkout-field"><label>First Name</label><input type="text" id="checkout-first-name" placeholder="First name"></div>
-          <div class="checkout-field"><label>Last Name</label><input type="text" id="checkout-last-name" placeholder="Last name"></div>
-          <div class="checkout-field"><label>Mobile Number</label><input type="tel" id="checkout-phone" placeholder="+971..."></div>
-        </div>
-
-        <h3 class="checkout-address-heading">Billing Address</h3>
-        <div class="checkout-customer-fields" id="checkout-billing-fields">
-          <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="billing-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
-          <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="billing-street" placeholder="e.g. Near Dubai Marina Mall"></div>
-          <div class="checkout-field"><label>City</label><input type="text" id="billing-city" placeholder="e.g. Dubai"></div>
-          <div class="checkout-field"><label>State / Province</label><input type="text" id="billing-state" placeholder="e.g. Dubai"></div>
-          <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="billing-pincode" placeholder="e.g. 00000"></div>
+        <div class="checkout-section">
+          <div class="checkout-section-head"><span class="checkout-badge-num">1</span><h3>Contact Information</h3></div>
+          <div class="checkout-customer-fields">
+            <div class="checkout-field"><label>First Name</label><input type="text" id="checkout-first-name" placeholder="First name"></div>
+            <div class="checkout-field"><label>Last Name</label><input type="text" id="checkout-last-name" placeholder="Last name"></div>
+          </div>
           <div class="checkout-field">
-            <label>Country / Region</label>
-            <select id="billing-country"></select>
+            <label>Mobile Number</label>
+            <div class="checkout-phone-row">
+              <select id="checkout-phone-code"></select>
+              <input type="tel" id="checkout-phone-number" placeholder="XX XXX XXXX">
+            </div>
+            <input type="hidden" id="checkout-phone">
           </div>
         </div>
 
-        <label class="checkout-checkbox-row">
-          <input type="checkbox" id="checkout-same-address" checked>
-          Ship to the same address
-        </label>
-
-        <div id="checkout-shipping-block" style="display:none;">
-          <h3 class="checkout-address-heading">Shipping Address</h3>
-          <div class="checkout-customer-fields">
-            <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="shipping-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
-            <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="shipping-street" placeholder="e.g. Near Dubai Marina Mall"></div>
-            <div class="checkout-field"><label>City</label><input type="text" id="shipping-city" placeholder="e.g. Dubai"></div>
-            <div class="checkout-field"><label>State / Province</label><input type="text" id="shipping-state" placeholder="e.g. Dubai"></div>
-            <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="shipping-pincode" placeholder="e.g. 00000"></div>
+        <div class="checkout-section">
+          <div class="checkout-section-head"><span class="checkout-badge-num">2</span><h3>Shipping Address</h3></div>
+          <h4 class="checkout-address-heading">Billing Address</h4>
+          <div class="checkout-customer-fields" id="checkout-billing-fields">
+            <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="billing-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
+            <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="billing-street" placeholder="e.g. Near Dubai Marina Mall"></div>
+            <div class="checkout-field"><label>City</label><input type="text" id="billing-city" placeholder="e.g. Dubai"></div>
+            <div class="checkout-field"><label>State / Province</label><input type="text" id="billing-state" placeholder="e.g. Dubai"></div>
+            <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="billing-pincode" placeholder="e.g. 00000"></div>
             <div class="checkout-field">
               <label>Country / Region</label>
-              <select id="shipping-country"></select>
+              <select id="billing-country"></select>
+            </div>
+          </div>
+
+          <label class="checkout-checkbox-row">
+            <input type="checkbox" id="checkout-same-address" checked>
+            Ship to the same address
+          </label>
+
+          <div id="checkout-shipping-block" style="display:none;">
+            <h4 class="checkout-address-heading">Shipping Address</h4>
+            <div class="checkout-customer-fields">
+              <div class="checkout-field"><label>Flat / House / Floor / Building No.</label><input type="text" id="shipping-building" placeholder="e.g. Flat 302, Marina Heights Tower"></div>
+              <div class="checkout-field"><label>Colony / Street / Locality / Landmark</label><input type="text" id="shipping-street" placeholder="e.g. Near Dubai Marina Mall"></div>
+              <div class="checkout-field"><label>City</label><input type="text" id="shipping-city" placeholder="e.g. Dubai"></div>
+              <div class="checkout-field"><label>State / Province</label><input type="text" id="shipping-state" placeholder="e.g. Dubai"></div>
+              <div class="checkout-field"><label>Pincode / Zip / Postal Code</label><input type="text" id="shipping-pincode" placeholder="e.g. 00000"></div>
+              <div class="checkout-field">
+                <label>Country / Region</label>
+                <select id="shipping-country"></select>
+              </div>
             </div>
           </div>
         </div>
 
         <p class="checkout-promo-msg" id="checkout-address-msg"></p>
 
+        <div class="checkout-bottom-row">
+          <div class="checkout-summary-box">
+            <div class="checkout-summary-row">
+              <span>Subtotal (AED)</span>
+              <span id="checkout-subtotal">0</span>
+            </div>
+            <div class="checkout-summary-row checkout-discount-row" id="checkout-discount-row" style="display:none;">
+              <span id="checkout-discount-label">Discount</span>
+              <span id="checkout-discount-amount">-AED 0</span>
+            </div>
+            <div class="checkout-summary-row checkout-shipping-row"><span>Shipping</span><span class="checkout-free">Free</span></div>
+            <div class="checkout-total-row">
+              <span>Total (AED)</span>
+              <span id="checkout-total">0</span>
+            </div>
+          </div>
+          <div class="checkout-trust-box">
+            <div class="checkout-trust-item">
+              <span class="checkout-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/></svg></span>
+              <span><strong>Authentic Handwoven</strong><span class="checkout-trust-sub">100% Authentic collection</span></span>
+            </div>
+            <div class="checkout-trust-item">
+              <span class="checkout-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+              <span><strong>Secure Checkout</strong><span class="checkout-trust-sub">Encrypted &amp; Safe</span></span>
+            </div>
+            <div class="checkout-trust-item">
+              <span class="checkout-trust-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+              <span><strong>Customer Support</strong><span class="checkout-trust-sub">We're here to help</span></span>
+            </div>
+          </div>
+        </div>
+
         <a href="#" class="btn btn-primary" id="checkout-pay-online" style="display:block; text-align:center; margin-bottom:6px;">Pay Online</a>
         <p class="checkout-note">Choosing Pay Online will take you to our secure payment partner's page to complete payment — where the price will also show in your local currency automatically.</p>
+        <p class="checkout-agree">By placing your order, you agree to our <a href="terms.html">Terms &amp; Conditions</a> and <a href="privacy.html">Privacy &amp; Cookies Policy</a>.</p>
 
       </div>
 

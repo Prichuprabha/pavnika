@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initAccountMenu();
   initSearchPanel();
   initCartDrawer();
+  initWishlistDrawer();
   initMobileBottomBar();
   initRevealAnimations();
   initCheckoutPage();
@@ -38,10 +39,22 @@ document.addEventListener('DOMContentLoaded', function () {
   var nav = document.querySelector('.main-nav');
 
   if (toggle && nav) {
-    toggle.addEventListener('click', function () {
+    toggle.addEventListener('click', function (e) {
+      e.stopPropagation(); // don't let this same click immediately re-trigger the outside-click handler below
       var isOpen = nav.classList.toggle('open');
       toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
     });
+
+    function closeMobileNav() {
+      if (!nav.classList.contains('open')) return;
+      nav.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    document.addEventListener('click', function (e) {
+      if (nav.classList.contains('open') && !nav.contains(e.target)) closeMobileNav();
+    });
+    window.addEventListener('scroll', closeMobileNav, { passive: true });
   }
 
   // Shared submit handling for every Netlify form on the site (the
@@ -972,6 +985,7 @@ function buildLightbox() {
       '<button type="button" class="lightbox-close-x" id="lightbox-close" aria-label="Close">' +
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
       '</button>' +
+      '<button type="button" class="lightbox-close-mobile" id="lightbox-close-mobile" aria-label="Close">&larr; Back</button>' +
       '<div class="lightbox-main-grid">' +
         '<div class="lightbox-thumb-rail" id="lightbox-thumb-rail">' +
           '<button type="button" class="thumb-nav up" id="lightbox-thumb-up" aria-label="Previous image">&#9650;</button>' +
@@ -990,7 +1004,12 @@ function buildLightbox() {
           '</div>' +
           '<div class="lightbox-tags" id="lightbox-tags"></div>' +
           '<p class="lightbox-description" id="lightbox-description"></p>' +
-          '<p class="lightbox-price" id="lightbox-price"></p>' +
+          '<div class="lightbox-price-row">' +
+            '<p class="lightbox-price" id="lightbox-price"></p>' +
+            '<button type="button" class="lightbox-wishlist-heart" id="lightbox-wishlist-heart" aria-label="Add to wishlist">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
+            '</button>' +
+          '</div>' +
           '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
             '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
             '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
@@ -1165,6 +1184,22 @@ function buildLightbox() {
 
     loadInterestBadge(product.id, document.getElementById('lightbox-interest'));
 
+    var wishlistHeart = document.getElementById('lightbox-wishlist-heart');
+    function refreshHeartState() {
+      var inWishlist = wishlistGetItems().indexOf(product.id) !== -1;
+      wishlistHeart.classList.toggle('is-active', inWishlist);
+      wishlistHeart.setAttribute('aria-label', inWishlist ? 'Remove from wishlist' : 'Add to wishlist');
+    }
+    refreshHeartState();
+    wishlistHeart.onclick = function () {
+      if (wishlistGetItems().indexOf(product.id) !== -1) {
+        wishlistRemoveItem(product.id);
+      } else {
+        wishlistAddItem(product);
+      }
+      refreshHeartState();
+    };
+
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
@@ -1187,6 +1222,7 @@ function buildLightbox() {
   }
 
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox-close-mobile').addEventListener('click', closeLightbox);
   document.getElementById('lightbox-thumb-up').addEventListener('click', function () { goTo(-1); });
   document.getElementById('lightbox-thumb-down').addEventListener('click', function () { goTo(1); });
   thumbTrack.addEventListener('click', function (e) {
@@ -2033,6 +2069,7 @@ function initLegalPopup() {
    keeps the feature fully useful on its own before online payment
    (a future phase) is added. */
 var CART_STORAGE_KEY = 'pavnika_cart';
+var WISHLIST_STORAGE_KEY = 'pavnika_wishlist';
 
 function cartGetItems() {
   try {
@@ -2082,6 +2119,160 @@ function closeCartDrawer() {
   document.body.style.overflow = '';
 }
 
+// ---------- Wishlist ----------
+// Same storage pattern as the cart — kept in the visitor's own browser
+// (localStorage), not a database, so it's per-device, same trade-off
+// the cart already has.
+function wishlistGetItems() {
+  try {
+    var raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
+    var ids = raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) ? ids : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function wishlistSaveItems(ids) {
+  try {
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
+  } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
+}
+
+function wishlistAddItem(product) {
+  var ids = wishlistGetItems();
+  if (ids.indexOf(product.id) === -1) {
+    ids.push(product.id);
+    wishlistSaveItems(ids);
+  }
+  renderWishlistDrawer();
+}
+
+function wishlistRemoveItem(id) {
+  var ids = wishlistGetItems().filter(function (x) { return x !== id; });
+  wishlistSaveItems(ids);
+  renderWishlistDrawer();
+}
+
+function openWishlistDrawer() {
+  var overlay = document.getElementById('wishlist-drawer-overlay');
+  if (overlay) overlay.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeWishlistDrawer() {
+  var overlay = document.getElementById('wishlist-drawer-overlay');
+  if (overlay) overlay.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
+function initWishlistDrawer() {
+  var wishlistBtn = document.getElementById('nav-wishlist-btn');
+  if (document.getElementById('wishlist-drawer-overlay')) {
+    renderWishlistDrawer();
+    return;
+  }
+
+  var overlay = document.createElement('div');
+  overlay.className = 'wishlist-drawer-overlay';
+  overlay.id = 'wishlist-drawer-overlay';
+  overlay.innerHTML =
+    '<div class="wishlist-drawer">' +
+      '<div class="wishlist-drawer-header">' +
+        '<h3>Your Wishlist</h3>' +
+        '<button type="button" class="cart-drawer-close" id="wishlist-drawer-close" aria-label="Close wishlist">&times;</button>' +
+        '<button type="button" class="cart-drawer-close-mobile" id="wishlist-drawer-close-mobile" aria-label="Close wishlist">Close</button>' +
+      '</div>' +
+      '<div class="wishlist-drawer-items" id="wishlist-drawer-items-wrap"></div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+
+  if (wishlistBtn) wishlistBtn.addEventListener('click', openWishlistDrawer);
+  document.getElementById('wishlist-drawer-close').addEventListener('click', closeWishlistDrawer);
+  document.getElementById('wishlist-drawer-close-mobile').addEventListener('click', closeWishlistDrawer);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closeWishlistDrawer(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeWishlistDrawer();
+  });
+
+  renderWishlistDrawer();
+}
+
+function renderWishlistDrawer() {
+  var badge = document.getElementById('nav-wishlist-badge');
+  var bbBadge = document.getElementById('bb-wishlist-badge');
+  var itemsWrap = document.getElementById('wishlist-drawer-items-wrap');
+
+  var ids = wishlistGetItems();
+  if (badge) {
+    badge.style.display = ids.length ? 'flex' : 'none';
+    badge.textContent = ids.length;
+  }
+  if (bbBadge) {
+    bbBadge.style.display = ids.length ? 'flex' : 'none';
+    bbBadge.textContent = ids.length;
+  }
+
+  if (!itemsWrap) return;
+
+  if (!ids.length) {
+    itemsWrap.innerHTML = '<p class="cart-drawer-empty">Your wishlist is empty. Tap the heart on any saree to save it here.</p>';
+    return;
+  }
+
+  var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+
+  itemsWrap.innerHTML = '<div class="wishlist-grid">' + products.map(function (p) {
+    var soldRibbon = p.sold ? '<div class="wl-sold-ribbon"><span>Sold Out</span></div>' : '';
+    var addCartBtn = p.sold
+      ? '<button type="button" class="wl-add-btn" disabled>Sold Out</button>'
+      : '<button type="button" class="wl-add-btn" data-id="' + p.id + '">Add to Cart</button>';
+    return (
+      '<div class="wl-card">' +
+        '<img src="' + p.image + '" alt="' + p.design + '" class="wl-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + (p.material || p.design) + '">' +
+        soldRibbon +
+        '<button type="button" class="wl-trash" data-id="' + p.id + '" aria-label="Remove from wishlist">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
+        '</button>' +
+        '<div class="wl-info">' +
+          '<span class="wl-name">' + (p.material || p.design) + '</span>' +
+          '<span class="wl-price">AED ' + formatAED(p.price) + '</span>' +
+          addCartBtn +
+        '</div>' +
+      '</div>'
+    );
+  }).join('') + '</div>';
+
+  itemsWrap.querySelectorAll('.wl-trash').forEach(function (btn) {
+    btn.addEventListener('click', function () { wishlistRemoveItem(btn.getAttribute('data-id')); });
+  });
+
+  itemsWrap.querySelectorAll('.wl-add-btn:not(:disabled)').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var product = (window.PRODUCTS || []).find(function (p) { return p.id === btn.getAttribute('data-id'); });
+      if (product) {
+        cartAddItem(product);
+        btn.textContent = 'Added \u2713';
+        setTimeout(function () { btn.textContent = 'Add to Cart'; }, 1500);
+      }
+    });
+  });
+
+  // Clicking a wishlist photo opens its full saree detail popup, same
+  // as the cart's photo-click behavior — closing the drawer first.
+  itemsWrap.querySelectorAll('.wl-item-img').forEach(function (img) {
+    function openFromWishlist() {
+      var product = (window.PRODUCTS || []).find(function (p) { return p.id === img.getAttribute('data-id'); });
+      if (product) {
+        closeWishlistDrawer();
+        window.openLightbox(product);
+      }
+    }
+    img.addEventListener('click', openFromWishlist);
+    img.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFromWishlist(); } });
+  });
+}
+
 // ---------- Mobile-only bottom navigation bar ----------
 // Home / Shop / Search / Bag, fixed to the bottom of the screen on
 // mobile widths only (see the max-width:880px rule in style.css — the
@@ -2108,9 +2299,12 @@ function initMobileBottomBar() {
       '<span class="bb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>' +
       '<span class="bb-label">Shop</span>' +
     '</a>' +
-    '<button type="button" class="bb-item" id="bb-search-btn">' +
-      '<span class="bb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>' +
-      '<span class="bb-label">Search</span>' +
+    '<button type="button" class="bb-item" id="bb-wishlist-btn">' +
+      '<span class="bb-icon" style="position:relative;">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
+        '<span class="bb-badge" id="bb-wishlist-badge" style="display:none;">0</span>' +
+      '</span>' +
+      '<span class="bb-label">Wishlist</span>' +
     '</button>' +
     '<button type="button" class="bb-item" id="bb-bag-btn">' +
       '<span class="bb-icon bb-icon-bag">' +
@@ -2121,19 +2315,16 @@ function initMobileBottomBar() {
     '</button>';
   document.body.appendChild(bar);
 
-  // Search: reuse the header's existing search button/panel logic
-  // rather than duplicating it — a real click on the (hidden-on-mobile)
-  // header search icon triggers the exact same open behavior.
-  document.getElementById('bb-search-btn').addEventListener('click', function () {
-    var headerSearchBtn = document.getElementById('nav-search-btn');
-    if (headerSearchBtn) headerSearchBtn.click();
+  document.getElementById('bb-wishlist-btn').addEventListener('click', function () {
+    openWishlistDrawer();
   });
 
   document.getElementById('bb-bag-btn').addEventListener('click', function () {
     openCartDrawer();
   });
 
-  renderCartDrawer(); // sync the Bag badge to the current cart immediately
+  renderCartDrawer(); // sync the Cart badge to the current cart immediately
+  renderWishlistDrawer(); // sync the Wishlist badge to the current wishlist immediately
 }
 
 function renderCartDrawer() {
@@ -2326,6 +2517,65 @@ function initCheckoutPage() {
     select.innerHTML = COUNTRY_LIST.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
   });
 
+  // Phone: the country code + number split is purely a UX convenience —
+  // reuses the same PHONE_COUNTRY_CODES list as the appointment form.
+  // Whatever the visitor picks/types, this reconstructs the exact same
+  // "+971501234567" (E.164, no spaces) format into the hidden
+  // #checkout-phone field, which is what the rest of this function
+  // (validation, the Nomod payload) already reads — so nothing
+  // downstream needed to change at all.
+  var phoneCodeSelect = document.getElementById('checkout-phone-code');
+  var phoneNumberInput = document.getElementById('checkout-phone-number');
+  var phoneHiddenInput = document.getElementById('checkout-phone');
+  phoneCodeSelect.innerHTML = PHONE_COUNTRY_CODES.map(function (c, i) {
+    return '<option value="' + c.code + '"' + (i === 0 ? ' selected' : '') + '>' + c.label + '</option>';
+  }).join('');
+
+  var phoneNote = document.createElement('p');
+  phoneNote.className = 'field-note';
+  phoneNote.style.display = 'none';
+  phoneNumberInput.insertAdjacentElement('afterend', phoneNote);
+
+  function syncPhone() {
+    var codeEntry = PHONE_COUNTRY_CODES.find(function (c) { return c.code === phoneCodeSelect.value; });
+    var digits = phoneNumberInput.value.replace(/[^\d]/g, '');
+    var startsWithZero = digits.charAt(0) === '0';
+
+    if (codeEntry && codeEntry.leadingZero && startsWithZero) {
+      phoneHiddenInput.value = '';
+      phoneNote.textContent = 'Don\u2019t include the leading 0 \u2014 with +' + codeEntry.code + ' already selected, just enter e.g. "50 123 4567".';
+      phoneNote.classList.remove('ok');
+      phoneNote.style.display = digits ? 'block' : 'none';
+      phoneNumberInput.classList.toggle('field-invalid', !!digits);
+      return false;
+    }
+
+    var full = '+' + phoneCodeSelect.value + digits;
+    phoneHiddenInput.value = full;
+
+    if (!digits) { // empty: neutral until submit, same as every other field here
+      phoneNote.style.display = 'none';
+      phoneNumberInput.classList.remove('field-invalid');
+      return true;
+    }
+    if (!PHONE_RE.test(full)) {
+      phoneNote.textContent = 'Please enter a valid mobile number.';
+      phoneNote.classList.remove('ok');
+      phoneNote.style.display = 'block';
+      phoneNumberInput.classList.add('field-invalid');
+      return false;
+    }
+    phoneNote.textContent = '\u2713 Looks good';
+    phoneNote.classList.add('ok');
+    phoneNote.style.display = 'block';
+    phoneNumberInput.classList.remove('field-invalid');
+    return true;
+  }
+  phoneNumberInput._pavnikaCheck = syncPhone;
+  phoneCodeSelect.addEventListener('change', syncPhone);
+  phoneNumberInput.addEventListener('input', syncPhone);
+  syncPhone();
+
   var sameAddressBox = document.getElementById('checkout-same-address');
   var shippingBlock = document.getElementById('checkout-shipping-block');
   sameAddressBox.addEventListener('change', function () {
@@ -2465,19 +2715,15 @@ function initCheckoutPage() {
     }
     return '';
   }
-  function validatePhone(v) {
-    if (!PHONE_RE.test(v)) {
-      return 'Use international format with no spaces \u2014 e.g. +971501234567';
-    }
-    return '';
-  }
 
   attachFieldNote('checkout-first-name', validateName);
   attachFieldNote('checkout-last-name', validateName);
-  attachFieldNote('checkout-phone', validatePhone);
+  // Phone validation/feedback is handled by syncPhone() above, attached
+  // to the visible #checkout-phone-number field rather than the hidden
+  // reconstructed #checkout-phone value.
 
   function customerFieldsValid() {
-    var ids = ['checkout-first-name', 'checkout-last-name', 'checkout-phone'];
+    var ids = ['checkout-first-name', 'checkout-last-name', 'checkout-phone-number'];
     var allOk = true;
     ids.forEach(function (id) {
       var el = document.getElementById(id);
@@ -2504,7 +2750,7 @@ function initCheckoutPage() {
     }
 
     if (!customerFieldsValid()) {
-      var firstInvalid = document.querySelector('.checkout-customer-fields input.field-invalid');
+      var firstInvalid = document.querySelector('#checkout-content input.field-invalid');
       if (firstInvalid) firstInvalid.focus();
       alert('Please fix the highlighted fields \u2014 our payment provider only accepts letters in names and international phone numbers (e.g. +971501234567).');
       return;
