@@ -1012,6 +1012,12 @@ function buildLightbox() {
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
               '</button>' +
             '</span>' +
+            '<button type="button" class="lightbox-wishlist-pill" id="lightbox-wishlist-pill" aria-label="Add to wishlist">' +
+              '<span class="lightbox-wishlist-pill-icon">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
+              '</span>' +
+              '<span class="lightbox-wishlist-pill-label" id="lightbox-wishlist-pill-label">Add to Wishlist</span>' +
+            '</button>' +
           '</div>' +
           '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
             '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
@@ -1189,12 +1195,16 @@ function buildLightbox() {
 
     var wishlistHeart = document.getElementById('lightbox-wishlist-heart');
     var wishlistTooltip = document.getElementById('lightbox-heart-tooltip');
+    var wishlistPill = document.getElementById('lightbox-wishlist-pill');
+    var wishlistPillLabel = document.getElementById('lightbox-wishlist-pill-label');
     function refreshHeartState() {
       var inWishlist = wishlistGetItems().indexOf(product.id) !== -1;
       wishlistHeart.classList.toggle('is-active', inWishlist);
       var label = inWishlist ? 'Remove from wishlist' : 'Add to wishlist';
       wishlistHeart.setAttribute('aria-label', label);
       if (wishlistTooltip) wishlistTooltip.textContent = inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist';
+      if (wishlistPill) wishlistPill.classList.toggle('is-active', inWishlist);
+      if (wishlistPillLabel) wishlistPillLabel.textContent = inWishlist ? 'Remove' : 'Add to Wishlist';
     }
     refreshHeartState();
     wishlistHeart.onclick = function () {
@@ -1205,22 +1215,16 @@ function buildLightbox() {
       }
       refreshHeartState();
     };
-
-    // Position the mobile wishlist heart just to the left of the "Back"
-    // pill, measured from its actual rendered width rather than a
-    // guessed fixed pixel offset — a guess is exactly what caused the
-    // two to overlap before, since pill width varies slightly by font
-    // rendering/zoom level.
-    function positionMobileHeart() {
-      if (window.innerWidth > 899) return; // desktop positions the heart via normal document flow next to the price, not here
-      var backBtn = document.getElementById('lightbox-close-mobile');
-      if (!backBtn || !wishlistHeart) return;
-      var inset = window.innerWidth <= 640 ? 8 : 4;
-      var gap = 8;
-      wishlistHeart.style.right = (inset + backBtn.offsetWidth + gap) + 'px';
+    if (wishlistPill) {
+      wishlistPill.onclick = function () {
+        if (wishlistGetItems().indexOf(product.id) !== -1) {
+          wishlistRemoveItem(product.id);
+        } else {
+          wishlistAddItem(product);
+        }
+        refreshHeartState();
+      };
     }
-    positionMobileHeart();
-    window.addEventListener('resize', positionMobileHeart);
 
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
