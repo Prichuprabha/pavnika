@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initAccountMenu();
   initSearchPanel();
   initCartDrawer();
+  initMobileBottomBar();
   initRevealAnimations();
   initCheckoutPage();
   initOrderSuccessPage();
@@ -724,6 +725,7 @@ function initCollectionsPage() {
   var seriesParam = params.get('series');
   var queryParam = params.get('q');
   var openParam = params.get('open');
+  var fromCurated = params.get('from') === 'curated';
 
   if (catParam && categoryGroup && categoryGroup.querySelector('.filter-btn[data-value="' + catParam.replace(/"/g, '') + '"]')) {
     state.category = catParam;
@@ -760,7 +762,7 @@ function initCollectionsPage() {
 
   if (openParam) {
     var openProduct = window.PRODUCTS.find(function (p) { return p.id === openParam; });
-    if (openProduct) window.openLightbox(openProduct);
+    if (openProduct) window.openLightbox(openProduct, { fromCurated: fromCurated });
   }
 
   // Open the lightbox when a saree card is clicked, but not when the
@@ -968,7 +970,8 @@ function buildLightbox() {
   overlay.className = 'lightbox-overlay';
   overlay.innerHTML =
     '<div class="lightbox-body">' +
-      '<a href="javascript:void(0)" class="lightbox-back" id="lightbox-close">&larr; Back to Collection</a>' +
+      '<button type="button" class="lightbox-close-x" id="lightbox-close" aria-label="Close">&times;</button>' +
+      '<a href="collections.html" class="lightbox-discover-more" id="lightbox-discover-more">Discover More &rarr;</a>' +
       '<div class="lightbox-main-grid">' +
         '<div class="lightbox-thumb-rail" id="lightbox-thumb-rail">' +
           '<button type="button" class="thumb-nav up" id="lightbox-thumb-up" aria-label="Previous image">&#9650;</button>' +
@@ -1082,12 +1085,29 @@ function buildLightbox() {
     return sentence + '.';
   }
 
-  window.openLightbox = function (product) {
+  window.openLightbox = function (product, options) {
+    options = options || {};
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
     document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
     document.getElementById('lightbox-meta').textContent =
       (product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : '');
+
+    // Opened from the homepage's "Curated, Just for You" tiles: show
+    // "Discover More" (→ the full, unfiltered Collections page) in the
+    // top-right corner instead of the usual "×". Every other entry
+    // point (a direct card click, header search, etc.) gets the plain
+    // close button — see initCuratedShowcase() for where the "&from=
+    // curated" flag on the link originates.
+    var closeBtn = document.getElementById('lightbox-close');
+    var discoverBtn = document.getElementById('lightbox-discover-more');
+    if (options.fromCurated) {
+      closeBtn.style.display = 'none';
+      discoverBtn.style.display = 'inline-flex';
+    } else {
+      closeBtn.style.display = 'flex';
+      discoverBtn.style.display = 'none';
+    }
 
     fetch('/.netlify/functions/log-view', {
       method: 'POST',
@@ -1167,10 +1187,19 @@ function buildLightbox() {
     renderStage();
     overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    // Fade in rather than appearing instantly — same reflow-forcing
+    // trick as the cart drawer fix below: display must actually be
+    // applied and painted once before adding the class that animates
+    // opacity, or there's no "before" state for the transition to run
+    // from and it just snaps straight to visible.
+    overlay.classList.remove('is-visible');
+    void overlay.offsetWidth;
+    overlay.classList.add('is-visible');
   };
 
   function closeLightbox() {
     overlay.style.display = 'none';
+    overlay.classList.remove('is-visible');
     document.body.style.overflow = '';
   }
 
@@ -2070,6 +2099,60 @@ function closeCartDrawer() {
   document.body.style.overflow = '';
 }
 
+// ---------- Mobile-only bottom navigation bar ----------
+// Home / Shop / Search / Bag, fixed to the bottom of the screen on
+// mobile widths only (see the max-width:880px rule in style.css — the
+// same breakpoint the header's own hamburger menu switches on at).
+// Built once, globally, on every page — same pattern as the cart
+// drawer and lightbox popup.
+function initMobileBottomBar() {
+  if (document.getElementById('mobile-bottom-bar')) return;
+
+  var path = window.location.pathname;
+  var isHome = /(^|\/)(home\.html)?$/i.test(path) || /\/$/i.test(path);
+  var isCollections = /collections\.html$/i.test(path);
+
+  var bar = document.createElement('nav');
+  bar.id = 'mobile-bottom-bar';
+  bar.className = 'mobile-bottom-bar';
+  bar.setAttribute('aria-label', 'Primary');
+  bar.innerHTML =
+    '<a href="home.html" class="bb-item' + (isHome ? ' is-active' : '') + '">' +
+      '<span class="bb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7"/><path d="M5 10v10a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V10"/></svg></span>' +
+      '<span class="bb-label">Home</span>' +
+    '</a>' +
+    '<a href="collections.html" class="bb-item' + (isCollections ? ' is-active' : '') + '">' +
+      '<span class="bb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>' +
+      '<span class="bb-label">Shop</span>' +
+    '</a>' +
+    '<button type="button" class="bb-item" id="bb-search-btn">' +
+      '<span class="bb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>' +
+      '<span class="bb-label">Search</span>' +
+    '</button>' +
+    '<button type="button" class="bb-item" id="bb-bag-btn">' +
+      '<span class="bb-icon bb-icon-bag">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>' +
+        '<span class="bb-badge" id="bb-bag-badge" style="display:none;">0</span>' +
+      '</span>' +
+      '<span class="bb-label">Bag</span>' +
+    '</button>';
+  document.body.appendChild(bar);
+
+  // Search: reuse the header's existing search button/panel logic
+  // rather than duplicating it — a real click on the (hidden-on-mobile)
+  // header search icon triggers the exact same open behavior.
+  document.getElementById('bb-search-btn').addEventListener('click', function () {
+    var headerSearchBtn = document.getElementById('nav-search-btn');
+    if (headerSearchBtn) headerSearchBtn.click();
+  });
+
+  document.getElementById('bb-bag-btn').addEventListener('click', function () {
+    openCartDrawer();
+  });
+
+  renderCartDrawer(); // sync the Bag badge to the current cart immediately
+}
+
 function renderCartDrawer() {
   var badge = document.getElementById('nav-cart-badge');
   var itemsWrap = document.getElementById('cart-drawer-items-wrap');
@@ -2079,6 +2162,12 @@ function renderCartDrawer() {
   var ids = cartGetItems();
   badge.style.display = ids.length ? 'flex' : 'none';
   badge.textContent = ids.length;
+
+  var bbBadge = document.getElementById('bb-bag-badge');
+  if (bbBadge) {
+    bbBadge.style.display = ids.length ? 'flex' : 'none';
+    bbBadge.textContent = ids.length;
+  }
 
   if (!itemsWrap) return;
 
@@ -2097,7 +2186,7 @@ function renderCartDrawer() {
   itemsWrap.innerHTML = products.map(function (p) {
     return (
       '<div class="cart-drawer-item">' +
-        '<img src="' + p.image + '" alt="' + p.design + '">' +
+        '<img src="' + p.image + '" alt="' + p.design + '" class="cart-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + (p.material || p.design) + '">' +
         '<div class="item-info">' +
           '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
@@ -2107,9 +2196,25 @@ function renderCartDrawer() {
       '</div>'
     );
   }).join('') +
-    '<div class="cart-drawer-total"><span>Total (AED)</span><span>' + formatAED(subtotal) + '</span></div>' +
-    continueShoppingHTML();
+    continueShoppingHTML() +
+    '<div class="cart-order-summary">' +
+      '<h4>Order Summary</h4>' +
+      '<div class="os-row"><span>Subtotal (' + products.length + (products.length === 1 ? ' item' : ' items') + ')</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
+      '<div class="os-row"><span>Shipping</span><span class="os-free">Free</span></div>' +
+      '<div class="os-row os-total"><span>Total</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
+    '</div>';
   bindContinueShopping();
+
+  // Clicking (or tapping/Enter-ing) a cart item's photo opens its full
+  // saree detail popup, same as clicking it from the Collections grid.
+  itemsWrap.querySelectorAll('.cart-item-img').forEach(function (img) {
+    function openFromCart() {
+      var product = (window.PRODUCTS || []).find(function (p) { return p.id === img.getAttribute('data-id'); });
+      if (product) window.openLightbox(product);
+    }
+    img.addEventListener('click', openFromCart);
+    img.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFromCart(); } });
+  });
 
   if (footer) footer.style.display = 'block';
 }
@@ -2119,7 +2224,7 @@ function renderCartDrawer() {
    and re-bound on every render. Goes to Collections — or, if the user is
    already on the Collections page, simply closes the drawer. */
 function continueShoppingHTML() {
-  return '<a href="collections.html" class="btn btn-ghost" id="cart-continue-btn" style="display:block; text-align:center; margin-top:16px;">&larr;&nbsp; Continue Shopping</a>';
+  return '<a href="collections.html" class="cart-continue-sm" id="cart-continue-btn">&larr;&nbsp; Continue Shopping</a>';
 }
 function bindContinueShopping() {
   var btn = document.getElementById('cart-continue-btn');
@@ -2754,7 +2859,7 @@ function initCuratedShowcase() {
     var seriesLabel = seriesTitleCase(p.series);
     // Open this saree's detail popup with the Collections grid behind
     // it showing the full, unfiltered catalogue.
-    var href = 'collections.html?open=' + encodeURIComponent(p.id);
+    var href = 'collections.html?open=' + encodeURIComponent(p.id) + '&from=curated';
     var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.material || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +

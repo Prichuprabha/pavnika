@@ -23,7 +23,7 @@
 
 * { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; scrollbar-gutter: stable; }
 
 body {
   margin: 0;
@@ -239,9 +239,17 @@ nav.main-nav a.active {
   inset: 0;
   z-index: 250;
   background: rgba(43, 13, 26, 0.4);
-  display: none;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
-.cart-drawer-overlay.is-open { display: block; }
+.cart-drawer-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
 .cart-drawer {
   position: fixed;
   top: 0; right: 0; bottom: 0;
@@ -287,32 +295,70 @@ nav.main-nav a.active {
 .cart-drawer-item {
   display: flex;
   gap: 12px;
-  padding: 14px 0;
-  border-bottom: 1px solid var(--ivory-deep);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid var(--stone);
+  border-radius: 10px;
   align-items: center;
 }
 .cart-drawer-item img {
-  width: 48px;
-  height: 62px;
+  width: 52px;
+  height: 66px;
   object-fit: cover;
-  border-radius: 3px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
+.cart-drawer-item img.cart-item-img { cursor: pointer; }
 .cart-drawer-item .item-info { flex: 1; min-width: 0; }
 .cart-drawer-item .item-design { font-size: 0.85rem; font-weight: 600; color: var(--green-deep); display: block; }
 .cart-drawer-item .item-series { font-size: 0.75rem; color: var(--ink); opacity: 0.6; display: block; margin-top: 2px; }
 .cart-drawer-item .item-remove { background: none; border: none; color: #B8142A; font-size: 0.75rem; cursor: pointer; padding: 0; margin-top: 6px; }
 .cart-drawer-item .item-price { font-size: 0.85rem; font-weight: 700; color: var(--green-deep); white-space: nowrap; align-self: flex-start; margin-top: 2px; }
-.cart-drawer-total {
+
+.cart-continue-sm {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--stone);
+  color: var(--ink);
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  margin: 4px 0 18px;
+}
+.cart-continue-sm:hover { border-color: var(--gold); color: var(--green); }
+
+.cart-order-summary {
+  border: 1px solid var(--stone);
+  border-radius: 10px;
+  padding: 16px 18px;
+  margin-bottom: 6px;
+}
+.cart-order-summary h4 {
+  font-family: var(--display);
+  color: var(--green);
+  margin: 0 0 10px;
+  font-size: 1.05rem;
+}
+.os-row {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--green-deep);
-  padding: 16px 0 6px;
-  margin-top: 4px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  padding: 5px 0;
+}
+.os-row .os-free { color: #3B6D11; font-weight: 600; }
+.os-row.os-total {
   border-top: 1px solid var(--stone);
+  margin-top: 6px;
+  padding-top: 10px;
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--green-deep);
 }
 .cart-drawer-footer {
   padding: 18px 22px 24px;
@@ -1779,34 +1825,62 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
   transform: translateZ(0);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
+.lightbox-overlay.is-visible { opacity: 1; }
 
 .lightbox-body {
   width: 100%;
   max-width: 1140px;
   min-width: 0;
   margin: auto;
+  position: relative;
 }
-.lightbox-back {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+.lightbox-close-x {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   background: transparent;
-  color: #ECB857;
-  border: 1px solid #ECB857;
-  font-family: var(--body);
-  font-size: 0.74rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 700;
-  text-decoration: none;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 8px 20px;
-  border-radius: 999px;
-  margin-bottom: 16px;
+  z-index: 10;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
-.lightbox-back:hover { background: #ECB857; color: var(--green-deep); }
+.lightbox-close-x:hover { background: var(--gold); color: var(--green-deep); }
+
+.lightbox-discover-more {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: none;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--body);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  text-decoration: none;
+  padding: 6px 13px;
+  border-radius: 999px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.lightbox-discover-more:hover { background: var(--gold); color: var(--green-deep); }
 
 .lightbox-main-grid {
   display: grid;
@@ -1920,6 +1994,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   font-weight: 600;
   display: block;
   margin-bottom: 4px;
+  color: var(--gold);
 }
 .lightbox-details .p-subtitle { font-size: 0.8rem; color: var(--gold-light); opacity: 0.85; display: block; }
 .lightbox-tags {
@@ -1934,8 +2009,9 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
-  color: var(--green-deep);
-  background: var(--gold-light);
+  color: var(--gold);
+  background: var(--green-deep);
+  border: 1px solid var(--gold);
   padding: 3px 9px;
   border-radius: 999px;
 }
@@ -2031,10 +2107,22 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
      that was made opaque specifically to fix a backdrop flicker while
      scrolling on mobile Safari, which this would risk reintroducing. */
   .lightbox-overlay { background: rgba(43, 13, 26, 0.90); }
+
+  /* Desktop only: present the popup as a distinct, fully opaque card
+     floating on that dimmed backdrop, rather than filling the whole
+     screen edge-to-edge as it still does on mobile (see item 3 — the
+     mobile layout is deliberately untouched, only its close button
+     changes, further down). */
+  .lightbox-body {
+    background: var(--green-deep);
+    border-radius: 14px;
+    padding: 34px 34px 30px;
+    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.65);
+  }
 }
 
 @media (max-width: 640px) {
-  .lightbox-back { font-size: 0.7rem; }
+  .lightbox-close-x, .lightbox-discover-more { top: 8px; right: 8px; }
   .lightbox-stage { max-height: 52vh; }
   .thumb-item { width: 44px; height: 58px; }
 }
@@ -2941,8 +3029,7 @@ body.login-page {
   padding: 14px 0;
   font-family: var(--display);
   font-size: 1.02rem;
-  color: var(--ivory); /* the popup background is near-black burgundy —
-                           needs light text, not the site's usual dark ink */
+  color: var(--gold);
   text-align: left;
 }
 .care-accordion-icon {
@@ -3845,4 +3932,61 @@ a.home-video-tile-link {
   opacity: 0.88;
   line-height: 1.5;
   margin: 0;
+}
+
+/* ---------- Mobile bottom navigation bar (Home / Shop / Search / Bag) ---------- */
+.mobile-bottom-bar { display: none; }
+@media (max-width: 880px) {
+  .mobile-bottom-bar {
+    display: flex;
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 220;
+    background: var(--ivory);
+    border-top: 1px solid var(--stone);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -4px 16px rgba(43, 13, 26, 0.08);
+  }
+  /* Reserve space so page content (and the site footer) never sits
+     underneath the fixed bar. */
+  body { padding-bottom: 62px; }
+}
+.bb-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: none;
+  border: none;
+  color: var(--ink);
+  opacity: 0.65;
+  text-decoration: none;
+  font-family: var(--body);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.bb-item.is-active { color: var(--green); opacity: 1; font-weight: 600; }
+.bb-item.is-active .bb-icon svg { stroke-width: 2.2; }
+.bb-icon { display: block; position: relative; line-height: 0; }
+.bb-icon svg { width: 21px; height: 21px; }
+.bb-icon-bag { display: inline-block; }
+.bb-badge {
+  position: absolute;
+  top: -5px;
+  right: -8px;
+  background: var(--gold);
+  color: #fff;
+  font-size: 0.56rem;
+  font-weight: 700;
+  min-width: 15px;
+  height: 15px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
 }
