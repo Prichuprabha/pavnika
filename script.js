@@ -2254,7 +2254,7 @@ function renderWishlistDrawer() {
     var inCart = cartIds.indexOf(p.id) !== -1;
     var addCartBtn = p.sold
       ? '<button type="button" class="wl-add-btn" disabled>Sold Out</button>'
-      : '<button type="button" class="wl-add-btn" data-id="' + p.id + '">' + (inCart ? 'View Cart' : 'Add to Cart') + '</button>';
+      : '<button type="button" class="wl-add-btn' + (inCart ? ' is-in-cart' : '') + '" data-id="' + p.id + '">' + (inCart ? 'View Cart' : 'Add to Cart') + '</button>';
     return (
       '<div class="wl-card">' +
         '<img src="' + p.image + '" alt="' + p.design + '" class="wl-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + (p.material || p.design) + '">' +
@@ -2291,6 +2291,7 @@ function renderWishlistDrawer() {
       if (product) {
         cartAddItem(product);
         btn.textContent = 'View Cart';
+        btn.classList.add('is-in-cart');
       }
     });
   });
@@ -2618,6 +2619,40 @@ function initCheckoutPage() {
   sameAddressBox.addEventListener('change', function () {
     shippingBlock.style.display = sameAddressBox.checked ? 'none' : 'block';
   });
+
+  // Live UAE-shipping check: online payment/direct shipping is UAE
+  // only. Which country actually governs that depends on whether
+  // "Ship to the same address" is checked — same rule the submit
+  // handler below already used, just now applied live as the visitor
+  // picks a country, instead of only being caught at the last moment
+  // when they click Pay Online.
+  var addressMsgLive = document.getElementById('checkout-address-msg');
+  function checkUAEShipping() {
+    var effectiveCountry = sameAddressBox.checked
+      ? billingCountrySelect.value
+      : shippingCountrySelect.value;
+    var payOnlineBtn = document.getElementById('checkout-pay-online');
+
+    // Only warn once a country has actually been chosen — an empty/
+    // not-yet-selected value shouldn't show this prematurely.
+    if (effectiveCountry && effectiveCountry !== 'United Arab Emirates') {
+      addressMsgLive.className = 'checkout-promo-msg error';
+      addressMsgLive.innerHTML = 'We currently offer online payment and direct shipping within the UAE only. For international orders, please <a href="' + buildOrderWhatsAppUrl() + '" target="_blank" rel="noopener" style="text-decoration:underline;">continue via WhatsApp</a> so we can arrange shipping and payment together.';
+      payOnlineBtn.style.pointerEvents = 'none';
+      payOnlineBtn.style.opacity = '0.5';
+      payOnlineBtn.setAttribute('aria-disabled', 'true');
+    } else {
+      addressMsgLive.className = 'checkout-promo-msg';
+      addressMsgLive.textContent = '';
+      payOnlineBtn.style.pointerEvents = '';
+      payOnlineBtn.style.opacity = '';
+      payOnlineBtn.removeAttribute('aria-disabled');
+    }
+  }
+  billingCountrySelect.addEventListener('change', checkUAEShipping);
+  shippingCountrySelect.addEventListener('change', checkUAEShipping);
+  sameAddressBox.addEventListener('change', checkUAEShipping);
+  checkUAEShipping();
 
   var appliedDiscount = 0;
   var appliedCode = '';
