@@ -2058,6 +2058,37 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-wishlist-heart.is-active { background: var(--gold); color: var(--green-deep); }
 .lightbox-wishlist-heart.is-active svg { fill: currentColor; stroke: none; }
 
+.lightbox-heart-wrap { position: relative; display: inline-block; }
+.lightbox-heart-tooltip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ivory);
+  color: var(--green-deep);
+  font-family: var(--body);
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+  z-index: 20;
+}
+.lightbox-heart-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--ivory);
+}
+.lightbox-heart-wrap:hover .lightbox-heart-tooltip { opacity: 1; }
+
 .lightbox-main-grid {
   display: grid;
   grid-template-areas: "stage" "thumbs" "side";
@@ -2309,6 +2340,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   .lightbox-body { padding-top: 60px; }
   .lightbox-close-x { display: none; }
   .lightbox-close-mobile { display: inline-flex; }
+  /* The tooltip wrap is position:relative on desktop so the tooltip
+     bubble anchors to it — but that would also make it the containing
+     block for the heart button's own position:absolute below, instead
+     of .lightbox-body (which is what the button's mobile positioning
+     — and the JS that measures/places it — actually expects). Static
+     here lets that absolute positioning correctly bubble up past it. */
+  .lightbox-heart-wrap { position: static; }
   .lightbox-wishlist-heart {
     position: absolute;
     top: 4px;
@@ -3503,7 +3541,7 @@ body.login-page {
      are hidden here — both live exclusively in the mobile bottom nav
      bar (see initMobileBottomBar in script.js) to avoid duplicating
      the same actions in two places. */
-  .nav-row { position: relative; }
+  .nav-row { position: relative; padding-right: 14px; }
   .nav-row .brand {
     position: absolute;
     left: 50%;

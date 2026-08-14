@@ -1006,9 +1006,12 @@ function buildLightbox() {
           '<p class="lightbox-description" id="lightbox-description"></p>' +
           '<div class="lightbox-price-row">' +
             '<p class="lightbox-price" id="lightbox-price"></p>' +
-            '<button type="button" class="lightbox-wishlist-heart" id="lightbox-wishlist-heart" aria-label="Add to wishlist">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
-            '</button>' +
+            '<span class="lightbox-heart-wrap">' +
+              '<span class="lightbox-heart-tooltip" id="lightbox-heart-tooltip">Add to Wishlist</span>' +
+              '<button type="button" class="lightbox-wishlist-heart" id="lightbox-wishlist-heart" aria-label="Add to wishlist">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
+              '</button>' +
+            '</span>' +
           '</div>' +
           '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
             '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
@@ -1185,10 +1188,13 @@ function buildLightbox() {
     loadInterestBadge(product.id, document.getElementById('lightbox-interest'));
 
     var wishlistHeart = document.getElementById('lightbox-wishlist-heart');
+    var wishlistTooltip = document.getElementById('lightbox-heart-tooltip');
     function refreshHeartState() {
       var inWishlist = wishlistGetItems().indexOf(product.id) !== -1;
       wishlistHeart.classList.toggle('is-active', inWishlist);
-      wishlistHeart.setAttribute('aria-label', inWishlist ? 'Remove from wishlist' : 'Add to wishlist');
+      var label = inWishlist ? 'Remove from wishlist' : 'Add to wishlist';
+      wishlistHeart.setAttribute('aria-label', label);
+      if (wishlistTooltip) wishlistTooltip.textContent = inWishlist ? 'Remove from Wishlist' : 'Add to Wishlist';
     }
     refreshHeartState();
     wishlistHeart.onclick = function () {
