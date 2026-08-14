@@ -3511,13 +3511,7 @@ body.login-page {
     transform: translate(-50%, -50%);
     margin: 0;
   }
-  .nav-controls {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    margin-left: 0;
-  }
+  .nav-controls { position: static; transform: none; margin-left: auto; }
   .nav-cart-btn { display: none; }
   .nav-wishlist-btn { display: none; }
   .nav-toggle {
