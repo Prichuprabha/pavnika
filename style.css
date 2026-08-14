@@ -280,6 +280,24 @@ nav.main-nav a.active {
   color: var(--green);
   cursor: pointer;
 }
+.cart-drawer-close-mobile {
+  display: none;
+  background: var(--green);
+  color: var(--ivory);
+  border: none;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-family: var(--body);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  cursor: pointer;
+}
+@media (max-width: 880px) {
+  .cart-drawer-close { display: none; }
+  .cart-drawer-close-mobile { display: inline-flex; align-items: center; }
+}
 .cart-drawer-items {
   flex: 1;
   overflow-y: auto;
@@ -747,7 +765,12 @@ nav.main-nav a.active {
   .hero-banner-slide img { object-position: right center; }
   .hero-banner-slide img.has-mobile-art { object-position: center; }
   .hero-banner-text .lede { display: none; }
-  .hero-banner-text .container { justify-content: flex-end; padding-bottom: 44px; }
+  /* 44px original spacing + 62px reserved for the fixed mobile bottom
+     bar (see .mobile-bottom-bar), so "View Collection" / "Connect with
+     Us" are never covered while just browsing the homepage normally —
+     unlike the popups handled by the :has() auto-hide rule below, this
+     is regular page content the bar is visible alongside, not a modal. */
+  .hero-banner-text .container { justify-content: flex-end; padding-bottom: calc(44px + 62px); }
   .hero-banner-text h1 { margin-bottom: 0.6em; }
   .hero-banner-text .btn-row { flex-wrap: nowrap; gap: 8px; align-items: center; }
   .hero-banner-text .btn {
@@ -1841,14 +1864,12 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   position: absolute;
   top: 4px;
   right: 4px;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  background: transparent;
-  border: 1px solid var(--gold);
+  background: rgba(182, 138, 105, 0.14);
+  border: 1.5px solid var(--gold);
   color: var(--gold);
-  font-size: 1rem;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1856,31 +1877,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   z-index: 10;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+.lightbox-close-x svg { width: 14px; height: 14px; }
 .lightbox-close-x:hover { background: var(--gold); color: var(--green-deep); }
-
-.lightbox-discover-more {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  display: none;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  border: 1px solid var(--gold);
-  color: var(--gold);
-  font-family: var(--body);
-  font-size: 0.66rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 700;
-  text-decoration: none;
-  padding: 6px 13px;
-  border-radius: 999px;
-  cursor: pointer;
-  z-index: 10;
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-.lightbox-discover-more:hover { background: var(--gold); color: var(--green-deep); }
 
 .lightbox-main-grid {
   display: grid;
@@ -1894,6 +1892,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   grid-area: thumbs;
   display: none;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   min-width: 0;
 }
@@ -2119,10 +2118,19 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
     padding: 34px 34px 30px;
     box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.65);
   }
+  .lightbox-close-x { top: 18px; right: 18px; }
+}
+
+/* Below the 900px desktop-card breakpoint, .lightbox-body has no
+   padding of its own, so the absolutely-positioned close button (same
+   top:4px/right:4px as everywhere) would otherwise sit directly on top
+   of the saree photo. Reserve a clear strip above the content instead. */
+@media (max-width: 899px) {
+  .lightbox-body { padding-top: 40px; }
 }
 
 @media (max-width: 640px) {
-  .lightbox-close-x, .lightbox-discover-more { top: 8px; right: 8px; }
+  .lightbox-close-x { top: 8px; right: 8px; }
   .lightbox-stage { max-height: 52vh; }
   .thumb-item { width: 44px; height: 58px; }
 }
@@ -3224,8 +3232,10 @@ body.login-page {
 .footer-grid h4 { color: var(--gold); }
 
 @media (max-width: 880px) {
-  /* header: burger + search hard-left, brand truly centered,
-     profile + cart on the right */
+  /* header: burger hard-left, brand truly centered, profile on the
+     right. Search and Cart are hidden here — both now live exclusively
+     in the mobile bottom nav bar (see initMobileBottomBar in script.js)
+     to avoid showing the same actions twice. */
   .nav-row { position: relative; }
   .nav-row .brand {
     position: absolute;
@@ -3236,14 +3246,8 @@ body.login-page {
   }
   .nav-controls { position: static; transform: none; margin-left: auto; }
   .nav-account { order: 1; }
-  .nav-cart-btn { order: 2; }
-  #nav-search-btn {
-    position: absolute;
-    left: 54px;
-    top: 50%;
-    transform: translateY(-50%);
-    margin: 0;
-  }
+  .nav-cart-btn { display: none; }
+  #nav-search-btn { display: none; }
   .nav-toggle {
     position: absolute;
     left: 14px;
@@ -3978,8 +3982,8 @@ a.home-video-tile-link {
   position: absolute;
   top: -5px;
   right: -8px;
-  background: var(--gold);
-  color: #fff;
+  background: #B8142A;
+  color: var(--ivory);
   font-size: 0.56rem;
   font-weight: 700;
   min-width: 15px;
@@ -3989,4 +3993,19 @@ a.home-video-tile-link {
   align-items: center;
   justify-content: center;
   padding: 0 3px;
+}
+
+/* Auto-hide the mobile bottom bar whenever any popup/drawer is open,
+   so it can never cover content inside them (the saree detail popup's
+   "Saree Care & Storage", the mobile filter drawer's "Apply Filters"
+   button, etc.) — rather than trying to pad every single popup's
+   internal content individually. */
+@media (max-width: 880px) {
+  body:has(.lightbox-overlay.is-visible) .mobile-bottom-bar,
+  body:has(.cart-drawer-overlay.is-open) .mobile-bottom-bar,
+  body:has(.appt-overlay.is-open) .mobile-bottom-bar,
+  body:has(#search-panel.is-open) .mobile-bottom-bar,
+  body:has(.collections-sidebar.is-open) .mobile-bottom-bar {
+    display: none;
+  }
 }

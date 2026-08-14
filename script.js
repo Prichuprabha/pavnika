@@ -725,7 +725,6 @@ function initCollectionsPage() {
   var seriesParam = params.get('series');
   var queryParam = params.get('q');
   var openParam = params.get('open');
-  var fromCurated = params.get('from') === 'curated';
 
   if (catParam && categoryGroup && categoryGroup.querySelector('.filter-btn[data-value="' + catParam.replace(/"/g, '') + '"]')) {
     state.category = catParam;
@@ -762,7 +761,7 @@ function initCollectionsPage() {
 
   if (openParam) {
     var openProduct = window.PRODUCTS.find(function (p) { return p.id === openParam; });
-    if (openProduct) window.openLightbox(openProduct, { fromCurated: fromCurated });
+    if (openProduct) window.openLightbox(openProduct);
   }
 
   // Open the lightbox when a saree card is clicked, but not when the
@@ -970,8 +969,9 @@ function buildLightbox() {
   overlay.className = 'lightbox-overlay';
   overlay.innerHTML =
     '<div class="lightbox-body">' +
-      '<button type="button" class="lightbox-close-x" id="lightbox-close" aria-label="Close">&times;</button>' +
-      '<a href="collections.html" class="lightbox-discover-more" id="lightbox-discover-more">Discover More &rarr;</a>' +
+      '<button type="button" class="lightbox-close-x" id="lightbox-close" aria-label="Close">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
+      '</button>' +
       '<div class="lightbox-main-grid">' +
         '<div class="lightbox-thumb-rail" id="lightbox-thumb-rail">' +
           '<button type="button" class="thumb-nav up" id="lightbox-thumb-up" aria-label="Previous image">&#9650;</button>' +
@@ -1085,29 +1085,12 @@ function buildLightbox() {
     return sentence + '.';
   }
 
-  window.openLightbox = function (product, options) {
-    options = options || {};
+  window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
     document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
     document.getElementById('lightbox-meta').textContent =
       (product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : '');
-
-    // Opened from the homepage's "Curated, Just for You" tiles: show
-    // "Discover More" (→ the full, unfiltered Collections page) in the
-    // top-right corner instead of the usual "×". Every other entry
-    // point (a direct card click, header search, etc.) gets the plain
-    // close button — see initCuratedShowcase() for where the "&from=
-    // curated" flag on the link originates.
-    var closeBtn = document.getElementById('lightbox-close');
-    var discoverBtn = document.getElementById('lightbox-discover-more');
-    if (options.fromCurated) {
-      closeBtn.style.display = 'none';
-      discoverBtn.style.display = 'inline-flex';
-    } else {
-      closeBtn.style.display = 'flex';
-      discoverBtn.style.display = 'none';
-    }
 
     fetch('/.netlify/functions/log-view', {
       method: 'POST',
@@ -2131,10 +2114,10 @@ function initMobileBottomBar() {
     '</button>' +
     '<button type="button" class="bb-item" id="bb-bag-btn">' +
       '<span class="bb-icon bb-icon-bag">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1 13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1L6 7z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>' +
+        '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>' +
         '<span class="bb-badge" id="bb-bag-badge" style="display:none;">0</span>' +
       '</span>' +
-      '<span class="bb-label">Bag</span>' +
+      '<span class="bb-label">Cart</span>' +
     '</button>';
   document.body.appendChild(bar);
 
@@ -2210,7 +2193,10 @@ function renderCartDrawer() {
   itemsWrap.querySelectorAll('.cart-item-img').forEach(function (img) {
     function openFromCart() {
       var product = (window.PRODUCTS || []).find(function (p) { return p.id === img.getAttribute('data-id'); });
-      if (product) window.openLightbox(product);
+      if (product) {
+        closeCartDrawer();
+        window.openLightbox(product);
+      }
     }
     img.addEventListener('click', openFromCart);
     img.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFromCart(); } });
@@ -2253,6 +2239,7 @@ function initCartDrawer() {
       '<div class="cart-drawer-header">' +
         '<h3>Your Cart</h3>' +
         '<button type="button" class="cart-drawer-close" id="cart-drawer-close" aria-label="Close cart">&times;</button>' +
+        '<button type="button" class="cart-drawer-close-mobile" id="cart-drawer-close-mobile" aria-label="Close cart">Close</button>' +
       '</div>' +
       '<div class="cart-drawer-items" id="cart-drawer-items-wrap"></div>' +
       '<div class="cart-drawer-footer" id="cart-drawer-footer" style="display:none;">' +
@@ -2265,6 +2252,7 @@ function initCartDrawer() {
 
   cartBtn.addEventListener('click', openCartDrawer);
   document.getElementById('cart-drawer-close').addEventListener('click', closeCartDrawer);
+  document.getElementById('cart-drawer-close-mobile').addEventListener('click', closeCartDrawer);
   overlay.addEventListener('click', function (e) { if (e.target === overlay) closeCartDrawer(); });
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeCartDrawer();
@@ -2859,7 +2847,7 @@ function initCuratedShowcase() {
     var seriesLabel = seriesTitleCase(p.series);
     // Open this saree's detail popup with the Collections grid behind
     // it showing the full, unfiltered catalogue.
-    var href = 'collections.html?open=' + encodeURIComponent(p.id) + '&from=curated';
+    var href = 'collections.html?open=' + encodeURIComponent(p.id);
     var detail = 'A ' + (p.category || '') + ' Category Saree in ' + (p.sareeType || p.material || p.type || '');
     return (
       '<a class="curated-tile" href="' + href + '">' +
