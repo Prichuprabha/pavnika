@@ -2418,7 +2418,7 @@ function renderCartDrawer() {
     '<div class="cart-order-summary">' +
       '<h4>Order Summary</h4>' +
       '<div class="os-row"><span>Subtotal (' + products.length + (products.length === 1 ? ' item' : ' items') + ')</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
-      '<div class="os-row"><span>Shipping</span><span class="os-free">Free</span></div>' +
+      '<div class="os-row"><span>Shipping</span><span class="os-free">Free within UAE</span></div>' +
       '<div class="os-row os-total"><span>Total</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
     '</div>';
   bindContinueShopping();

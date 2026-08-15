@@ -3044,19 +3044,17 @@ body.login-page {
 .checkout-item .item-price { font-size: 0.9rem; font-weight: 700; color: var(--green-deep); white-space: nowrap; }
 
 .checkout-promo-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   background: var(--ivory-deep);
   border: 1px solid var(--stone);
   border-radius: 10px;
   padding: 12px 16px;
   margin: 18px 0 6px;
-  flex-wrap: wrap;
 }
+.checkout-promo-row-top { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .checkout-promo-tag-icon { color: var(--gold); flex-shrink: 0; display: flex; }
 .checkout-promo-tag-icon svg { width: 17px; height: 17px; }
-.checkout-promo-label { font-size: 0.84rem; font-weight: 600; color: var(--ink); flex-shrink: 0; }
+.checkout-promo-label { font-size: 0.84rem; font-weight: 600; color: var(--ink); }
+.checkout-promo-row-bottom { display: flex; gap: 8px; }
 .checkout-promo-card input {
   flex: 1;
   min-width: 100px;
@@ -3080,6 +3078,11 @@ body.login-page {
   cursor: pointer;
 }
 .checkout-promo-card button:hover { background: var(--green-deep); }
+@media (min-width: 640px) {
+  .checkout-promo-card { display: flex; align-items: center; gap: 10px; }
+  .checkout-promo-row-top { margin-bottom: 0; }
+  .checkout-promo-row-bottom { flex: 1; }
+}
 .checkout-promo-msg { font-size: 0.8rem; margin: 8px 0 16px; min-height: 1.2em; }
 .checkout-promo-msg.error { color: #B8142A; }
 .checkout-promo-msg.success { color: var(--green); }
