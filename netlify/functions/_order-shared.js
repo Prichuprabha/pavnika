@@ -261,8 +261,8 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
     </div>
   `;
 
-  var recipients = [ADMIN_EMAIL];
-  if (order.customer_email) recipients.push(order.customer_email);
+  var toRecipients = order.customer_email ? [order.customer_email] : [ADMIN_EMAIL];
+  var bccRecipients = order.customer_email ? [ADMIN_EMAIL] : [];
 
   await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -273,7 +273,8 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
     body: JSON.stringify({
       from: FROM_EMAIL,
       reply_to: 'support@pavnika.ae',
-      to: recipients,
+      to: toRecipients,
+      bcc: bccRecipients,
       subject: `Order #${order.order_number || order.nomod_checkout_id} — AED ${formatAED(order.total)} — Payment confirmed`,
       html: html
     })
