@@ -1418,8 +1418,8 @@ function initPromoCodesEditor(token) {
 
   document.getElementById('admin-promo-create-btn').addEventListener('click', function () {
     var discount = parseInt(document.getElementById('admin-promo-discount').value, 10);
-    if (!discount || discount < 1 || discount > 90) {
-      showStatus('error', 'Please enter a discount between 1 and 90.');
+    if (!discount || discount < 1 || discount > 95) {
+      showStatus('error', 'Please enter a discount between 1 and 95.');
       return;
     }
 
