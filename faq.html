@@ -7,7 +7,7 @@
     var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return m ? m[2] : null;
   }
-  if (getCookie('pavnika_verified') !== '1') {
+  if (!getCookie('pavnika_verified')) {
     window.location.replace('index.html');
   }
 })();
