@@ -259,6 +259,8 @@ nav.main-nav a.active {
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 .cart-drawer-overlay.is-open {
   opacity: 1;
@@ -276,10 +278,12 @@ nav.main-nav a.active {
   z-index: 251;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  transform: translateX(100%) translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
   transition: transform 0.3s ease;
 }
-.cart-drawer-overlay.is-open .cart-drawer { transform: translateX(0); }
+.cart-drawer-overlay.is-open .cart-drawer { transform: translateX(0) translateZ(0); }
 .cart-drawer-header {
   display: flex;
   align-items: center;
@@ -419,6 +423,8 @@ nav.main-nav a.active {
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 .wishlist-drawer-overlay.is-open {
   opacity: 1;
@@ -436,10 +442,12 @@ nav.main-nav a.active {
   z-index: 251;
   display: flex;
   flex-direction: column;
-  transform: translateX(100%);
+  transform: translateX(100%) translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
   transition: transform 0.3s ease;
 }
-.wishlist-drawer-overlay.is-open .wishlist-drawer { transform: translateX(0); }
+.wishlist-drawer-overlay.is-open .wishlist-drawer { transform: translateX(0) translateZ(0); }
 @media (min-width: 900px) {
   .wishlist-drawer { width: 60vw; }
 }
@@ -1990,6 +1998,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
   transform: translateZ(0);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
   opacity: 0;
   transition: opacity 0.3s ease;
 }
