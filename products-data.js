@@ -282,7 +282,7 @@ window.PRODUCTS = [
     "material": "Pure Kanchipuram",
     "shade": "Purple / Violet",
     "price": 810,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/r0hw53PBgeJlqybNtsb2.jpg",
