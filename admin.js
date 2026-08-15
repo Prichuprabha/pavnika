@@ -138,6 +138,7 @@ function showAdminPanel(token, email) {
   initPromoCodesEditor(token);
   initStatsDashboard(token);
   initOrdersView(token);
+  initManualOrderView(token);
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -1503,6 +1504,7 @@ function initOrdersView(token) {
   }
 
   function statusLabel(s) {
+    if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
     return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
@@ -1573,7 +1575,7 @@ function initOrdersView(token) {
   }
 
   function buildStatusSelect(o) {
-    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'payment_error', 'cancelled', 'refunded'];
+    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'payment_error', 'cancelled', 'refunded'];
     var options = statuses.map(function (s) {
       return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
     }).join('');
@@ -1635,4 +1637,223 @@ function initOrdersView(token) {
   }
 
   loadOrders();
+  window.__refreshOrders = loadOrders;
+}
+
+/* ---------- Manual order entry (bank transfer / cash / offline Nomod) ---------- */
+function initManualOrderView(token) {
+  var statusMsg = document.getElementById('admin-mo-status-msg');
+  var searchInput = document.getElementById('admin-mo-saree-search');
+  var sareeList = document.getElementById('admin-mo-saree-list');
+  var qtyInput = document.getElementById('admin-mo-saree-qty');
+  var addBtn = document.getElementById('admin-mo-add-saree-btn');
+  var pickedWrap = document.getElementById('admin-mo-picked-items');
+  var discountTypeBtns = document.querySelectorAll('.admin-mo-discount-type-btn');
+  var discountValueInput = document.getElementById('admin-mo-discount-value');
+  var totalPreview = document.getElementById('admin-mo-total-preview');
+  var sameAddressBox = document.getElementById('admin-mo-same-address');
+  var shippingCard = document.getElementById('admin-mo-shipping-card');
+  var billingCountrySelect = document.getElementById('admin-mo-billing-country');
+  var shippingCountrySelect = document.getElementById('admin-mo-shipping-country');
+  var submitBtn = document.getElementById('admin-mo-submit-btn');
+
+  var MO_COUNTRY_LIST = [
+    'United Arab Emirates', 'India', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
+    'United Kingdom', 'United States', 'Canada', 'Australia', 'Singapore', 'Pakistan',
+    'Sri Lanka', 'Bangladesh', 'Other'
+  ];
+  [billingCountrySelect, shippingCountrySelect].forEach(function (select) {
+    select.innerHTML = MO_COUNTRY_LIST.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
+  });
+
+  sameAddressBox.addEventListener('change', function () {
+    shippingCard.style.display = sameAddressBox.checked ? 'none' : 'block';
+  });
+
+  var pickedItems = []; // [{id, name, price, qty}]
+  var discountType = 'percent';
+
+  function refreshSareeList() {
+    var available = (window.PRODUCTS || []).filter(function (p) { return !p.sold; });
+    sareeList.innerHTML = available.map(function (p) {
+      var label = (p.material || p.design) + ' — ' + p.id + ' — AED ' + Number(p.price || 0).toFixed(2);
+      return '<option value="' + label.replace(/"/g, '&quot;') + '">';
+    }).join('');
+  }
+  refreshSareeList();
+
+  function showStatus(type, html) {
+    statusMsg.className = 'admin-status-msg admin-status-' + type;
+    statusMsg.innerHTML = html;
+  }
+
+  function computeTotals() {
+    var subtotal = pickedItems.reduce(function (sum, it) { return sum + (Number(it.price) || 0) * (Number(it.qty) || 1); }, 0);
+    var discountInput = Number(discountValueInput.value) || 0;
+    var discountAmount = discountType === 'percent' ? subtotal * discountInput / 100 : discountInput;
+    if (discountAmount > subtotal) discountAmount = subtotal; // never let a flat/percent typo produce a negative total
+    var total = subtotal - discountAmount;
+    return { subtotal: subtotal, discountAmount: discountAmount, total: total };
+  }
+
+  function renderTotals() {
+    var t = computeTotals();
+    totalPreview.innerHTML =
+      '<div style="display:flex; justify-content:space-between; padding:2px 0;"><span>Subtotal</span><span>AED ' + t.subtotal.toFixed(2) + '</span></div>' +
+      (t.discountAmount > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Discount</span><span>-AED ' + t.discountAmount.toFixed(2) + '</span></div>' : '') +
+      '<div style="display:flex; justify-content:space-between; padding:6px 0 0; margin-top:4px; border-top:1px solid var(--stone); font-weight:700; color:var(--green-deep);"><span>Total</span><span>AED ' + t.total.toFixed(2) + '</span></div>';
+  }
+
+  function renderPickedItems() {
+    if (!pickedItems.length) {
+      pickedWrap.innerHTML = '<p style="font-size:0.82rem; opacity:0.6; margin:0;">No sarees added yet.</p>';
+    } else {
+      pickedWrap.innerHTML = pickedItems.map(function (it, i) {
+        return '<div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--stone); border-radius:6px; margin-bottom:6px; font-size:0.82rem;">' +
+          '<span style="flex:1; font-weight:600; color:var(--green-deep);">' + it.name + ' — ' + it.id + '</span>' +
+          '<span>Qty: ' + it.qty + '</span>' +
+          '<span style="color:var(--gold); font-weight:700;">AED ' + Number(it.price).toFixed(2) + '</span>' +
+          '<button type="button" class="admin-mo-remove-item" data-i="' + i + '" style="background:none; border:none; color:#B8142A; cursor:pointer; font-size:0.95rem;">&#10005;</button>' +
+        '</div>';
+      }).join('');
+    }
+    renderTotals();
+  }
+  renderPickedItems();
+
+  pickedWrap.addEventListener('click', function (e) {
+    var btn = e.target.closest('.admin-mo-remove-item');
+    if (!btn) return;
+    pickedItems.splice(Number(btn.getAttribute('data-i')), 1);
+    renderPickedItems();
+  });
+
+  discountTypeBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      discountTypeBtns.forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      discountType = btn.getAttribute('data-type');
+      renderTotals();
+    });
+  });
+  discountValueInput.addEventListener('input', renderTotals);
+
+  addBtn.addEventListener('click', function () {
+    var typed = searchInput.value.trim();
+    if (!typed) return;
+    var product = (window.PRODUCTS || []).find(function (p) { return typed.indexOf(p.id) !== -1; });
+    if (!product) {
+      showStatus('error', 'Could not match that to a saree — pick one from the suggestions list.');
+      return;
+    }
+    var qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+    var existing = pickedItems.find(function (it) { return it.id === product.id; });
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      pickedItems.push({
+        id: product.id,
+        name: product.material || product.design,
+        price: Number(product.price) || 0,
+        qty: qty,
+        series: product.series,
+        type: product.type,
+        sareeType: product.sareeType,
+        pattern: product.pattern,
+        image: product.image
+      });
+    }
+    searchInput.value = '';
+    qtyInput.value = '1';
+    showStatus('', '');
+    renderPickedItems();
+  });
+
+  submitBtn.addEventListener('click', function () {
+    showStatus('', '');
+
+    if (!pickedItems.length) {
+      showStatus('error', 'Add at least one saree before submitting.');
+      return;
+    }
+    var firstName = document.getElementById('admin-mo-first-name').value.trim();
+    var lastName = document.getElementById('admin-mo-last-name').value.trim();
+    var email = document.getElementById('admin-mo-email').value.trim();
+    if (!firstName || !lastName || !email) {
+      showStatus('error', 'First name, last name, and email are required.');
+      return;
+    }
+
+    var billing = {
+      building: document.getElementById('admin-mo-billing-building').value.trim(),
+      street: document.getElementById('admin-mo-billing-street').value.trim(),
+      city: document.getElementById('admin-mo-billing-city').value.trim(),
+      state: document.getElementById('admin-mo-billing-state').value.trim(),
+      pincode: document.getElementById('admin-mo-billing-pincode').value.trim(),
+      country: billingCountrySelect.value
+    };
+    var sameAddress = sameAddressBox.checked;
+    var shipping = sameAddress ? billing : {
+      building: document.getElementById('admin-mo-shipping-building').value.trim(),
+      street: document.getElementById('admin-mo-shipping-street').value.trim(),
+      city: document.getElementById('admin-mo-shipping-city').value.trim(),
+      state: document.getElementById('admin-mo-shipping-state').value.trim(),
+      pincode: document.getElementById('admin-mo-shipping-pincode').value.trim(),
+      country: shippingCountrySelect.value
+    };
+
+    var t = computeTotals();
+    var payload = {
+      adminToken: token,
+      items: pickedItems,
+      customer: {
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        phone: document.getElementById('admin-mo-phone').value.trim()
+      },
+      billingAddress: billing,
+      shippingAddress: shipping,
+      discountType: discountType,
+      discountValue: Number(discountValueInput.value) || 0,
+      subtotal: t.subtotal,
+      discountAmount: t.discountAmount,
+      total: t.total,
+      paymentMode: document.getElementById('admin-mo-payment-mode').value
+    };
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Creating…';
+
+    fetch('/.netlify/functions/admin-create-manual-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          showStatus('error', result.data.error || 'Could not create the order.');
+          return;
+        }
+        showStatus('success', 'Order #' + result.data.orderNumber + ' created and confirmation email sent to ' + email + '.');
+        pickedItems = [];
+        renderPickedItems();
+        document.getElementById('admin-mo-first-name').value = '';
+        document.getElementById('admin-mo-last-name').value = '';
+        document.getElementById('admin-mo-email').value = '';
+        document.getElementById('admin-mo-phone').value = '';
+        discountValueInput.value = '0';
+        renderTotals();
+        refreshSareeList(); // the sold saree(s) should drop out of the picker
+        if (window.__refreshOrders) window.__refreshOrders();
+      })
+      .catch(function () {
+        showStatus('error', 'Network error. Please try again.');
+      })
+      .finally(function () {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Create Order & Send Confirmation Email';
+      });
+  });
 }

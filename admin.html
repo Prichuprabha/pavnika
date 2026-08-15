@@ -255,6 +255,7 @@
     <span class="brand-text">Pavnika Admin</span>
     <div class="admin-nav-item active" data-view="stats">Dashboard &amp; Stats</div>
     <div class="admin-nav-item" data-view="orders">Orders</div>
+    <div class="admin-nav-item" data-view="manual-order">Manual Order</div>
     <div class="admin-nav-item" data-view="sarees">Saree Editor</div>
     <div class="admin-nav-item" data-view="reviews">Reviews</div>
     <div class="admin-nav-item" data-view="banners">Banners</div>
@@ -283,6 +284,7 @@
           <option value="paid">Paid</option>
           <option value="shipped">Shipped</option>
           <option value="delivered">Delivered</option>
+          <option value="delivered_direct_pay">Delivered (Direct Pay)</option>
           <option value="payment_error">Payment error</option>
           <option value="cancelled">Cancelled</option>
           <option value="refunded">Refunded</option>
@@ -543,6 +545,98 @@
         <thead><tr><th>Code</th><th>Discount</th><th>Status</th></tr></thead>
         <tbody id="admin-promo-history-rows"></tbody>
       </table>
+    </div>
+
+    <div class="admin-view" id="admin-view-manual-order" style="display:none;">
+      <div class="admin-heading"><h1>Create Manual Order</h1></div>
+      <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin:-8px 0 20px;">For sales completed via bank transfer, cash, or a Nomod payment confirmed outside the website. This appears in the Orders tab exactly like an online order, and sends the customer the same confirmation email used for online purchases.</p>
+      <p class="admin-status-msg" id="admin-mo-status-msg"></p>
+
+      <div class="admin-form-card">
+        <h3>Sarees</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px;">
+          <div class="admin-field" style="flex:1;">
+            <label>Saree</label>
+            <input type="text" id="admin-mo-saree-search" list="admin-mo-saree-list" placeholder="Search by name or code…">
+            <datalist id="admin-mo-saree-list"></datalist>
+          </div>
+          <div class="admin-field" style="max-width:80px;">
+            <label>Qty</label>
+            <input type="number" id="admin-mo-saree-qty" value="1" min="1">
+          </div>
+          <button type="button" class="btn btn-primary" id="admin-mo-add-saree-btn">+ Add</button>
+        </div>
+        <div id="admin-mo-picked-items"></div>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Discount</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end;">
+          <div style="display:flex; border:1px solid var(--stone); border-radius:4px; overflow:hidden; flex-shrink:0;">
+            <span class="admin-mo-discount-type-btn active" data-type="percent" style="padding:9px 14px; font-size:0.76rem; cursor:pointer;">%</span>
+            <span class="admin-mo-discount-type-btn" data-type="flat" style="padding:9px 14px; font-size:0.76rem; cursor:pointer;">AED flat</span>
+          </div>
+          <div class="admin-field" style="max-width:140px;">
+            <label>Amount</label>
+            <input type="number" id="admin-mo-discount-value" placeholder="0" min="0" value="0">
+          </div>
+        </div>
+        <div id="admin-mo-total-preview" style="background:var(--ivory-deep); border-radius:6px; padding:14px 16px; margin-top:14px; font-size:0.84rem;"></div>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Contact Information</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="admin-field"><label>First Name</label><input type="text" id="admin-mo-first-name"></div>
+          <div class="admin-field"><label>Last Name</label><input type="text" id="admin-mo-last-name"></div>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+          <div class="admin-field"><label>Email</label><input type="email" id="admin-mo-email"></div>
+          <div class="admin-field"><label>Phone</label><input type="tel" id="admin-mo-phone" placeholder="+971..."></div>
+        </div>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Billing Address</h3>
+        <div class="admin-field"><label>Flat / House / Building</label><input type="text" id="admin-mo-billing-building"></div>
+        <div class="admin-field"><label>Street / Locality</label><input type="text" id="admin-mo-billing-street"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+          <div class="admin-field"><label>City</label><input type="text" id="admin-mo-billing-city"></div>
+          <div class="admin-field"><label>State</label><input type="text" id="admin-mo-billing-state"></div>
+          <div class="admin-field"><label>Pincode</label><input type="text" id="admin-mo-billing-pincode"></div>
+        </div>
+        <div class="admin-field"><label>Country</label><select id="admin-mo-billing-country"></select></div>
+
+        <label style="display:flex; align-items:center; gap:8px; font-size:0.82rem; margin:10px 0 0;">
+          <input type="checkbox" id="admin-mo-same-address" checked> Shipping same as billing
+        </label>
+      </div>
+
+      <div class="admin-form-card" id="admin-mo-shipping-card" style="display:none;">
+        <h3>Shipping Address</h3>
+        <div class="admin-field"><label>Flat / House / Building</label><input type="text" id="admin-mo-shipping-building"></div>
+        <div class="admin-field"><label>Street / Locality</label><input type="text" id="admin-mo-shipping-street"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;">
+          <div class="admin-field"><label>City</label><input type="text" id="admin-mo-shipping-city"></div>
+          <div class="admin-field"><label>State</label><input type="text" id="admin-mo-shipping-state"></div>
+          <div class="admin-field"><label>Pincode</label><input type="text" id="admin-mo-shipping-pincode"></div>
+        </div>
+        <div class="admin-field"><label>Country</label><select id="admin-mo-shipping-country"></select></div>
+      </div>
+
+      <div class="admin-form-card">
+        <h3>Payment</h3>
+        <div class="admin-field" style="max-width:260px;">
+          <label>Payment Mode</label>
+          <select id="admin-mo-payment-mode">
+            <option>Bank Transfer</option>
+            <option>Cash</option>
+            <option>Nomod (confirmed manually)</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-primary" id="admin-mo-submit-btn" style="width:100%; padding:13px;">Create Order &amp; Send Confirmation Email</button>
     </div>
 
     <div class="admin-view" id="admin-view-stats">
