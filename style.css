@@ -1990,7 +1990,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   inset: 0;
   background: rgb(43, 13, 26);
   z-index: 200;
-  display: none;
+  display: flex;
   align-items: flex-start;
   justify-content: center;
   padding: 20px;
@@ -2001,9 +2001,16 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   will-change: transform, opacity;
   backface-visibility: hidden;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
-.lightbox-overlay.is-visible { opacity: 1; }
+.lightbox-overlay.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
 
 .lightbox-body {
   width: 100%;
@@ -2255,6 +2262,14 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   display: block;
   margin-bottom: 4px;
   color: var(--gold);
+}
+.lightbox-details .p-code {
+  font-family: var(--body);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--gold);
+  display: block;
+  margin-bottom: 6px;
 }
 .lightbox-details .p-subtitle { font-size: 0.8rem; color: var(--gold-light); opacity: 0.85; display: block; }
 .lightbox-tags {

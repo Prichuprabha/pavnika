@@ -1000,6 +1000,7 @@ function buildLightbox() {
         '<div class="lightbox-side">' +
           '<div class="lightbox-details">' +
             '<span class="p-title" id="lightbox-design"></span>' +
+            '<span class="p-code" id="lightbox-code"></span>' +
             '<span class="p-subtitle" id="lightbox-meta"></span>' +
           '</div>' +
           '<div class="lightbox-tags" id="lightbox-tags"></div>' +
@@ -1117,6 +1118,7 @@ function buildLightbox() {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
     document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
+    document.getElementById('lightbox-code').textContent = 'Code: ' + product.id;
     document.getElementById('lightbox-meta').textContent =
       (product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : '');
 
@@ -1229,20 +1231,11 @@ function buildLightbox() {
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
-    overlay.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    // Fade in rather than appearing instantly — same reflow-forcing
-    // trick as the cart drawer fix below: display must actually be
-    // applied and painted once before adding the class that animates
-    // opacity, or there's no "before" state for the transition to run
-    // from and it just snaps straight to visible.
-    overlay.classList.remove('is-visible');
-    void overlay.offsetWidth;
     overlay.classList.add('is-visible');
   };
 
   function closeLightbox() {
-    overlay.style.display = 'none';
     overlay.classList.remove('is-visible');
     document.body.style.overflow = '';
   }
@@ -1313,7 +1306,7 @@ function buildLightbox() {
     }
   });
   document.addEventListener('keydown', function (e) {
-    if (overlay.style.display !== 'flex') return;
+    if (!overlay.classList.contains('is-visible')) return;
     if (e.key === 'Escape') closeLightbox();
     if (e.key === 'ArrowLeft') goTo(-1);
     if (e.key === 'ArrowRight') goTo(1);
@@ -1365,7 +1358,7 @@ function buildLightbox() {
   window.addEventListener('mouseup', function (e) {
     if (!isDragging || mouseStartX === null) return;
     isDragging = false;
-    if (overlay.style.display !== 'flex') { mouseStartX = null; return; }
+    if (!overlay.classList.contains('is-visible')) { mouseStartX = null; return; }
     var dx = e.clientX - mouseStartX;
     if (Math.abs(dx) > 40) goTo(dx < 0 ? 1 : -1);
     mouseStartX = null;
