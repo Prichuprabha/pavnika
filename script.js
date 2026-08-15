@@ -1232,12 +1232,22 @@ function buildLightbox() {
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
     document.body.style.overflow = 'hidden';
+    // Mobile Chrome specifically: when the address bar collapses mid-
+    // scroll, the usable viewport briefly grows before the fixed
+    // overlay's own background catches up to covering it, exposing
+    // whatever's underneath (the Collections page) for a frame or two.
+    // Matching the page's own background to the same dark colour means
+    // that brief gap shows the right colour regardless, even though
+    // the timing lag itself isn't something CSS positioning alone can
+    // prevent.
+    document.body.style.background = 'rgb(43, 13, 26)';
     overlay.classList.add('is-visible');
   };
 
   function closeLightbox() {
     overlay.classList.remove('is-visible');
     document.body.style.overflow = '';
+    document.body.style.background = '';
   }
 
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);

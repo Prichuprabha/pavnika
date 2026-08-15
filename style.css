@@ -1987,13 +1987,16 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 /* ---------- Lightbox (saree image gallery) ---------- */
 .lightbox-overlay {
   position: fixed;
-  inset: 0;
+  top: -80px;
+  right: 0;
+  bottom: -80px;
+  left: 0;
+  padding: 100px 20px;
   background: rgb(43, 13, 26);
   z-index: 200;
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 20px;
   overflow-y: scroll;
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
