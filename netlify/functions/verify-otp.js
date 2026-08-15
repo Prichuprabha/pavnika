@@ -8,6 +8,7 @@
 //   adminToken the admin panel uses to authenticate write requests.
 
 const { ADMIN_EMAIL, signAdminToken } = require('./_admin-auth');
+const { signVisitorToken } = require('./_visitor-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -79,6 +80,7 @@ exports.handler = async function (event, context) {
 
     if (record.verified) {
       var alreadyResponse = { verified: true };
+      try { alreadyResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
       if (email === ADMIN_EMAIL) alreadyResponse.adminToken = signAdminToken(email);
       return { statusCode: 200, body: JSON.stringify(alreadyResponse) };
     }
@@ -105,11 +107,10 @@ exports.handler = async function (event, context) {
       })
     });
 
-    return { statusCode: 200, body: JSON.stringify(
-      email === ADMIN_EMAIL
-        ? { verified: true, adminToken: signAdminToken(email) }
-        : { verified: true }
-    ) };
+    var freshResponse = { verified: true };
+    try { freshResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
+    if (email === ADMIN_EMAIL) freshResponse.adminToken = signAdminToken(email);
+    return { statusCode: 200, body: JSON.stringify(freshResponse) };
   } catch (err) {
     console.error(err);
     return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong. Please try again.' }) };

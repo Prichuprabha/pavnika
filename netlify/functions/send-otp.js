@@ -12,6 +12,7 @@
 // - Rate limited to 5 sends per email per rolling hour.
 
 const { ADMIN_EMAIL } = require('./_admin-auth');
+const { signVisitorToken } = require('./_visitor-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -74,7 +75,9 @@ exports.handler = async function (event) {
 
     // Already verified before — no need to send a code at all.
     if (existing && existing.verified && email !== ADMIN_EMAIL) {
-      return { statusCode: 200, body: JSON.stringify({ alreadyVerified: true }) };
+      var response = { alreadyVerified: true };
+      try { response.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
+      return { statusCode: 200, body: JSON.stringify(response) };
     }
 
     // Rate limiting — not applied to the admin email, since every admin

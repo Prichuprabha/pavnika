@@ -30,6 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initSearchPanel();
   initCartDrawer();
   initWishlistDrawer();
+  initCartWishlistSync();
   initMobileBottomBar();
   initRevealAnimations();
   initCheckoutPage();
@@ -1501,11 +1502,24 @@ function gateSetCookie(name, value, days) {
   document.cookie = name + '=' + value + '; expires=' + expires + '; path=/; SameSite=Lax';
 }
 
+// Returns the signed visitor token proving who this browser verified
+// as, or null if there isn't a real one — either because the visitor
+// never verified, or because their cookie predates this feature (a
+// leftover plain "1" from before the token existed). Either case
+// falls back to guest/local-only cart & wishlist behavior rather than
+// erroring, since a token isn't required to browse or add to cart —
+// only to have that cart follow you across devices.
+function getVisitorToken() {
+  var raw = gateGetCookie('pavnika_verified');
+  if (!raw || raw === '1' || raw.indexOf('.') === -1) return null;
+  return raw;
+}
+
 function initLoginPage() {
   var root = document.getElementById('login-form-root');
   if (!root) return;
 
-  if (gateGetCookie('pavnika_verified') === '1') {
+  if (gateGetCookie('pavnika_verified')) {
     window.location.replace('home.html');
     return;
   }
@@ -1530,8 +1544,8 @@ function initLoginPage() {
     if (codeInput) codeInput.focus();
   }
 
-  function unlockSite() {
-    gateSetCookie('pavnika_verified', '1', 90);
+  function unlockSite(visitorToken) {
+    gateSetCookie('pavnika_verified', visitorToken || '1', 90);
     gateSetCookie('pavnika_email', encodeURIComponent(gateEmail), 90);
     window.location.href = 'home.html';
   }
@@ -1570,7 +1584,7 @@ function initLoginPage() {
         }
         gateEmail = email;
         if (result.data.alreadyVerified) {
-          unlockSite();
+          unlockSite(result.data.visitorToken);
           return;
         }
         showStepCode();
@@ -1610,7 +1624,7 @@ function initLoginPage() {
           errorEl.textContent = result.data.error || 'Incorrect code. Please try again.';
           return;
         }
-        unlockSite();
+        unlockSite(result.data.visitorToken);
       })
       .catch(function () {
         errorEl.textContent = 'Network error. Please check your connection and try again.';
@@ -2100,7 +2114,17 @@ function initLegalPopup() {
 var CART_STORAGE_KEY = 'pavnika_cart';
 var WISHLIST_STORAGE_KEY = 'pavnika_wishlist';
 
+// In-memory cache — the single source of truth once populated, so
+// cartGetItems()/wishlistGetItems() can stay synchronous (dozens of
+// existing call sites throughout this file expect an instant array
+// back, not a Promise). Populated from Supabase for a verified
+// visitor, or from localStorage for a guest — see
+// initCartWishlistSync() below, called once at page load.
+var _cartCache = null;
+var _wishlistCache = null;
+
 function cartGetItems() {
+  if (_cartCache !== null) return _cartCache;
   try {
     var raw = localStorage.getItem(CART_STORAGE_KEY);
     var ids = raw ? JSON.parse(raw) : [];
@@ -2111,21 +2135,90 @@ function cartGetItems() {
 }
 
 function cartSaveItems(ids) {
+  _cartCache = ids;
   try {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(ids));
   } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
 }
 
+function wishlistGetItems() {
+  if (_wishlistCache !== null) return _wishlistCache;
+  try {
+    var raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
+    var ids = raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) ? ids : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function wishlistSaveItems(ids) {
+  _wishlistCache = ids;
+  try {
+    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
+  } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
+}
+
+// Loads the cart & wishlist once at startup. With a valid visitor
+// token (verified within the last 90 days), pulls both from
+// Supabase — this is what makes them follow a person across devices
+// instead of staying stuck on whichever device they were added from.
+// Without one (not yet verified, or a pre-existing cookie from before
+// this feature), falls back to whatever's already in localStorage,
+// unchanged from how this always worked — browsing and adding to
+// cart still works before someone verifies, it just won't follow
+// them to another device until they do.
+function initCartWishlistSync() {
+  var token = getVisitorToken();
+  if (!token) {
+    cartGetItems(); // just primes the cache from localStorage; guest mode needs no network call
+    wishlistGetItems();
+    return;
+  }
+
+  fetch('/.netlify/functions/get-cart', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visitorToken: token })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      _cartCache = Array.isArray(data.items) ? data.items : [];
+      renderCartDrawer();
+    })
+    .catch(function (e) { console.error('get-cart failed:', e); });
+
+  fetch('/.netlify/functions/get-wishlist', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ visitorToken: token })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      _wishlistCache = Array.isArray(data.items) ? data.items : [];
+      renderWishlistDrawer();
+    })
+    .catch(function (e) { console.error('get-wishlist failed:', e); });
+}
+
 function cartAddItem(product) {
   var ids = cartGetItems();
   if (ids.indexOf(product.id) === -1) {
-    ids.push(product.id);
-    cartSaveItems(ids);
+    cartSaveItems(ids.concat([product.id]));
     fetch('/.netlify/functions/log-cart-activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ productId: product.id })
     }).catch(function () {});
+
+    var token = getVisitorToken();
+    if (token) {
+      fetch('/.netlify/functions/add-to-cart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorToken: token, sareeId: product.id })
+      }).catch(function (e) { console.error('add-to-cart failed:', e); });
+    }
   }
   renderCartDrawer();
   renderWishlistDrawer(); // keep wishlist "View Cart"/"Add to Cart" buttons in sync — the cart can change from several places (cart drawer, this wishlist itself, the saree detail popup), not just the wishlist's own button
@@ -2136,6 +2229,15 @@ function cartRemoveItem(id) {
   cartSaveItems(ids);
   renderCartDrawer();
   renderWishlistDrawer(); // same reasoning as cartAddItem above — this is exactly the path that was going stale (remove via the cart drawer left an already-open/already-rendered wishlist showing "View Cart" for an item no longer in the cart)
+
+  var token = getVisitorToken();
+  if (token) {
+    fetch('/.netlify/functions/remove-from-cart', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorToken: token, sareeId: id })
+    }).catch(function (e) { console.error('remove-from-cart failed:', e); });
+  }
 }
 
 function openCartDrawer() {
@@ -2151,30 +2253,23 @@ function closeCartDrawer() {
 }
 
 // ---------- Wishlist ----------
-// Same storage pattern as the cart — kept in the visitor's own browser
-// (localStorage), not a database, so it's per-device, same trade-off
-// the cart already has.
-function wishlistGetItems() {
-  try {
-    var raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
-    var ids = raw ? JSON.parse(raw) : [];
-    return Array.isArray(ids) ? ids : [];
-  } catch (e) {
-    return [];
-  }
-}
-
-function wishlistSaveItems(ids) {
-  try {
-    localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(ids));
-  } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
-}
-
+// Storage now mirrors the cart exactly — see cartGetItems/cartSaveItems
+// and initCartWishlistSync above for how the in-memory cache and
+// server sync work; wishlistGetItems/wishlistSaveItems are defined
+// alongside those, not duplicated here.
 function wishlistAddItem(product) {
   var ids = wishlistGetItems();
   if (ids.indexOf(product.id) === -1) {
-    ids.push(product.id);
-    wishlistSaveItems(ids);
+    wishlistSaveItems(ids.concat([product.id]));
+
+    var token = getVisitorToken();
+    if (token) {
+      fetch('/.netlify/functions/add-to-wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorToken: token, sareeId: product.id })
+      }).catch(function (e) { console.error('add-to-wishlist failed:', e); });
+    }
   }
   renderWishlistDrawer();
 }
@@ -2183,6 +2278,15 @@ function wishlistRemoveItem(id) {
   var ids = wishlistGetItems().filter(function (x) { return x !== id; });
   wishlistSaveItems(ids);
   renderWishlistDrawer();
+
+  var token = getVisitorToken();
+  if (token) {
+    fetch('/.netlify/functions/remove-from-wishlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorToken: token, sareeId: id })
+    }).catch(function (e) { console.error('remove-from-wishlist failed:', e); });
+  }
 }
 
 function openWishlistDrawer() {
@@ -2980,7 +3084,18 @@ function initOrderSuccessPage() {
       .then(function (res) { return res.json(); })
       .then(function (result) {
         if (result.paid) {
+          var purchasedIds = cartGetItems();
           cartSaveItems([]); // clear the cart now that payment is genuinely confirmed
+          var clearToken = getVisitorToken();
+          if (clearToken) {
+            purchasedIds.forEach(function (id) {
+              fetch('/.netlify/functions/remove-from-cart', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ visitorToken: clearToken, sareeId: id })
+              }).catch(function () {});
+            });
+          }
           renderCartDrawer();
           showState('success');
           return;
