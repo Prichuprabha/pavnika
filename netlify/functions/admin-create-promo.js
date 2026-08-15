@@ -36,8 +36,8 @@ exports.handler = async function (event) {
   }
 
   const discount = parseInt(body.discountPercent, 10);
-  if (!discount || discount < 1 || discount > 90) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Please provide a valid discount percentage (1-90).' }) };
+  if (!discount || discount < 1 || discount > 95) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Please provide a valid discount percentage (1-95).' }) };
   }
 
   const code = 'SAVE' + discount + '-' + randomSuffix();
