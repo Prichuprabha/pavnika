@@ -2794,7 +2794,7 @@ function initCheckoutPage() {
   var phoneNote = document.createElement('p');
   phoneNote.className = 'field-note';
   phoneNote.style.display = 'none';
-  phoneNumberInput.insertAdjacentElement('afterend', phoneNote);
+  phoneNumberInput.closest('.checkout-phone-row').insertAdjacentElement('afterend', phoneNote);
 
   function syncPhone() {
     var codeEntry = PHONE_COUNTRY_CODES.find(function (c) { return c.code === phoneCodeSelect.value; });
