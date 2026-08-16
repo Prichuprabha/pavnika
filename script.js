@@ -2168,15 +2168,8 @@ function wishlistSaveItems(ids) {
 // unchanged from how this always worked — browsing and adding to
 // cart still works before someone verifies, it just won't follow
 // them to another device until they do.
-function initCartWishlistSync() {
-  var token = getVisitorToken();
-  if (!token) {
-    cartGetItems(); // just primes the cache from localStorage; guest mode needs no network call
-    wishlistGetItems();
-    return;
-  }
-
-  fetch('/.netlify/functions/get-cart', {
+function syncCartFromServer(token) {
+  return fetch('/.netlify/functions/get-cart', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ visitorToken: token })
@@ -2207,8 +2200,10 @@ function initCartWishlistSync() {
       });
     })
     .catch(function (e) { console.error('get-cart failed:', e); });
+}
 
-  fetch('/.netlify/functions/get-wishlist', {
+function syncWishlistFromServer(token) {
+  return fetch('/.netlify/functions/get-wishlist', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ visitorToken: token })
@@ -2237,6 +2232,17 @@ function initCartWishlistSync() {
       });
     })
     .catch(function (e) { console.error('get-wishlist failed:', e); });
+}
+
+function initCartWishlistSync() {
+  var token = getVisitorToken();
+  if (!token) {
+    cartGetItems(); // just primes the cache from localStorage; guest mode needs no network call
+    wishlistGetItems();
+    return;
+  }
+  syncCartFromServer(token);
+  syncWishlistFromServer(token);
 }
 
 function cartAddItem(product) {
@@ -2282,6 +2288,12 @@ function openCartDrawer() {
   var overlay = document.getElementById('cart-drawer-overlay');
   if (overlay) overlay.classList.add('is-open');
   document.body.style.overflow = 'hidden';
+
+  // Catches changes made from another device since this page loaded —
+  // opens instantly from whatever's already cached, then quietly
+  // updates in place if the server has anything newer.
+  var token = getVisitorToken();
+  if (token) syncCartFromServer(token);
 }
 
 function closeCartDrawer() {
@@ -2332,6 +2344,11 @@ function openWishlistDrawer() {
   renderWishlistDrawer(); // always reflect current cart state the moment it's actually opened, not whatever it happened to show last time it rendered
   if (overlay) overlay.classList.add('is-open');
   document.body.style.overflow = 'hidden';
+
+  // Same reasoning as openCartDrawer — catches changes made from
+  // another device since this page loaded.
+  var token = getVisitorToken();
+  if (token) syncWishlistFromServer(token);
 }
 
 function closeWishlistDrawer() {

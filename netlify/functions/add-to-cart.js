@@ -34,7 +34,7 @@ exports.handler = async function (event) {
   }
 
   try {
-    const res = await fetch(`${SUPABASE_URL}/rest/v1/cart_items`, {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/cart_items?on_conflict=email,saree_id`, {
       method: 'POST',
       headers: {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
