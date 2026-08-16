@@ -2183,8 +2183,28 @@ function initCartWishlistSync() {
   })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      _cartCache = Array.isArray(data.items) ? data.items : [];
+      var serverItems = Array.isArray(data.items) ? data.items : [];
+      var localItems = cartGetItems(); // whatever was already showing before this resolved — must not be silently discarded
+      var merged = serverItems.slice();
+      var localOnly = [];
+      localItems.forEach(function (id) {
+        if (merged.indexOf(id) === -1) {
+          merged.push(id);
+          localOnly.push(id);
+        }
+      });
+      cartSaveItems(merged); // updates the cache AND localStorage together, so both agree from this point on
       renderCartDrawer();
+
+      // Anything that was only local needs pushing up to the server
+      // too, or it'd just vanish again on the next sync/device.
+      localOnly.forEach(function (id) {
+        fetch('/.netlify/functions/add-to-cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorToken: token, sareeId: id })
+        }).catch(function (e) { console.error('could not sync local cart item to server:', e); });
+      });
     })
     .catch(function (e) { console.error('get-cart failed:', e); });
 
@@ -2195,8 +2215,26 @@ function initCartWishlistSync() {
   })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      _wishlistCache = Array.isArray(data.items) ? data.items : [];
+      var serverItems = Array.isArray(data.items) ? data.items : [];
+      var localItems = wishlistGetItems();
+      var merged = serverItems.slice();
+      var localOnly = [];
+      localItems.forEach(function (id) {
+        if (merged.indexOf(id) === -1) {
+          merged.push(id);
+          localOnly.push(id);
+        }
+      });
+      wishlistSaveItems(merged);
       renderWishlistDrawer();
+
+      localOnly.forEach(function (id) {
+        fetch('/.netlify/functions/add-to-wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorToken: token, sareeId: id })
+        }).catch(function (e) { console.error('could not sync local wishlist item to server:', e); });
+      });
     })
     .catch(function (e) { console.error('get-wishlist failed:', e); });
 }
