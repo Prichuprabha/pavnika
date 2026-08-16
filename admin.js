@@ -1851,10 +1851,11 @@ function initOrdersView(token) {
           '<td>' + (o.customer_name || '—') + '<br><span style="opacity:0.6; font-size:0.72rem;">' + (o.customer_email || '') + '</span></td>' +
           '<td style="font-size:0.76rem;">' + itemsSummary + '</td>' +
           '<td>AED ' + Number(o.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) + '</td>' +
+          '<td style="font-size:0.76rem;">' + (o.payment_method || '—') + '</td>' +
           '<td>' + buildStatusSelect(o) + '</td>' +
         '</tr>'
       );
-    }).join('') : '<tr><td colspan="6">No orders match.</td></tr>';
+    }).join('') : '<tr><td colspan="7">No orders match.</td></tr>';
   }
 
   function buildStatusSelect(o) {
@@ -1902,8 +1903,44 @@ function initOrdersView(token) {
 
   statusFilter.addEventListener('change', renderTable);
   searchInput.addEventListener('input', renderTable);
-  document.getElementById('admin-orders-date-from').addEventListener('change', renderTable);
-  document.getElementById('admin-orders-date-to').addEventListener('change', renderTable);
+
+  var ordersDateBtn = document.getElementById('admin-orders-date-range-btn');
+  var ordersDatePopover = document.getElementById('admin-orders-date-range-popover');
+  var ordersDateLabel = document.getElementById('admin-orders-date-range-label');
+
+  ordersDateBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    ordersDatePopover.classList.toggle('is-open');
+  });
+  document.addEventListener('click', function (e) {
+    if (!ordersDatePopover.contains(e.target) && e.target !== ordersDateBtn) {
+      ordersDatePopover.classList.remove('is-open');
+    }
+  });
+
+  function formatOrdersRangeLabel(from, till) {
+    if (!from && !till) return 'All Dates';
+    var opts = { day: 'numeric', month: 'short', year: 'numeric' };
+    var fromLabel = from ? new Date(from + 'T00:00:00').toLocaleDateString('en-GB', opts) : '…';
+    var tillLabel = till ? new Date(till + 'T00:00:00').toLocaleDateString('en-GB', opts) : '…';
+    return fromLabel + ' – ' + tillLabel;
+  }
+
+  document.getElementById('admin-orders-date-apply-btn').addEventListener('click', function () {
+    var from = document.getElementById('admin-orders-date-from').value;
+    var till = document.getElementById('admin-orders-date-to').value;
+    ordersDateLabel.textContent = formatOrdersRangeLabel(from, till);
+    ordersDatePopover.classList.remove('is-open');
+    renderTable();
+  });
+
+  document.getElementById('admin-orders-date-reset-btn').addEventListener('click', function () {
+    document.getElementById('admin-orders-date-from').value = '';
+    document.getElementById('admin-orders-date-to').value = '';
+    ordersDateLabel.textContent = 'All Dates';
+    ordersDatePopover.classList.remove('is-open');
+    renderTable();
+  });
 
   // ---------- Right-side order drawer ----------
   var drawerOverlay = document.getElementById('admin-order-drawer-overlay');
@@ -1953,7 +1990,8 @@ function initOrdersView(token) {
       '<h4>Payment Method</h4>' +
       '<p style="margin:0;">' + (order.payment_method || 'Not recorded') + '</p>' +
 
-      '<h4>Shipping Address</h4>' + addressBlock(order.shipping_address) +
+      '<h4>Billing Address</h4>' + addressBlock(order.billing_address) +
+      '<h4>Shipping Address' + (order.billing_address === order.shipping_address ? ' (same as billing)' : '') + '</h4>' + addressBlock(order.shipping_address) +
 
       '<h4>Update Status</h4>' +
       buildStatusSelect(order);

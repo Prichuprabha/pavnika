@@ -417,8 +417,23 @@
           <option value="cancelled">Cancelled</option>
           <option value="refunded">Refunded</option>
         </select>
-        <input type="date" id="admin-orders-date-from" title="From date">
-        <input type="date" id="admin-orders-date-to" title="To date">
+        <div class="admin-date-range-wrap">
+          <button type="button" class="admin-date-range-btn" id="admin-orders-date-range-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="admin-orders-date-range-label">All Dates</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="admin-date-range-popover" id="admin-orders-date-range-popover">
+            <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+              <div class="admin-field" style="max-width:170px;"><label>From</label><input type="date" id="admin-orders-date-from"></div>
+              <div class="admin-field" style="max-width:170px;"><label>Till</label><input type="date" id="admin-orders-date-to"></div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+              <button type="button" class="btn btn-primary" id="admin-orders-date-apply-btn">Apply</button>
+              <button type="button" class="btn btn-ghost" id="admin-orders-date-reset-btn">Reset</button>
+            </div>
+          </div>
+        </div>
         <input type="text" id="admin-orders-search" placeholder="Search order #, name, email...">
       </div>
 
@@ -430,6 +445,7 @@
             <th>Customer</th>
             <th>Items</th>
             <th class="admin-sortable" data-sort="total">Total</th>
+            <th>Payment</th>
             <th>Status</th>
           </tr>
         </thead>
