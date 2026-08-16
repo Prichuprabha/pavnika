@@ -2644,8 +2644,11 @@ function initCheckoutPage() {
 
   itemsEl.innerHTML = products.map(function (p) {
     return (
-      '<div class="checkout-item">' +
-        '<img src="' + p.image + '" alt="' + p.design + '">' +
+      '<div class="checkout-item" data-id="' + p.id + '">' +
+        '<div class="checkout-item-photo">' +
+          '<img src="' + p.image + '" alt="' + p.design + '">' +
+          '<div class="checkout-item-sold-ribbon" style="display:none;"><span>Sold Out</span></div>' +
+        '</div>' +
         '<div class="item-info">' +
           '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
@@ -2737,32 +2740,86 @@ function initCheckoutPage() {
   // picks a country, instead of only being caught at the last moment
   // when they click Pay Online.
   var addressMsgLive = document.getElementById('checkout-address-msg');
+  var uaeBlocking = false;
+  var soldItemsBlocking = false;
+  function applyPayButtonState() {
+    var payOnlineBtn = document.getElementById('checkout-pay-online');
+    if (uaeBlocking || soldItemsBlocking) {
+      payOnlineBtn.style.pointerEvents = 'none';
+      payOnlineBtn.style.opacity = '0.5';
+      payOnlineBtn.setAttribute('aria-disabled', 'true');
+    } else {
+      payOnlineBtn.style.pointerEvents = '';
+      payOnlineBtn.style.opacity = '';
+      payOnlineBtn.removeAttribute('aria-disabled');
+    }
+  }
+
   function checkUAEShipping() {
     var effectiveCountry = sameAddressBox.checked
       ? billingCountrySelect.value
       : shippingCountrySelect.value;
-    var payOnlineBtn = document.getElementById('checkout-pay-online');
 
     // Only warn once a country has actually been chosen — an empty/
     // not-yet-selected value shouldn't show this prematurely.
     if (effectiveCountry && effectiveCountry !== 'United Arab Emirates') {
       addressMsgLive.className = 'checkout-promo-msg error';
       addressMsgLive.innerHTML = 'We currently offer online payment and direct shipping within the UAE only. For international orders, please <a href="' + buildOrderWhatsAppUrl() + '" target="_blank" rel="noopener" style="text-decoration:underline;">continue via WhatsApp</a> so we can arrange shipping and payment together.';
-      payOnlineBtn.style.pointerEvents = 'none';
-      payOnlineBtn.style.opacity = '0.5';
-      payOnlineBtn.setAttribute('aria-disabled', 'true');
+      uaeBlocking = true;
     } else {
       addressMsgLive.className = 'checkout-promo-msg';
       addressMsgLive.textContent = '';
-      payOnlineBtn.style.pointerEvents = '';
-      payOnlineBtn.style.opacity = '';
-      payOnlineBtn.removeAttribute('aria-disabled');
+      uaeBlocking = false;
     }
+    applyPayButtonState();
   }
   billingCountrySelect.addEventListener('change', checkUAEShipping);
   shippingCountrySelect.addEventListener('change', checkUAEShipping);
   sameAddressBox.addEventListener('change', checkUAEShipping);
   checkUAEShipping();
+
+  // Catches exactly the scenario where something sat in a customer's
+  // cart and sold to someone else in the meantime — window.PRODUCTS
+  // is loaded once when this page opens and can go stale if the page
+  // sits open a while, so this checks the live catalogue instead of
+  // trusting that in-memory copy.
+  var soldWarningEl = document.getElementById('checkout-sold-warning');
+  function checkSoldItems() {
+    return fetch('/.netlify/functions/check-item-availability', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sareeIds: ids })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        var soldIds = data.soldIds || [];
+        soldItemsBlocking = soldIds.length > 0;
+
+        itemsEl.querySelectorAll('.checkout-item').forEach(function (card) {
+          var isSold = soldIds.indexOf(card.getAttribute('data-id')) !== -1;
+          card.classList.toggle('is-unavailable', isSold);
+          var ribbon = card.querySelector('.checkout-item-sold-ribbon');
+          if (ribbon) ribbon.style.display = isSold ? 'flex' : 'none';
+        });
+
+        if (soldItemsBlocking) {
+          soldWarningEl.className = 'checkout-promo-msg error';
+          soldWarningEl.textContent = 'One or more items in your order are no longer available and have been sold. Please open your cart and remove the sold item(s) to continue.';
+          soldWarningEl.style.display = 'block';
+        } else {
+          soldWarningEl.style.display = 'none';
+        }
+        applyPayButtonState();
+        return soldItemsBlocking;
+      })
+      .catch(function () {
+        // Fail open, matching the function's own fail-open behavior —
+        // if the check itself is broken, don't block a legitimate
+        // purchase over it.
+        return false;
+      });
+  }
+  checkSoldItems();
 
   var appliedDiscount = 0;
   var appliedCode = '';
@@ -2960,59 +3017,75 @@ function initCheckoutPage() {
       return;
     }
 
-    payBtn.textContent = 'Starting payment...';
+    payBtn.textContent = 'Checking availability...';
     payBtn.style.pointerEvents = 'none';
 
-    var payload = {
-      items: products.map(function (p) {
-        return {
-          id: p.id,
-          name: p.design + ' — ' + p.id,
-          price: p.price,
-          series: p.series,
-          type: p.type,
-          sareeType: p.sareeType,
-          pattern: p.pattern,
-          image: p.image
-        };
-      }),
-      customer: { firstName: firstName, lastName: lastName, phone: phone, email: email },
-      billingAddress: billingAddress,
-      shippingAddress: shippingAddress,
-      discountPercent: appliedDiscount,
-      promoCode: appliedCode
-    };
-
-    fetch('/.netlify/functions/create-nomod-checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok || !result.data.url) {
-          alert(result.data.error || 'Could not start payment. Please try WhatsApp checkout instead.');
-          payBtn.textContent = 'Pay Online';
-          payBtn.style.pointerEvents = '';
-          return;
-        }
-        // Remember this checkout locally before leaving for Nomod. If the
-        // server-side order record is ever missing when the customer comes
-        // back, the success page sends this checkoutId along and
-        // verify-nomod-order can recover the order directly from Nomod.
-        try {
-          localStorage.setItem('pavnika_last_checkout', JSON.stringify({
-            referenceId: result.data.referenceId,
-            checkoutId: result.data.id
-          }));
-        } catch (e) { /* storage unavailable — recovery fallback just won't apply */ }
-        window.location.href = result.data.url;
-      })
-      .catch(function () {
-        alert('Network error — could not start payment. Please try WhatsApp checkout instead.');
+    // One more availability check right before payment actually
+    // starts — closes the (smaller, but real) window between the
+    // page loading fine and the customer actually clicking Pay, in
+    // case something sold in between.
+    checkSoldItems().then(function (isBlocked) {
+      if (isBlocked) {
         payBtn.textContent = 'Pay Online';
         payBtn.style.pointerEvents = '';
-      });
+        applyPayButtonState(); // sold-items check already re-disabled it and re-applied the warning above; this just restores the button's own inline state to match
+        soldWarningEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
+
+      payBtn.textContent = 'Starting payment...';
+
+      var payload = {
+        items: products.map(function (p) {
+          return {
+            id: p.id,
+            name: p.design + ' — ' + p.id,
+            price: p.price,
+            series: p.series,
+            type: p.type,
+            sareeType: p.sareeType,
+            pattern: p.pattern,
+            image: p.image
+          };
+        }),
+        customer: { firstName: firstName, lastName: lastName, phone: phone, email: email },
+        billingAddress: billingAddress,
+        shippingAddress: shippingAddress,
+        discountPercent: appliedDiscount,
+        promoCode: appliedCode
+      };
+
+      fetch('/.netlify/functions/create-nomod-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok || !result.data.url) {
+            alert(result.data.error || 'Could not start payment. Please try WhatsApp checkout instead.');
+            payBtn.textContent = 'Pay Online';
+            payBtn.style.pointerEvents = '';
+            return;
+          }
+          // Remember this checkout locally before leaving for Nomod. If the
+          // server-side order record is ever missing when the customer comes
+          // back, the success page sends this checkoutId along and
+          // verify-nomod-order can recover the order directly from Nomod.
+          try {
+            localStorage.setItem('pavnika_last_checkout', JSON.stringify({
+              referenceId: result.data.referenceId,
+              checkoutId: result.data.id
+            }));
+          } catch (e) { /* storage unavailable — recovery fallback just won't apply */ }
+          window.location.href = result.data.url;
+        })
+        .catch(function () {
+          alert('Network error — could not start payment. Please try WhatsApp checkout instead.');
+          payBtn.textContent = 'Pay Online';
+          payBtn.style.pointerEvents = '';
+        });
+    });
   });
 
   // Reusable builder (no dedicated button on this page anymore — that

@@ -3037,7 +3037,28 @@ body.login-page {
   border: 1px solid var(--stone);
   border-radius: 10px;
 }
-.checkout-item img { width: 52px; height: 66px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.checkout-item-photo { position: relative; width: 52px; height: 66px; flex-shrink: 0; border-radius: 6px; overflow: hidden; }
+.checkout-item-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.checkout-item-sold-ribbon {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(43, 13, 26, 0.55);
+}
+.checkout-item-sold-ribbon span {
+  font-size: 0.5rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ivory);
+  border-top: 1px solid var(--gold-light);
+  border-bottom: 1px solid var(--gold-light);
+  padding: 2px 1px;
+  text-align: center;
+}
+.checkout-item.is-unavailable { opacity: 0.6; }
 .checkout-item .item-info { flex: 1; min-width: 0; }
 .checkout-item .item-design { font-size: 0.9rem; font-weight: 600; color: var(--green-deep); display: block; }
 .checkout-item .item-series { font-size: 0.78rem; color: var(--ink); opacity: 0.6; display: block; margin-top: 2px; }
