@@ -2096,6 +2096,78 @@ function initManualOrderView(token) {
     shippingCard.style.display = sameAddressBox.checked ? 'none' : 'block';
   });
 
+  // ---------- Customer search/autocomplete ----------
+  var customerSearchInput = document.getElementById('admin-mo-customer-search');
+  var customerResultsEl = document.getElementById('admin-mo-customer-results');
+  var customerSearchTimer = null;
+
+  customerSearchInput.addEventListener('input', function () {
+    var query = customerSearchInput.value.trim();
+    clearTimeout(customerSearchTimer);
+    if (query.length < 2) {
+      customerResultsEl.classList.remove('is-open');
+      return;
+    }
+    customerSearchTimer = setTimeout(function () {
+      fetch('/.netlify/functions/admin-search-customers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, query: query })
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          var customers = data.customers || [];
+          if (!customers.length) {
+            customerResultsEl.innerHTML = '<div class="admin-mo-customer-result-item" style="cursor:default; opacity:0.6;">No matching customers found.</div>';
+          } else {
+            customerResultsEl.innerHTML = customers.map(function (c, i) {
+              return '<div class="admin-mo-customer-result-item" data-i="' + i + '">' +
+                '<div class="cname">' + (c.name || 'Unnamed') + '</div>' +
+                '<div class="cmeta">' + [c.email, c.phone].filter(Boolean).join(' · ') + '</div>' +
+              '</div>';
+            }).join('');
+            customerResultsEl.__customers = customers;
+          }
+          customerResultsEl.classList.add('is-open');
+        })
+        .catch(function () { customerResultsEl.classList.remove('is-open'); });
+    }, 300);
+  });
+
+  customerResultsEl.addEventListener('click', function (e) {
+    var item = e.target.closest('.admin-mo-customer-result-item');
+    if (!item || !item.hasAttribute('data-i')) return;
+    var c = customerResultsEl.__customers[Number(item.getAttribute('data-i'))];
+    if (!c) return;
+
+    var nameParts = (c.name || '').trim().split(/\s+/);
+    document.getElementById('admin-mo-first-name').value = nameParts[0] || '';
+    document.getElementById('admin-mo-last-name').value = nameParts.slice(1).join(' ');
+    document.getElementById('admin-mo-email').value = c.email || '';
+    document.getElementById('admin-mo-phone').value = c.phone || '';
+
+    if (c.billingAddress) {
+      try {
+        var addr = JSON.parse(c.billingAddress);
+        document.getElementById('admin-mo-billing-building').value = addr.building || '';
+        document.getElementById('admin-mo-billing-street').value = addr.street || '';
+        document.getElementById('admin-mo-billing-city').value = addr.city || '';
+        document.getElementById('admin-mo-billing-state').value = addr.state || '';
+        document.getElementById('admin-mo-billing-pincode').value = addr.pincode || '';
+        if (addr.country) billingCountrySelect.value = addr.country;
+      } catch (e) { /* address on file wasn't valid JSON — skip prefilling it, contact fields are still filled */ }
+    }
+
+    customerSearchInput.value = '';
+    customerResultsEl.classList.remove('is-open');
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!customerResultsEl.contains(e.target) && e.target !== customerSearchInput) {
+      customerResultsEl.classList.remove('is-open');
+    }
+  });
+
   var pickedItems = []; // [{id, name, price, qty}]
   var discountType = 'percent';
 
@@ -2136,9 +2208,14 @@ function initManualOrderView(token) {
     } else {
       pickedWrap.innerHTML = pickedItems.map(function (it, i) {
         return '<div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--stone); border-radius:6px; margin-bottom:6px; font-size:0.82rem;">' +
+          (it.image ? '<img src="' + it.image + '" style="width:34px; height:44px; object-fit:cover; border-radius:3px; flex-shrink:0;">' : '') +
           '<span style="flex:1; font-weight:600; color:var(--green-deep);">' + it.name + ' — ' + it.id + '</span>' +
-          '<span>Qty: ' + it.qty + '</span>' +
-          '<span style="color:var(--gold); font-weight:700;">AED ' + Number(it.price).toFixed(2) + '</span>' +
+          '<div class="admin-mo-qty-stepper">' +
+            '<button type="button" class="admin-mo-qty-minus" data-i="' + i + '">&#8722;</button>' +
+            '<span>' + it.qty + '</span>' +
+            '<button type="button" class="admin-mo-qty-plus" data-i="' + i + '">+</button>' +
+          '</div>' +
+          '<span style="color:var(--gold); font-weight:700; min-width:80px; text-align:right;">AED ' + Number(it.price).toFixed(2) + '</span>' +
           '<button type="button" class="admin-mo-remove-item" data-i="' + i + '" style="background:none; border:none; color:#B8142A; cursor:pointer; font-size:0.95rem;">&#10005;</button>' +
         '</div>';
       }).join('');
@@ -2148,10 +2225,28 @@ function initManualOrderView(token) {
   renderPickedItems();
 
   pickedWrap.addEventListener('click', function (e) {
-    var btn = e.target.closest('.admin-mo-remove-item');
-    if (!btn) return;
-    pickedItems.splice(Number(btn.getAttribute('data-i')), 1);
-    renderPickedItems();
+    var removeBtn = e.target.closest('.admin-mo-remove-item');
+    if (removeBtn) {
+      pickedItems.splice(Number(removeBtn.getAttribute('data-i')), 1);
+      renderPickedItems();
+      return;
+    }
+    var plusBtn = e.target.closest('.admin-mo-qty-plus');
+    if (plusBtn) {
+      pickedItems[Number(plusBtn.getAttribute('data-i'))].qty += 1;
+      renderPickedItems();
+      return;
+    }
+    var minusBtn = e.target.closest('.admin-mo-qty-minus');
+    if (minusBtn) {
+      var idx = Number(minusBtn.getAttribute('data-i'));
+      if (pickedItems[idx].qty > 1) {
+        pickedItems[idx].qty -= 1;
+      } else {
+        pickedItems.splice(idx, 1); // decrementing below 1 removes the item, same as clicking the ✕
+      }
+      renderPickedItems();
+    }
   });
 
   discountTypeBtns.forEach(function (btn) {
