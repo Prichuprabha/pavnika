@@ -758,19 +758,56 @@ function initReviewsEditor(token) {
     return filled;
   }
 
-  function renderTable() {
-    rowsEl.innerHTML = reviews.map(function (r, i) {
-      var quotePreview = r.quote ? (r.quote.length > 60 ? r.quote.slice(0, 60) + '…' : r.quote) : '<em>(star only)</em>';
-      return (
-        '<tr>' +
-          '<td>' + (r.name || '') + '</td>' +
-          '<td>' + starString(r.stars) + '</td>' +
-          '<td>' + quotePreview + '</td>' +
-          '<td><span class="admin-edit-link" data-idx="' + i + '">Edit</span> &middot; <span class="admin-delete-link" data-idx="' + i + '">Delete</span></td>' +
-        '</tr>'
-      );
-    }).join('');
+  function renderStats() {
+    var statsEl = document.getElementById('admin-review-stats');
+    if (!statsEl) return;
+    var total = reviews.length;
+    var avg = total ? (reviews.reduce(function (sum, r) { return sum + (parseInt(r.stars, 10) || 0); }, 0) / total) : 0;
+    var counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviews.forEach(function (r) { var s = parseInt(r.stars, 10); if (counts[s] !== undefined) counts[s]++; });
+
+    statsEl.innerHTML =
+      '<div class="admin-metric-card accent-gold"><p class="label">Average</p><p class="value">' + avg.toFixed(1) + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">Total Reviews</p><p class="value">' + total + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">5 Star</p><p class="value">' + counts[5] + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">4 Star</p><p class="value">' + counts[4] + '</p></div>';
   }
+
+  function renderTable() {
+    renderStats();
+    var query = document.getElementById('admin-review-search').value.trim().toLowerCase();
+    var ratingVal = document.getElementById('admin-review-rating-filter').value;
+
+    var filtered = reviews
+      .map(function (r, i) { return { r: r, i: i }; })
+      .filter(function (entry) {
+        var r = entry.r;
+        var okQuery = !query ||
+          (r.name || '').toLowerCase().indexOf(query) !== -1 ||
+          (r.quote || '').toLowerCase().indexOf(query) !== -1;
+        var okRating = !ratingVal || String(r.stars) === ratingVal;
+        return okQuery && okRating;
+      });
+
+    rowsEl.innerHTML = filtered.length ? filtered.map(function (entry) {
+      var r = entry.r, i = entry.i;
+      return (
+        '<div class="admin-review-card">' +
+          '<div class="admin-review-card-top">' +
+            '<div>' +
+              '<div class="admin-review-card-stars">' + starString(r.stars) + '</div>' +
+              '<div class="admin-review-card-name">' + (r.name || '') + '</div>' +
+            '</div>' +
+            '<span class="admin-review-card-actions"><span class="admin-edit-link" data-idx="' + i + '">Edit</span> &middot; <span class="admin-delete-link" data-idx="' + i + '">Delete</span></span>' +
+          '</div>' +
+          (r.quote ? '<p class="admin-review-card-quote">' + r.quote + '</p>' : '') +
+        '</div>'
+      );
+    }).join('') : '<p style="font-size:0.85rem; opacity:0.6;">No reviews match.</p>';
+  }
+
+  document.getElementById('admin-review-search').addEventListener('input', renderTable);
+  document.getElementById('admin-review-rating-filter').addEventListener('change', renderTable);
 
   function loadReviews() {
     fetch('assets/reviews/reviews.json?_=' + Date.now())
@@ -779,7 +816,7 @@ function initReviewsEditor(token) {
         reviews = data || [];
         renderTable();
       })
-      .catch(function () { rowsEl.innerHTML = '<tr><td colspan="4">Could not load reviews.</td></tr>'; });
+      .catch(function () { rowsEl.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Could not load reviews.</p>'; });
   }
 
   function showStatus(type, html) {
@@ -971,7 +1008,7 @@ function initBannersEditor(token) {
       var row = document.createElement('div');
       row.className = 'admin-banner-item' + (isEmpty ? ' admin-banner-item-empty' : '');
       row.innerHTML =
-        '<strong style="display:block; margin-bottom:8px;">Slot ' + (i + 1) + (isEmpty ? ' — empty (skipped on the live site)' : '') + '</strong>' +
+        '<strong style="display:block; margin-bottom:8px;">Slot ' + (i + 1) + '<span class="admin-banner-slot-badge' + (isEmpty ? ' is-empty' : '') + '">' + (isEmpty ? 'Empty' : 'Active') + '</span></strong>' +
         '<div class="admin-banner-thumbs">' +
           (b.image
             ? '<img class="thumb-desktop" src="assets/banners/' + b.image + '" alt="desktop">'

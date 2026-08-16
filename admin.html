@@ -113,17 +113,22 @@
   .admin-toggle-switch input:checked + .admin-toggle-slider::before { transform: translateX(16px); }
 
   .admin-banner-item {
-    display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
-    border-radius: 6px; background: var(--ivory); margin-bottom: 10px;
+    display: flex; align-items: flex-start; gap: 16px; padding: 16px; border: 1px solid var(--stone);
+    border-radius: 8px; background: #fff; margin-bottom: 12px;
   }
-  .admin-banner-item img { width: 90px; height: 34px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+  .admin-banner-item img { width: 100px; height: 40px; object-fit: cover; border-radius: 5px; flex-shrink: 0; }
   .admin-banner-item .admin-field { flex: 1; margin-bottom: 0; }
-  .admin-banner-item .admin-banner-controls { display: flex; gap: 6px; flex-shrink: 0; }
+  .admin-banner-item .admin-banner-controls { display: flex; gap: 6px; flex-shrink: 0; align-items: flex-start; }
   .admin-banner-item .admin-banner-controls button {
-    background: var(--ivory-deep); border: 1px solid var(--stone); border-radius: 3px;
+    background: var(--ivory-deep); border: 1px solid var(--stone); border-radius: 5px;
     width: 28px; height: 28px; cursor: pointer; font-size: 0.8rem;
   }
   .admin-banner-item .admin-banner-remove { color: #B8142A; }
+  .admin-banner-slot-badge {
+    display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.64rem; font-weight: 700;
+    background: #eaf3de; color: #3B6D11; margin-left: 8px;
+  }
+  .admin-banner-slot-badge.is-empty { background: var(--ivory-deep); color: var(--ink); opacity: 0.65; }
 
   .admin-video-item {
     display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--stone);
@@ -174,6 +179,13 @@
   .admin-order-drawer-totals-row.total { font-weight: 700; color: var(--green-deep); border-top: 1px solid var(--stone); margin-top: 6px; padding-top: 8px; }
   .admin-orders-clickable-row { cursor: pointer; }
   .admin-orders-clickable-row:hover { background: var(--ivory-deep); }
+
+  .admin-review-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
+  .admin-review-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+  .admin-review-card-stars { color: var(--gold); font-size: 0.85rem; letter-spacing: 1px; }
+  .admin-review-card-name { font-weight: 600; color: var(--green-deep); font-size: 0.86rem; margin: 3px 0; }
+  .admin-review-card-quote { font-size: 0.82rem; color: var(--ink); opacity: 0.85; margin: 4px 0 0; }
+  .admin-review-card-actions { font-size: 0.72rem; white-space: nowrap; }
 
   .admin-mo-cols { display: grid; grid-template-columns: 1.5fr 1fr; gap: 20px; align-items: start; }
   .admin-mo-col-side { position: sticky; top: 20px; }
@@ -622,17 +634,26 @@
     <div class="admin-view" id="admin-view-reviews" style="display:none;">
       <div class="admin-heading">
         <h1>Reviews</h1>
-        <span class="btn btn-primary" id="admin-add-review-btn" style="cursor:pointer;">+ Add New Review</span>
+        <span class="btn btn-primary" id="admin-add-review-btn" style="cursor:pointer;">+ Add Review</span>
       </div>
 
       <p class="admin-status-msg" id="admin-review-status-msg"></p>
 
-      <table class="admin-table">
-        <thead>
-          <tr><th>Name</th><th>Stars</th><th>Quote</th><th></th></tr>
-        </thead>
-        <tbody id="admin-review-rows"></tbody>
-      </table>
+      <div class="admin-metric-grid" id="admin-review-stats"></div>
+
+      <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
+        <input type="text" id="admin-review-search" placeholder="Search reviews...">
+        <select id="admin-review-rating-filter">
+          <option value="">All Ratings</option>
+          <option value="5">5 Star</option>
+          <option value="4">4 Star</option>
+          <option value="3">3 Star</option>
+          <option value="2">2 Star</option>
+          <option value="1">1 Star</option>
+        </select>
+      </div>
+
+      <div id="admin-review-rows"></div>
 
       <div class="admin-form-card" id="admin-review-form-card" style="display:none;">
         <h3 id="admin-review-form-title">Add New Review</h3>
