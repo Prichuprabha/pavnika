@@ -141,6 +141,13 @@
     border: 1px solid var(--stone); border-radius: 3px; font-family: var(--body); font-size: 0.82rem;
   }
 
+  .admin-rank-thumb { width: 26px; height: 34px; object-fit: cover; border-radius: 3px; flex-shrink: 0; }
+
+  .admin-recent-order-row { cursor: default; }
+
+  .admin-dash-header-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .admin-date-range-popover-right { left: auto; right: 0; }
+
   .admin-date-range-wrap { position: relative; display: inline-block; }
   .admin-date-range-btn {
     display: flex; align-items: center; gap: 8px; background: #fff; border: 1px solid var(--stone);
@@ -728,28 +735,31 @@
     </div>
 
     <div class="admin-view" id="admin-view-stats">
-      <div class="admin-heading"><h1>Good afternoon, Pavnika</h1></div>
-      <p style="font-size:0.82rem; color:var(--ink); opacity:0.65; margin:-14px 0 18px;">Here's what's happening with your store today.</p>
-      <p class="admin-status-msg" id="admin-stats-status-msg"></p>
-
-      <div class="admin-date-range-wrap" style="margin-bottom:18px;">
-        <button type="button" class="admin-date-range-btn" id="admin-date-range-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <span id="admin-date-range-label">All-time</span>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div class="admin-date-range-popover" id="admin-date-range-popover">
-          <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
-            <div class="admin-field" style="max-width:170px;"><label>From</label><input type="date" id="admin-stats-from"></div>
-            <div class="admin-field" style="max-width:170px;"><label>Till</label><input type="date" id="admin-stats-till"></div>
+      <div class="admin-dash-header-row">
+        <div>
+          <h1 style="margin:0;">Good afternoon, Pavnika</h1>
+          <p style="font-size:0.82rem; color:var(--ink); opacity:0.65; margin:4px 0 0;">Here's what's happening with your store today.</p>
+        </div>
+        <div class="admin-date-range-wrap">
+          <button type="button" class="admin-date-range-btn" id="admin-date-range-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span id="admin-date-range-label">All-time</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="admin-date-range-popover admin-date-range-popover-right" id="admin-date-range-popover">
+            <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+              <div class="admin-field" style="max-width:170px;"><label>From</label><input type="date" id="admin-stats-from"></div>
+              <div class="admin-field" style="max-width:170px;"><label>Till</label><input type="date" id="admin-stats-till"></div>
+            </div>
+            <div style="display:flex; gap:8px; margin-top:12px;">
+              <button type="button" class="btn btn-primary" id="admin-stats-apply-btn">Apply</button>
+              <button type="button" class="btn btn-ghost" id="admin-stats-reset-btn">Reset to all-time</button>
+            </div>
+            <p style="font-size:0.72rem; color:var(--ink); opacity:0.6; margin:10px 0 0;">Applies to everything below except "In stock" / "Sold out", which always reflect current inventory.</p>
           </div>
-          <div style="display:flex; gap:8px; margin-top:12px;">
-            <button type="button" class="btn btn-primary" id="admin-stats-apply-btn">Apply</button>
-            <button type="button" class="btn btn-ghost" id="admin-stats-reset-btn">Reset to all-time</button>
-          </div>
-          <p style="font-size:0.72rem; color:var(--ink); opacity:0.6; margin:10px 0 0;">Applies to everything below except "In stock" / "Sold out", which always reflect current inventory.</p>
         </div>
       </div>
+      <p class="admin-status-msg" id="admin-stats-status-msg"></p>
 
       <div class="admin-metric-grid" id="admin-metric-grid"></div>
 

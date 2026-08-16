@@ -1148,15 +1148,16 @@ function initStatsDashboard(token) {
     }
 
     function deltaHtml(pct) {
-      if (pct === 0) return '';
       var sign = pct > 0 ? '+' : '';
       var cls = pct >= 0 ? '' : ' negative';
-      return '<p class="delta' + cls + '">' + sign + pct + '% vs previous period</p>';
+      var label = (orderStats && orderStats.isDefaultWeek) ? 'vs last week' : 'vs previous period';
+      return '<p class="delta' + cls + '">' + sign + pct + '% ' + label + '</p>';
     }
 
     function countDeltaHtml(count, verb) {
       if (!count) return '';
-      return '<p class="delta">+' + count + ' ' + verb + ' this period</p>';
+      var periodLabel = (orderStats && orderStats.isDefaultWeek) ? 'this week' : 'this period';
+      return '<p class="delta">+' + count + ' ' + verb + ' ' + periodLabel + '</p>';
     }
 
     var soldDelta = orderStats ? countDeltaHtml(orderStats.newlySoldCount, 'sold') : '';
@@ -1165,7 +1166,8 @@ function initStatsDashboard(token) {
     // sarees were also added to the catalogue in the same window, which
     // isn't separately tracked, so treat this as a close estimate rather
     // than a guaranteed-exact count if new stock was added mid-period.
-    var stockDelta = orderStats && orderStats.newlySoldCount ? '<p class="delta negative">-' + orderStats.newlySoldCount + ' sold this period</p>' : '';
+    var stockPeriodLabel = (orderStats && orderStats.isDefaultWeek) ? 'this week' : 'this period';
+    var stockDelta = orderStats && orderStats.newlySoldCount ? '<p class="delta negative">-' + orderStats.newlySoldCount + ' sold ' + stockPeriodLabel + '</p>' : '';
 
     var orderCard = orderStats
       ? '<div class="admin-metric-card accent-gold"><p class="label">Orders</p><p class="value">' + orderStats.orderCount + '</p>' + deltaHtml(orderStats.orderCountDelta) + '</div>'
@@ -1186,10 +1188,23 @@ function initStatsDashboard(token) {
       renderRecentOrders(orderStats.recentOrders);
     }
 
+    function findProductImage(id) {
+      var p = (window.PRODUCTS || []).find(function (x) { return x.id === id; });
+      return p ? p.image : '';
+    }
     renderExpandable(
       mostViewedRows,
       data.mostViewed,
-      function (v) { return '<div class="admin-rank-row"><span>' + findProductLabel(v.productId) + '</span><span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span></div>'; },
+      function (v) {
+        var img = findProductImage(v.productId);
+        return '<div class="admin-rank-row admin-rank-row-with-img">' +
+          '<span style="display:flex; align-items:center; gap:9px;">' +
+            (img ? '<img src="' + img + '" class="admin-rank-thumb">' : '') +
+            findProductLabel(v.productId) +
+          '</span>' +
+          '<span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span>' +
+        '</div>';
+      },
       'No views logged yet.'
     );
 
@@ -1308,6 +1323,7 @@ function initStatsDashboard(token) {
       orderCountDelta: pctChange(current.length, previous.length),
       revenueDelta: pctChange(currentRevenue, previousRevenue),
       newlySoldCount: newlySoldCount,
+      isDefaultWeek: !fromDate && !toDate,
       dailyPoints: dailyPoints,
       recentOrders: allOrders.slice(0, 20) // "recent" is always just the newest, independent of the date filter — renderExpandable shows 5 at a time
     };
@@ -1339,13 +1355,26 @@ function initStatsDashboard(token) {
     chartEl.innerHTML = svg + labels;
   }
 
+  function recentOrderStatusLabel(s) {
+    if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
+    return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
   function renderRecentOrders(orders) {
     var el = document.getElementById('admin-recent-orders-rows');
     if (!el) return;
     renderExpandable(
       el,
       orders,
-      function (o) { return '<div class="admin-rank-row"><span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') + '</span><span class="rank-value">AED ' + Number(o.total || 0).toFixed(2) + '</span></div>'; },
+      function (o) {
+        var dateLabel = o.created_at ? new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
+        return '<div class="admin-rank-row admin-recent-order-row">' +
+          '<span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') +
+            '<br><span style="font-size:0.7rem; opacity:0.6;">' + recentOrderStatusLabel(o.status) + ' &middot; ' + dateLabel + '</span>' +
+          '</span>' +
+          '<span class="rank-value">AED ' + Number(o.total || 0).toFixed(2) + '</span>' +
+        '</div>';
+      },
       'No orders yet.'
     );
   }
