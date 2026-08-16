@@ -180,6 +180,14 @@
   .admin-orders-clickable-row { cursor: pointer; }
   .admin-orders-clickable-row:hover { background: var(--ivory-deep); }
 
+  .admin-saree-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .admin-saree-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; font-size: 0.74rem; }
+  .admin-saree-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
+  .admin-saree-card-info { padding: 8px 10px; }
+  .admin-saree-card-id { font-weight: 700; color: var(--green-deep); }
+  .admin-saree-card-series { color: #8a7266; font-size: 0.68rem; margin: 2px 0 4px; }
+  .admin-saree-card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.68rem; }
+
   .admin-review-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
   .admin-review-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
   .admin-review-card-stars { color: var(--gold); font-size: 0.85rem; letter-spacing: 1px; }
@@ -318,6 +326,7 @@
   .admin-table th { background: var(--ivory-deep); text-align: left; padding: 9px 12px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); opacity: 0.7; }
   .admin-table td { padding: 9px 12px; border-top: 1px solid var(--stone); vertical-align: middle; }
   .admin-table tr.is-sold td { opacity: 0.55; }
+  .admin-saree-card.is-sold { opacity: 0.6; }
   .admin-edit-link { color: var(--gold); cursor: pointer; font-weight: 600; }
   .admin-delete-link { color: #B8142A; cursor: pointer; font-weight: 600; }
   .admin-sold-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #f3e3e3; color: #a33; }
@@ -503,9 +512,9 @@
 
     <div class="admin-view" id="admin-view-sarees" style="display:none;">
     <div class="admin-heading">
-      <h1>Saree Editor</h1>
+      <h1>Saree Collection</h1>
       <input type="text" id="admin-search-input" class="admin-search-input" placeholder="Search by ID, design, series...">
-      <span class="btn btn-primary" id="admin-add-new-btn" style="cursor:pointer;">+ Add New Saree</span>
+      <span class="btn btn-primary" id="admin-add-new-btn" style="cursor:pointer;">+ Add Saree</span>
     </div>
 
     <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap; align-items:center;">
@@ -520,15 +529,13 @@
 
     <p class="admin-status-msg" id="admin-status-msg"></p>
 
-    <table class="admin-table">
-      <thead>
-        <tr><th>Image</th><th>ID</th><th>Design / Series</th><th>Category</th><th>Status</th><th></th></tr>
-      </thead>
-      <tbody id="admin-product-rows"></tbody>
-    </table>
+    <div class="admin-mo-cols">
+      <div class="admin-mo-col-main">
+        <div class="admin-saree-grid" id="admin-product-rows"></div>
+        <div class="admin-pagination" id="admin-pagination"></div>
+      </div>
 
-    <div class="admin-pagination" id="admin-pagination"></div>
-
+      <div class="admin-mo-col-side">
     <div class="admin-form-card" id="admin-form-card" style="display:none;">
       <h3 id="admin-form-title">Add New Saree</h3>
       <form id="admin-product-form">
@@ -618,6 +625,8 @@
           <button type="button" class="btn btn-ghost" id="admin-cancel-btn">Cancel</button>
         </div>
       </form>
+    </div>
+      </div>
     </div>
 
     <div class="admin-form-card" id="admin-csv-preview-card" style="display:none;">

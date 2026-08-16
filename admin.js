@@ -251,14 +251,19 @@ function initSareeEditor(token) {
 
     rowsEl.innerHTML = pageItems.map(function (p) {
       return (
-        '<tr class="' + (p.sold ? 'is-sold' : '') + '">' +
-          '<td><img src="' + (p.image || '') + '" alt="' + p.id + '" style="width:36px; height:46px; object-fit:cover; border-radius:3px;"></td>' +
-          '<td>' + p.id + '</td>' +
-          '<td>' + p.design + ' — ' + seriesTitle(p.series) + '</td>' +
-          '<td>' + p.category + '</td>' +
-          '<td>' + (p.sold ? '<span class="admin-sold-badge">Sold out</span>' : '<span class="admin-avail-badge">Available</span>') + '</td>' +
-          '<td><span class="admin-edit-link" data-id="' + p.id + '">Edit</span> &middot; <span class="admin-delete-link" data-id="' + p.id + '">Delete</span></td>' +
-        '</tr>'
+        '<div class="admin-saree-card' + (p.sold ? ' is-sold' : '') + '">' +
+          '<img src="' + (p.image || '') + '" alt="' + p.id + '">' +
+          '<div class="admin-saree-card-info">' +
+            '<div class="admin-saree-card-id">' + p.id + '</div>' +
+            '<div class="admin-saree-card-series">' + p.design + ' — ' + seriesTitle(p.series) + '</div>' +
+            '<div style="color:var(--gold); font-weight:700; margin-bottom:4px;">AED ' + Number(p.price || 0).toFixed(2) + '</div>' +
+            (p.sold ? '<span class="admin-sold-badge">Sold out</span>' : '<span class="admin-avail-badge">Available</span>') +
+            '<div class="admin-saree-card-actions">' +
+              '<span class="admin-edit-link" data-id="' + p.id + '">Edit</span>' +
+              '<span class="admin-delete-link" data-id="' + p.id + '">Delete</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
       );
     }).join('');
 
