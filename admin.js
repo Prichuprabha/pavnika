@@ -1106,7 +1106,7 @@ function initStatsDashboard(token) {
     return days + ' day' + (days === 1 ? '' : 's') + ' ago';
   }
 
-  function renderStats(data) {
+  function renderStats(data, orderStats) {
     latestStats = data;
     var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
     var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
@@ -1117,11 +1117,31 @@ function initStatsDashboard(token) {
       statusMsg.style.display = 'none';
     }
 
+    function deltaHtml(pct) {
+      if (pct === 0) return '';
+      var sign = pct > 0 ? '+' : '';
+      var cls = pct >= 0 ? '' : ' negative';
+      return '<p class="delta' + cls + '">' + sign + pct + '% vs previous period</p>';
+    }
+
+    var orderCard = orderStats
+      ? '<div class="admin-metric-card accent-gold"><p class="label">Orders</p><p class="value">' + orderStats.orderCount + '</p>' + deltaHtml(orderStats.orderCountDelta) + '</div>'
+      : '';
+    var revenueCard = orderStats
+      ? '<div class="admin-metric-card accent-gold"><p class="label">Revenue (AED)</p><p class="value">' + orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }) + '</p>' + deltaHtml(orderStats.revenueDelta) + '</div>'
+      : '';
+
     metricGrid.innerHTML =
       '<div class="admin-metric-card"><p class="label">In stock</p><p class="value">' + inStock + '</p></div>' +
       '<div class="admin-metric-card accent-red"><p class="label">Sold out</p><p class="value">' + soldOut + '</p></div>' +
-      '<div class="admin-metric-card accent-gold"><p class="label">Verified visitors</p><p class="value">' + data.totalVisitors + '</p></div>' +
-      '<div class="admin-metric-card accent-gold"><p class="label">Saree views logged</p><p class="value">' + data.totalViews + '</p></div>';
+      orderCard + revenueCard +
+      '<div class="admin-metric-card"><p class="label">Verified visitors</p><p class="value">' + data.totalVisitors + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">Saree views logged</p><p class="value">' + data.totalViews + '</p></div>';
+
+    if (orderStats) {
+      renderRevenueChart(orderStats.dailyPoints);
+      renderRecentOrders(orderStats.recentOrders);
+    }
 
     // Unfiltered view: top 10 only. Filtered (date range): show all,
     // inside a scrollable box so the page doesn't grow endlessly.
@@ -1166,19 +1186,134 @@ function initStatsDashboard(token) {
 
   document.getElementById('admin-show-emails-toggle').addEventListener('change', renderLoginsList);
 
+  document.querySelectorAll('[data-view-jump]').forEach(function (link) {
+    link.addEventListener('click', function () {
+      var target = document.querySelector('.admin-nav-item[data-view="' + link.getAttribute('data-view-jump') + '"]');
+      if (target) target.click();
+    });
+  });
+
+  // Orders/revenue stats are computed entirely from the same order
+  // list the Orders tab already fetches — no separate backend
+  // aggregation needed. Only these statuses represent a genuine
+  // completed sale; pending/cancelled/payment_error/refunded don't
+  // count toward revenue.
+  var REVENUE_STATUSES = ['paid', 'shipped', 'delivered', 'delivered_direct_pay'];
+
+  function dayKey(iso) {
+    var d = new Date(iso);
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+
+  function computeOrderStats(allOrders, fromDate, toDate) {
+    var now = new Date();
+    var rangeEnd = toDate ? new Date(toDate + 'T23:59:59') : now;
+    var rangeStart = fromDate ? new Date(fromDate + 'T00:00:00') : new Date(rangeEnd.getTime() - 6 * 86400000); // default: last 7 days
+    var rangeLengthMs = rangeEnd.getTime() - rangeStart.getTime();
+    var prevEnd = new Date(rangeStart.getTime() - 1);
+    var prevStart = new Date(prevEnd.getTime() - rangeLengthMs);
+
+    var revenueOrders = allOrders.filter(function (o) { return REVENUE_STATUSES.indexOf(o.status) !== -1; });
+
+    function withinRange(o, start, end) {
+      var t = new Date(o.created_at).getTime();
+      return t >= start.getTime() && t <= end.getTime();
+    }
+
+    var current = revenueOrders.filter(function (o) { return withinRange(o, rangeStart, rangeEnd); });
+    var previous = revenueOrders.filter(function (o) { return withinRange(o, prevStart, prevEnd); });
+
+    var currentRevenue = current.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+    var previousRevenue = previous.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+
+    function pctChange(cur, prev) {
+      if (prev === 0) return cur > 0 ? 100 : 0;
+      return Math.round(((cur - prev) / prev) * 100);
+    }
+
+    var dailyMap = {};
+    current.forEach(function (o) {
+      var key = dayKey(o.created_at);
+      dailyMap[key] = (dailyMap[key] || 0) + (Number(o.total) || 0);
+    });
+    var dailyPoints = [];
+    var cursor = new Date(rangeStart);
+    while (cursor <= rangeEnd) {
+      var key = dayKey(cursor.toISOString());
+      dailyPoints.push({ date: cursor.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), revenue: dailyMap[key] || 0 });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+
+    return {
+      orderCount: current.length,
+      revenue: currentRevenue,
+      orderCountDelta: pctChange(current.length, previous.length),
+      revenueDelta: pctChange(currentRevenue, previousRevenue),
+      dailyPoints: dailyPoints,
+      recentOrders: allOrders.slice(0, 5) // "recent" is always just the newest, independent of the date filter
+    };
+  }
+
+  function renderRevenueChart(points) {
+    var chartEl = document.getElementById('admin-revenue-chart');
+    if (!chartEl) return;
+    if (!points.length || points.every(function (p) { return p.revenue === 0; })) {
+      chartEl.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">No revenue in this range yet.</p>';
+      return;
+    }
+    var max = Math.max.apply(null, points.map(function (p) { return p.revenue; })) || 1;
+    var w = 100, h = 40;
+    var stepX = points.length > 1 ? w / (points.length - 1) : 0;
+    var coords = points.map(function (p, i) {
+      var x = points.length > 1 ? i * stepX : w / 2;
+      var y = h - (p.revenue / max) * (h - 4) - 2;
+      return x + ',' + y;
+    });
+    var svg =
+      '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%; height:90px;">' +
+        '<polyline points="' + coords.join(' ') + '" fill="none" stroke="#B68A69" stroke-width="1.4" vector-effect="non-scaling-stroke"/>' +
+      '</svg>';
+    var labels =
+      '<div style="display:flex; justify-content:space-between; font-size:0.62rem; color:#8a7266; margin-top:4px;">' +
+        '<span>' + points[0].date + '</span><span>' + points[points.length - 1].date + '</span>' +
+      '</div>';
+    chartEl.innerHTML = svg + labels;
+  }
+
+  function renderRecentOrders(orders) {
+    var el = document.getElementById('admin-recent-orders-rows');
+    if (!el) return;
+    el.innerHTML = orders.length
+      ? orders.map(function (o) {
+          return '<div class="admin-rank-row"><span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') + '</span><span class="rank-value">AED ' + Number(o.total || 0).toFixed(2) + '</span></div>';
+        }).join('')
+      : '<p style="font-size:0.82rem; opacity:0.6;">No orders yet.</p>';
+  }
+
+
   function loadStats() {
     metricGrid.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading stats...</p>';
     var fromDate = document.getElementById('admin-stats-from').value || null;
     var toDate = document.getElementById('admin-stats-till').value || null;
-    fetch('/.netlify/functions/admin-get-stats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, fromDate: fromDate, toDate: toDate })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) { showStatus('error', result.data.error || 'Could not load stats.'); return; }
-        renderStats(result.data);
+
+    Promise.all([
+      fetch('/.netlify/functions/admin-get-stats', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, fromDate: fromDate, toDate: toDate })
+      }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); }),
+      fetch('/.netlify/functions/admin-get-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token })
+      }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    ])
+      .then(function (results) {
+        var statsResult = results[0];
+        var ordersResult = results[1];
+        if (!statsResult.ok) { showStatus('error', statsResult.data.error || 'Could not load stats.'); return; }
+        var orderStats = ordersResult.ok ? computeOrderStats(ordersResult.data.orders || [], fromDate, toDate) : null;
+        renderStats(statsResult.data, orderStats);
       })
       .catch(function () { showStatus('error', 'Network error loading stats.'); });
   }
