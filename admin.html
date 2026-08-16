@@ -343,6 +343,8 @@
   .admin-form-card h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; }
   .admin-mo-discount-type-btn { background: var(--ivory); color: var(--ink); }
   .admin-mo-discount-type-btn.active { background: var(--gold); color: #fff; font-weight: 600; }
+  .pc-type-btn { padding: 9px 16px; font-size: 0.76rem; cursor: pointer; background: var(--ivory); color: var(--ink); }
+  .pc-type-btn.active { background: var(--gold); color: #fff; font-weight: 600; }
   .admin-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
   .admin-field label { font-size: 0.7rem; color: var(--ink); opacity: 0.7; display: block; margin-bottom: 4px; }
   .admin-field input, .admin-field select, .admin-field textarea {
@@ -737,16 +739,38 @@
       <div class="admin-heading"><h1>Promo Codes</h1></div>
       <p class="admin-status-msg" id="admin-promo-status-msg"></p>
 
+      <div class="admin-metric-grid" id="admin-promo-stats" style="max-width:340px; margin-bottom:22px;"></div>
+
       <div class="admin-form-card">
         <h3>Create New Code</h3>
-        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
-          <div class="admin-field" style="max-width:120px;">
-            <label>Discount %</label>
+        <div style="display:flex; border:1px solid var(--stone); border-radius:5px; overflow:hidden; width:fit-content; margin-bottom:12px;">
+          <span class="pc-type-btn active" data-type="percent" id="admin-promo-type-percent">%</span>
+          <span class="pc-type-btn" data-type="value" id="admin-promo-type-value">AED Value</span>
+        </div>
+
+        <div id="admin-promo-percent-mode">
+          <div class="admin-field" style="max-width:160px;">
+            <label>Discount Percentage</label>
             <input type="number" id="admin-promo-discount" min="1" max="95" value="10">
           </div>
-          <button type="button" class="btn btn-primary" id="admin-promo-create-btn">Create &amp; Enable Code</button>
         </div>
-        <p style="font-size:0.76rem; color:var(--ink); opacity:0.6; margin:12px 0 0;">Generates a random code, valid for 10 minutes, single-use only.</p>
+
+        <div id="admin-promo-value-mode" style="display:none;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="admin-field" style="max-width:160px;">
+              <label>Discount Amount (AED)</label>
+              <input type="number" id="admin-promo-value-input" placeholder="e.g. 50" min="0">
+            </div>
+            <div class="admin-field" style="max-width:180px;">
+              <label>On an order total of (AED)</label>
+              <input type="number" id="admin-promo-reference-input" placeholder="e.g. 500" min="0">
+            </div>
+          </div>
+          <p id="admin-promo-computed-preview" style="font-size:0.78rem; color:var(--green); font-weight:600; margin:6px 0 0;">Enter both amounts to see the equivalent percentage.</p>
+        </div>
+
+        <button type="button" class="btn btn-primary" id="admin-promo-create-btn" style="margin-top:14px;">Create &amp; Enable Code</button>
+        <p style="font-size:0.76rem; color:var(--ink); opacity:0.6; margin:12px 0 0;">Generates a random code, valid for 10 minutes, single-use only. "AED Value" is a calculator — the code created is always a plain percentage; it applies that same percentage to whatever the customer's real cart total turns out to be, so it only lines up exactly with the AED amount you enter here if their cart matches the reference total.</p>
       </div>
 
       <h3 class="admin-stats-subheading">Active codes</h3>

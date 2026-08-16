@@ -1656,6 +1656,39 @@ function initPromoCodesEditor(token) {
   var activeList = document.getElementById('admin-promo-active-list');
   var historyRows = document.getElementById('admin-promo-history-rows');
   var countdownInterval = null;
+  var promoStatsEl = document.getElementById('admin-promo-stats');
+  var createMode = 'percent';
+
+  var percentModeEl = document.getElementById('admin-promo-percent-mode');
+  var valueModeEl = document.getElementById('admin-promo-value-mode');
+  document.getElementById('admin-promo-type-percent').addEventListener('click', function () {
+    createMode = 'percent';
+    document.getElementById('admin-promo-type-percent').classList.add('active');
+    document.getElementById('admin-promo-type-value').classList.remove('active');
+    percentModeEl.style.display = 'block';
+    valueModeEl.style.display = 'none';
+  });
+  document.getElementById('admin-promo-type-value').addEventListener('click', function () {
+    createMode = 'value';
+    document.getElementById('admin-promo-type-value').classList.add('active');
+    document.getElementById('admin-promo-type-percent').classList.remove('active');
+    percentModeEl.style.display = 'none';
+    valueModeEl.style.display = 'block';
+  });
+
+  function updatePromoValuePreview() {
+    var val = Number(document.getElementById('admin-promo-value-input').value);
+    var ref = Number(document.getElementById('admin-promo-reference-input').value);
+    var el = document.getElementById('admin-promo-computed-preview');
+    if (val > 0 && ref > 0) {
+      var pct = Math.round((val / ref) * 100);
+      el.textContent = '≈ ' + pct + '% off — this is the percentage code that will actually be created.';
+    } else {
+      el.textContent = 'Enter both amounts to see the equivalent percentage.';
+    }
+  }
+  document.getElementById('admin-promo-value-input').addEventListener('input', updatePromoValuePreview);
+  document.getElementById('admin-promo-reference-input').addEventListener('input', updatePromoValuePreview);
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
@@ -1694,6 +1727,11 @@ function initPromoCodesEditor(token) {
 
   function renderPromos(data) {
     if (countdownInterval) clearInterval(countdownInterval);
+
+    var usedCount = data.history.filter(function (p) { return p.used; }).length;
+    promoStatsEl.innerHTML =
+      '<div class="admin-metric-card"><p class="label">Active Codes</p><p class="value">' + data.active.length + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">Used</p><p class="value">' + usedCount + '</p></div>';
 
     if (!data.active.length) {
       activeList.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No active codes right now.</p>';
@@ -1748,7 +1786,19 @@ function initPromoCodesEditor(token) {
   }
 
   document.getElementById('admin-promo-create-btn').addEventListener('click', function () {
-    var discount = parseInt(document.getElementById('admin-promo-discount').value, 10);
+    var discount;
+    if (createMode === 'percent') {
+      discount = parseInt(document.getElementById('admin-promo-discount').value, 10);
+    } else {
+      var val = Number(document.getElementById('admin-promo-value-input').value);
+      var ref = Number(document.getElementById('admin-promo-reference-input').value);
+      if (!val || !ref) {
+        showStatus('error', 'Please enter both the discount amount and the reference order total.');
+        return;
+      }
+      discount = Math.round((val / ref) * 100);
+    }
+
     if (!discount || discount < 1 || discount > 95) {
       showStatus('error', 'Please enter a discount between 1 and 95.');
       return;
