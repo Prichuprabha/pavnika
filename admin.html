@@ -181,6 +181,13 @@
   .admin-orders-clickable-row:hover { background: var(--ivory-deep); }
 
   .admin-saree-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .admin-saree-drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; width: 100%; max-width: 420px;
+    border-radius: 0; margin: 0; overflow-y: auto;
+    transform: translateX(100%); transition: transform 0.3s ease;
+  }
+  .admin-order-drawer-overlay.is-open .admin-saree-drawer { transform: translateX(0); }
+  .admin-saree-drawer .admin-order-drawer-close { position: absolute; top: 16px; right: 16px; }
   .admin-saree-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; font-size: 0.74rem; }
   .admin-saree-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
   .admin-saree-card-info { padding: 8px 10px; }
@@ -296,7 +303,7 @@
     box-sizing: border-box; margin-bottom: 8px;
   }
   .admin-view-site-link:hover { background: var(--gold-light); color: var(--green-deep); }
-  .admin-main { flex: 1; padding: 28px 40px; max-width: 1440px; }
+  .admin-main { flex: 1; padding: 28px 40px; max-width: 1680px; }
   .admin-heading { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 16px; }
   .admin-heading h1 { font-size: 1.3rem; margin: 0; flex-shrink: 0; }
   .admin-search-input {
@@ -529,14 +536,12 @@
 
     <p class="admin-status-msg" id="admin-status-msg"></p>
 
-    <div class="admin-mo-cols">
-      <div class="admin-mo-col-main">
-        <div class="admin-saree-grid" id="admin-product-rows"></div>
-        <div class="admin-pagination" id="admin-pagination"></div>
-      </div>
+    <div class="admin-saree-grid" id="admin-product-rows"></div>
+    <div class="admin-pagination" id="admin-pagination"></div>
 
-      <div class="admin-mo-col-side">
-    <div class="admin-form-card" id="admin-form-card" style="display:none;">
+    <div class="admin-order-drawer-overlay" id="admin-saree-drawer-overlay">
+    <div class="admin-form-card admin-saree-drawer" id="admin-form-card" style="display:none;">
+      <button type="button" class="admin-order-drawer-close" id="admin-saree-drawer-close">&#10005;</button>
       <h3 id="admin-form-title">Add New Saree</h3>
       <form id="admin-product-form">
         <div class="admin-form-grid">
@@ -626,7 +631,6 @@
         </div>
       </form>
     </div>
-      </div>
     </div>
 
     <div class="admin-form-card" id="admin-csv-preview-card" style="display:none;">

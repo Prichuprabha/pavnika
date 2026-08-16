@@ -190,6 +190,7 @@ function initSidebarNav() {
 function initSareeEditor(token) {
   var rowsEl = document.getElementById('admin-product-rows');
   var formCard = document.getElementById('admin-form-card');
+  var sareeDrawerOverlay = document.getElementById('admin-saree-drawer-overlay');
   var form = document.getElementById('admin-product-form');
   var seriesSelect = document.getElementById('admin-f-series');
   var idField = document.getElementById('admin-f-id');
@@ -207,6 +208,22 @@ function initSareeEditor(token) {
   var currentPage = 1;
   var searchQuery = '';
   var hideSold = false;
+
+  // The form now slides in as a drawer (overlay + panel), matching the
+  // Orders drawer, instead of sitting permanently in a side column —
+  // this lets the saree grid use the page's full width. These two
+  // helpers replace the old formCard.style.display toggling.
+  function showSareeDrawer() {
+    formCard.style.display = 'block';
+    sareeDrawerOverlay.classList.add('is-open');
+  }
+  function hideSareeDrawer() {
+    sareeDrawerOverlay.classList.remove('is-open');
+  }
+  document.getElementById('admin-saree-drawer-close').addEventListener('click', hideSareeDrawer);
+  sareeDrawerOverlay.addEventListener('click', function (e) {
+    if (e.target === sareeDrawerOverlay) hideSareeDrawer();
+  });
 
   function seriesTitle(code) {
     return code.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
@@ -348,8 +365,7 @@ function initSareeEditor(token) {
 
   function openFormForAdd() {
     resetForm();
-    formCard.style.display = 'block';
-    formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showSareeDrawer();
   }
 
   function openFormForEdit(id) {
@@ -376,12 +392,11 @@ function initSareeEditor(token) {
     document.getElementById('admin-f-sold').checked = !!product.sold;
     imagesList.innerHTML = '';
     (product.images && product.images.length ? product.images : ['']).forEach(function (src) { addImageRow(src); });
-    formCard.style.display = 'block';
-    formCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    showSareeDrawer();
   }
 
   document.getElementById('admin-add-new-btn').addEventListener('click', openFormForAdd);
-  document.getElementById('admin-cancel-btn').addEventListener('click', function () { formCard.style.display = 'none'; });
+  document.getElementById('admin-cancel-btn').addEventListener('click', hideSareeDrawer);
   document.getElementById('admin-add-image-btn').addEventListener('click', function () { addImageRow(''); });
 
   /* ----- CSV download ----- */
@@ -733,7 +748,7 @@ function initSareeEditor(token) {
           if (idx !== -1) window.PRODUCTS[idx] = result.data.product;
         }
         renderTable();
-        formCard.style.display = 'none';
+        hideSareeDrawer();
       })
       .catch(function () { showStatus('error', 'Network error — changes were not saved.'); })
       .finally(function () {
