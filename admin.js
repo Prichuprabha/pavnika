@@ -1106,6 +1106,36 @@ function initStatsDashboard(token) {
     return days + ' day' + (days === 1 ? '' : 's') + ' ago';
   }
 
+  // Shared "show 5, then Show More" pattern — used for Most Viewed,
+  // Recent Orders, and Recent Logins, so all three behave identically
+  // instead of each having its own limit/scroll logic.
+  function renderExpandable(container, items, rowBuilder, emptyMessage) {
+    if (!items.length) {
+      container.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">' + emptyMessage + '</p>';
+      return;
+    }
+    var collapsedCount = 5;
+    var expanded = false;
+    function draw() {
+      var visible = expanded ? items : items.slice(0, collapsedCount);
+      var rowsHtml = visible.map(rowBuilder).join('');
+      var toggleHtml = items.length > collapsedCount
+        ? '<p class="admin-view-all-link" style="margin-top:8px; text-align:center;" id="' + container.id + '-toggle">' +
+            (expanded ? 'Show less' : 'Show ' + (items.length - collapsedCount) + ' more') +
+          '</p>'
+        : '';
+      container.innerHTML = rowsHtml + toggleHtml;
+      var toggleEl = document.getElementById(container.id + '-toggle');
+      if (toggleEl) {
+        toggleEl.addEventListener('click', function () {
+          expanded = !expanded;
+          draw();
+        });
+      }
+    }
+    draw();
+  }
+
   function renderStats(data, orderStats) {
     latestStats = data;
     var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
@@ -1124,6 +1154,19 @@ function initStatsDashboard(token) {
       return '<p class="delta' + cls + '">' + sign + pct + '% vs previous period</p>';
     }
 
+    function countDeltaHtml(count, verb) {
+      if (!count) return '';
+      return '<p class="delta">+' + count + ' ' + verb + ' this period</p>';
+    }
+
+    var soldDelta = orderStats ? countDeltaHtml(orderStats.newlySoldCount, 'sold') : '';
+    // In Stock's delta mirrors Sold Out's exactly, since every saree that
+    // sells reduces stock by exactly one — this holds as long as no new
+    // sarees were also added to the catalogue in the same window, which
+    // isn't separately tracked, so treat this as a close estimate rather
+    // than a guaranteed-exact count if new stock was added mid-period.
+    var stockDelta = orderStats && orderStats.newlySoldCount ? '<p class="delta negative">-' + orderStats.newlySoldCount + ' sold this period</p>' : '';
+
     var orderCard = orderStats
       ? '<div class="admin-metric-card accent-gold"><p class="label">Orders</p><p class="value">' + orderStats.orderCount + '</p>' + deltaHtml(orderStats.orderCountDelta) + '</div>'
       : '';
@@ -1132,8 +1175,8 @@ function initStatsDashboard(token) {
       : '';
 
     metricGrid.innerHTML =
-      '<div class="admin-metric-card"><p class="label">In stock</p><p class="value">' + inStock + '</p></div>' +
-      '<div class="admin-metric-card accent-red"><p class="label">Sold out</p><p class="value">' + soldOut + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">In stock</p><p class="value">' + inStock + '</p>' + stockDelta + '</div>' +
+      '<div class="admin-metric-card accent-red"><p class="label">Sold out</p><p class="value">' + soldOut + '</p>' + soldDelta + '</div>' +
       orderCard + revenueCard +
       '<div class="admin-metric-card"><p class="label">Verified visitors</p><p class="value">' + data.totalVisitors + '</p></div>' +
       '<div class="admin-metric-card"><p class="label">Saree views logged</p><p class="value">' + data.totalViews + '</p></div>';
@@ -1143,29 +1186,37 @@ function initStatsDashboard(token) {
       renderRecentOrders(orderStats.recentOrders);
     }
 
-    // Unfiltered view: top 10 only. Filtered (date range): show all,
-    // inside a scrollable box so the page doesn't grow endlessly.
-    var mostViewedList = data.filtered ? data.mostViewed : data.mostViewed.slice(0, 10);
-    mostViewedRows.classList.toggle('admin-scroll-list', !!data.filtered && data.mostViewed.length > 10);
-    mostViewedRows.innerHTML = mostViewedList.length
-      ? mostViewedList.map(function (v) {
-          return '<div class="admin-rank-row"><span>' + findProductLabel(v.productId) + '</span><span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span></div>';
-        }).join('')
-      : '<p style="font-size:0.82rem; opacity:0.6;">No views logged yet.</p>';
+    renderExpandable(
+      mostViewedRows,
+      data.mostViewed,
+      function (v) { return '<div class="admin-rank-row"><span>' + findProductLabel(v.productId) + '</span><span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span></div>'; },
+      'No views logged yet.'
+    );
 
-    var maxRegionCount = data.regions.length ? Math.max.apply(null, data.regions.map(function (r) { return r.count; })) : 1;
-    regionsRows.innerHTML = data.regions.length
-      ? data.regions.map(function (r, i) {
-          var pct = Math.round((r.count / maxRegionCount) * 100);
-          var barColor = i === 0 ? 'var(--green)' : (i === 1 ? 'var(--gold)' : 'var(--stone)');
-          return (
-            '<div class="admin-bar-row">' +
-              '<div class="bar-label"><span>' + r.country + '</span><span class="bar-count">' + r.count + '</span></div>' +
-              '<div class="admin-bar-track"><div class="admin-bar-fill" style="width:' + pct + '%; background:' + barColor + ';"></div></div>' +
-            '</div>'
-          );
-        }).join('')
-      : '<p style="font-size:0.82rem; opacity:0.6;">No data yet.</p>';
+    var totalRegionCount = data.regions.reduce(function (sum, r) { return sum + r.count; }, 0);
+    var pieColors = ['var(--green)', 'var(--gold)', 'var(--stone)', '#946B4A', '#8a6f63', '#c9b8a8'];
+    if (data.regions.length && totalRegionCount > 0) {
+      var cumulative = 0;
+      var gradientStops = data.regions.map(function (r, i) {
+        var start = (cumulative / totalRegionCount) * 100;
+        cumulative += r.count;
+        var end = (cumulative / totalRegionCount) * 100;
+        var color = pieColors[i % pieColors.length];
+        return color + ' ' + start + '% ' + end + '%';
+      }).join(', ');
+      var legend = data.regions.map(function (r, i) {
+        var color = pieColors[i % pieColors.length];
+        return '<div style="display:flex; align-items:center; gap:6px; font-size:0.78rem; padding:3px 0;">' +
+          '<span style="width:9px; height:9px; border-radius:50%; background:' + color + '; flex-shrink:0;"></span>' +
+          '<span style="flex:1;">' + r.country + '</span><span style="font-weight:600; color:var(--green-deep);">' + r.count + '</span>' +
+        '</div>';
+      }).join('');
+      regionsRows.innerHTML =
+        '<div style="width:110px; height:110px; border-radius:50%; background:conic-gradient(' + gradientStops + '); margin:0 auto 14px;"></div>' +
+        legend;
+    } else {
+      regionsRows.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">No data yet.</p>';
+    }
 
     renderLoginsList();
   }
@@ -1173,15 +1224,16 @@ function initStatsDashboard(token) {
   function renderLoginsList() {
     if (!latestStats) return;
     var showFull = document.getElementById('admin-show-emails-toggle').checked;
-    var loginsList = latestStats.filtered ? latestStats.recentLogins : latestStats.recentLogins.slice(0, 10);
-    loginsRows.classList.toggle('admin-scroll-list', !!latestStats.filtered && latestStats.recentLogins.length > 10);
-    loginsRows.innerHTML = loginsList.length
-      ? loginsList.map(function (v) {
-          var emailDisplay = showFull ? (v.email || '') : maskEmail(v.email);
-          var location = v.country ? (v.region ? v.region + ', ' + v.country : v.country) : 'Unknown';
-          return '<div class="admin-rank-row"><span>' + emailDisplay + '<br><span style="font-size:0.7rem; opacity:0.6;">' + location + '</span></span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
-        }).join('')
-      : '<p style="font-size:0.82rem; opacity:0.6;">No logins yet.</p>';
+    renderExpandable(
+      loginsRows,
+      latestStats.recentLogins,
+      function (v) {
+        var emailDisplay = showFull ? (v.email || '') : maskEmail(v.email);
+        var location = v.country ? (v.region ? v.region + ', ' + v.country : v.country) : 'Unknown';
+        return '<div class="admin-rank-row"><span>' + emailDisplay + '<br><span style="font-size:0.7rem; opacity:0.6;">' + location + '</span></span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
+      },
+      'No logins yet.'
+    );
   }
 
   document.getElementById('admin-show-emails-toggle').addEventListener('change', renderLoginsList);
@@ -1244,13 +1296,20 @@ function initStatsDashboard(token) {
       cursor.setDate(cursor.getDate() + 1);
     }
 
+    var currentSareeIds = {};
+    current.forEach(function (o) {
+      try { JSON.parse(o.items || '[]').forEach(function (it) { currentSareeIds[it.id] = true; }); } catch (e) {}
+    });
+    var newlySoldCount = Object.keys(currentSareeIds).length;
+
     return {
       orderCount: current.length,
       revenue: currentRevenue,
       orderCountDelta: pctChange(current.length, previous.length),
       revenueDelta: pctChange(currentRevenue, previousRevenue),
+      newlySoldCount: newlySoldCount,
       dailyPoints: dailyPoints,
-      recentOrders: allOrders.slice(0, 5) // "recent" is always just the newest, independent of the date filter
+      recentOrders: allOrders.slice(0, 20) // "recent" is always just the newest, independent of the date filter — renderExpandable shows 5 at a time
     };
   }
 
@@ -1283,11 +1342,12 @@ function initStatsDashboard(token) {
   function renderRecentOrders(orders) {
     var el = document.getElementById('admin-recent-orders-rows');
     if (!el) return;
-    el.innerHTML = orders.length
-      ? orders.map(function (o) {
-          return '<div class="admin-rank-row"><span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') + '</span><span class="rank-value">AED ' + Number(o.total || 0).toFixed(2) + '</span></div>';
-        }).join('')
-      : '<p style="font-size:0.82rem; opacity:0.6;">No orders yet.</p>';
+    renderExpandable(
+      el,
+      orders,
+      function (o) { return '<div class="admin-rank-row"><span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') + '</span><span class="rank-value">AED ' + Number(o.total || 0).toFixed(2) + '</span></div>'; },
+      'No orders yet.'
+    );
   }
 
 
@@ -1318,6 +1378,28 @@ function initStatsDashboard(token) {
       .catch(function () { showStatus('error', 'Network error loading stats.'); });
   }
 
+  var dateRangeBtn = document.getElementById('admin-date-range-btn');
+  var dateRangePopover = document.getElementById('admin-date-range-popover');
+  var dateRangeLabel = document.getElementById('admin-date-range-label');
+
+  dateRangeBtn.addEventListener('click', function (e) {
+    e.stopPropagation();
+    dateRangePopover.classList.toggle('is-open');
+  });
+  document.addEventListener('click', function (e) {
+    if (!dateRangePopover.contains(e.target) && e.target !== dateRangeBtn) {
+      dateRangePopover.classList.remove('is-open');
+    }
+  });
+
+  function formatRangeLabel(from, till) {
+    if (!from && !till) return 'All-time';
+    var opts = { day: 'numeric', month: 'short', year: 'numeric' };
+    var fromLabel = from ? new Date(from + 'T00:00:00').toLocaleDateString('en-GB', opts) : '…';
+    var tillLabel = till ? new Date(till + 'T00:00:00').toLocaleDateString('en-GB', opts) : '…';
+    return fromLabel + ' – ' + tillLabel;
+  }
+
   document.getElementById('admin-stats-apply-btn').addEventListener('click', function () {
     var from = document.getElementById('admin-stats-from').value;
     var till = document.getElementById('admin-stats-till').value;
@@ -1325,12 +1407,16 @@ function initStatsDashboard(token) {
       showStatus('error', 'Pick at least one date, or use "Reset to all-time" instead.');
       return;
     }
+    dateRangeLabel.textContent = formatRangeLabel(from, till);
+    dateRangePopover.classList.remove('is-open');
     loadStats();
   });
 
   document.getElementById('admin-stats-reset-btn').addEventListener('click', function () {
     document.getElementById('admin-stats-from').value = '';
     document.getElementById('admin-stats-till').value = '';
+    dateRangeLabel.textContent = 'All-time';
+    dateRangePopover.classList.remove('is-open');
     loadStats();
   });
 
