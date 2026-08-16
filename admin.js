@@ -130,6 +130,12 @@ function showAdminPanel(token, email) {
   document.getElementById('admin-login-wrap').style.display = 'none';
   document.getElementById('admin-shell').style.display = 'flex';
   document.getElementById('admin-email-display').textContent = email || 'Admin';
+  var avatarCircle = document.getElementById('admin-avatar-circle');
+  if (avatarCircle) {
+    var localPart = (email || 'Admin').split('@')[0];
+    var initials = localPart.replace(/[^a-zA-Z]/g, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
+    avatarCircle.textContent = initials || 'A';
+  }
   initSareeEditor(token);
   initReviewsEditor(token);
   initBannersEditor(token);
@@ -150,6 +156,22 @@ function showAdminPanel(token, email) {
 /* ---------- Sidebar view switching ---------- */
 function initSidebarNav() {
   var navItems = document.querySelectorAll('.admin-nav-item');
+  var sidebar = document.getElementById('admin-sidebar');
+  var overlay = document.getElementById('admin-mobile-overlay');
+  var toggle = document.getElementById('admin-mobile-toggle');
+
+  function closeMobileNav() {
+    if (sidebar) sidebar.classList.remove('is-open');
+    if (overlay) overlay.classList.remove('is-open');
+  }
+  if (toggle) {
+    toggle.addEventListener('click', function () {
+      if (sidebar) sidebar.classList.toggle('is-open');
+      if (overlay) overlay.classList.toggle('is-open');
+    });
+  }
+  if (overlay) overlay.addEventListener('click', closeMobileNav);
+
   navItems.forEach(function (item) {
     item.addEventListener('click', function () {
       var view = item.getAttribute('data-view');
@@ -159,6 +181,7 @@ function initSidebarNav() {
       var target = document.getElementById('admin-view-' + view);
       if (target) target.style.display = 'block';
       if (view === 'stats' && window.__refreshStats) window.__refreshStats();
+      closeMobileNav(); // picking a page also dismisses the mobile menu, same as tapping outside it
     });
   });
 }
