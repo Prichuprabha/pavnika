@@ -47,11 +47,13 @@ async function getOrderByReference(referenceId) {
   return rows[0] || null;
 }
 
-async function markOrderPaid(orderId) {
+async function markOrderPaid(orderId, paymentMethod) {
+  var patch = { status: 'paid' };
+  if (paymentMethod) patch.payment_method = paymentMethod;
   await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
     method: 'PATCH',
     headers: supabaseHeaders(),
-    body: JSON.stringify({ status: 'paid' })
+    body: JSON.stringify(patch)
   });
 }
 
@@ -234,11 +236,13 @@ exports.handler = async function (event) {
 
     var items = JSON.parse(order.items || '[]');
     var sareeIds = items.map(function (it) { return it.id; });
+    var paymentMethodLabel = extractPaymentMethod(nomodData);
 
     await markSareesSold(sareeIds);
-    if (order.id) await markOrderPaid(order.id);
+    if (order.id) await markOrderPaid(order.id, paymentMethodLabel);
     await markPromoCodeUsed(order.promo_code);
-    await sendReceiptEmail(order, extractPaymentMethod(nomodData));
+    order.payment_method = paymentMethodLabel;
+    await sendReceiptEmail(order, paymentMethodLabel);
 
     return { statusCode: 200, body: JSON.stringify({ paid: true, order: order }) };
   } catch (err) {

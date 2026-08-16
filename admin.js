@@ -1784,12 +1784,17 @@ function initOrdersView(token) {
   function renderSummary() {
     var pendingDispatch = allOrders.filter(function (o) { return o.status === 'paid'; });
     var totalOrders = allOrders.length;
+    var processing = allOrders.filter(function (o) { return o.status === 'paid' || o.status === 'shipped'; }).length;
+    var completed = allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length;
+    var cancelled = allOrders.filter(function (o) { return o.status === 'cancelled' || o.status === 'refunded' || o.status === 'payment_error'; }).length;
     var totalRevenue = allOrders.filter(function (o) { return o.status !== 'cancelled' && o.status !== 'payment_error'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
 
     summaryEl.innerHTML =
-      '<div class="admin-metric-card"><p class="label">Total orders</p><p class="value">' + totalOrders + '</p></div>' +
-      '<div class="admin-metric-card accent-gold"><p class="label">Pending dispatch</p><p class="value">' + pendingDispatch.length + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">All orders</p><p class="value">' + totalOrders + '</p></div>' +
+      '<div class="admin-metric-card accent-gold"><p class="label">Processing</p><p class="value">' + processing + '</p></div>' +
+      '<div class="admin-metric-card"><p class="label">Completed</p><p class="value">' + completed + '</p></div>' +
+      '<div class="admin-metric-card accent-red"><p class="label">Cancelled</p><p class="value">' + cancelled + '</p></div>' +
       '<div class="admin-metric-card"><p class="label">Total revenue (AED)</p><p class="value">' + Math.round(totalRevenue).toLocaleString() + '</p></div>';
 
     if (pendingDispatch.length) {
@@ -1806,6 +1811,8 @@ function initOrdersView(token) {
   function getFilteredSorted() {
     var statusVal = statusFilter.value;
     var query = searchInput.value.trim().toLowerCase();
+    var dateFrom = document.getElementById('admin-orders-date-from').value;
+    var dateTo = document.getElementById('admin-orders-date-to').value;
 
     var filtered = allOrders.filter(function (o) {
       var okStatus = !statusVal || (o.status || 'pending') === statusVal;
@@ -1813,7 +1820,10 @@ function initOrdersView(token) {
         (o.order_number || '').toLowerCase().indexOf(query) !== -1 ||
         (o.customer_name || '').toLowerCase().indexOf(query) !== -1 ||
         (o.customer_email || '').toLowerCase().indexOf(query) !== -1;
-      return okStatus && okSearch;
+      var orderTime = new Date(o.created_at).getTime();
+      var okFrom = !dateFrom || orderTime >= new Date(dateFrom + 'T00:00:00').getTime();
+      var okTo = !dateTo || orderTime <= new Date(dateTo + 'T23:59:59').getTime();
+      return okStatus && okSearch && okFrom && okTo;
     });
 
     filtered.sort(function (a, b) {
@@ -1835,7 +1845,7 @@ function initOrdersView(token) {
       var itemsSummary = items.map(function (it) { return it.id; }).join(', ');
 
       return (
-        '<tr>' +
+        '<tr class="admin-orders-clickable-row" data-id="' + o.id + '">' +
           '<td>' + (o.order_number || '—') + '</td>' +
           '<td>' + new Date(o.created_at).toLocaleString() + '</td>' +
           '<td>' + (o.customer_name || '—') + '<br><span style="opacity:0.6; font-size:0.72rem;">' + (o.customer_email || '') + '</span></td>' +
@@ -1892,6 +1902,111 @@ function initOrdersView(token) {
 
   statusFilter.addEventListener('change', renderTable);
   searchInput.addEventListener('input', renderTable);
+  document.getElementById('admin-orders-date-from').addEventListener('change', renderTable);
+  document.getElementById('admin-orders-date-to').addEventListener('change', renderTable);
+
+  // ---------- Right-side order drawer ----------
+  var drawerOverlay = document.getElementById('admin-order-drawer-overlay');
+  var drawerNumber = document.getElementById('admin-drawer-order-number');
+  var drawerStatusBadge = document.getElementById('admin-drawer-status-badge');
+  var drawerBody = document.getElementById('admin-order-drawer-body');
+
+  function addressBlock(addrJson) {
+    var addr;
+    try { addr = JSON.parse(addrJson || '{}'); } catch (e) { addr = {}; }
+    if (!addr.building && !addr.city) return '<p style="opacity:0.6;">Not provided</p>';
+    return '<p style="margin:0;">' + [addr.building, addr.street, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(', ') + '</p>';
+  }
+
+  function openOrderDrawer(order) {
+    drawerNumber.textContent = 'Order #' + (order.order_number || order.id);
+    drawerStatusBadge.textContent = statusLabel(order.status);
+
+    var items = [];
+    try { items = JSON.parse(order.items || '[]'); } catch (e) {}
+    var itemsHtml = items.map(function (it) {
+      var p = (window.PRODUCTS || []).find(function (x) { return x.id === it.id; });
+      var img = p ? p.image : (it.image || '');
+      return '<div class="admin-order-drawer-item">' +
+        (img ? '<img src="' + img + '">' : '') +
+        '<span style="flex:1;">' + (it.name || it.id) + (it.qty && it.qty > 1 ? ' &times; ' + it.qty : '') + '</span>' +
+        '<span style="font-weight:600;">AED ' + Number(it.price || 0).toFixed(2) + '</span>' +
+      '</div>';
+    }).join('') || '<p style="opacity:0.6;">No items on record.</p>';
+
+    var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
+    var discount = Number(order.discount_amount) || 0;
+
+    drawerBody.innerHTML =
+      '<h4>Customer</h4>' +
+      '<p style="margin:0;"><strong>' + (order.customer_name || '—') + '</strong></p>' +
+      '<p style="margin:0;">' + (order.customer_email || '') + '</p>' +
+      '<p style="margin:0;">' + (order.customer_phone || '') + '</p>' +
+
+      '<h4>Items</h4>' + itemsHtml +
+
+      '<h4>Order Summary</h4>' +
+      '<div class="admin-order-drawer-totals-row"><span>Subtotal</span><span>AED ' + subtotal.toFixed(2) + '</span></div>' +
+      (discount > 0 ? '<div class="admin-order-drawer-totals-row"><span>Discount' + (order.promo_code ? ' (' + order.promo_code + ')' : '') + '</span><span>-AED ' + discount.toFixed(2) + '</span></div>' : '') +
+      '<div class="admin-order-drawer-totals-row total"><span>Total</span><span>AED ' + Number(order.total || 0).toFixed(2) + '</span></div>' +
+
+      '<h4>Payment Method</h4>' +
+      '<p style="margin:0;">' + (order.payment_method || 'Not recorded') + '</p>' +
+
+      '<h4>Shipping Address</h4>' + addressBlock(order.shipping_address) +
+
+      '<h4>Update Status</h4>' +
+      buildStatusSelect(order);
+
+    drawerOverlay.classList.add('is-open');
+  }
+
+  function closeOrderDrawer() {
+    drawerOverlay.classList.remove('is-open');
+  }
+
+  rowsEl.addEventListener('click', function (e) {
+    if (e.target.closest('select')) return; // clicking the status dropdown updates status, doesn't open the drawer
+    var row = e.target.closest('.admin-orders-clickable-row');
+    if (!row) return;
+    var order = allOrders.find(function (o) { return String(o.id) === String(row.getAttribute('data-id')); });
+    if (order) openOrderDrawer(order);
+  });
+
+  document.getElementById('admin-order-drawer-close').addEventListener('click', closeOrderDrawer);
+  drawerOverlay.addEventListener('click', function (e) {
+    if (e.target === drawerOverlay) closeOrderDrawer();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && drawerOverlay.classList.contains('is-open')) closeOrderDrawer();
+  });
+
+  // The drawer's own status select uses the same change handler as
+  // the table's (delegated on rowsEl), so it also needs its own
+  // listener since it isn't inside rowsEl.
+  drawerBody.addEventListener('change', function (e) {
+    var select = e.target.closest('.admin-order-status-select');
+    if (!select) return;
+    var orderId = select.getAttribute('data-id');
+    var newStatus = select.value;
+
+    fetch('/.netlify/functions/admin-update-order-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
+        var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
+        if (order) order.status = newStatus;
+        drawerStatusBadge.textContent = statusLabel(newStatus);
+        showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
+        renderSummary();
+        renderTable();
+      })
+      .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
+  });
 
   function loadOrders() {
     fetch('/.netlify/functions/admin-get-orders', {
