@@ -2168,6 +2168,38 @@ function wishlistSaveItems(ids) {
 // unchanged from how this always worked — browsing and adding to
 // cart still works before someone verifies, it just won't follow
 // them to another device until they do.
+var CART_LAST_SYNCED_KEY = 'pavnika_cart_last_synced';
+var WISHLIST_LAST_SYNCED_KEY = 'pavnika_wishlist_last_synced';
+
+function getLastSynced(storageKey) {
+  try {
+    var raw = localStorage.getItem(storageKey);
+    var ids = raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) ? ids : [];
+  } catch (e) {
+    return [];
+  }
+}
+function saveLastSynced(storageKey, ids) {
+  try {
+    localStorage.setItem(storageKey, JSON.stringify(ids));
+  } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
+}
+
+// The previous version of this treated "anything local the server
+// doesn't have" as something to defend and push back up — which
+// seemed right for a brand-new device syncing for the first time, but
+// broke badly for a second, subtler case: a device that's had the
+// SAME stale item sitting untouched in localStorage since before it
+// was deliberately removed somewhere else. That device never touched
+// its own cart, so it has no real "new" intent to defend — it should
+// just adopt whatever the server says, including deletions.
+//
+// The fix: remember what each device last knew to be true (a "last
+// synced" snapshot, kept separately from the live cache). Only items
+// that are in the CURRENT local list but weren't in that snapshot are
+// genuinely new, unpushed additions from this device — everything
+// else defers entirely to the server, deletions included.
 function syncCartFromServer(token) {
   return fetch('/.netlify/functions/get-cart', {
     method: 'POST',
@@ -2177,26 +2209,39 @@ function syncCartFromServer(token) {
     .then(function (res) { return res.json(); })
     .then(function (data) {
       var serverItems = Array.isArray(data.items) ? data.items : [];
-      var localItems = cartGetItems(); // whatever was already showing before this resolved — must not be silently discarded
-      var merged = serverItems.slice();
-      var localOnly = [];
-      localItems.forEach(function (id) {
-        if (merged.indexOf(id) === -1) {
-          merged.push(id);
-          localOnly.push(id);
-        }
-      });
-      cartSaveItems(merged); // updates the cache AND localStorage together, so both agree from this point on
+      var currentLocal = cartGetItems();
+      var lastSynced = getLastSynced(CART_LAST_SYNCED_KEY);
+
+      var addedByThisDevice = currentLocal.filter(function (id) { return lastSynced.indexOf(id) === -1; });
+      var removedByThisDevice = lastSynced.filter(function (id) { return currentLocal.indexOf(id) === -1; });
+
+      var newTruth = serverItems.slice();
+      addedByThisDevice.forEach(function (id) { if (newTruth.indexOf(id) === -1) newTruth.push(id); });
+      newTruth = newTruth.filter(function (id) { return removedByThisDevice.indexOf(id) === -1; });
+
+      cartSaveItems(newTruth);
+      saveLastSynced(CART_LAST_SYNCED_KEY, newTruth);
       renderCartDrawer();
 
-      // Anything that was only local needs pushing up to the server
-      // too, or it'd just vanish again on the next sync/device.
-      localOnly.forEach(function (id) {
+      // Push this device's own genuinely-new additions up, in case
+      // they hadn't made it to the server yet.
+      addedByThisDevice.forEach(function (id) {
         fetch('/.netlify/functions/add-to-cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorToken: token, sareeId: id })
         }).catch(function (e) { console.error('could not sync local cart item to server:', e); });
+      });
+      // Defensive re-push: this device's own removals should already
+      // have reached the server the moment they happened (see
+      // cartRemoveItem), but if that request ever failed silently,
+      // this repeats it rather than letting the item quietly reappear.
+      removedByThisDevice.forEach(function (id) {
+        fetch('/.netlify/functions/remove-from-cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorToken: token, sareeId: id })
+        }).catch(function (e) { console.error('could not confirm cart removal with server:', e); });
       });
     })
     .catch(function (e) { console.error('get-cart failed:', e); });
@@ -2211,24 +2256,33 @@ function syncWishlistFromServer(token) {
     .then(function (res) { return res.json(); })
     .then(function (data) {
       var serverItems = Array.isArray(data.items) ? data.items : [];
-      var localItems = wishlistGetItems();
-      var merged = serverItems.slice();
-      var localOnly = [];
-      localItems.forEach(function (id) {
-        if (merged.indexOf(id) === -1) {
-          merged.push(id);
-          localOnly.push(id);
-        }
-      });
-      wishlistSaveItems(merged);
+      var currentLocal = wishlistGetItems();
+      var lastSynced = getLastSynced(WISHLIST_LAST_SYNCED_KEY);
+
+      var addedByThisDevice = currentLocal.filter(function (id) { return lastSynced.indexOf(id) === -1; });
+      var removedByThisDevice = lastSynced.filter(function (id) { return currentLocal.indexOf(id) === -1; });
+
+      var newTruth = serverItems.slice();
+      addedByThisDevice.forEach(function (id) { if (newTruth.indexOf(id) === -1) newTruth.push(id); });
+      newTruth = newTruth.filter(function (id) { return removedByThisDevice.indexOf(id) === -1; });
+
+      wishlistSaveItems(newTruth);
+      saveLastSynced(WISHLIST_LAST_SYNCED_KEY, newTruth);
       renderWishlistDrawer();
 
-      localOnly.forEach(function (id) {
+      addedByThisDevice.forEach(function (id) {
         fetch('/.netlify/functions/add-to-wishlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorToken: token, sareeId: id })
         }).catch(function (e) { console.error('could not sync local wishlist item to server:', e); });
+      });
+      removedByThisDevice.forEach(function (id) {
+        fetch('/.netlify/functions/remove-from-wishlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorToken: token, sareeId: id })
+        }).catch(function (e) { console.error('could not confirm wishlist removal with server:', e); });
       });
     })
     .catch(function (e) { console.error('get-wishlist failed:', e); });
