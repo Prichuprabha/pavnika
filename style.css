@@ -2537,6 +2537,12 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .gate-overlay-root:not(.mode-generic) .gate-overlay-dim { display: block; }
 
 .gate-overlay-generic-bg { position: absolute; inset: 0; display: none; overflow: hidden; }
+/* Lighter tint specifically here than the original login page uses —
+   the backdrop image should read clearly as a real photo, not mostly
+   just a dark wash. */
+.gate-overlay-generic-bg .login-bg-overlay {
+  background: linear-gradient(rgba(43, 13, 26, 0.35), rgba(43, 13, 26, 0.35));
+}
 /* Generic mode: decorative cycling backdrop instead — used when there's
    no safe real page content to show behind it. */
 .gate-overlay-root.mode-generic .gate-overlay-generic-bg { display: block; }

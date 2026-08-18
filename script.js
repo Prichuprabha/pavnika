@@ -1862,6 +1862,12 @@ function showGateOverlay(mode, onSuccess) {
 
   var root = document.getElementById('gate-overlay-root');
   root.classList.toggle('mode-generic', mode === 'generic');
+  // The cycling background layers' CSS animations were built while this
+  // root still had visibility:hidden — browsers commonly won't properly
+  // start animations on descendants of a hidden ancestor without an
+  // explicit reflow checkpoint in between, which is exactly why the
+  // background was showing as a flat tint instead of the cycling photos.
+  void root.offsetWidth;
   root.classList.add('is-open');
   document.body.style.overflow = 'hidden';
 }
