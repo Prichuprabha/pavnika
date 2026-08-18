@@ -86,22 +86,23 @@ document.addEventListener('DOMContentLoaded', function () {
   initMobileBottomBar();
   initRevealAnimations();
 
-  if (!isGatedPage) {
-    // Any link on a public page pointing to one of the 4 gated pages
-    // gets intercepted while unverified — the overlay opens in place,
-    // with the same swapping decorative backdrop every time, rather
-    // than navigating away immediately. Already-verified visitors are
-    // unaffected; the link just works normally for them.
-    document.addEventListener('click', function (e) {
-      var link = e.target.closest('a[href]');
-      if (!link) return;
-      var href = link.getAttribute('href');
-      if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
-      if (gateGetCookie('pavnika_verified')) return;
-      e.preventDefault();
-      showGateOverlay('generic', function () { window.location.href = href; });
-    });
-  }
+  // Any link pointing to one of the 4 gated pages gets intercepted while
+  // unverified — the overlay opens in place, with the same swapping
+  // decorative backdrop every time, rather than navigating away and
+  // showing a flash of the destination page first. This runs on every
+  // page (not just public ones) since links like the nav's own
+  // "Collections" item appear everywhere, including on the gated pages
+  // themselves. Already-verified visitors are unaffected; the link just
+  // works normally for them.
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
+    if (gateGetCookie('pavnika_verified')) return;
+    e.preventDefault();
+    showGateOverlay('generic', function () { window.location.href = href; });
+  });
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -1780,6 +1781,13 @@ function wireGateOverlayEvents() {
     gateSetCookie('pavnika_verified', visitorToken || '1', 90);
     gateSetCookie('pavnika_email', encodeURIComponent(gateOverlayEmail), 90);
     hideGateOverlay();
+    // The very first cart/wishlist sync attempt (during initial page
+    // load) had no valid token yet — on a gated page, cart/wishlist
+    // still show right away, but with just whatever's in local
+    // storage, not the visitor's real saved items. Re-running it now
+    // that a real token exists is what actually pulls that in, instead
+    // of requiring a reload to fix.
+    if (typeof initCartWishlistSync === 'function') initCartWishlistSync();
     if (typeof gateOverlayOnSuccess === 'function') gateOverlayOnSuccess();
   }
 
