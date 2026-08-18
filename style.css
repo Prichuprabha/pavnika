@@ -2467,12 +2467,24 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
      side, rather than sitting in the price row. */
   .lightbox-share-wrap-desktop { display: none; }
   .lightbox-share-btn-mobile { display: flex; }
+  /* The wrap itself (not the button) carries the absolute positioning
+     here, matching Back — the button becomes a plain static child
+     inside it. This keeps the wrap as the menu's own anchor point
+     (the menu is also a child of it), rather than losing that
+     positioning context the way making the wrap fully static would. */
+  .lightbox-share-wrap-mobile {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 10;
+  }
+  .lightbox-share-wrap-mobile .lightbox-share-btn-mobile { position: static; }
 }
 
 @media (max-width: 640px) {
-  .lightbox-close-mobile, .lightbox-share-btn-mobile { top: 8px; }
+  .lightbox-close-mobile, .lightbox-share-wrap-mobile { top: 8px; }
   .lightbox-close-mobile { left: 8px; }
-  .lightbox-share-btn-mobile { right: 8px; }
+  .lightbox-share-wrap-mobile { right: 8px; }
   .lightbox-stage { max-height: 52vh; }
   .thumb-item { width: 44px; height: 58px; }
 }

@@ -1026,8 +1026,8 @@ function initShareButton(btnId, menuId, product) {
   var shareUrl = 'https://pavnika.ae/collections.html?open=' + encodeURIComponent(product.id);
   var name = product.material || product.design;
   var message =
-    'I thought you might like this saree! \u2764\ufe0f\n' +
-    '\u2728 ' + name + ' \u2014 ' + product.id + '\n' +
+    'I thought you might like this saree!\n' +
+    name + ' \u2014 ' + product.id + '\n' +
     'Take a look here:\n' + shareUrl + '\n' +
     'Pavnika by Saranya \u2014 Elegance that Defines You.';
 
