@@ -21,6 +21,23 @@ window.addEventListener('pageshow', function (e) {
 })();
 
 document.addEventListener('DOMContentLoaded', function () {
+  // This click-interceptor is registered first, before anything else in
+  // this whole handler — deliberately. If any function further down
+  // throws an uncaught error, JS execution stops right there and
+  // nothing registered after it would ever run. This listener is what
+  // actually stops the flash of a gated page's real content before the
+  // overlay covers it, so it needs to be immune to that, not just
+  // early — genuinely the first thing that happens.
+  document.addEventListener('click', function (e) {
+    var link = e.target.closest('a[href]');
+    if (!link) return;
+    var href = link.getAttribute('href');
+    if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
+    if (gateGetCookie('pavnika_verified')) return;
+    e.preventDefault();
+    showGateOverlay('generic', function () { window.location.href = href; });
+  });
+
   // The 4 pages that stay gated (Collections, Checkout, Payment,
   // Order-success) are the only ones where cart/wishlist make sense —
   // adding/viewing cart or wishlist items only ever happens through
@@ -41,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function () {
   window.__isGatedPage = isGatedPage; // used later by initMobileBottomBar too
   window.__showCartWishlist = showCartWishlist;
 
-  // All 4 gating checks run first, before any other init() call — this
+  // All 4 gating checks run next, before any other init() call — this
   // is what actually matters for how fast the overlay appears. Every
   // other init() below can involve real work (search index, marquees,
   // form wiring, etc.); running the gate check after all of that meant
@@ -85,24 +102,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   initMobileBottomBar();
   initRevealAnimations();
-
-  // Any link pointing to one of the 4 gated pages gets intercepted while
-  // unverified — the overlay opens in place, with the same swapping
-  // decorative backdrop every time, rather than navigating away and
-  // showing a flash of the destination page first. This runs on every
-  // page (not just public ones) since links like the nav's own
-  // "Collections" item appear everywhere, including on the gated pages
-  // themselves. Already-verified visitors are unaffected; the link just
-  // works normally for them.
-  document.addEventListener('click', function (e) {
-    var link = e.target.closest('a[href]');
-    if (!link) return;
-    var href = link.getAttribute('href');
-    if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
-    if (gateGetCookie('pavnika_verified')) return;
-    e.preventDefault();
-    showGateOverlay('generic', function () { window.location.href = href; });
-  });
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
