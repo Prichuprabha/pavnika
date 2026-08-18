@@ -730,7 +730,7 @@ window.PRODUCTS = [
     "material": "Soft Silk",
     "shade": "Purple / Violet",
     "price": 201,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/O5nVYaDB3ECytRFP59Fr.jpg",
