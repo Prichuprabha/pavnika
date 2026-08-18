@@ -2521,7 +2521,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 
 /* ---------- Shared gate overlay (embeddable, any page) ---------- */
 .gate-overlay-root {
-  position: fixed; inset: 0; z-index: 500;
+  position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 500;
+  background: var(--green-deep); /* fallback brand colour — guarantees this never shows the page underneath, even if a child layer below fails to render for any reason */
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
@@ -2530,13 +2531,14 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   transition: opacity 0.3s ease, visibility 0s linear 0s;
 }
 .gate-overlay-dim {
-  position: absolute; inset: 0; background: rgba(43, 13, 26, 0.6);
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(43, 13, 26, 0.6);
   display: none;
 }
-/* Default (dim mode): darken whatever real page is already behind it. */
-.gate-overlay-root:not(.mode-generic) .gate-overlay-dim { display: block; }
+/* Explicit positive class for each mode — dim mode darkens whatever
+   real page is already behind it. */
+.gate-overlay-root.mode-dim .gate-overlay-dim { display: block; }
 
-.gate-overlay-generic-bg { position: absolute; inset: 0; display: none; overflow: hidden; }
+.gate-overlay-generic-bg { position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: none; overflow: hidden; }
 /* Lighter tint specifically here than the original login page uses —
    the backdrop image should read clearly as a real photo, not mostly
    just a dark wash. */
@@ -2548,7 +2550,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .gate-overlay-root.mode-generic .gate-overlay-generic-bg { display: block; }
 
 .gate-overlay-card-wrap {
-  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
   padding: 24px; overflow-y: auto;
 }
 .gate-overlay-root #gate-overlay-card {

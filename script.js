@@ -1862,6 +1862,7 @@ function showGateOverlay(mode, onSuccess) {
 
   var root = document.getElementById('gate-overlay-root');
   root.classList.toggle('mode-generic', mode === 'generic');
+  root.classList.toggle('mode-dim', mode !== 'generic');
   // The cycling background layers' CSS animations were built while this
   // root still had visibility:hidden — browsers commonly won't properly
   // start animations on descendants of a hidden ancestor without an
