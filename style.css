@@ -2675,6 +2675,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   border-color: var(--gold);
 }
 #gate-code,
+#gate-overlay-code,
 #admin-gate-code {
   text-align: center;
   font-size: 1.6rem;
