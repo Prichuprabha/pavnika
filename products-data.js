@@ -826,7 +826,7 @@ window.PRODUCTS = [
     "material": "Soft Silk",
     "shade": "Maroon / Red",
     "price": 201,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/eZOoHuZOf1xUP1lGgJnZ.jpg",
