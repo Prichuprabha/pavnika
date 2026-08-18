@@ -20,14 +20,29 @@ var SERIES_CODES = {
 };
 
 document.addEventListener('DOMContentLoaded', function () {
-  var existingToken = sessionStorage.getItem(ADMIN_TOKEN_KEY);
-  if (existingToken) {
+  var existingToken = localStorage.getItem(ADMIN_TOKEN_KEY);
+  if (existingToken && !isTokenExpired(existingToken)) {
     var email = decodeTokenEmail(existingToken);
     showAdminPanel(existingToken, email);
   } else {
+    if (existingToken) localStorage.removeItem(ADMIN_TOKEN_KEY); // stale — don't leave it sitting around
     initAdminLogin();
   }
 });
+
+// A stale token now persists across tab closes (up to 12 hours), so this
+// check matters more than it used to — without it, an expired token would
+// still open the panel UI, only to fail unpredictably the moment any
+// individual section actually tried to use it.
+function isTokenExpired(token) {
+  try {
+    var payloadB64 = token.split('.')[0];
+    var payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
+    return !payload.exp || Date.now() > payload.exp;
+  } catch (e) {
+    return true; // malformed token — treat as expired, safest default
+  }
+}
 
 function decodeTokenEmail(token) {
   try {
@@ -113,7 +128,7 @@ function initAdminLogin() {
           errorEl.textContent = 'This email is not authorized for admin access.';
           return;
         }
-        sessionStorage.setItem(ADMIN_TOKEN_KEY, result.data.adminToken);
+        localStorage.setItem(ADMIN_TOKEN_KEY, result.data.adminToken);
         showAdminPanel(result.data.adminToken, email);
       })
       .catch(function () { errorEl.textContent = 'Network error. Please try again.'; })
@@ -148,7 +163,7 @@ function showAdminPanel(token, email) {
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
-    sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+    localStorage.removeItem(ADMIN_TOKEN_KEY);
     window.location.reload();
   });
 }
@@ -650,7 +665,7 @@ function initSareeEditor(token) {
       .then(function (result) {
         if (!result.ok) {
           if (result.data && result.data.error === 'Not authorized. Please sign in again.') {
-            sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+            localStorage.removeItem(ADMIN_TOKEN_KEY);
             alert('Your admin session expired. Please sign in again.');
             window.location.reload();
             return;
@@ -728,7 +743,7 @@ function initSareeEditor(token) {
       .then(function (result) {
         if (!result.ok) {
           if (result.data && result.data.error === 'Not authorized. Please sign in again.') {
-            sessionStorage.removeItem(ADMIN_TOKEN_KEY);
+            localStorage.removeItem(ADMIN_TOKEN_KEY);
             alert('Your admin session expired. Please sign in again.');
             window.location.reload();
             return;

@@ -8,7 +8,7 @@
 const crypto = require('crypto');
 
 const ADMIN_EMAIL = 'pavnikabysaranya@gmail.com';
-const TOKEN_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
+const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours — a working day
 
 function getSecret() {
   var secret = process.env.ADMIN_SECRET;
