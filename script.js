@@ -41,6 +41,36 @@ document.addEventListener('DOMContentLoaded', function () {
   window.__isGatedPage = isGatedPage; // used later by initMobileBottomBar too
   window.__showCartWishlist = showCartWishlist;
 
+  // All 4 gating checks run first, before any other init() call — this
+  // is what actually matters for how fast the overlay appears. Every
+  // other init() below can involve real work (search index, marquees,
+  // form wiring, etc.); running the gate check after all of that meant
+  // the overlay only showed up once the whole page had already done a
+  // lot of other work first, which is what looked "sluggish."
+  if (document.getElementById('product-grid') && !gateGetCookie('pavnika_verified')) {
+    showGateOverlay('generic', initCollectionsPage);
+  } else {
+    initCollectionsPage();
+  }
+  if (document.getElementById('checkout-content') && !gateGetCookie('pavnika_verified')) {
+    showGateOverlay('generic', initCheckoutPage);
+  } else {
+    initCheckoutPage();
+  }
+  if (document.getElementById('order-loading') && !gateGetCookie('pavnika_verified')) {
+    showGateOverlay('generic', initOrderSuccessPage);
+  } else {
+    initOrderSuccessPage();
+  }
+  var paymentContent = document.getElementById('payment-content');
+  if (paymentContent) {
+    if (gateGetCookie('pavnika_verified')) {
+      paymentContent.style.display = 'block';
+    } else {
+      showGateOverlay('generic', function () { paymentContent.style.display = 'block'; });
+    }
+  }
+
   initLoginPage();
   initReviewsMarquee();
   initCuratedShowcase();
@@ -76,30 +106,6 @@ document.addEventListener('DOMContentLoaded', function () {
       e.preventDefault();
       showGateOverlay('generic', function () { window.location.href = href; });
     });
-  }
-  // Checkout, Order-success (and Collections above) all stay gated — same
-  // reasoning each time: hold back the real render function until
-  // verified, generic-mode overlay instead of a redirect-based page swap.
-  if (document.getElementById('checkout-content') && !gateGetCookie('pavnika_verified')) {
-    showGateOverlay('generic', initCheckoutPage);
-  } else {
-    initCheckoutPage();
-  }
-  if (document.getElementById('order-loading') && !gateGetCookie('pavnika_verified')) {
-    showGateOverlay('generic', initOrderSuccessPage);
-  } else {
-    initOrderSuccessPage();
-  }
-  // Payment has no dedicated render function — it's static content, just
-  // hidden until verified, revealed in place rather than deferring a
-  // function call like the other three gated pages.
-  var paymentContent = document.getElementById('payment-content');
-  if (paymentContent) {
-    if (gateGetCookie('pavnika_verified')) {
-      paymentContent.style.display = 'block';
-    } else {
-      showGateOverlay('generic', function () { paymentContent.style.display = 'block'; });
-    }
   }
 
   var toggle = document.querySelector('.nav-toggle');
@@ -219,16 +225,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initSidebarAdRotator();
 
-  if (document.getElementById('product-grid') && !gateGetCookie('pavnika_verified')) {
-    // Collections is one of the pages that stays gated — but instead of
-    // redirecting away before rendering anything, it holds back the real
-    // grid (and the ?open= saree-popup logic bundled into the same
-    // function) until verification succeeds, in a 'generic' backdrop
-    // overlay rather than a full page swap.
-    showGateOverlay('generic', initCollectionsPage);
-  } else {
-    initCollectionsPage();
-  }
   initHomeSeriesMarquee();
   initHeroBannerCarousel();
   initHomeVideoShowcase();
