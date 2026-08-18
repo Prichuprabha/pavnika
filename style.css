@@ -2549,6 +2549,15 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    no safe real page content to show behind it. */
 .gate-overlay-root.mode-generic .gate-overlay-generic-bg { display: block; }
 
+.gate-overlay-back-btn {
+  position: absolute; top: 16px; left: 16px; z-index: 10;
+  display: flex; align-items: center; gap: 4px;
+  background: var(--gold); color: var(--green-deep); border: none;
+  font-family: var(--body); font-size: 0.7rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em;
+  padding: 8px 16px; border-radius: 999px; cursor: pointer;
+}
+
 .gate-overlay-card-wrap {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
   padding: 24px; overflow-y: auto;
@@ -2762,12 +2771,6 @@ body.login-page {
 @media (prefers-reduced-motion: reduce) {
   .login-bg-layer { animation: none; opacity: 0; }
   .login-bg-layer-1 { opacity: 1; }
-}
-/* Mobile: just the first image, no cross-fade cycle */
-@media (max-width: 640px) {
-  .login-bg-layer { animation: none; opacity: 0; }
-  .login-bg-layer-1 { opacity: 1; }
-  .login-bg-layer-2, .login-bg-layer-3 { display: none; }
 }
 .login-bg-overlay {
   position: absolute;

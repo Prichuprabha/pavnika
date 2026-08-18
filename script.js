@@ -32,7 +32,14 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('payment-content') ||
     document.getElementById('order-loading')
   );
+  // Cart/wishlist show if either this is one of the 4 gated pages
+  // (where they're always relevant), or the visitor is already
+  // verified — a verified shopper should see their cart from any page,
+  // not just Collections. Only an unverified visitor on a public page
+  // sees them hidden, since there's genuinely nothing to show yet.
+  var showCartWishlist = isGatedPage || !!gateGetCookie('pavnika_verified');
   window.__isGatedPage = isGatedPage; // used later by initMobileBottomBar too
+  window.__showCartWishlist = showCartWishlist;
 
   initLoginPage();
   initReviewsMarquee();
@@ -41,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function () {
   buildLightbox();
   initAccountMenu();
   initSearchPanel();
-  if (isGatedPage) {
+  if (showCartWishlist) {
     initCartDrawer();
     initWishlistDrawer();
     initCartWishlistSync();
@@ -56,10 +63,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
   if (!isGatedPage) {
     // Any link on a public page pointing to one of the 4 gated pages
-    // gets intercepted while unverified — the overlay opens in place
-    // (dim mode: this real, safe public page stays visible behind it)
-    // instead of navigating away immediately. Already-verified visitors
-    // are unaffected; the link just works normally for them.
+    // gets intercepted while unverified — the overlay opens in place,
+    // with the same swapping decorative backdrop every time, rather
+    // than navigating away immediately. Already-verified visitors are
+    // unaffected; the link just works normally for them.
     document.addEventListener('click', function (e) {
       var link = e.target.closest('a[href]');
       if (!link) return;
@@ -67,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function () {
       if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
       if (gateGetCookie('pavnika_verified')) return;
       e.preventDefault();
-      showGateOverlay('dim', function () { window.location.href = href; });
+      showGateOverlay('generic', function () { window.location.href = href; });
     });
   }
   // Checkout, Order-success (and Collections above) all stay gated — same
@@ -1728,13 +1735,14 @@ function buildGateOverlayDOM() {
       '<div class="login-bg-layer login-bg-layer-3"></div>' +
       '<div class="login-bg-overlay"></div>' +
     '</div>' +
+    '<button type="button" class="gate-overlay-back-btn" id="gate-overlay-back-btn" aria-label="Back to Home">&larr; Back to Home</button>' +
     '<div class="gate-overlay-card-wrap">' +
       '<div class="gate-card" id="gate-overlay-card">' +
         '<img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="gate-logo">' +
         '<div id="gate-overlay-step-details">' +
           '<h2>Welcome to Pavnika by Saranya</h2>' +
           '<p class="brand-tagline login-tagline">Elegance that Defines You</p>' +
-          '<p>Please verify your email to continue.</p>' +
+          '<p>Please verify your email to view our collection.</p>' +
           '<div class="field"><label>Email</label><input type="email" id="gate-overlay-email" autocomplete="email"></div>' +
           '<div class="gate-consent-row">' +
             '<input type="checkbox" id="gate-overlay-consent-checkbox">' +
@@ -1765,6 +1773,11 @@ function wireGateOverlayEvents() {
   var consentBox = document.getElementById('gate-overlay-consent-checkbox');
 
   consentBox.addEventListener('change', function () { sendBtn.disabled = !consentBox.checked; });
+
+  document.getElementById('gate-overlay-back-btn').addEventListener('click', function () {
+    hideGateOverlay();
+    window.location.href = 'home.html';
+  });
 
   function showStepCode() {
     document.getElementById('gate-overlay-step-details').style.display = 'none';
@@ -2952,7 +2965,7 @@ function initMobileBottomBar() {
   var path = window.location.pathname;
   var isHome = /(^|\/)(home\.html)?$/i.test(path) || /\/$/i.test(path);
   var isCollections = /collections\.html$/i.test(path);
-  var showCartWishlist = window.__isGatedPage;
+  var showCartWishlist = window.__showCartWishlist;
 
   var bar = document.createElement('nav');
   bar.id = 'mobile-bottom-bar';
