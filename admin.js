@@ -169,6 +169,46 @@ function showAdminPanel(token, email) {
 }
 
 /* ---------- Sidebar view switching ---------- */
+// Shared across Dashboard, Orders, Reviews, and Promo Codes stat cards —
+// one icon+colour system instead of each building its own markup, so
+// every tab's stat cards look and behave consistently.
+var ADMIN_STAT_ICONS = {
+  box: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>',
+  cross: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+  wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>',
+  shirt: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a2 2 0 1 0-2 2c0 1-1.2 1.7-2 2.3L2 12l3 2 7-4.5 7 4.5 3-2-6-4.7c-.8-.6-2-1.3-2-2.3"/><path d="M2 20h20"/></svg>',
+  hanger: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v16"/></svg>',
+  hangerX: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v16"/><line x1="4" y1="4" x2="20" y2="20"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>',
+  users: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
+  star: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>',
+  starFilled: '<svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15 9 22 9 17 14 19 21 12 17 5 21 7 14 2 9 9 9"/></svg>',
+  tag: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>',
+  tagCheck: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/><path d="m9 13 2 2 4-4"/></svg>'
+};
+var ADMIN_STAT_COLORS = {
+  gold: '#B68A69',
+  orange: '#E69E42',
+  green: '#3B6D11',
+  red: '#B8142A'
+};
+function buildStatCardHtml(label, value, iconKey, colorKey, extraHtml) {
+  var color = ADMIN_STAT_COLORS[colorKey] || ADMIN_STAT_COLORS.gold;
+  var icon = ADMIN_STAT_ICONS[iconKey] || ADMIN_STAT_ICONS.box;
+  // 14% opacity background using the same colour as the icon — a
+  // light, semi-transparent circle in the icon's own colour, rather
+  // than a separate fixed palette per card.
+  var bg = color + '24'; // hex alpha suffix (~14%)
+  return (
+    '<div class="admin-metric-card admin-metric-card-icon">' +
+      '<div class="admin-metric-icon-circle" style="background:' + bg + '; color:' + color + ';">' + icon + '</div>' +
+      '<div class="admin-metric-text"><p class="label">' + label + '</p><p class="value">' + value + '</p>' + (extraHtml || '') + '</div>' +
+    '</div>'
+  );
+}
+
 function initSidebarNav() {
   var navItems = document.querySelectorAll('.admin-nav-item');
   var sidebar = document.getElementById('admin-sidebar');
@@ -187,6 +227,9 @@ function initSidebarNav() {
   }
   if (overlay) overlay.addEventListener('click', closeMobileNav);
 
+  var mobileTitle = document.getElementById('admin-mobile-page-title');
+  var bottomNavItems = document.querySelectorAll('.admin-mobile-bottom-nav .amb-item');
+
   navItems.forEach(function (item) {
     item.addEventListener('click', function () {
       var view = item.getAttribute('data-view');
@@ -196,6 +239,10 @@ function initSidebarNav() {
       var target = document.getElementById('admin-view-' + view);
       if (target) target.style.display = 'block';
       if (view === 'stats' && window.__refreshStats) window.__refreshStats();
+      if (mobileTitle) mobileTitle.textContent = item.textContent.trim();
+      bottomNavItems.forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-view-jump') === view);
+      });
       closeMobileNav(); // picking a page also dismisses the mobile menu, same as tapping outside it
     });
   });
@@ -363,6 +410,28 @@ function initSareeEditor(token) {
   seriesSelect.addEventListener('change', updateIdSuggestion);
   idField.addEventListener('input', checkIdDuplicate);
 
+  var materialSelect = document.getElementById('admin-f-material');
+  var materialNewInput = document.getElementById('admin-f-material-new');
+  var ADD_NEW_MATERIAL_VALUE = '__add_new__';
+
+  function refreshMaterialOptions(selectedValue) {
+    var materials = Array.from(new Set((window.PRODUCTS || []).map(function (p) { return p.material; }).filter(Boolean))).sort();
+    // If editing a saree whose material somehow isn't in the catalogue-wide
+    // list yet, still include it so the dropdown doesn't silently show the
+    // wrong (first) option instead of what's actually saved.
+    if (selectedValue && materials.indexOf(selectedValue) === -1) materials.unshift(selectedValue);
+    materialSelect.innerHTML = materials.map(function (m) { return '<option value="' + m + '">' + m + '</option>'; }).join('') +
+      '<option value="' + ADD_NEW_MATERIAL_VALUE + '">+ Add new material...</option>';
+    materialSelect.value = selectedValue || materials[0] || '';
+    materialNewInput.style.display = 'none';
+    materialNewInput.value = '';
+  }
+  materialSelect.addEventListener('change', function () {
+    var isNew = materialSelect.value === ADD_NEW_MATERIAL_VALUE;
+    materialNewInput.style.display = isNew ? 'block' : 'none';
+    if (isNew) materialNewInput.focus();
+  });
+
   function resetForm() {
     editingId = null;
     isAddMode = true;
@@ -375,6 +444,8 @@ function initSareeEditor(token) {
     imagesList.innerHTML = '';
     addImageRow('');
     seriesSelect.selectedIndex = 0;
+    seriesSelect.disabled = false; // series stays editable when adding — it's part of how the ID gets generated
+    refreshMaterialOptions();
     updateIdSuggestion();
   }
 
@@ -390,6 +461,7 @@ function initSareeEditor(token) {
     isAddMode = false;
     formTitle.textContent = 'Edit Saree — ' + id;
     seriesSelect.value = product.series;
+    seriesSelect.disabled = true; // locked while editing — changing series after creation could orphan the existing ID scheme
     idField.value = product.id;
     idField.readOnly = true;
     idWrap.classList.add('readonly');
@@ -401,7 +473,7 @@ function initSareeEditor(token) {
     document.getElementById('admin-f-sareeType').value = product.sareeType || '';
     document.getElementById('admin-f-pattern').value = product.pattern || '';
     document.getElementById('admin-f-design').value = product.design || '';
-    document.getElementById('admin-f-material').value = product.material || '';
+    refreshMaterialOptions(product.material || '');
     document.getElementById('admin-f-shade').value = product.shade || 'Others';
     document.getElementById('admin-f-price').value = product.price || '';
     document.getElementById('admin-f-sold').checked = !!product.sold;
@@ -693,6 +765,11 @@ function initSareeEditor(token) {
     var saveBtn = document.getElementById('admin-save-btn');
     var images = Array.from(imagesList.querySelectorAll('input')).map(function (i) { return i.value.trim(); }).filter(Boolean);
 
+    if (materialSelect.value === ADD_NEW_MATERIAL_VALUE && !materialNewInput.value.trim()) {
+      showStatus('error', 'Please type the new material, or pick an existing one instead.');
+      return;
+    }
+
     if (isAddMode) {
       checkIdDuplicate();
       if (idWrap.classList.contains('has-duplicate')) {
@@ -705,11 +782,15 @@ function initSareeEditor(token) {
       }
     }
 
+    var materialValue = materialSelect.value === ADD_NEW_MATERIAL_VALUE
+      ? materialNewInput.value.trim()
+      : materialSelect.value;
+
     var productData = {
       series: seriesSelect.value,
       category: document.getElementById('admin-f-category').value,
       type: document.getElementById('admin-f-type').value.trim(),
-      material: document.getElementById('admin-f-material').value.trim(),
+      material: materialValue,
       shade: document.getElementById('admin-f-shade').value,
       sareeType: document.getElementById('admin-f-sareeType').value.trim(),
       pattern: document.getElementById('admin-f-pattern').value.trim(),
@@ -802,10 +883,10 @@ function initReviewsEditor(token) {
     reviews.forEach(function (r) { var s = parseInt(r.stars, 10); if (counts[s] !== undefined) counts[s]++; });
 
     statsEl.innerHTML =
-      '<div class="admin-metric-card accent-gold"><p class="label">Average</p><p class="value">' + avg.toFixed(1) + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">Total Reviews</p><p class="value">' + total + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">5 Star</p><p class="value">' + counts[5] + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">4 Star</p><p class="value">' + counts[4] + '</p></div>';
+      buildStatCardHtml('Average', avg.toFixed(1), 'starFilled', 'gold') +
+      buildStatCardHtml('Total Reviews', total, 'star', 'gold') +
+      buildStatCardHtml('5 Star', counts[5], 'starFilled', 'green') +
+      buildStatCardHtml('4 Star', counts[4], 'starFilled', 'orange');
   }
 
   function renderTable() {
@@ -1242,18 +1323,18 @@ function initStatsDashboard(token) {
     var stockDelta = orderStats && orderStats.newlySoldCount ? '<p class="delta negative">-' + orderStats.newlySoldCount + ' sold ' + stockPeriodLabel + '</p>' : '';
 
     var orderCard = orderStats
-      ? '<div class="admin-metric-card accent-gold"><p class="label">Orders</p><p class="value">' + orderStats.orderCount + '</p>' + deltaHtml(orderStats.orderCountDelta) + '</div>'
+      ? buildStatCardHtml('Orders', orderStats.orderCount, 'box', 'gold', deltaHtml(orderStats.orderCountDelta))
       : '';
     var revenueCard = orderStats
-      ? '<div class="admin-metric-card accent-gold"><p class="label">Revenue (AED)</p><p class="value">' + orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }) + '</p>' + deltaHtml(orderStats.revenueDelta) + '</div>'
+      ? buildStatCardHtml('Revenue (AED)', orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }), 'wallet', 'gold', deltaHtml(orderStats.revenueDelta))
       : '';
 
     metricGrid.innerHTML =
-      '<div class="admin-metric-card"><p class="label">In stock</p><p class="value">' + inStock + '</p>' + stockDelta + '</div>' +
-      '<div class="admin-metric-card accent-red"><p class="label">Sold out</p><p class="value">' + soldOut + '</p>' + soldDelta + '</div>' +
+      buildStatCardHtml('In stock', inStock, 'hanger', 'green', stockDelta) +
+      buildStatCardHtml('Sold out', soldOut, 'hangerX', 'red', soldDelta) +
       orderCard + revenueCard +
-      '<div class="admin-metric-card"><p class="label">Verified visitors</p><p class="value">' + data.totalVisitors + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">Saree views logged</p><p class="value">' + data.totalViews + '</p></div>';
+      buildStatCardHtml('Verified visitors', data.totalVisitors, 'users', 'gold') +
+      buildStatCardHtml('Saree views logged', data.totalViews, 'eye', 'gold');
 
     if (orderStats) {
       renderRevenueChart(orderStats.dailyPoints);
@@ -1745,8 +1826,8 @@ function initPromoCodesEditor(token) {
 
     var usedCount = data.history.filter(function (p) { return p.used; }).length;
     promoStatsEl.innerHTML =
-      '<div class="admin-metric-card"><p class="label">Active Codes</p><p class="value">' + data.active.length + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">Used</p><p class="value">' + usedCount + '</p></div>';
+      buildStatCardHtml('Active Codes', data.active.length, 'tag', 'gold') +
+      buildStatCardHtml('Used', usedCount, 'tagCheck', 'green');
 
     if (!data.active.length) {
       activeList.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No active codes right now.</p>';
@@ -1913,11 +1994,11 @@ function initOrdersView(token) {
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
 
     summaryEl.innerHTML =
-      '<div class="admin-metric-card"><p class="label">All orders</p><p class="value">' + totalOrders + '</p></div>' +
-      '<div class="admin-metric-card accent-gold"><p class="label">Processing</p><p class="value">' + processing + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">Completed</p><p class="value">' + completed + '</p></div>' +
-      '<div class="admin-metric-card accent-red"><p class="label">Cancelled</p><p class="value">' + cancelled + '</p></div>' +
-      '<div class="admin-metric-card"><p class="label">Total revenue (AED)</p><p class="value">' + Math.round(totalRevenue).toLocaleString() + '</p></div>';
+      buildStatCardHtml('All Orders', totalOrders, 'box', 'gold') +
+      buildStatCardHtml('Processing', processing, 'clock', 'orange') +
+      buildStatCardHtml('Completed', completed, 'check', 'green') +
+      buildStatCardHtml('Cancelled', cancelled, 'cross', 'red') +
+      buildStatCardHtml('Total Revenue (AED)', Math.round(totalRevenue).toLocaleString(), 'wallet', 'red');
 
     if (pendingDispatch.length) {
       pendingListEl.innerHTML =
@@ -1978,6 +2059,28 @@ function initOrdersView(token) {
         '</tr>'
       );
     }).join('') : '<tr><td colspan="7">No orders match.</td></tr>';
+
+    var mobileListEl = document.getElementById('admin-orders-mobile-list');
+    mobileListEl.innerHTML = filtered.length ? filtered.map(function (o) {
+      var dateLabel = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      return (
+        '<div class="admin-order-mobile-card admin-orders-clickable-row" data-id="' + o.id + '">' +
+          '<div class="admin-order-mobile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/></svg></div>' +
+          '<div class="admin-order-mobile-info">' +
+            '<p class="omn">' + (o.order_number || '—') + '</p>' +
+            '<p class="omd">&#128197; ' + dateLabel + '</p>' +
+            '<p class="omc">' + (o.customer_name || '—') + '</p>' +
+            '<p class="ome">' + (o.customer_email || '') + '</p>' +
+          '</div>' +
+          '<div class="admin-order-mobile-right">' +
+            '<p class="omt">AED ' + Number(o.total || 0).toFixed(2) + '</p>' +
+            '<p class="omp">' + (o.payment_method || '—') + '</p>' +
+            '<span class="admin-order-mobile-badge status-' + (o.status || 'pending') + '">' + statusLabel(o.status) + '</span>' +
+          '</div>' +
+          '<span class="admin-order-mobile-chevron">&rsaquo;</span>' +
+        '</div>'
+      );
+    }).join('') : '<p style="font-size:0.85rem; opacity:0.6; padding:16px;">No orders match.</p>';
   }
 
   function buildStatusSelect(o) {
@@ -2125,13 +2228,15 @@ function initOrdersView(token) {
     drawerOverlay.classList.remove('is-open');
   }
 
-  rowsEl.addEventListener('click', function (e) {
+  function handleOrderRowClick(e) {
     if (e.target.closest('select')) return; // clicking the status dropdown updates status, doesn't open the drawer
     var row = e.target.closest('.admin-orders-clickable-row');
     if (!row) return;
     var order = allOrders.find(function (o) { return String(o.id) === String(row.getAttribute('data-id')); });
     if (order) openOrderDrawer(order);
-  });
+  }
+  rowsEl.addEventListener('click', handleOrderRowClick);
+  document.getElementById('admin-orders-mobile-list').addEventListener('click', handleOrderRowClick);
 
   document.getElementById('admin-order-drawer-close').addEventListener('click', closeOrderDrawer);
   drawerOverlay.addEventListener('click', function (e) {

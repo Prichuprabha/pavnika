@@ -68,6 +68,7 @@
     width: 30px; height: 30px; border-radius: 50%; background: var(--green); color: var(--ivory);
     display: flex; align-items: center; justify-content: center; font-size: 0.68rem; font-weight: 700; flex-shrink: 0;
   }
+  .admin-mobile-page-title { display: none; }
 
   .admin-mobile-toggle { display: none; }
   .admin-mobile-overlay { display: none; }
@@ -252,6 +253,15 @@
   .admin-metric-card .label { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.6; margin: 0 0 8px; }
   .admin-metric-card .value { font-size: 1.5rem; font-weight: 600; color: var(--green-deep); margin: 0; }
   .admin-metric-card.accent-red .value { color: #B8142A; }
+  .admin-metric-card-icon { display: flex; align-items: center; gap: 12px; border-left: none; }
+  .admin-metric-icon-circle {
+    width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .admin-metric-icon-circle svg { width: 19px; height: 19px; }
+  .admin-metric-text { min-width: 0; }
+  .admin-metric-text .label { margin-bottom: 3px; }
+  .admin-metric-text .value { font-family: var(--display); }
 
   .admin-dash-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   .admin-dash-row-2 { grid-template-columns: 1.2fr 1fr; }
@@ -282,9 +292,44 @@
   .admin-logins-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
   .admin-email-toggle { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--ink); opacity: 0.75; cursor: pointer; }
 
+  .admin-orders-mobile-list { display: none; }
+
+  .admin-order-mobile-card {
+    display: flex; align-items: flex-start; gap: 10px; background: #fff; border: 1px solid var(--stone);
+    border-radius: 10px; padding: 12px; margin-bottom: 10px; position: relative; cursor: pointer;
+  }
+  .admin-order-mobile-icon {
+    width: 34px; height: 34px; border-radius: 50%; background: rgba(182,138,105,0.16); color: var(--gold);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .admin-order-mobile-icon svg { width: 16px; height: 16px; }
+  .admin-order-mobile-info { flex: 1; min-width: 0; }
+  .admin-order-mobile-info p { margin: 0; }
+  .admin-order-mobile-info .omn { font-weight: 700; font-size: 0.84rem; color: var(--green-deep); }
+  .admin-order-mobile-info .omd { font-size: 0.68rem; color: #8a7266; margin: 2px 0; }
+  .admin-order-mobile-info .omc { font-size: 0.76rem; font-weight: 600; }
+  .admin-order-mobile-info .ome { font-size: 0.68rem; opacity: 0.65; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .admin-order-mobile-right { text-align: right; flex-shrink: 0; padding-right: 14px; }
+  .admin-order-mobile-right .omt { font-weight: 700; font-size: 0.82rem; color: var(--green-deep); }
+  .admin-order-mobile-right .omp { font-size: 0.68rem; opacity: 0.65; margin: 2px 0 4px; }
+  .admin-order-mobile-badge {
+    display: inline-block; font-size: 0.62rem; font-weight: 700; padding: 2px 9px; border-radius: 999px;
+    background: #FBE9E9; color: #B8142A;
+  }
+  .admin-order-mobile-badge.status-paid,
+  .admin-order-mobile-badge.status-shipped { background: #FDF0E0; color: #946B4A; }
+  .admin-order-mobile-badge.status-delivered,
+  .admin-order-mobile-badge.status-delivered_direct_pay { background: #eaf3de; color: #3B6D11; }
+  .admin-order-mobile-chevron { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); color: #8a7266; font-size: 1.3rem; }
+
   @media (max-width: 880px) {
     .admin-metric-grid { grid-template-columns: repeat(2, 1fr); }
     .admin-dash-row, .admin-dash-row-2 { grid-template-columns: 1fr; }
+    .admin-orders-table-desktop { display: none; }
+    .admin-orders-mobile-list { display: block; }
+    .admin-banner-item { flex-direction: column; }
+    .admin-banner-item img { width: 100%; height: 120px; }
+    .admin-banner-item .admin-banner-controls { flex-direction: row; width: 100%; justify-content: flex-end; }
   }
   .admin-sidebar-footer {
     margin-top: 20px;
@@ -368,10 +413,9 @@
   @media (max-width: 880px) {
     .admin-mobile-toggle {
       display: flex; align-items: center; justify-content: center;
-      position: fixed; top: 14px; left: 14px; z-index: 210;
-      width: 38px; height: 38px; border-radius: 50%; border: none;
-      background: var(--green-deep); color: var(--ivory); font-size: 1.1rem; cursor: pointer;
-      box-shadow: 0 2px 10px rgba(43,13,26,0.3);
+      width: 34px; height: 34px; border-radius: 50%; border: none;
+      background: var(--green-deep); color: var(--ivory); font-size: 1rem; cursor: pointer;
+      flex-shrink: 0;
     }
     .admin-mobile-overlay {
       display: block; position: fixed; inset: 0; background: rgba(43,13,26,0.45);
@@ -385,9 +429,35 @@
       transform: translateX(-100%); transition: transform 0.25s ease; overflow-y: auto;
     }
     .admin-sidebar.is-open { transform: translateX(0); }
-    .admin-main { padding: 20px 16px; padding-top: 64px; }
+    .admin-main { padding: 66px 16px 76px; }
     .admin-form-grid { grid-template-columns: 1fr; }
+
+    /* Header: hamburger left, page title centered, avatar right —
+       fixed to the top so it stays reachable while scrolling. */
+    .admin-topbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 190;
+      background: var(--ivory); border-bottom: 1px solid var(--stone);
+      padding: 12px 16px; margin-bottom: 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .admin-mobile-page-title {
+      display: block; font-family: var(--display); font-size: 1.05rem; color: var(--green);
+      position: absolute; left: 50%; transform: translateX(-50%);
+    }
+
+    /* Bottom nav — same quick-access pattern as the customer-facing site. */
+    .admin-mobile-bottom-nav {
+      display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 190;
+      background: var(--ivory); border-top: 1px solid var(--stone);
+    }
+    .admin-mobile-bottom-nav .amb-item {
+      flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+      padding: 8px 0 10px; font-size: 0.6rem; color: #8a7266; cursor: pointer;
+    }
+    .admin-mobile-bottom-nav .amb-item.active { color: var(--green); font-weight: 600; }
+    .admin-mobile-bottom-nav .amb-item svg { width: 19px; height: 19px; }
   }
+  .admin-mobile-bottom-nav { display: none; }
 </style>
 </head>
 <body class="admin-body login-page">
@@ -414,7 +484,6 @@
 </div>
 
 <div class="admin-shell" id="admin-shell" style="display:none;">
-  <button type="button" class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Menu">&#9776;</button>
   <div class="admin-mobile-overlay" id="admin-mobile-overlay"></div>
   <div class="admin-sidebar" id="admin-sidebar">
     <div class="admin-brand-row">
@@ -442,6 +511,8 @@
 
   <div class="admin-main">
     <div class="admin-topbar">
+      <button type="button" class="admin-mobile-toggle" id="admin-mobile-toggle" aria-label="Menu">&#9776;</button>
+      <span class="admin-mobile-page-title" id="admin-mobile-page-title">Dashboard</span>
       <div class="admin-topbar-avatar">
         <div class="admin-avatar-circle" id="admin-avatar-circle">PA</div>
         <span>Admin</span>
@@ -490,7 +561,7 @@
         <input type="text" id="admin-orders-search" placeholder="Search order #, name, email...">
       </div>
 
-      <table class="admin-table">
+      <table class="admin-table admin-orders-table-desktop">
         <thead>
           <tr>
             <th class="admin-sortable" data-sort="order_number">Order #</th>
@@ -504,6 +575,8 @@
         </thead>
         <tbody id="admin-orders-rows"></tbody>
       </table>
+
+      <div id="admin-orders-mobile-list" class="admin-orders-mobile-list"></div>
     </div>
 
     <div class="admin-order-drawer-overlay" id="admin-order-drawer-overlay">
@@ -593,7 +666,8 @@
           </div>
           <div class="admin-field">
             <label>Material</label>
-            <input type="text" id="admin-f-material" placeholder="e.g. Semi Kanchipuram">
+            <select id="admin-f-material"></select>
+            <input type="text" id="admin-f-material-new" placeholder="Type the new material" style="display:none; margin-top:6px;">
           </div>
           <div class="admin-field">
             <label>Shade</label>
@@ -974,6 +1048,24 @@
       </div>
 
       <button type="button" class="btn btn-ghost" id="admin-export-stats-btn">Export all stats as text file</button>
+    </div>
+  </div>
+  <div class="admin-mobile-bottom-nav">
+    <div class="amb-item active" data-view-jump="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="amb-item" data-view-jump="orders">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/></svg>
+      Orders
+    </div>
+    <div class="amb-item" data-view-jump="manual-order">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+      Add Order
+    </div>
+    <div class="amb-item" data-view-jump="promos">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>
+      Promo
     </div>
   </div>
 </div>
