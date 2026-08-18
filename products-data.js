@@ -543,7 +543,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Pure Kanchipuram",
     "shade": "Green",
-    "price": 503,
+    "price": 505,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg",
