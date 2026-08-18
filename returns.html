@@ -1,6 +1,36 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  var gatedPages = ['collections.html', 'checkout.html', 'payment.html', 'order-success.html'];
+  var currentPage = (window.location.pathname.split('/').pop() || 'home.html').toLowerCase();
+  var isGated = gatedPages.indexOf(currentPage) !== -1;
+  var verified = !!getCookie('pavnika_verified');
+
+  // Reveal cart/wishlist instantly if it's safe to — avoids the icons
+  // flashing in then disappearing, or the header shifting, while
+  // script.js is still loading and catching up.
+  if (isGated || verified) {
+    document.documentElement.classList.add('show-cart-wishlist');
+  }
+  // On a gated page while unverified, hide the whole body until the
+  // real overlay (built once script.js loads) is ready to take over —
+  // this is what actually prevents the "page flashes, then gets
+  // covered by the overlay" effect, the same way the old full-page
+  // redirect never showed a flash, since it also ran this early.
+  if (isGated && !verified) {
+    var s = document.createElement('style');
+    s.id = 'gate-pending-style';
+    s.textContent = 'body{visibility:hidden !important;}';
+    document.head.appendChild(s);
+  }
+})();
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Returns & Exchange Policy — Pavnika by Saranya</title>

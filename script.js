@@ -82,11 +82,6 @@ document.addEventListener('DOMContentLoaded', function () {
     initCartDrawer();
     initWishlistDrawer();
     initCartWishlistSync();
-  } else {
-    var navWishlistBtn = document.getElementById('nav-wishlist-btn');
-    var navCartBtn = document.getElementById('nav-cart-btn');
-    if (navWishlistBtn) navWishlistBtn.style.display = 'none';
-    if (navCartBtn) navCartBtn.style.display = 'none';
   }
   initMobileBottomBar();
   initRevealAnimations();
@@ -1923,6 +1918,10 @@ function hideGateOverlay() {
   var root = document.getElementById('gate-overlay-root');
   if (root) root.classList.remove('is-open');
   document.body.style.overflow = '';
+  // Undo the early inline script's pre-emptive hiding (if it was
+  // applied) — safe to call even when it wasn't, this just no-ops.
+  var pendingStyle = document.getElementById('gate-pending-style');
+  if (pendingStyle) pendingStyle.remove();
 }
 
 function initLoginPage() {

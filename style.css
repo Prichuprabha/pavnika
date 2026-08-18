@@ -233,6 +233,15 @@ nav.main-nav a.active {
   padding: 0 2px;
 }
 .nav-wishlist-btn { position: relative; }
+
+/* Hidden by default; revealed only once an early inline script (in
+   each page's <head>, before anything paints) decides cart/wishlist
+   should show here — avoids the icons briefly appearing then
+   disappearing (or the header shifting) once script.js catches up. */
+#nav-wishlist-btn, #nav-cart-btn { display: none; }
+html.show-cart-wishlist #nav-wishlist-btn,
+html.show-cart-wishlist #nav-cart-btn { display: flex; }
+
 .nav-wishlist-badge {
   position: absolute;
   top: 2px; right: 2px;
@@ -3801,6 +3810,11 @@ body.login-page {
   .nav-controls { position: static; transform: none; margin-left: auto; }
   .nav-cart-btn { display: none; }
   .nav-wishlist-btn { display: none; }
+  /* Always wins on mobile regardless of the show-cart-wishlist reveal
+     class — the header versions stay hidden here no matter what,
+     since mobile uses the bottom nav bar for these instead. */
+  html.show-cart-wishlist #nav-wishlist-btn,
+  html.show-cart-wishlist #nav-cart-btn { display: none; }
   .nav-toggle {
     position: absolute;
     left: 14px;
