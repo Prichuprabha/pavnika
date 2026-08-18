@@ -976,6 +976,90 @@ function loadInterestBadge(productId, targetEl) {
 }
 
 /* ---------- Lightbox: swipeable image gallery per saree ---------- */
+// Small toast used for "Link copied" confirmation — built once and
+// reused, rather than creating a new element every time someone shares.
+function showToast(message) {
+  var toast = document.getElementById('pavnika-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'pavnika-toast';
+    toast.className = 'pavnika-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = message;
+  toast.classList.remove('is-visible');
+  void toast.offsetWidth; // force reflow so the animation restarts if triggered again quickly
+  toast.classList.add('is-visible');
+  clearTimeout(toast._hideTimer);
+  toast._hideTimer = setTimeout(function () { toast.classList.remove('is-visible'); }, 2200);
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(function () { copyToClipboardFallback(text); });
+  } else {
+    copyToClipboardFallback(text);
+  }
+}
+
+// Fallback for older browsers or non-secure contexts where the modern
+// Clipboard API isn't available.
+function copyToClipboardFallback(text) {
+  var textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  try { document.execCommand('copy'); } catch (e) { /* nothing more we can do */ }
+  document.body.removeChild(textarea);
+}
+
+// Wires up one share button + its menu (desktop and mobile each have
+// their own instance, same pattern as the wishlist heart/pill). Called
+// fresh each time the popup opens for a given product.
+function initShareButton(btnId, menuId, product) {
+  var btn = document.getElementById(btnId);
+  var menu = document.getElementById(menuId);
+  if (!btn || !menu) return;
+
+  var shareUrl = 'https://pavnika.ae/collections.html?open=' + encodeURIComponent(product.id);
+  var name = product.material || product.design;
+  var message =
+    'I thought you might like this saree! \u2764\ufe0f\n' +
+    '\u2728 ' + name + ' \u2014 ' + product.id + '\n' +
+    'Take a look here:\n' + shareUrl + '\n' +
+    'Pavnika by Saranya \u2014 Elegance that Defines You.';
+
+  btn.onclick = function (e) {
+    e.stopPropagation();
+    document.querySelectorAll('.lightbox-share-menu.is-open').forEach(function (m) {
+      if (m !== menu) m.classList.remove('is-open');
+    });
+    menu.classList.toggle('is-open');
+  };
+
+  menu.querySelectorAll('.lightbox-share-menu-item').forEach(function (item) {
+    item.onclick = function (e) {
+      e.stopPropagation();
+      var action = item.getAttribute('data-action');
+      if (action === 'whatsapp') {
+        window.open('https://wa.me/?text=' + encodeURIComponent(message), '_blank', 'noopener');
+      } else if (action === 'copy') {
+        copyToClipboard(shareUrl);
+        showToast('Link copied');
+      }
+      menu.classList.remove('is-open');
+    };
+  });
+}
+
+document.addEventListener('click', function (e) {
+  if (!e.target.closest('.lightbox-share-wrap')) {
+    document.querySelectorAll('.lightbox-share-menu.is-open').forEach(function (m) { m.classList.remove('is-open'); });
+  }
+});
+
 function buildLightbox() {
   if (document.querySelector('.lightbox-overlay')) return;
 
@@ -987,6 +1071,21 @@ function buildLightbox() {
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>' +
       '</button>' +
       '<button type="button" class="lightbox-close-mobile" id="lightbox-close-mobile" aria-label="Close">&larr; Back</button>' +
+      '<span class="lightbox-share-wrap lightbox-share-wrap-mobile">' +
+        '<button type="button" class="lightbox-share-btn lightbox-share-btn-mobile" id="lightbox-share-btn-mobile" aria-label="Share this saree">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
+        '</button>' +
+        '<div class="lightbox-share-menu" id="lightbox-share-menu-mobile">' +
+          '<span class="lightbox-share-menu-item wa" data-action="whatsapp">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.06c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.81-.11a16.6 16.6 0 0 1-1.63-.6c-2.87-1.24-4.74-4.12-4.88-4.31-.14-.19-1.17-1.55-1.17-2.96s.73-2.1.99-2.39c.26-.28.56-.35.75-.35h.53c.17 0 .4-.06.62.48.24.58.81 2 .88 2.14.07.14.11.31.02.5-.09.19-.14.31-.28.48-.14.17-.29.37-.42.5-.14.14-.28.29-.12.57.16.28.71 1.17 1.52 1.9 1.05.94 1.93 1.23 2.21 1.37.28.14.44.12.61-.07.17-.19.71-.83.9-1.11.19-.28.38-.24.63-.14.26.09 1.65.78 1.94.92.28.14.47.21.54.33.07.12.07.68-.17 1.36z"/></svg>' +
+            'Share via WhatsApp' +
+          '</span>' +
+          '<span class="lightbox-share-menu-item copy" data-action="copy">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+            'Copy Link' +
+          '</span>' +
+        '</div>' +
+      '</span>' +
       '<div class="lightbox-main-grid">' +
         '<div class="lightbox-thumb-rail" id="lightbox-thumb-rail">' +
           '<button type="button" class="thumb-nav up" id="lightbox-thumb-up" aria-label="Previous image">&#9650;</button>' +
@@ -1013,6 +1112,21 @@ function buildLightbox() {
               '<button type="button" class="lightbox-wishlist-heart" id="lightbox-wishlist-heart" aria-label="Add to wishlist">' +
                 '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
               '</button>' +
+            '</span>' +
+            '<span class="lightbox-share-wrap lightbox-share-wrap-desktop">' +
+              '<button type="button" class="lightbox-share-btn lightbox-share-btn-desktop" id="lightbox-share-btn-desktop" aria-label="Share this saree">' +
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>' +
+              '</button>' +
+              '<div class="lightbox-share-menu" id="lightbox-share-menu-desktop">' +
+                '<span class="lightbox-share-menu-item wa" data-action="whatsapp">' +
+                  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.46 1.32 4.96L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.91-4.45 9.91-9.91C21.96 6.45 17.5 2 12.04 2zm5.8 14.06c-.24.68-1.4 1.3-1.93 1.38-.5.08-1.12.11-1.81-.11a16.6 16.6 0 0 1-1.63-.6c-2.87-1.24-4.74-4.12-4.88-4.31-.14-.19-1.17-1.55-1.17-2.96s.73-2.1.99-2.39c.26-.28.56-.35.75-.35h.53c.17 0 .4-.06.62.48.24.58.81 2 .88 2.14.07.14.11.31.02.5-.09.19-.14.31-.28.48-.14.17-.29.37-.42.5-.14.14-.28.29-.12.57.16.28.71 1.17 1.52 1.9 1.05.94 1.93 1.23 2.21 1.37.28.14.44.12.61-.07.17-.19.71-.83.9-1.11.19-.28.38-.24.63-.14.26.09 1.65.78 1.94.92.28.14.47.21.54.33.07.12.07.68-.17 1.36z"/></svg>' +
+                  'Share via WhatsApp' +
+                '</span>' +
+                '<span class="lightbox-share-menu-item copy" data-action="copy">' +
+                  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>' +
+                  'Copy Link' +
+                '</span>' +
+              '</div>' +
             '</span>' +
             '<button type="button" class="lightbox-wishlist-pill" id="lightbox-wishlist-pill" aria-label="Add to wishlist">' +
               '<span class="lightbox-wishlist-pill-icon">' +
@@ -1228,6 +1342,9 @@ function buildLightbox() {
         refreshHeartState();
       };
     }
+
+    initShareButton('lightbox-share-btn-desktop', 'lightbox-share-menu-desktop', product);
+    initShareButton('lightbox-share-btn-mobile', 'lightbox-share-menu-mobile', product);
 
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
@@ -1544,10 +1661,19 @@ function initLoginPage() {
     if (codeInput) codeInput.focus();
   }
 
+  // Same allowlist as index.html's own inline check — only a same-site
+  // "somepage.html" (optionally with a query string) is ever accepted.
+  function safeRedirectTarget(fallback) {
+    var params = new URLSearchParams(window.location.search);
+    var dest = params.get('redirect');
+    if (!dest || !/^[a-zA-Z0-9_-]+\.html(\?[^\s]*)?$/.test(dest)) return fallback;
+    return dest;
+  }
+
   function unlockSite(visitorToken) {
     gateSetCookie('pavnika_verified', visitorToken || '1', 90);
     gateSetCookie('pavnika_email', encodeURIComponent(gateEmail), 90);
-    window.location.href = 'home.html';
+    window.location.href = safeRedirectTarget('home.html');
   }
 
   function sendCode() {

@@ -8,7 +8,13 @@
     return m ? m[2] : null;
   }
   if (!getCookie('pavnika_verified')) {
-    window.location.replace('index.html');
+    // Carry along where this visitor was actually headed, so after they
+    // verify they land there directly instead of always on the plain
+    // home page — this is what makes a shared saree link actually work
+    // for someone who isn't verified yet. Only the current page's own
+    // path+query is ever sent, never an arbitrary external URL.
+    var dest = encodeURIComponent(window.location.pathname.replace(/^\//, '') + window.location.search);
+    window.location.replace('index.html?redirect=' + dest);
   }
 })();
 </script>

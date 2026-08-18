@@ -15,8 +15,18 @@
     var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return m ? m[2] : null;
   }
+  // Only a same-site "somepage.html" (optionally with a query string) is
+  // ever accepted — never an absolute URL or anything pointing off-site.
+  // This is what lets a shared saree link land someone on that exact
+  // saree once they're verified, instead of always the plain home page.
+  function safeRedirectTarget(fallback) {
+    var params = new URLSearchParams(window.location.search);
+    var dest = params.get('redirect');
+    if (!dest || !/^[a-zA-Z0-9_-]+\.html(\?[^\s]*)?$/.test(dest)) return fallback;
+    return dest;
+  }
   if (getCookie('pavnika_verified')) {
-    window.location.replace('home.html');
+    window.location.replace(safeRedirectTarget('home.html'));
   }
 })();
 </script>

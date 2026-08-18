@@ -2046,7 +2046,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   display: none;
   position: absolute;
   top: 4px;
-  right: 4px;
+  left: 4px;
   align-items: center;
   gap: 4px;
   background: var(--gold);
@@ -2114,6 +2114,52 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   border-top-color: var(--ivory);
 }
 .lightbox-heart-wrap:hover .lightbox-heart-tooltip { opacity: 1; }
+
+.lightbox-share-wrap { position: relative; display: inline-block; }
+.lightbox-share-btn-desktop {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid var(--gold); background: transparent; color: var(--gold);
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  flex-shrink: 0; transition: background-color 0.2s ease;
+}
+.lightbox-share-btn-desktop:hover { background: rgba(182, 138, 105, 0.16); }
+.lightbox-share-btn-desktop svg { width: 15px; height: 15px; }
+.lightbox-share-btn-mobile {
+  display: none;
+  position: absolute; top: 4px; right: 4px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--gold); color: var(--green-deep); border: none;
+  align-items: center; justify-content: center; cursor: pointer; z-index: 10;
+}
+.lightbox-share-btn-mobile svg { width: 14px; height: 14px; }
+
+.lightbox-share-menu {
+  position: absolute; top: calc(100% + 8px); z-index: 20;
+  background: var(--ivory); border-radius: 8px; overflow: hidden;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.4);
+  min-width: 190px; display: none;
+}
+.lightbox-share-wrap-desktop .lightbox-share-menu { left: 0; }
+.lightbox-share-wrap-mobile .lightbox-share-menu { right: 0; }
+.lightbox-share-menu.is-open { display: block; }
+.lightbox-share-menu-item {
+  display: flex; align-items: center; gap: 10px; padding: 11px 14px;
+  font-family: var(--body); font-size: 0.8rem; color: var(--ink);
+  cursor: pointer; border-bottom: 1px solid var(--stone);
+}
+.lightbox-share-menu-item:last-child { border-bottom: none; }
+.lightbox-share-menu-item:hover { background: var(--ivory-deep); }
+.lightbox-share-menu-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.lightbox-share-menu-item.wa svg { color: #25D366; }
+.lightbox-share-menu-item.copy svg { color: var(--gold); }
+
+.pavnika-toast {
+  position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(20px);
+  background: var(--green-deep); color: var(--gold-light); border: 1px solid var(--gold);
+  padding: 10px 20px; border-radius: 999px; font-family: var(--body); font-size: 0.82rem;
+  z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease;
+}
+.pavnika-toast.is-visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 .lightbox-wishlist-pill {
   display: none;
@@ -2416,10 +2462,17 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   .lightbox-heart-wrap { display: none; }
   .lightbox-wishlist-pill { display: inline-flex; }
   .lightbox-price-row { justify-content: center; }
+  /* Same swap for Share — the small circle button (desktop) is
+     replaced by the icon-only pill up near Back, on the opposite
+     side, rather than sitting in the price row. */
+  .lightbox-share-wrap-desktop { display: none; }
+  .lightbox-share-btn-mobile { display: flex; }
 }
 
 @media (max-width: 640px) {
-  .lightbox-close-mobile { top: 8px; right: 8px; }
+  .lightbox-close-mobile, .lightbox-share-btn-mobile { top: 8px; }
+  .lightbox-close-mobile { left: 8px; }
+  .lightbox-share-btn-mobile { right: 8px; }
   .lightbox-stage { max-height: 52vh; }
   .thumb-item { width: 44px; height: 58px; }
 }
