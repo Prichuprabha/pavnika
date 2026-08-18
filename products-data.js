@@ -1996,7 +1996,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Banarasi",
     "shade": "Black",
-    "price": 227,
+    "price": 164,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FGT9JxOQ7dJkO3xhHfHN.jpg",
