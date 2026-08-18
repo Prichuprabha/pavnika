@@ -21,6 +21,19 @@ window.addEventListener('pageshow', function (e) {
 })();
 
 document.addEventListener('DOMContentLoaded', function () {
+  // The 4 pages that stay gated (Collections, Checkout, Payment,
+  // Order-success) are the only ones where cart/wishlist make sense —
+  // adding/viewing cart or wishlist items only ever happens through
+  // these. Every other page is now public, and shouldn't show cart or
+  // wishlist at all, not even as dead/non-functional icons.
+  var isGatedPage = !!(
+    document.getElementById('product-grid') ||
+    document.getElementById('checkout-content') ||
+    document.getElementById('payment-content') ||
+    document.getElementById('order-loading')
+  );
+  window.__isGatedPage = isGatedPage; // used later by initMobileBottomBar too
+
   initLoginPage();
   initReviewsMarquee();
   initCuratedShowcase();
@@ -28,11 +41,35 @@ document.addEventListener('DOMContentLoaded', function () {
   buildLightbox();
   initAccountMenu();
   initSearchPanel();
-  initCartDrawer();
-  initWishlistDrawer();
-  initCartWishlistSync();
+  if (isGatedPage) {
+    initCartDrawer();
+    initWishlistDrawer();
+    initCartWishlistSync();
+  } else {
+    var navWishlistBtn = document.getElementById('nav-wishlist-btn');
+    var navCartBtn = document.getElementById('nav-cart-btn');
+    if (navWishlistBtn) navWishlistBtn.style.display = 'none';
+    if (navCartBtn) navCartBtn.style.display = 'none';
+  }
   initMobileBottomBar();
   initRevealAnimations();
+
+  if (!isGatedPage) {
+    // Any link on a public page pointing to one of the 4 gated pages
+    // gets intercepted while unverified — the overlay opens in place
+    // (dim mode: this real, safe public page stays visible behind it)
+    // instead of navigating away immediately. Already-verified visitors
+    // are unaffected; the link just works normally for them.
+    document.addEventListener('click', function (e) {
+      var link = e.target.closest('a[href]');
+      if (!link) return;
+      var href = link.getAttribute('href');
+      if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
+      if (gateGetCookie('pavnika_verified')) return;
+      e.preventDefault();
+      showGateOverlay('dim', function () { window.location.href = href; });
+    });
+  }
   // Checkout, Order-success (and Collections above) all stay gated — same
   // reasoning each time: hold back the real render function until
   // verified, generic-mode overlay instead of a redirect-based page swap.
@@ -2915,6 +2952,7 @@ function initMobileBottomBar() {
   var path = window.location.pathname;
   var isHome = /(^|\/)(home\.html)?$/i.test(path) || /\/$/i.test(path);
   var isCollections = /collections\.html$/i.test(path);
+  var showCartWishlist = window.__isGatedPage;
 
   var bar = document.createElement('nav');
   bar.id = 'mobile-bottom-bar';
@@ -2929,32 +2967,34 @@ function initMobileBottomBar() {
       '<span class="bb-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>' +
       '<span class="bb-label">Shop</span>' +
     '</a>' +
-    '<button type="button" class="bb-item" id="bb-wishlist-btn">' +
-      '<span class="bb-icon" style="position:relative;">' +
-        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
-        '<span class="bb-badge" id="bb-wishlist-badge" style="display:none;">0</span>' +
-      '</span>' +
-      '<span class="bb-label">Wishlist</span>' +
-    '</button>' +
-    '<button type="button" class="bb-item" id="bb-bag-btn">' +
-      '<span class="bb-icon bb-icon-bag">' +
-        '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>' +
-        '<span class="bb-badge" id="bb-bag-badge" style="display:none;">0</span>' +
-      '</span>' +
-      '<span class="bb-label">Cart</span>' +
-    '</button>';
+    (showCartWishlist ?
+      '<button type="button" class="bb-item" id="bb-wishlist-btn">' +
+        '<span class="bb-icon" style="position:relative;">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>' +
+          '<span class="bb-badge" id="bb-wishlist-badge" style="display:none;">0</span>' +
+        '</span>' +
+        '<span class="bb-label">Wishlist</span>' +
+      '</button>' +
+      '<button type="button" class="bb-item" id="bb-bag-btn">' +
+        '<span class="bb-icon bb-icon-bag">' +
+          '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>' +
+          '<span class="bb-badge" id="bb-bag-badge" style="display:none;">0</span>' +
+        '</span>' +
+        '<span class="bb-label">Cart</span>' +
+      '</button>'
+    : '');
   document.body.appendChild(bar);
 
-  document.getElementById('bb-wishlist-btn').addEventListener('click', function () {
-    openWishlistDrawer();
-  });
-
-  document.getElementById('bb-bag-btn').addEventListener('click', function () {
-    openCartDrawer();
-  });
-
-  renderCartDrawer(); // sync the Cart badge to the current cart immediately
-  renderWishlistDrawer(); // sync the Wishlist badge to the current wishlist immediately
+  if (showCartWishlist) {
+    document.getElementById('bb-wishlist-btn').addEventListener('click', function () {
+      openWishlistDrawer();
+    });
+    document.getElementById('bb-bag-btn').addEventListener('click', function () {
+      openCartDrawer();
+    });
+    renderCartDrawer(); // sync the Cart badge to the current cart immediately
+    renderWishlistDrawer(); // sync the Wishlist badge to the current wishlist immediately
+  }
 }
 
 function renderCartDrawer() {
