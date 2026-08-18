@@ -2558,6 +2558,59 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 .gate-overlay-root.is-open #gate-overlay-card { transform: scale(1); }
 
+/* Exact same dark glassmorphism treatment as the real login page's own
+   card (.login-page .gate-card) — duplicated here rather than relying
+   on a shared selector, since that original rule only activates under
+   a .login-page body class this overlay's host pages don't carry. */
+#gate-overlay-card {
+  background: rgba(250, 247, 239, 0.07);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  color: var(--ivory);
+}
+#gate-overlay-card h2 { color: var(--ivory); text-shadow: 0 1px 6px rgba(0, 0, 0, 0.35); }
+#gate-overlay-card > div > p:not(.login-tagline) { color: var(--ivory); opacity: 0.9; text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+#gate-overlay-card .field label {
+  color: var(--gold-light);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 6px;
+}
+#gate-overlay-card input[type="email"],
+#gate-overlay-card input[type="text"] {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: var(--ivory);
+}
+#gate-overlay-card input::placeholder { color: rgba(250, 247, 239, 0.5); }
+#gate-overlay-card input:focus {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 1px;
+  border-color: var(--gold-light);
+  background: rgba(255, 255, 255, 0.16);
+}
+#gate-overlay-card .gate-resend { color: var(--gold-light); }
+#gate-overlay-card .gate-logo { width: 84px; height: auto; border-radius: 0; }
+#gate-overlay-card .btn-primary {
+  background: linear-gradient(135deg, #C89A2E 0%, #F0D27A 50%, #C89A2E 100%);
+  color: var(--green-deep);
+  border: none;
+}
+#gate-overlay-card .btn-primary:hover {
+  background: linear-gradient(135deg, #D8AC3E 0%, #F7DE96 50%, #D8AC3E 100%);
+  color: var(--green-deep);
+}
+#gate-overlay-card .btn-primary:disabled,
+#gate-overlay-card .btn-primary:disabled:hover {
+  background: linear-gradient(135deg, #C89A2E 0%, #F0D27A 50%, #C89A2E 100%);
+  opacity: 0.45;
+}
+
 .gate-card {
   width: 100%;
   max-width: 420px;
