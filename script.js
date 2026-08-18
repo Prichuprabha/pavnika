@@ -33,8 +33,30 @@ document.addEventListener('DOMContentLoaded', function () {
   initCartWishlistSync();
   initMobileBottomBar();
   initRevealAnimations();
-  initCheckoutPage();
-  initOrderSuccessPage();
+  // Checkout, Order-success (and Collections above) all stay gated — same
+  // reasoning each time: hold back the real render function until
+  // verified, generic-mode overlay instead of a redirect-based page swap.
+  if (document.getElementById('checkout-content') && !gateGetCookie('pavnika_verified')) {
+    showGateOverlay('generic', initCheckoutPage);
+  } else {
+    initCheckoutPage();
+  }
+  if (document.getElementById('order-loading') && !gateGetCookie('pavnika_verified')) {
+    showGateOverlay('generic', initOrderSuccessPage);
+  } else {
+    initOrderSuccessPage();
+  }
+  // Payment has no dedicated render function — it's static content, just
+  // hidden until verified, revealed in place rather than deferring a
+  // function call like the other three gated pages.
+  var paymentContent = document.getElementById('payment-content');
+  if (paymentContent) {
+    if (gateGetCookie('pavnika_verified')) {
+      paymentContent.style.display = 'block';
+    } else {
+      showGateOverlay('generic', function () { paymentContent.style.display = 'block'; });
+    }
+  }
 
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.querySelector('.main-nav');
@@ -153,7 +175,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initSidebarAdRotator();
 
-  initCollectionsPage();
+  if (document.getElementById('product-grid') && !gateGetCookie('pavnika_verified')) {
+    // Collections is one of the pages that stays gated — but instead of
+    // redirecting away before rendering anything, it holds back the real
+    // grid (and the ?open= saree-popup logic bundled into the same
+    // function) until verification succeeds, in a 'generic' backdrop
+    // overlay rather than a full page swap.
+    showGateOverlay('generic', initCollectionsPage);
+  } else {
+    initCollectionsPage();
+  }
   initHomeSeriesMarquee();
   initHeroBannerCarousel();
   initHomeVideoShowcase();

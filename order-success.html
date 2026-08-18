@@ -1,23 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<script>
-(function () {
-  function getCookie(name) {
-    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-    return m ? m[2] : null;
-  }
-  if (!getCookie('pavnika_verified')) {
-    // Carry along where this visitor was actually headed, so after they
-    // verify they land there directly instead of always on the plain
-    // home page — this is what makes a shared saree link actually work
-    // for someone who isn't verified yet. Only the current page's own
-    // path+query is ever sent, never an arbitrary external URL.
-    var dest = encodeURIComponent(window.location.pathname.replace(/^\//, '') + window.location.search);
-    window.location.replace('index.html?redirect=' + dest);
-  }
-})();
-</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Order Confirmation — Pavnika by Saranya</title>
