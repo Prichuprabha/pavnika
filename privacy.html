@@ -7,8 +7,11 @@
     var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return m ? m[2] : null;
   }
-  var gatedPages = ['collections.html', 'checkout.html', 'payment.html', 'order-success.html'];
-  var currentPage = (window.location.pathname.split('/').pop() || 'home.html').toLowerCase();
+  // Normalize away any .html extension before comparing — the site can
+  // serve pages at either /collections.html or /collections (no
+  // extension), and this needs to correctly recognize both forms.
+  var gatedPages = ['collections', 'checkout', 'payment', 'order-success'];
+  var currentPage = (window.location.pathname.split('/').pop() || 'home').toLowerCase().replace(/\.html$/, '');
   var isGated = gatedPages.indexOf(currentPage) !== -1;
   var verified = !!getCookie('pavnika_verified');
 

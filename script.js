@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var link = e.target.closest('a[href]');
     if (!link) return;
     var href = link.getAttribute('href');
-    if (!href || !/^(collections|checkout|payment|order-success)\.html(\?|$)/i.test(href)) return;
+    if (!href || !/^(https?:\/\/[^/]+)?\/?(collections|checkout|payment|order-success)(\.html)?(\?|$)/i.test(href)) return;
     if (gateGetCookie('pavnika_verified')) return;
     e.preventDefault();
     showGateOverlay('generic', function () { window.location.href = href; });
