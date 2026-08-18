@@ -2518,6 +2518,38 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   padding: 24px;
   overflow-y: auto;
 }
+
+/* ---------- Shared gate overlay (embeddable, any page) ---------- */
+.gate-overlay-root {
+  position: fixed; inset: 0; z-index: 500;
+  opacity: 0; visibility: hidden; pointer-events: none;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+.gate-overlay-root.is-open {
+  opacity: 1; visibility: visible; pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+.gate-overlay-dim {
+  position: absolute; inset: 0; background: rgba(43, 13, 26, 0.6);
+  display: none;
+}
+/* Default (dim mode): darken whatever real page is already behind it. */
+.gate-overlay-root:not(.mode-generic) .gate-overlay-dim { display: block; }
+
+.gate-overlay-generic-bg { position: absolute; inset: 0; display: none; overflow: hidden; }
+/* Generic mode: decorative cycling backdrop instead — used when there's
+   no safe real page content to show behind it. */
+.gate-overlay-root.mode-generic .gate-overlay-generic-bg { display: block; }
+
+.gate-overlay-card-wrap {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  padding: 24px; overflow-y: auto;
+}
+.gate-overlay-root #gate-overlay-card {
+  transform: scale(0.96); transition: transform 0.3s ease;
+}
+.gate-overlay-root.is-open #gate-overlay-card { transform: scale(1); }
+
 .gate-card {
   width: 100%;
   max-width: 420px;

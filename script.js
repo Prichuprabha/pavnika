@@ -1632,6 +1632,215 @@ function getVisitorToken() {
   return raw;
 }
 
+/* ---------- Shared gate overlay (embeddable login, usable from any page) ----------
+   Extracted from what used to live only on index.html, so it can be
+   triggered from any page as an in-place overlay instead of a full
+   page redirect. Two modes:
+   - 'dim': the calling page's own real content sits dimmed behind it
+     (safe when that page never had anything sensitive on it to begin
+     with — e.g. intercepting a click on Home).
+   - 'generic': shows the same cycling decorative backdrop the old
+     login page used, instead of any real page content — used when
+     there's no safe page to show behind it (e.g. landing directly on
+     a gated page via a shared link, with nothing rendered yet). */
+var gateOverlayEmail = '';
+var gateOverlayOnSuccess = null;
+
+function buildGateOverlayDOM() {
+  if (document.getElementById('gate-overlay-root')) return;
+
+  var wrap = document.createElement('div');
+  wrap.id = 'gate-overlay-root';
+  wrap.className = 'gate-overlay-root';
+  wrap.innerHTML =
+    '<div class="gate-overlay-dim"></div>' +
+    '<div class="gate-overlay-generic-bg">' +
+      '<div class="login-bg-layer login-bg-layer-1"></div>' +
+      '<div class="login-bg-layer login-bg-layer-2"></div>' +
+      '<div class="login-bg-layer login-bg-layer-3"></div>' +
+      '<div class="login-bg-overlay"></div>' +
+    '</div>' +
+    '<div class="gate-overlay-card-wrap">' +
+      '<div class="gate-card" id="gate-overlay-card">' +
+        '<img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="gate-logo">' +
+        '<div id="gate-overlay-step-details">' +
+          '<h2>Welcome to Pavnika by Saranya</h2>' +
+          '<p class="brand-tagline login-tagline">Elegance that Defines You</p>' +
+          '<p>Please verify your email to continue.</p>' +
+          '<div class="field"><label>Email</label><input type="email" id="gate-overlay-email" autocomplete="email"></div>' +
+          '<div class="gate-consent-row">' +
+            '<input type="checkbox" id="gate-overlay-consent-checkbox">' +
+            '<label for="gate-overlay-consent-checkbox">I agree to the <a href="terms.html" target="_blank" rel="noopener" class="gate-legal-link">Terms &amp; Conditions</a> and <a href="privacy.html" target="_blank" rel="noopener" class="gate-legal-link">Privacy &amp; Cookies Policy</a></label>' +
+          '</div>' +
+          '<button type="button" id="gate-overlay-send-btn" class="btn btn-primary" disabled>Send Verification Code</button>' +
+          '<p class="gate-error" id="gate-overlay-error-1"></p>' +
+        '</div>' +
+        '<div id="gate-overlay-step-code" style="display:none;">' +
+          '<h2>Enter Verification Code</h2>' +
+          '<p>We sent a 4-digit code to your email — it expires in 10 minutes.</p>' +
+          '<input type="text" id="gate-overlay-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">' +
+          '<button type="button" id="gate-overlay-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>' +
+          '<p class="gate-error" id="gate-overlay-error-2"></p>' +
+          '<button type="button" id="gate-overlay-resend-btn" class="gate-resend">Resend code</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(wrap);
+
+  wireGateOverlayEvents();
+}
+
+function wireGateOverlayEvents() {
+  var sendBtn = document.getElementById('gate-overlay-send-btn');
+  var verifyBtn = document.getElementById('gate-overlay-verify-btn');
+  var resendBtn = document.getElementById('gate-overlay-resend-btn');
+  var consentBox = document.getElementById('gate-overlay-consent-checkbox');
+
+  consentBox.addEventListener('change', function () { sendBtn.disabled = !consentBox.checked; });
+
+  function showStepCode() {
+    document.getElementById('gate-overlay-step-details').style.display = 'none';
+    document.getElementById('gate-overlay-step-code').style.display = 'block';
+    document.getElementById('gate-overlay-code').focus();
+  }
+
+  function completeSuccess(visitorToken) {
+    gateSetCookie('pavnika_verified', visitorToken || '1', 90);
+    gateSetCookie('pavnika_email', encodeURIComponent(gateOverlayEmail), 90);
+    hideGateOverlay();
+    if (typeof gateOverlayOnSuccess === 'function') gateOverlayOnSuccess();
+  }
+
+  function sendCode() {
+    var email = document.getElementById('gate-overlay-email').value.trim();
+    var errorEl = document.getElementById('gate-overlay-error-1');
+    errorEl.textContent = '';
+
+    if (!consentBox.checked) {
+      errorEl.textContent = 'Please agree to the Terms & Conditions and Privacy & Cookies Policy to continue.';
+      return;
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errorEl.textContent = 'Please enter a valid email address.';
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.textContent = 'Sending...';
+
+    fetch('/.netlify/functions/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: email })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          errorEl.textContent = result.data.error || 'Something went wrong. Please try again.';
+          return;
+        }
+        gateOverlayEmail = email;
+        if (result.data.alreadyVerified) {
+          completeSuccess(result.data.visitorToken);
+          return;
+        }
+        showStepCode();
+      })
+      .catch(function () {
+        errorEl.textContent = 'Network error. Please check your connection and try again.';
+      })
+      .finally(function () {
+        sendBtn.disabled = false;
+        sendBtn.textContent = 'Send Verification Code';
+      });
+  }
+
+  function verifyCode() {
+    var code = document.getElementById('gate-overlay-code').value.trim();
+    var errorEl = document.getElementById('gate-overlay-error-2');
+    errorEl.textContent = '';
+
+    if (!code || code.length !== 4) {
+      errorEl.textContent = 'Please enter the 4-digit code.';
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    verifyBtn.textContent = 'Verifying...';
+
+    fetch('/.netlify/functions/verify-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: gateOverlayEmail, code: code })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          errorEl.textContent = result.data.error || 'Incorrect code. Please try again.';
+          return;
+        }
+        completeSuccess(result.data.visitorToken);
+      })
+      .catch(function () {
+        errorEl.textContent = 'Network error. Please check your connection and try again.';
+      })
+      .finally(function () {
+        verifyBtn.disabled = false;
+        verifyBtn.textContent = 'Verify & Enter';
+      });
+  }
+
+  sendBtn.addEventListener('click', sendCode);
+  verifyBtn.addEventListener('click', verifyCode);
+  document.getElementById('gate-overlay-code').addEventListener('keydown', function (e) { if (e.key === 'Enter') verifyCode(); });
+  document.getElementById('gate-overlay-email').addEventListener('keydown', function (e) { if (e.key === 'Enter') sendCode(); });
+  resendBtn.addEventListener('click', function () {
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sending...';
+    fetch('/.netlify/functions/send-otp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: gateOverlayEmail })
+    })
+      .finally(function () {
+        setTimeout(function () {
+          resendBtn.disabled = false;
+          resendBtn.textContent = 'Resend code';
+        }, 3000);
+      });
+  });
+}
+
+// mode: 'dim' (dim the page already visible behind it) or 'generic'
+// (decorative backdrop instead, for a direct/fresh load with nothing
+// safe already on screen). onSuccess runs once verification completes
+// — the caller decides what happens next (navigate, or reveal
+// already-deferred content in place).
+function showGateOverlay(mode, onSuccess) {
+  buildGateOverlayDOM();
+  gateOverlayOnSuccess = onSuccess;
+
+  document.getElementById('gate-overlay-step-details').style.display = 'block';
+  document.getElementById('gate-overlay-step-code').style.display = 'none';
+  document.getElementById('gate-overlay-email').value = '';
+  document.getElementById('gate-overlay-code').value = '';
+  document.getElementById('gate-overlay-error-1').textContent = '';
+  document.getElementById('gate-overlay-error-2').textContent = '';
+  document.getElementById('gate-overlay-consent-checkbox').checked = false;
+  document.getElementById('gate-overlay-send-btn').disabled = true;
+
+  var root = document.getElementById('gate-overlay-root');
+  root.classList.toggle('mode-generic', mode === 'generic');
+  root.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+}
+
+function hideGateOverlay() {
+  var root = document.getElementById('gate-overlay-root');
+  if (root) root.classList.remove('is-open');
+  document.body.style.overflow = '';
+}
+
 function initLoginPage() {
   var root = document.getElementById('login-form-root');
   if (!root) return;
