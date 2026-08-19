@@ -1726,7 +1726,7 @@ function buildGateOverlayDOM() {
       '<div class="login-bg-layer login-bg-layer-3"></div>' +
       '<div class="login-bg-overlay"></div>' +
     '</div>' +
-    '<button type="button" class="gate-overlay-back-btn" id="gate-overlay-back-btn" aria-label="Back to Home">&larr; Back to Home</button>' +
+    '<button type="button" class="gate-overlay-back-btn" id="gate-overlay-back-btn" aria-label="Back">&larr; Back</button>' +
     '<div class="gate-overlay-card-wrap">' +
       '<div class="gate-card" id="gate-overlay-card">' +
         '<img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="gate-logo">' +
@@ -1767,7 +1767,18 @@ function wireGateOverlayEvents() {
 
   document.getElementById('gate-overlay-back-btn').addEventListener('click', function () {
     hideGateOverlay();
-    window.location.href = 'home.html';
+    // Only navigate away if we're actually on a gated page — there's
+    // nothing safe to reveal underneath (the real content was
+    // deliberately never rendered). On a public page, the real content
+    // was already there the whole time, so just closing the overlay is
+    // enough — no reload needed.
+    var onGatedPage = !!(
+      document.getElementById('product-grid') ||
+      document.getElementById('checkout-content') ||
+      document.getElementById('payment-content') ||
+      document.getElementById('order-loading')
+    );
+    if (onGatedPage) window.location.href = 'home.html';
   });
 
   function showStepCode() {
@@ -1907,6 +1918,16 @@ function showGateOverlay(mode, onSuccess) {
   document.getElementById('gate-overlay-error-2').textContent = '';
   document.getElementById('gate-overlay-consent-checkbox').checked = false;
   document.getElementById('gate-overlay-send-btn').disabled = true;
+
+  var onGatedPage = !!(
+    document.getElementById('product-grid') ||
+    document.getElementById('checkout-content') ||
+    document.getElementById('payment-content') ||
+    document.getElementById('order-loading')
+  );
+  var backBtn = document.getElementById('gate-overlay-back-btn');
+  backBtn.textContent = onGatedPage ? '\u2190 Back to Home' : '\u2190 Back';
+  backBtn.setAttribute('aria-label', onGatedPage ? 'Back to Home' : 'Back');
 
   var root = document.getElementById('gate-overlay-root');
   root.classList.toggle('mode-generic', mode === 'generic');
