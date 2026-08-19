@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /collections.html
+Disallow: /checkout.html
+Disallow: /payment.html
+Disallow: /order-success.html
+Disallow: /admin.html
+Disallow: /netlify/functions/
+
+Sitemap: https://pavnika.ae/sitemap.xml
