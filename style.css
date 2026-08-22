@@ -2581,7 +2581,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   display: none;
   position: absolute; top: 14px; right: 14px; z-index: 10;
   width: 28px; height: 28px; border-radius: 50%;
-  background: rgba(0, 0, 0, 0.06); border: none; color: inherit;
+  background: rgba(255, 255, 255, 0.1); border: none; color: inherit;
   font-size: 1.3rem; line-height: 1; cursor: pointer;
   align-items: center; justify-content: center;
 }
@@ -2656,33 +2656,16 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    (Home, Collections, wherever), so a neutral, lighter glass reads
    better regardless of what's actually behind it. */
 .gate-overlay-root.mode-dim #gate-overlay-card {
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 20px 50px -15px rgba(43, 13, 26, 0.35);
-  color: var(--ink);
+  background: rgba(43, 13, 26, 0.65);
+  border: 1px solid rgba(182, 138, 105, 0.35);
+  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.5);
+  color: var(--ivory);
 }
-.gate-overlay-root.mode-dim #gate-overlay-card h2 { color: var(--green); text-shadow: none; }
-.gate-overlay-root.mode-dim #gate-overlay-card > div > p:not(.login-tagline) { color: var(--ink); opacity: 0.85; text-shadow: none; }
-.gate-overlay-root.mode-dim #gate-overlay-card .field label { color: var(--green); }
-.gate-overlay-root.mode-dim #gate-overlay-card input[type="email"],
-.gate-overlay-root.mode-dim #gate-overlay-card input[type="text"] {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid var(--stone);
-  color: var(--ink);
-}
-.gate-overlay-root.mode-dim #gate-overlay-card input::placeholder { color: rgba(59, 37, 40, 0.4); }
-.gate-overlay-root.mode-dim #gate-overlay-card input:focus {
-  outline: 2px solid var(--gold);
-  outline-offset: 1px;
-  border-color: var(--gold);
-  background: rgba(255, 255, 255, 0.9);
-}
-.gate-overlay-root.mode-dim #gate-overlay-card .gate-resend { color: var(--gold); }
-.gate-overlay-root.mode-dim #gate-overlay-card .gate-consent-row label { color: var(--ink); opacity: 0.85; }
-.gate-overlay-root.mode-dim #gate-overlay-card .gate-legal-link { color: #946B4A; }
-.gate-overlay-root.mode-dim #gate-overlay-card .gate-legal-link:hover { color: var(--gold); }
+/* Tagline specifically matched to the button's own gold tone, per
+   request — a bit richer/darker than the site-wide .login-tagline
+   gold, scoped to this overlay only so nothing else on the site is
+   affected. */
+.gate-overlay-root.mode-dim #gate-overlay-card .login-tagline { color: #C89A2E; }
 
 .gate-card {
   width: 100%;
