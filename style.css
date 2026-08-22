@@ -2580,9 +2580,9 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .gate-overlay-x-close {
   display: none;
   position: absolute; top: 14px; right: 14px; z-index: 10;
-  width: 28px; height: 28px; border-radius: 50%;
+  width: 28px; height: 28px; padding: 0; margin: 0; border-radius: 50%;
   background: rgba(255, 255, 255, 0.1); border: none; color: inherit;
-  font-size: 1.3rem; line-height: 1; cursor: pointer;
+  font-family: inherit; font-size: 1.3rem; line-height: 1; cursor: pointer;
   align-items: center; justify-content: center;
 }
 .gate-overlay-root.mode-dim .gate-overlay-x-close { display: flex; }
@@ -2748,17 +2748,24 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   margin-top: 16px;
 }
 .gate-maybe-later {
-  background: none;
-  border: none;
-  color: var(--gold-light);
-  font-size: 0.82rem;
-  text-decoration: underline;
-  cursor: pointer;
-  margin-top: 14px;
   display: block;
   width: 100%;
+  padding: 12px 24px;
+  margin-top: 10px;
+  background: transparent;
+  border: 1.5px solid #C89A2E;
+  border-radius: 999px;
+  color: #C89A2E;
+  font-family: var(--body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
   text-align: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
+.gate-maybe-later:hover { background: rgba(200, 154, 46, 0.1); }
 .gate-resend:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ---------- Standalone login page (index.html) ---------- */
