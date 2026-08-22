@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var link = e.target.closest('a[href]');
     if (!link) return;
     var href = link.getAttribute('href');
-    if (!href || !/^(https?:\/\/[^/]+)?\/?(collections|checkout|payment|order-success)(\.html)?(\?|$)/i.test(href)) return;
+    if (!href || !/^(https?:\/\/[^/]+)?\/?(checkout|payment|order-success)(\.html)?(\?|$)/i.test(href)) return;
     if (gateGetCookie('pavnika_verified')) return;
     e.preventDefault();
     showGateOverlay('generic', function () { window.location.href = href; });
@@ -44,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function () {
   // these. Every other page is now public, and shouldn't show cart or
   // wishlist at all, not even as dead/non-functional icons.
   var isGatedPage = !!(
-    document.getElementById('product-grid') ||
     document.getElementById('checkout-content') ||
     document.getElementById('payment-content') ||
     document.getElementById('order-loading')
@@ -64,11 +63,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // form wiring, etc.); running the gate check after all of that meant
   // the overlay only showed up once the whole page had already done a
   // lot of other work first, which is what looked "sluggish."
-  if (document.getElementById('product-grid') && !gateGetCookie('pavnika_verified')) {
-    showGateOverlay('generic', initCollectionsPage);
-  } else {
-    initCollectionsPage();
-  }
+  // Collections is now public — no gating, no deferred rendering, just
+  // like Home's curated showcase or any other public page's content.
+  initCollectionsPage();
   if (document.getElementById('checkout-content') && !gateGetCookie('pavnika_verified')) {
     showGateOverlay('generic', initCheckoutPage);
   } else {
@@ -1779,7 +1776,6 @@ function wireGateOverlayEvents() {
     // was already there the whole time, so just closing the overlay is
     // enough — no reload needed.
     var onGatedPage = !!(
-      document.getElementById('product-grid') ||
       document.getElementById('checkout-content') ||
       document.getElementById('payment-content') ||
       document.getElementById('order-loading')
@@ -1926,7 +1922,6 @@ function showGateOverlay(mode, onSuccess) {
   document.getElementById('gate-overlay-send-btn').disabled = true;
 
   var onGatedPage = !!(
-    document.getElementById('product-grid') ||
     document.getElementById('checkout-content') ||
     document.getElementById('payment-content') ||
     document.getElementById('order-loading')
