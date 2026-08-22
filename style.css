@@ -2751,7 +2751,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   display: block;
   width: 100%;
   padding: 12px 24px;
-  margin-top: 10px;
+  margin-top: 2px;
   background: transparent;
   border: 1.5px solid #C89A2E;
   border-radius: 999px;
