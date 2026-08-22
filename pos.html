@@ -169,9 +169,55 @@
       </div>
     </div>
 
-    <!-- STEP 3 & 4: placeholders, built in the next stages -->
+    <!-- STEP 3: BILLING -->
     <div class="content step-content" id="step-3" style="display:none;">
-      <div class="panel"><h3>Billing</h3><p style="padding:20px; color:#8a7266;">Coming in the next stage.</p></div>
+      <div class="s3-grid">
+        <div class="s3-left">
+          <div class="panel bill-summary-panel">
+            <h3>Bill Summary</h3>
+            <div class="scroll-zone" id="pos-bill-items"></div>
+            <div class="bill-row" style="border-top:1px solid var(--stone); margin-top:6px; padding-top:10px;"><span>Subtotal</span><span class="num-total" id="pos-bill-subtotal">AED 0.00</span></div>
+            <div class="bill-row"><span>VAT</span><span class="vat-note">Not applicable (0%)</span></div>
+          </div>
+          <div class="panel bill-details-panel">
+            <h3>Bill Details</h3>
+            <div class="scroll-zone">
+              <div class="field-grid-2">
+                <div><label>Bill Number</label><input type="text" id="pos-bill-number" readonly value="Generating..."></div>
+                <div><label>Sales Person</label><input type="text" id="pos-bill-salesperson" readonly></div>
+              </div>
+              <label>Notes</label>
+              <textarea id="pos-bill-notes" placeholder="Optional"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Discount &amp; Total</h3>
+          <div class="scroll-zone">
+            <label>Discount</label>
+            <div class="discount-toggle">
+              <button type="button" class="active" data-dtype="percent">%</button>
+              <button type="button" data-dtype="amount">AED</button>
+            </div>
+            <div class="keypad-field">
+              <input type="text" id="pos-discount-value" value="0" readonly>
+              <button type="button" class="kp-btn" data-kp="back">&#9003;</button>
+            </div>
+            <div class="keypad">
+              <button type="button" data-kp="1">1</button><button type="button" data-kp="2">2</button><button type="button" data-kp="3">3</button>
+              <button type="button" data-kp="4">4</button><button type="button" data-kp="5">5</button><button type="button" data-kp="6">6</button>
+              <button type="button" data-kp="7">7</button><button type="button" data-kp="8">8</button><button type="button" data-kp="9">9</button>
+              <button type="button" class="clear" data-kp="clear">C</button><button type="button" data-kp="0">0</button><button type="button" data-kp=".">.</button>
+            </div>
+            <div class="loyalty-box" id="pos-loyalty-box" style="display:none;">
+              <span id="pos-loyalty-text"></span>
+              <button type="button" class="btn" id="pos-loyalty-redeem-btn" style="background:var(--gold); color:#fff; padding:8px 14px;">Redeem</button>
+            </div>
+          </div>
+          <div class="cart-total"><span>Grand Total</span><span class="num-total" id="pos-grand-total">AED 0.00</span></div>
+          <button class="btn btn-primary" id="pos-proceed-payment-btn">Proceed to Payment &rarr;</button>
+        </div>
+      </div>
     </div>
     <div class="content step-content" id="step-4" style="display:none;">
       <div class="panel"><h3>Payment</h3><p style="padding:20px; color:#8a7266;">Coming in the next stage.</p></div>

@@ -9,8 +9,17 @@ var posState = {
   cart: [],           // [{ id, name, price, qty, image }]
   selectedCustomer: null, // set once picked from the list, or created via Proceed to Billing
   currentQty: 1,
-  currentLookupItem: null
+  currentLookupItem: null,
+  billNumber: null,     // fetched once per transaction, not re-fetched on revisiting the step
+  discountType: 'percent', // 'percent' or 'amount'
+  discountValue: 0,
+  loyaltyRedeemed: 0     // points being redeemed this sale
 };
+
+// Placeholder conversion rate — the real loyalty program rules are
+// still to be decided; this just makes the redeem button show
+// something sensible until that's defined.
+var LOYALTY_POINT_VALUE_AED = 0.10;
 
 // ---------- Login ----------
 
@@ -116,6 +125,7 @@ function showStep(n) {
     var idx = parseInt(el.getAttribute('data-line'), 10);
     el.classList.toggle('done', idx < n);
   });
+  if (n === 3) renderBillingStep();
   refreshStepLocks();
 }
 
@@ -434,6 +444,112 @@ function proceedToBilling() {
     });
 }
 
+// ---------- Billing (Step 3) ----------
+
+function calculateDiscountAmount(subtotal) {
+  var raw = posState.discountType === 'percent'
+    ? subtotal * (posState.discountValue / 100)
+    : posState.discountValue;
+  return Math.min(Math.max(0, raw), subtotal); // never more than the subtotal itself
+}
+
+function calculateLoyaltyDiscount() {
+  return posState.loyaltyRedeemed * LOYALTY_POINT_VALUE_AED;
+}
+
+function recalcBillingTotals() {
+  var subtotal = cartTotal();
+  var discountAmount = calculateDiscountAmount(subtotal);
+  var loyaltyAmount = calculateLoyaltyDiscount();
+  var grandTotal = Math.max(0, subtotal - discountAmount - loyaltyAmount);
+
+  document.getElementById('pos-bill-subtotal').textContent = 'AED ' + formatAED(subtotal);
+  document.getElementById('pos-grand-total').textContent = 'AED ' + formatAED(grandTotal);
+  return { subtotal: subtotal, discountAmount: discountAmount, loyaltyAmount: loyaltyAmount, grandTotal: grandTotal };
+}
+
+function renderBillItems() {
+  var el = document.getElementById('pos-bill-items');
+  el.innerHTML = posState.cart.map(function (c) {
+    var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
+    return '<div class="pos-cart-item">' + imgTag +
+      '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
+      '<div class="ci-sub">Qty ' + c.qty + '</div></div>' +
+      '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div></div>';
+  }).join('');
+}
+
+function renderLoyaltyBox() {
+  var box = document.getElementById('pos-loyalty-box');
+  var textEl = document.getElementById('pos-loyalty-text');
+  var btn = document.getElementById('pos-loyalty-redeem-btn');
+  var points = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
+
+  if (!points) { box.style.display = 'none'; return; }
+
+  box.style.display = 'flex';
+  var redeeming = posState.loyaltyRedeemed > 0;
+  textEl.innerHTML = 'Loyalty: <b>' + points + ' pts</b> (\u2248 AED ' + formatAED(points * LOYALTY_POINT_VALUE_AED) + ')' +
+    (redeeming ? ' \u2014 redeeming all' : '');
+  btn.textContent = redeeming ? 'Cancel' : 'Redeem';
+}
+
+function toggleLoyaltyRedeem() {
+  var points = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
+  posState.loyaltyRedeemed = posState.loyaltyRedeemed > 0 ? 0 : points;
+  renderLoyaltyBox();
+  recalcBillingTotals();
+}
+
+function fetchBillNumber() {
+  var el = document.getElementById('pos-bill-number');
+  fetch('/.netlify/functions/pos-peek-bill-number', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken() })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      if (data.billNumber) {
+        posState.billNumber = data.billNumber;
+        el.value = data.billNumber;
+      } else {
+        el.value = 'Will be assigned on completion';
+      }
+    })
+    .catch(function () { el.value = 'Will be assigned on completion'; });
+}
+
+function renderBillingStep() {
+  renderBillItems();
+  document.getElementById('pos-bill-salesperson').value = localStorage.getItem(POS_NAME_KEY) || '';
+
+  if (posState.billNumber) {
+    document.getElementById('pos-bill-number').value = posState.billNumber;
+  } else {
+    fetchBillNumber();
+  }
+
+  renderLoyaltyBox();
+  recalcBillingTotals();
+}
+
+function setDiscountValue(newValueStr) {
+  if (newValueStr.length > 8) return;
+  if ((newValueStr.match(/\./g) || []).length > 1) return;
+  posState.discountValue = parseFloat(newValueStr) || 0;
+  document.getElementById('pos-discount-value').value = newValueStr || '0';
+  recalcBillingTotals();
+}
+
+function handleKeypadPress(key) {
+  var current = document.getElementById('pos-discount-value').value;
+  if (key === 'clear') { setDiscountValue('0'); return; }
+  if (key === 'back') { setDiscountValue(current.length > 1 ? current.slice(0, -1) : '0'); return; }
+  var next = (current === '0' && key !== '.') ? key : current + key;
+  setDiscountValue(next);
+}
+
 // ---------- Wire everything up ----------
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -508,6 +624,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-proceed-billing-btn').addEventListener('click', proceedToBilling);
+
+  // Billing
+  document.querySelectorAll('.discount-toggle button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('.discount-toggle button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      posState.discountType = btn.getAttribute('data-dtype');
+      setDiscountValue('0'); // reset on switching, so "50" isn't misread as the wrong unit
+    });
+  });
+  document.querySelectorAll('[data-kp]').forEach(function (btn) {
+    btn.addEventListener('click', function () { handleKeypadPress(btn.getAttribute('data-kp')); });
+  });
+  document.getElementById('pos-loyalty-redeem-btn').addEventListener('click', toggleLoyaltyRedeem);
+  document.getElementById('pos-proceed-payment-btn').addEventListener('click', function () { showStep(4); });
 
   renderCart();
   refreshStepLocks();

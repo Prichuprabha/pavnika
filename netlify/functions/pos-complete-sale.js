@@ -1,5 +1,6 @@
 const { verifyPosToken } = require('./_pos-auth');
 const { markSareesSold } = require('./_order-shared');
+const { generateBillNumber } = require('./_pos-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -11,37 +12,6 @@ function supabaseHeaders() {
     'Content-Type': 'application/json',
     'Prefer': 'return=representation'
   };
-}
-
-// BILL-DDMOYY-SEQ — same method as the site's own order numbers
-// (generateOrderNumber in _order-shared.js), minus the hour/minute,
-// with a 3-digit daily sequence and a BILL prefix, per the confirmed
-// format: BILL-220826-001.
-async function generateBillNumber() {
-  var now = new Date(Date.now() + 4 * 60 * 60 * 1000); // UAE is UTC+4
-  var dd = String(now.getUTCDate()).padStart(2, '0');
-  var mo = String(now.getUTCMonth() + 1).padStart(2, '0');
-  var yy = String(now.getUTCFullYear()).slice(-2);
-  var datePart = dd + mo + yy;
-
-  var dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), -4, 0, 0)).toISOString();
-  var dayEnd = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1, -4, 0, 0)).toISOString();
-
-  var seq = 1;
-  try {
-    var res = await fetch(
-      `${SUPABASE_URL}/rest/v1/pos_sales?select=id&created_at=gte.${dayStart}&created_at=lt.${dayEnd}`,
-      { headers: supabaseHeaders() }
-    );
-    if (res.ok) {
-      var rows = await res.json();
-      seq = rows.length + 1;
-    }
-  } catch (e) {
-    console.error('Could not count today\'s POS sales, defaulting sequence to 1:', e);
-  }
-
-  return 'BILL-' + datePart + '-' + String(seq).padStart(3, '0');
 }
 
 exports.handler = async function (event) {
