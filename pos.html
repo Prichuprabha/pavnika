@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pavnika POS</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700&family=Jost:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pos-style.css">
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="pos-login-screen" class="pos-login-screen">
+  <div class="pos-login-card">
+    <img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="pos-login-logo">
+    <h1>Pavnika POS</h1>
+    <p class="pos-login-sub">Staff sign-in</p>
+    <label>Username</label>
+    <input type="text" id="pos-login-username" autocomplete="username">
+    <label>Password</label>
+    <input type="password" id="pos-login-password" autocomplete="current-password">
+    <p class="pos-error" id="pos-login-error"></p>
+    <button type="button" class="btn btn-primary" id="pos-login-btn">Sign In</button>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until logged in) -->
+<div class="app" id="pos-app" style="display:none;">
+  <div class="sidebar">
+    <div class="logo"><img src="assets/gate-logo-gold.png"></div>
+    <nav>
+      <a class="nav-link active" data-step="1"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>Item</a>
+      <a class="nav-link" data-step="2"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Customer</a>
+      <a class="nav-link" data-step="3"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg></span>Billing</a>
+      <a class="nav-link" data-step="4"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>Payment</a>
+    </nav>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="pos-brand">Pavnika POS</div>
+      <div style="display:flex; align-items:center; gap:14px;">
+        <div class="datetime" id="pos-datetime"></div>
+        <button class="logout" id="pos-logout-btn">Logout</button>
+      </div>
+    </div>
+
+    <div class="steps" id="stepTracker">
+      <div class="step-item" data-s="1"><span class="circle">1</span><span class="lbl">Item</span></div>
+      <div class="step-line" data-line="1"></div>
+      <div class="step-item" data-s="2"><span class="circle">2</span><span class="lbl">Customer</span></div>
+      <div class="step-line" data-line="2"></div>
+      <div class="step-item" data-s="3"><span class="circle">3</span><span class="lbl">Billing</span></div>
+      <div class="step-line" data-line="3"></div>
+      <div class="step-item" data-s="4"><span class="circle">4</span><span class="lbl">Payment</span></div>
+    </div>
+
+    <!-- STEP 1: ITEM ENTRY -->
+    <div class="content step-content" id="step-1">
+      <div class="s1-grid">
+        <div class="panel">
+          <h3>Item Details</h3>
+          <div class="scroll-zone">
+            <label>Scan / Enter Code</label>
+            <div class="scan-row">
+              <input type="text" id="pos-item-code" placeholder="Scan or type code, then Enter">
+              <button id="pos-item-lookup-btn">Go</button>
+            </div>
+            <p class="pos-error" id="pos-item-error"></p>
+            <label>Item Name</label>
+            <input type="text" id="pos-item-name" readonly>
+            <div class="field-grid-2">
+              <div><label>Category</label><input type="text" id="pos-item-category" readonly></div>
+              <div><label>Material</label><input type="text" id="pos-item-material" readonly></div>
+              <div><label>Colour</label><input type="text" id="pos-item-colour" readonly></div>
+              <div><label>Design/Work</label><input type="text" id="pos-item-design" readonly></div>
+              <div><label>Price (AED)</label><input type="text" id="pos-item-price" readonly></div>
+              <div><label>Stock Status</label><input type="text" id="pos-item-stock" readonly></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel saree-preview">
+          <h3>Preview</h3>
+          <img id="pos-item-image" src="" style="display:none;">
+          <div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>
+          <div class="qty-row">
+            <button id="pos-qty-minus">&minus;</button>
+            <span class="qty-num" id="pos-qty-num">1</span>
+            <button id="pos-qty-plus">+</button>
+          </div>
+          <button class="btn btn-gold" id="pos-add-to-cart-btn" disabled>Add to Cart</button>
+        </div>
+        <div class="panel">
+          <h3>Cart Summary</h3>
+          <div class="scroll-zone" id="pos-cart-list">
+            <p class="pos-empty-note">No items added yet.</p>
+          </div>
+          <div class="cart-total"><span>Total</span><span class="num-total" id="pos-cart-total">AED 0.00</span></div>
+          <button class="btn btn-primary" id="pos-proceed-customer-btn">Proceed to Customer &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: CUSTOMER -->
+    <div class="content step-content" id="step-2" style="display:none;">
+      <div class="s2-grid">
+        <div class="panel">
+          <h3>Existing Customer</h3>
+          <input type="text" id="pos-cust-search" placeholder="Search by name or mobile" style="flex-shrink:0;">
+          <div class="scroll-zone" id="pos-cust-list" style="margin-top:10px;">
+            <p class="pos-empty-note">Type to search existing customers.</p>
+          </div>
+          <button class="btn btn-gold" id="pos-new-cust-btn" style="margin-top:8px;">+ New Customer</button>
+        </div>
+        <div class="panel">
+          <h3>Customer Details</h3>
+          <div class="scroll-zone">
+            <div class="cust-grid">
+              <div>
+                <label>Customer Name *</label>
+                <input type="text" id="pos-cust-name" placeholder="Enter name">
+                <label>Mobile Number *</label>
+                <div class="phone-row">
+                  <select id="pos-cust-code">
+                    <optgroup label="GCC">
+                      <option value="+971" selected>&#127462;&#127466; +971</option>
+                      <option value="+966">&#127472;&#127462; +966</option>
+                      <option value="+974">&#127478;&#127462; +974</option>
+                      <option value="+965">&#127472;&#127484; +965</option>
+                      <option value="+973">&#127463;&#127469; +973</option>
+                      <option value="+968">&#127476;&#127474; +968</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                      <option value="+91">&#127470;&#127475; +91</option>
+                      <option value="+44">&#127468;&#127463; +44</option>
+                      <option value="+1">&#127482;&#127480; +1</option>
+                    </optgroup>
+                  </select>
+                  <input type="text" id="pos-cust-phone" placeholder="5X XXX XXXX">
+                </div>
+                <label>Email</label>
+                <input type="text" id="pos-cust-email" placeholder="Optional">
+              </div>
+              <div>
+                <label>Emirate</label>
+                <div class="seg-grid" id="pos-cust-emirate">
+                  <div class="seg-btn active" data-v="Dubai">Dubai</div>
+                  <div class="seg-btn" data-v="Abu Dhabi">Abu Dhabi</div>
+                  <div class="seg-btn" data-v="Sharjah">Sharjah</div>
+                  <div class="seg-btn" data-v="Other">Other</div>
+                </div>
+                <label>Address</label>
+                <textarea id="pos-cust-address" placeholder="Optional"></textarea>
+              </div>
+            </div>
+            <p class="pos-error" id="pos-cust-error"></p>
+          </div>
+          <button class="btn btn-primary" id="pos-proceed-billing-btn">Proceed to Billing &rarr;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3 & 4: placeholders, built in the next stages -->
+    <div class="content step-content" id="step-3" style="display:none;">
+      <div class="panel"><h3>Billing</h3><p style="padding:20px; color:#8a7266;">Coming in the next stage.</p></div>
+    </div>
+    <div class="content step-content" id="step-4" style="display:none;">
+      <div class="panel"><h3>Payment</h3><p style="padding:20px; color:#8a7266;">Coming in the next stage.</p></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="products-data.js"></script>
+<script src="pos-script.js"></script>
+</body>
+</html>
