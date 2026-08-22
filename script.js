@@ -3924,9 +3924,47 @@ function initDraggableMarquee(container, track, options) {
   window.addEventListener('mousemove', function (e) { dragMove(e.clientX); });
   window.addEventListener('mouseup', dragEnd);
 
-  container.addEventListener('touchstart', function (e) { dragStart(e.touches[0].clientX); }, { passive: true });
-  container.addEventListener('touchmove', function (e) { dragMove(e.touches[0].clientX); }, { passive: true });
-  container.addEventListener('touchend', dragEnd);
+  // Touch needs its own handling, separate from mouse — a finger
+  // starting a normal vertical page-scroll gesture often happens to
+  // land on the marquee, and without this, any tiny horizontal wobble
+  // during that scroll would drag the track along with it. This is the
+  // same "direction locking" technique used by carousel libraries
+  // (Swiper, Splide) and native iOS/Android nested scroll views: wait
+  // for a small amount of movement, compare horizontal vs vertical
+  // distance, and only commit to being a drag once it's clearly
+  // horizontal — a clearly vertical gesture is left alone entirely, so
+  // the page scrolls exactly as it would without this marquee here at
+  // all. touch-action:pan-y in the CSS is the other half of this: it
+  // guarantees the browser still scrolls the page smoothly even though
+  // touch listeners are attached to this element.
+  var touchStartX = 0;
+  var touchStartY = 0;
+  var touchDirection = null; // null = undecided, 'horizontal' or 'vertical' once determined
+  var DIRECTION_THRESHOLD = 10;
+
+  container.addEventListener('touchstart', function (e) {
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchDirection = null;
+  }, { passive: true });
+
+  container.addEventListener('touchmove', function (e) {
+    var t = e.touches[0];
+    if (touchDirection === null) {
+      var dx = Math.abs(t.clientX - touchStartX);
+      var dy = Math.abs(t.clientY - touchStartY);
+      if (dx < DIRECTION_THRESHOLD && dy < DIRECTION_THRESHOLD) return; // not enough movement yet to tell
+      touchDirection = dx > dy ? 'horizontal' : 'vertical';
+      if (touchDirection === 'horizontal') dragStart(touchStartX); // start from the true beginning, not this point, so nothing jumps
+    }
+    if (touchDirection === 'horizontal') dragMove(t.clientX);
+    // else: vertical — leave it alone entirely, native page scroll handles it
+  }, { passive: true });
+
+  container.addEventListener('touchend', function () {
+    if (touchDirection === 'horizontal') dragEnd();
+    touchDirection = null;
+  });
 
   // Suppress accidental navigation/clicks on inner links when the user was
   // actually dragging, not clicking.

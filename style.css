@@ -1863,6 +1863,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .category-marquee {
   overflow: hidden;
   position: relative;
+  touch-action: pan-y;
   -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
 }
@@ -2984,6 +2985,7 @@ body.login-page {
 .reviews-marquee {
   overflow: hidden;
   position: relative;
+  touch-action: pan-y;
   -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
 }
