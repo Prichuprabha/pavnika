@@ -2491,6 +2491,8 @@ function refreshAccountMenuDisplay() {
 function initAccountMenu() {
   var accountBtn = document.getElementById('nav-account-btn');
   var dropdown = document.getElementById('account-dropdown');
+  var logoutBtn = document.getElementById('account-logout');
+  var unlockBtn = document.getElementById('account-unlock');
   if (!accountBtn || !dropdown) return;
 
   refreshAccountMenuDisplay();
