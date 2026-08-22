@@ -2593,7 +2593,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   position: absolute; top: 14px; right: 14px; z-index: 10;
   width: 28px; height: 28px; padding: 0; margin: 0; border-radius: 50%;
   background: rgba(255, 255, 255, 0.1); border: none; color: inherit;
-  font-family: inherit; font-size: 1.3rem; line-height: 1; cursor: pointer;
+  cursor: pointer;
   align-items: center; justify-content: center;
 }
 .gate-overlay-root.mode-dim .gate-overlay-x-close { display: flex; }

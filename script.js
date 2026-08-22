@@ -1764,7 +1764,7 @@ function buildGateOverlayDOM() {
     '<button type="button" class="gate-overlay-back-btn" id="gate-overlay-back-btn" aria-label="Back">&larr; Back</button>' +
     '<div class="gate-overlay-card-wrap">' +
       '<div class="gate-card" id="gate-overlay-card">' +
-        '<button type="button" class="gate-overlay-x-close" id="gate-overlay-x-close" aria-label="Close">&times;</button>' +
+        '<button type="button" class="gate-overlay-x-close" id="gate-overlay-x-close" aria-label="Close"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line></svg></button>' +
         '<img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="gate-logo">' +
         '<div id="gate-overlay-step-details">' +
           '<h2>Welcome to Pavnika by Saranya</h2>' +
