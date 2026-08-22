@@ -299,9 +299,23 @@ function renderCart() {
 
 var custSearchDebounce = null;
 
+function hideCustDropdown() {
+  var list = document.getElementById('pos-cust-suggest-list');
+  list.classList.remove('open');
+  list.innerHTML = '';
+}
+
 function searchCustomers(query) {
-  var listEl = document.getElementById('pos-cust-list');
+  var emptyNote = document.getElementById('pos-cust-empty-note');
   clearTimeout(custSearchDebounce);
+
+  if (!query) {
+    hideCustDropdown();
+    emptyNote.textContent = 'Type to search existing customers.';
+    emptyNote.style.display = 'block';
+    return;
+  }
+
   custSearchDebounce = setTimeout(function () {
     fetch('/.netlify/functions/pos-search-customers', {
       method: 'POST',
@@ -311,18 +325,25 @@ function searchCustomers(query) {
       .then(function (res) { return res.json(); })
       .then(function (data) {
         var customers = data.customers || [];
+        var list = document.getElementById('pos-cust-suggest-list');
         if (!customers.length) {
-          listEl.innerHTML = '<p class="pos-empty-note">' + (query ? 'No matching customers.' : 'Type to search existing customers.') + '</p>';
+          hideCustDropdown();
+          emptyNote.textContent = 'No matching customers.';
+          emptyNote.style.display = 'block';
           return;
         }
-        listEl.innerHTML = customers.map(function (c) {
-          return '<div class="cust-list-item" data-cust-id="' + c.id + '">' +
-            '<span class="name">' + c.name + '</span>' +
-            '<span class="phone">' + c.phone_country_code + ' ' + c.phone + '</span></div>';
+        emptyNote.style.display = 'none';
+        list.innerHTML = customers.map(function (c) {
+          return '<div class="pos-suggest-item" data-cust-id="' + c.id + '">' +
+            '<div class="si-info"><div class="si-name">' + c.name + '</div>' +
+            '<div class="si-sub">' + c.phone_country_code + ' ' + c.phone + '</div></div></div>';
         }).join('');
-        listEl.querySelectorAll('[data-cust-id]').forEach(function (el) {
+        list.classList.add('open');
+        list.querySelectorAll('[data-cust-id]').forEach(function (el) {
           el.addEventListener('click', function () {
             var picked = customers.filter(function (c) { return c.id === el.getAttribute('data-cust-id'); })[0];
+            hideCustDropdown();
+            document.getElementById('pos-cust-search').value = picked.name;
             selectCustomer(picked);
           });
         });
@@ -341,14 +362,12 @@ function selectCustomer(customer) {
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn) {
     btn.classList.toggle('active', btn.getAttribute('data-v') === customer.emirate);
   });
-  document.querySelectorAll('.cust-list-item').forEach(function (el) {
-    el.classList.toggle('selected', el.getAttribute('data-cust-id') === customer.id);
-  });
   refreshStepLocks();
 }
 
 function clearCustomerForm() {
   posState.selectedCustomer = null;
+  document.getElementById('pos-cust-search').value = '';
   document.getElementById('pos-cust-name').value = '';
   document.getElementById('pos-cust-phone').value = '';
   document.getElementById('pos-cust-email').value = '';
@@ -357,7 +376,7 @@ function clearCustomerForm() {
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn, i) {
     btn.classList.toggle('active', i === 0);
   });
-  document.querySelectorAll('.cust-list-item').forEach(function (el) { el.classList.remove('selected'); });
+  hideCustDropdown();
   refreshStepLocks();
 }
 
@@ -462,10 +481,26 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Customer
-  document.getElementById('pos-cust-search').addEventListener('input', function (e) {
+  var custSearchInput = document.getElementById('pos-cust-search');
+  custSearchInput.addEventListener('input', function (e) {
     searchCustomers(e.target.value.trim());
   });
+  document.addEventListener('click', function (e) {
+    if (!custSearchInput.contains(e.target) && !document.getElementById('pos-cust-suggest-list').contains(e.target)) {
+      hideCustDropdown();
+    }
+  });
   document.getElementById('pos-new-cust-btn').addEventListener('click', clearCustomerForm);
+
+  // Email domain quick-select — appends the tapped domain to whatever
+  // was typed before any existing @, instead of requiring it be typed.
+  document.querySelectorAll('.pos-chip').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      var emailEl = document.getElementById('pos-cust-email');
+      var current = emailEl.value.split('@')[0];
+      emailEl.value = current + '@' + chip.getAttribute('data-domain');
+    });
+  });
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (b) { b.classList.remove('active'); });

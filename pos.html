@@ -111,11 +111,12 @@
       <div class="s2-grid">
         <div class="panel">
           <h3>Existing Customer</h3>
-          <input type="text" id="pos-cust-search" placeholder="Search by name or mobile" style="flex-shrink:0;">
-          <div class="scroll-zone" id="pos-cust-list" style="margin-top:10px;">
-            <p class="pos-empty-note">Type to search existing customers.</p>
+          <div style="position:relative;">
+            <input type="text" id="pos-cust-search" placeholder="Search by name or mobile" autocomplete="off">
+            <div class="pos-suggest-list pos-cust-dropdown" id="pos-cust-suggest-list"></div>
           </div>
-          <button class="btn btn-gold" id="pos-new-cust-btn" style="margin-top:8px;">+ New Customer</button>
+          <p class="pos-empty-note" id="pos-cust-empty-note">Type to search existing customers.</p>
+          <button class="btn btn-gold" id="pos-new-cust-btn" style="margin-top:12px;">+ New Customer</button>
         </div>
         <div class="panel">
           <h3>Customer Details</h3>
@@ -142,6 +143,12 @@
                 </div>
                 <label>Email</label>
                 <input type="text" id="pos-cust-email" placeholder="Optional">
+                <div class="pos-domain-chips">
+                  <button type="button" class="pos-chip" data-domain="gmail.com">@gmail.com</button>
+                  <button type="button" class="pos-chip" data-domain="yahoo.com">@yahoo.com</button>
+                  <button type="button" class="pos-chip" data-domain="hotmail.com">@hotmail.com</button>
+                  <button type="button" class="pos-chip" data-domain="outlook.com">@outlook.com</button>
+                </div>
               </div>
               <div>
                 <label>Emirate</label>

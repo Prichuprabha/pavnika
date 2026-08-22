@@ -95,6 +95,16 @@ textarea { min-height: 50px; resize: none; }
 .pos-suggest-item .si-sub { font-size: 0.7rem; color: #8a7266; }
 .pos-suggest-item.si-sold .si-name { color: #B8142A; }
 
+/* Customer search dropdown — same pattern as item search, but no
+   button to the side to avoid, so it spans the input's full width. */
+.pos-cust-dropdown { right: 0; }
+
+/* Email domain quick-select chips — tap one instead of typing the
+   whole domain. Appends to whatever's typed before any existing @. */
+.pos-domain-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.pos-chip { background: var(--ivory-deep); border: 1px solid var(--stone); border-radius: 999px; padding: 5px 11px; font-size: 0.72rem; color: var(--green-deep); cursor: pointer; }
+.pos-chip:hover { border-color: var(--gold); }
+
 /* Preview — portrait, fills the middle panel's available height,
    matching real saree photo proportions rather than a small landscape
    thumbnail. */
