@@ -3829,6 +3829,19 @@ function initDraggableMarquee(container, track, options) {
   var dragStartOffset = 0;
   var dragDistance = 0;
 
+  // Momentum/inertia after releasing a drag — this is what makes it
+  // feel like native touch scrolling instead of stopping dead the
+  // instant you lift your finger. Recent position samples (with
+  // timestamps) are tracked during the drag; on release, velocity is
+  // estimated from just the last ~100ms of movement (the actual flick,
+  // not the whole drag), then that velocity carries the track forward,
+  // decaying each frame until it naturally comes to rest.
+  var momentumVelocity = 0;
+  var recentSamples = [];
+  var FRICTION = 0.95;
+  var MIN_VELOCITY = 0.05;
+  var MAX_VELOCITY = 40;
+
   function measure() {
     halfWidth = track.scrollWidth / 2;
   }
@@ -3846,8 +3859,16 @@ function initDraggableMarquee(container, track, options) {
   }
 
   function tick() {
-    if (!reduced && !isHovering && !isDragging && halfWidth > 0) {
-      offset += dir * speed;
+    if (isDragging) {
+      // offset is already being set directly by dragMove
+    } else if (Math.abs(momentumVelocity) > MIN_VELOCITY) {
+      offset += momentumVelocity;
+      momentumVelocity *= FRICTION;
+    } else {
+      momentumVelocity = 0;
+      if (!reduced && !isHovering && halfWidth > 0) {
+        offset += dir * speed;
+      }
     }
     normalize();
     track.style.transform = 'translateX(' + offset + 'px)';
@@ -3864,9 +3885,11 @@ function initDraggableMarquee(container, track, options) {
 
   function dragStart(clientX) {
     isDragging = true;
+    momentumVelocity = 0; // grabbing again cancels any leftover momentum, same as native scrolling
     dragStartX = clientX;
     dragStartOffset = offset;
     dragDistance = 0;
+    recentSamples = [{ x: clientX, t: performance.now() }];
     track.style.cursor = 'grabbing';
   }
   function dragMove(clientX) {
@@ -3874,10 +3897,27 @@ function initDraggableMarquee(container, track, options) {
     var delta = clientX - dragStartX;
     dragDistance = Math.abs(delta);
     offset = dragStartOffset + delta;
+
+    var now = performance.now();
+    recentSamples.push({ x: clientX, t: now });
+    while (recentSamples.length > 2 && now - recentSamples[0].t > 100) {
+      recentSamples.shift();
+    }
   }
   function dragEnd() {
     isDragging = false;
     track.style.cursor = 'grab';
+
+    if (recentSamples.length >= 2) {
+      var first = recentSamples[0];
+      var last = recentSamples[recentSamples.length - 1];
+      var dt = last.t - first.t;
+      if (dt > 0) {
+        var pxPerFrame = ((last.x - first.x) / dt) * 16.6;
+        momentumVelocity = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, pxPerFrame));
+      }
+    }
+    recentSamples = [];
   }
 
   container.addEventListener('mousedown', function (e) { dragStart(e.clientX); e.preventDefault(); });
