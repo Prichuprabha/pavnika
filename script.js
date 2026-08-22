@@ -229,6 +229,30 @@ document.addEventListener('DOMContentLoaded', function () {
   initHeroBannerCarousel();
   initHomeVideoShowcase();
   initPinnedHero();
+
+  // Home popup — appears once, the first time the visitor scrolls
+  // roughly halfway down the page, for anyone unverified who isn't
+  // currently within a dismissal backoff period (see
+  // shouldShowHomePopup/recordHomePopupDismissal above).
+  if (document.getElementById('hero-banner-pinned')) {
+    var homePopupShown = false;
+    window.addEventListener('scroll', function () {
+      if (homePopupShown) return;
+      if (!shouldShowHomePopup()) return;
+      var scrollableHeight = document.body.scrollHeight - window.innerHeight;
+      if (scrollableHeight <= 0) return; // page shorter than the viewport — nothing to scroll, never trigger
+      var progress = window.scrollY / scrollableHeight;
+      if (progress >= 0.5) {
+        homePopupShown = true;
+        showGateOverlay(
+          'dim',
+          function () {},
+          'Verify your email to unlock our full collection, save favourites to your wishlist, and be the first to know about new arrivals.',
+          true
+        );
+      }
+    }, { passive: true });
+  }
 });
 
 var WHATSAPP_NUMBER = '971526630307';
@@ -1753,6 +1777,7 @@ function buildGateOverlayDOM() {
           '</div>' +
           '<button type="button" id="gate-overlay-send-btn" class="btn btn-primary" disabled>Send Verification Code</button>' +
           '<p class="gate-error" id="gate-overlay-error-1"></p>' +
+          '<button type="button" id="gate-overlay-maybe-later-btn-1" class="gate-maybe-later" style="display:none;">Maybe Later</button>' +
         '</div>' +
         '<div id="gate-overlay-step-code" style="display:none;">' +
           '<h2>Enter Verification Code</h2>' +
@@ -1761,6 +1786,7 @@ function buildGateOverlayDOM() {
           '<button type="button" id="gate-overlay-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>' +
           '<p class="gate-error" id="gate-overlay-error-2"></p>' +
           '<button type="button" id="gate-overlay-resend-btn" class="gate-resend">Resend code</button>' +
+          '<button type="button" id="gate-overlay-maybe-later-btn-2" class="gate-maybe-later" style="display:none;">Maybe Later</button>' +
         '</div>' +
         '<div id="gate-overlay-step-loading" style="display:none;">' +
           '<div class="gate-overlay-spinner"></div>' +
@@ -1800,6 +1826,13 @@ function wireGateOverlayEvents() {
   document.getElementById('gate-overlay-x-close').addEventListener('click', function () {
     hideGateOverlay();
   });
+
+  function dismissHomePopup() {
+    hideGateOverlay();
+    recordHomePopupDismissal();
+  }
+  document.getElementById('gate-overlay-maybe-later-btn-1').addEventListener('click', dismissHomePopup);
+  document.getElementById('gate-overlay-maybe-later-btn-2').addEventListener('click', dismissHomePopup);
 
   function showStepCode() {
     document.getElementById('gate-overlay-step-details').style.display = 'none';
@@ -1942,7 +1975,46 @@ function wireGateOverlayEvents() {
 // safe already on screen). onSuccess runs once verification completes
 // — the caller decides what happens next (navigate, or reveal
 // already-deferred content in place).
-function showGateOverlay(mode, onSuccess, bodyText) {
+// ---------- Home popup dismissal tracking ----------
+// 1st dismiss: hidden 7 days. 2nd: hidden 30 days. 3rd: never shown
+// again for this browser. Verifying at any point also means never
+// shown again (handled separately, via the pavnika_verified cookie
+// itself — no dismissal tracking needed once someone's actually
+// verified). This is deliberately per-browser (localStorage), not
+// tied to any account, since it's about respecting this visitor's own
+// pattern, not something that should follow them across devices.
+var HOME_POPUP_DISMISS_KEY = 'pavnika_home_popup_dismiss';
+
+function getHomePopupDismissState() {
+  try {
+    var raw = localStorage.getItem(HOME_POPUP_DISMISS_KEY);
+    var data = raw ? JSON.parse(raw) : { count: 0, until: 0 };
+    return (data && typeof data.count === 'number') ? data : { count: 0, until: 0 };
+  } catch (e) {
+    return { count: 0, until: 0 };
+  }
+}
+
+function recordHomePopupDismissal() {
+  var state = getHomePopupDismissState();
+  var count = state.count + 1;
+  var DAY_MS = 24 * 60 * 60 * 1000;
+  var until;
+  if (count === 1) until = Date.now() + 7 * DAY_MS;
+  else if (count === 2) until = Date.now() + 30 * DAY_MS;
+  else until = Infinity; // 3rd dismissal onward — never again
+  try {
+    localStorage.setItem(HOME_POPUP_DISMISS_KEY, JSON.stringify({ count: count, until: until }));
+  } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
+}
+
+function shouldShowHomePopup() {
+  if (gateGetCookie('pavnika_verified')) return false; // already verified — never show
+  var state = getHomePopupDismissState();
+  return Date.now() >= state.until;
+}
+
+function showGateOverlay(mode, onSuccess, bodyText, dismissible) {
   buildGateOverlayDOM();
   gateOverlayOnSuccess = onSuccess;
 
@@ -1965,6 +2037,17 @@ function showGateOverlay(mode, onSuccess, bodyText) {
   var backBtn = document.getElementById('gate-overlay-back-btn');
   backBtn.textContent = onGatedPage ? '\u2190 Back to Home' : '\u2190 Back';
   backBtn.setAttribute('aria-label', onGatedPage ? 'Back to Home' : 'Back');
+
+  // Dismissible (the Home popup) is a genuinely different kind of gate
+  // from everything else — it's optional, not mandatory, so it gets its
+  // own "Maybe Later" affordance instead of Back or X, both of which
+  // are hidden entirely in this case.
+  backBtn.style.display = dismissible ? 'none' : '';
+  document.getElementById('gate-overlay-x-close').style.display = dismissible ? 'none' : '';
+  var maybeLater1 = document.getElementById('gate-overlay-maybe-later-btn-1');
+  var maybeLater2 = document.getElementById('gate-overlay-maybe-later-btn-2');
+  maybeLater1.style.display = dismissible ? 'block' : 'none';
+  maybeLater2.style.display = dismissible ? 'block' : 'none';
 
   var root = document.getElementById('gate-overlay-root');
   root.classList.toggle('mode-generic', mode === 'generic');

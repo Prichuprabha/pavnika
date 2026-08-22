@@ -2747,6 +2747,18 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   cursor: pointer;
   margin-top: 16px;
 }
+.gate-maybe-later {
+  background: none;
+  border: none;
+  color: var(--gold-light);
+  font-size: 0.82rem;
+  text-decoration: underline;
+  cursor: pointer;
+  margin-top: 14px;
+  display: block;
+  width: 100%;
+  text-align: center;
+}
 .gate-resend:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* ---------- Standalone login page (index.html) ---------- */
