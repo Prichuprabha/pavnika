@@ -2532,10 +2532,16 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 /* ---------- Shared gate overlay (embeddable, any page) ---------- */
 .gate-overlay-root {
   position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 500;
-  background: var(--green-deep); /* fallback brand colour — guarantees this never shows the page underneath, even if a child layer below fails to render for any reason */
   opacity: 0; visibility: hidden; pointer-events: none;
   transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
+/* Fallback brand colour — guarantees generic mode never shows a blank
+   page underneath, even if the cycling background images fail for any
+   reason. Scoped to generic mode only: dim mode's entire purpose is to
+   show the real page through it, so the root itself must stay
+   transparent there — the semi-transparent .gate-overlay-dim layer is
+   what does the actual covering in that mode. */
+.gate-overlay-root.mode-generic { background: var(--green-deep); }
 .gate-overlay-root.is-open {
   opacity: 1; visibility: visible; pointer-events: auto;
   transition: opacity 0.3s ease, visibility 0s linear 0s;
@@ -2567,6 +2573,19 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   text-transform: uppercase; letter-spacing: 0.05em;
   padding: 8px 16px; border-radius: 999px; cursor: pointer;
 }
+/* Dim mode shows a simple X on the card itself instead of the "Back"
+   pill — closing just reveals the real page already sitting behind it,
+   so it reads more like dismissing a popup than navigating away. */
+.gate-overlay-root.mode-dim .gate-overlay-back-btn { display: none; }
+.gate-overlay-x-close {
+  display: none;
+  position: absolute; top: 14px; right: 14px; z-index: 10;
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(0, 0, 0, 0.06); border: none; color: inherit;
+  font-size: 1.3rem; line-height: 1; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+.gate-overlay-root.mode-dim .gate-overlay-x-close { display: flex; }
 
 .gate-overlay-card-wrap {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
@@ -2629,6 +2648,40 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   background: linear-gradient(135deg, #C89A2E 0%, #F0D27A 50%, #C89A2E 100%);
   opacity: 0.45;
 }
+
+/* Dim mode: light frosted glass instead of the dark glassmorphism above.
+   Generic mode's dark glass was designed around the consistent dark
+   swapping-image backdrop; dim mode sits over an arbitrary real page
+   (Home, Collections, wherever), so a neutral, lighter glass reads
+   better regardless of what's actually behind it. */
+.gate-overlay-root.mode-dim #gate-overlay-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 20px 50px -15px rgba(43, 13, 26, 0.35);
+  color: var(--ink);
+}
+.gate-overlay-root.mode-dim #gate-overlay-card h2 { color: var(--green); text-shadow: none; }
+.gate-overlay-root.mode-dim #gate-overlay-card > div > p:not(.login-tagline) { color: var(--ink); opacity: 0.85; text-shadow: none; }
+.gate-overlay-root.mode-dim #gate-overlay-card .field label { color: var(--green); }
+.gate-overlay-root.mode-dim #gate-overlay-card input[type="email"],
+.gate-overlay-root.mode-dim #gate-overlay-card input[type="text"] {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--stone);
+  color: var(--ink);
+}
+.gate-overlay-root.mode-dim #gate-overlay-card input::placeholder { color: rgba(59, 37, 40, 0.4); }
+.gate-overlay-root.mode-dim #gate-overlay-card input:focus {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.9);
+}
+.gate-overlay-root.mode-dim #gate-overlay-card .gate-resend { color: var(--gold); }
+.gate-overlay-root.mode-dim #gate-overlay-card .gate-consent-row label { color: var(--ink); opacity: 0.85; }
+.gate-overlay-root.mode-dim #gate-overlay-card .gate-legal-link { color: #946B4A; }
+.gate-overlay-root.mode-dim #gate-overlay-card .gate-legal-link:hover { color: var(--gold); }
 
 .gate-card {
   width: 100%;

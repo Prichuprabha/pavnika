@@ -1740,6 +1740,7 @@ function buildGateOverlayDOM() {
     '<button type="button" class="gate-overlay-back-btn" id="gate-overlay-back-btn" aria-label="Back">&larr; Back</button>' +
     '<div class="gate-overlay-card-wrap">' +
       '<div class="gate-card" id="gate-overlay-card">' +
+        '<button type="button" class="gate-overlay-x-close" id="gate-overlay-x-close" aria-label="Close">&times;</button>' +
         '<img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="gate-logo">' +
         '<div id="gate-overlay-step-details">' +
           '<h2>Welcome to Pavnika by Saranya</h2>' +
@@ -1789,6 +1790,10 @@ function wireGateOverlayEvents() {
       document.getElementById('order-loading')
     );
     if (onGatedPage) window.location.href = 'home.html';
+  });
+
+  document.getElementById('gate-overlay-x-close').addEventListener('click', function () {
+    hideGateOverlay();
   });
 
   function showStepCode() {
