@@ -2532,8 +2532,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 /* ---------- Shared gate overlay (embeddable, any page) ---------- */
 .gate-overlay-root {
   position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 500;
-  opacity: 0; visibility: hidden; pointer-events: none;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+  visibility: hidden; pointer-events: none;
+  transition: visibility 0s linear 0.3s;
 }
 /* Fallback brand colour — guarantees generic mode never shows a blank
    page underneath, even if the cycling background images fail for any
@@ -2543,8 +2543,8 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    what does the actual covering in that mode. */
 .gate-overlay-root.mode-generic { background: var(--green-deep); }
 .gate-overlay-root.is-open {
-  opacity: 1; visibility: visible; pointer-events: auto;
-  transition: opacity 0.3s ease, visibility 0s linear 0s;
+  visibility: visible; pointer-events: auto;
+  transition: visibility 0s linear 0s;
 }
 .gate-overlay-dim {
   position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: rgba(43, 13, 26, 0.6);
@@ -2738,6 +2738,16 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   margin-bottom: 18px;
 }
 .gate-card .btn { width: 100%; }
+.gate-overlay-spinner {
+  width: 40px; height: 40px; margin: 0 auto 16px;
+  border: 3px solid rgba(182, 138, 105, 0.25);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: gateSpinnerRotate 0.8s linear infinite;
+}
+@keyframes gateSpinnerRotate {
+  to { transform: rotate(360deg); }
+}
 .gate-error {
   color: #B8142A;
   font-size: 0.82rem;

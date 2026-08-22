@@ -1762,6 +1762,11 @@ function buildGateOverlayDOM() {
           '<p class="gate-error" id="gate-overlay-error-2"></p>' +
           '<button type="button" id="gate-overlay-resend-btn" class="gate-resend">Resend code</button>' +
         '</div>' +
+        '<div id="gate-overlay-step-loading" style="display:none;">' +
+          '<div class="gate-overlay-spinner"></div>' +
+          '<h2>Verifying...</h2>' +
+          '<p>Fetching your latest saved sarees, in case you\u2019ve added anything from another device.</p>' +
+        '</div>' +
       '</div>' +
     '</div>';
   document.body.appendChild(wrap);
@@ -1805,7 +1810,15 @@ function wireGateOverlayEvents() {
   function completeSuccess(visitorToken) {
     gateSetCookie('pavnika_verified', visitorToken || '1', 90);
     gateSetCookie('pavnika_email', encodeURIComponent(gateOverlayEmail), 90);
-    hideGateOverlay();
+    // Switch to the loading step instead of closing right away — the
+    // overlay stays visible, with honest feedback, for as long as the
+    // sync below actually takes. Closing immediately here left a
+    // confusing silent gap: the popup would vanish, then nothing would
+    // visibly happen for a moment before the page suddenly jumped to
+    // Checkout, which read as broken even though it was working.
+    document.getElementById('gate-overlay-step-details').style.display = 'none';
+    document.getElementById('gate-overlay-step-code').style.display = 'none';
+    document.getElementById('gate-overlay-step-loading').style.display = 'block';
     // The very first cart/wishlist sync attempt (during initial page
     // load) had no valid token yet — on a gated page, cart/wishlist
     // still show right away, but with just whatever's in local
@@ -1819,6 +1832,7 @@ function wireGateOverlayEvents() {
     // state instead of the real merged result.
     var syncDone = (typeof initCartWishlistSync === 'function') ? initCartWishlistSync() : Promise.resolve();
     syncDone.then(function () {
+      hideGateOverlay();
       if (typeof gateOverlayOnSuccess === 'function') gateOverlayOnSuccess();
     });
   }
@@ -1934,6 +1948,7 @@ function showGateOverlay(mode, onSuccess, bodyText) {
 
   document.getElementById('gate-overlay-step-details').style.display = 'block';
   document.getElementById('gate-overlay-step-code').style.display = 'none';
+  document.getElementById('gate-overlay-step-loading').style.display = 'none';
   document.getElementById('gate-overlay-email').value = '';
   document.getElementById('gate-overlay-code').value = '';
   document.getElementById('gate-overlay-error-1').textContent = '';
