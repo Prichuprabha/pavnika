@@ -28,6 +28,14 @@ document.addEventListener('DOMContentLoaded', function () {
   // actually stops the flash of a gated page's real content before the
   // overlay covers it, so it needs to be immune to that, not just
   // early — genuinely the first thing that happens.
+  //
+  // Dim mode here — the page the click came from (Home, Collections,
+  // wherever "Proceed to Checkout" was clicked) is safe to show dimmed
+  // behind the overlay, since Collections is public now and there's no
+  // pricing secret left to protect. Landing directly on one of these 3
+  // pages fresh (a bookmark, typed URL) still falls back to generic
+  // mode — that's each page's own internal gating check, unaffected by
+  // this listener.
   document.addEventListener('click', function (e) {
     var link = e.target.closest('a[href]');
     if (!link) return;
@@ -35,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!href || !/^(https?:\/\/[^/]+)?\/?(checkout|payment|order-success)(\.html)?(\?|$)/i.test(href)) return;
     if (gateGetCookie('pavnika_verified')) return;
     e.preventDefault();
-    showGateOverlay('generic', function () { window.location.href = href; });
+    showGateOverlay('dim', function () { window.location.href = href; });
   });
 
   // Checkout, Payment, and Order-success are the only pages that stay
@@ -1736,7 +1744,7 @@ function buildGateOverlayDOM() {
         '<div id="gate-overlay-step-details">' +
           '<h2>Welcome to Pavnika by Saranya</h2>' +
           '<p class="brand-tagline login-tagline">Elegance that Defines You</p>' +
-          '<p>Please verify your email to view our collection.</p>' +
+          '<p id="gate-overlay-body-text">Please verify your email to complete your order.</p>' +
           '<div class="field"><label>Email</label><input type="email" id="gate-overlay-email" autocomplete="email"></div>' +
           '<div class="gate-consent-row">' +
             '<input type="checkbox" id="gate-overlay-consent-checkbox">' +
@@ -1915,7 +1923,7 @@ function wireGateOverlayEvents() {
 // safe already on screen). onSuccess runs once verification completes
 // — the caller decides what happens next (navigate, or reveal
 // already-deferred content in place).
-function showGateOverlay(mode, onSuccess) {
+function showGateOverlay(mode, onSuccess, bodyText) {
   buildGateOverlayDOM();
   gateOverlayOnSuccess = onSuccess;
 
@@ -1927,6 +1935,7 @@ function showGateOverlay(mode, onSuccess) {
   document.getElementById('gate-overlay-error-2').textContent = '';
   document.getElementById('gate-overlay-consent-checkbox').checked = false;
   document.getElementById('gate-overlay-send-btn').disabled = true;
+  document.getElementById('gate-overlay-body-text').textContent = bodyText || 'Please verify your email to complete your order.';
 
   var onGatedPage = !!(
     document.getElementById('checkout-content') ||
