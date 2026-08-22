@@ -1797,10 +1797,17 @@ function wireGateOverlayEvents() {
     // load) had no valid token yet — on a gated page, cart/wishlist
     // still show right away, but with just whatever's in local
     // storage, not the visitor's real saved items. Re-running it now
-    // that a real token exists is what actually pulls that in, instead
-    // of requiring a reload to fix.
-    if (typeof initCartWishlistSync === 'function') initCartWishlistSync();
-    if (typeof gateOverlayOnSuccess === 'function') gateOverlayOnSuccess();
+    // that a real token exists is what actually pulls that in.
+    //
+    // Critically, the success callback (e.g. Checkout building its
+    // display from the cart) has to wait for this to genuinely finish
+    // first — calling it immediately, before the async sync/merge
+    // actually completes, meant it read the cart's stale pre-merge
+    // state instead of the real merged result.
+    var syncDone = (typeof initCartWishlistSync === 'function') ? initCartWishlistSync() : Promise.resolve();
+    syncDone.then(function () {
+      if (typeof gateOverlayOnSuccess === 'function') gateOverlayOnSuccess();
+    });
   }
 
   function sendCode() {
@@ -2669,6 +2676,12 @@ function syncCartFromServer(token) {
       cartSaveItems(newTruth);
       saveLastSynced(CART_LAST_SYNCED_KEY, newTruth);
       renderCartDrawer();
+      // Same reasoning as the cart drawer above — Checkout may have
+      // already rendered from local cache before this sync finished
+      // (e.g. an already-verified visitor landing here directly, with
+      // items added on a different device since). Re-render quietly if
+      // we're on that page; safely does nothing everywhere else.
+      if (typeof initCheckoutPage === 'function') initCheckoutPage();
 
       // Push this device's own genuinely-new additions up, in case
       // they hadn't made it to the server yet.
@@ -2740,10 +2753,9 @@ function initCartWishlistSync() {
   if (!token) {
     cartGetItems(); // just primes the cache from localStorage; guest mode needs no network call
     wishlistGetItems();
-    return;
+    return Promise.resolve();
   }
-  syncCartFromServer(token);
-  syncWishlistFromServer(token);
+  return Promise.all([syncCartFromServer(token), syncWishlistFromServer(token)]);
 }
 
 function cartAddItem(product) {
