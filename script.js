@@ -2674,7 +2674,6 @@ function syncCartFromServer(token) {
       newTruth = newTruth.filter(function (id) { return removedByThisDevice.indexOf(id) === -1; });
 
       cartSaveItems(newTruth);
-      saveLastSynced(CART_LAST_SYNCED_KEY, newTruth);
       renderCartDrawer();
       // Same reasoning as the cart drawer above — Checkout may have
       // already rendered from local cache before this sync finished
@@ -2683,25 +2682,35 @@ function syncCartFromServer(token) {
       // we're on that page; safely does nothing everywhere else.
       if (typeof initCheckoutPage === 'function') initCheckoutPage();
 
-      // Push this device's own genuinely-new additions up, in case
-      // they hadn't made it to the server yet.
-      addedByThisDevice.forEach(function (id) {
-        fetch('/.netlify/functions/add-to-cart', {
+      // Push this device's own genuinely-new additions/removals up —
+      // and only mark them as "synced" in our own baseline once those
+      // pushes actually confirm with the server, not the moment we
+      // merely send them. Marking it synced too early meant a second
+      // sync running shortly after (e.g. Checkout's own page load,
+      // right after navigating here) could see a server that hadn't
+      // received the push yet — and since the baseline already claimed
+      // it was synced, it would trust that stale server view instead
+      // of re-adding the item, silently losing it.
+      var pushes = addedByThisDevice.map(function (id) {
+        return fetch('/.netlify/functions/add-to-cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorToken: token, sareeId: id })
         }).catch(function (e) { console.error('could not sync local cart item to server:', e); });
-      });
-      // Defensive re-push: this device's own removals should already
-      // have reached the server the moment they happened (see
-      // cartRemoveItem), but if that request ever failed silently,
-      // this repeats it rather than letting the item quietly reappear.
-      removedByThisDevice.forEach(function (id) {
-        fetch('/.netlify/functions/remove-from-cart', {
+      }).concat(removedByThisDevice.map(function (id) {
+        // Defensive re-push: this device's own removals should already
+        // have reached the server the moment they happened (see
+        // cartRemoveItem), but if that request ever failed silently,
+        // this repeats it rather than letting the item quietly reappear.
+        return fetch('/.netlify/functions/remove-from-cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorToken: token, sareeId: id })
         }).catch(function (e) { console.error('could not confirm cart removal with server:', e); });
+      }));
+
+      return Promise.all(pushes).then(function () {
+        saveLastSynced(CART_LAST_SYNCED_KEY, newTruth);
       });
     })
     .catch(function (e) { console.error('get-cart failed:', e); });
@@ -2727,22 +2736,24 @@ function syncWishlistFromServer(token) {
       newTruth = newTruth.filter(function (id) { return removedByThisDevice.indexOf(id) === -1; });
 
       wishlistSaveItems(newTruth);
-      saveLastSynced(WISHLIST_LAST_SYNCED_KEY, newTruth);
       renderWishlistDrawer();
 
-      addedByThisDevice.forEach(function (id) {
-        fetch('/.netlify/functions/add-to-wishlist', {
+      var pushes = addedByThisDevice.map(function (id) {
+        return fetch('/.netlify/functions/add-to-wishlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorToken: token, sareeId: id })
         }).catch(function (e) { console.error('could not sync local wishlist item to server:', e); });
-      });
-      removedByThisDevice.forEach(function (id) {
-        fetch('/.netlify/functions/remove-from-wishlist', {
+      }).concat(removedByThisDevice.map(function (id) {
+        return fetch('/.netlify/functions/remove-from-wishlist', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorToken: token, sareeId: id })
         }).catch(function (e) { console.error('could not confirm wishlist removal with server:', e); });
+      }));
+
+      return Promise.all(pushes).then(function () {
+        saveLastSynced(WISHLIST_LAST_SYNCED_KEY, newTruth);
       });
     })
     .catch(function (e) { console.error('get-wishlist failed:', e); });
