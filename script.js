@@ -1866,6 +1866,7 @@ function wireGateOverlayEvents() {
     var syncDone = (typeof initCartWishlistSync === 'function') ? initCartWishlistSync() : Promise.resolve();
     syncDone.then(function () {
       hideGateOverlay();
+      if (typeof refreshAccountMenuDisplay === 'function') refreshAccountMenuDisplay();
       if (typeof gateOverlayOnSuccess === 'function') gateOverlayOnSuccess();
     });
   }
@@ -2041,13 +2042,16 @@ function showGateOverlay(mode, onSuccess, bodyText, dismissible) {
   // Dismissible (the Home popup) is a genuinely different kind of gate
   // from everything else — it's optional, not mandatory, so it gets its
   // own "Maybe Later" affordance instead of Back or X, both of which
-  // are hidden entirely in this case.
+  // are hidden entirely in this case. Only the email step gets it —
+  // once someone's reached the code step, there is no dismiss option
+  // at all. The overlay's dim layer captures all clicks (pointer-events
+  // is on for the whole viewport while open), so nav links underneath
+  // aren't reachable either — completing verification is the only way
+  // forward from the code step.
   backBtn.style.display = dismissible ? 'none' : '';
   document.getElementById('gate-overlay-x-close').style.display = dismissible ? 'none' : '';
   var maybeLater1 = document.getElementById('gate-overlay-maybe-later-btn-1');
-  var maybeLater2 = document.getElementById('gate-overlay-maybe-later-btn-2');
   maybeLater1.style.display = dismissible ? 'block' : 'none';
-  maybeLater2.style.display = dismissible ? 'block' : 'none';
 
   var root = document.getElementById('gate-overlay-root');
   root.classList.toggle('mode-generic', mode === 'generic');
@@ -2467,26 +2471,32 @@ function initFaqAccordion() {
 }
 
 /* ---------- Account menu (top-right dropdown) ---------- */
-function initAccountMenu() {
-  var accountBtn = document.getElementById('nav-account-btn');
-  var dropdown = document.getElementById('account-dropdown');
+function refreshAccountMenuDisplay() {
   var emailEl = document.getElementById('account-email');
   var logoutBtn = document.getElementById('account-logout');
   var unlockBtn = document.getElementById('account-unlock');
-  if (!accountBtn || !dropdown) return;
 
   var email = gateGetCookie('pavnika_email');
   var decodedEmail = email ? decodeURIComponent(email) : '';
   if (emailEl) {
     emailEl.textContent = decodedEmail || 'Guest';
   }
-
   // Logout only makes sense once actually verified; Get Full Access
   // only makes sense while still a guest — each replaces the other
   // depending on which state the visitor is in.
   if (logoutBtn) logoutBtn.style.display = decodedEmail ? '' : 'none';
   if (unlockBtn) unlockBtn.style.display = decodedEmail ? 'none' : '';
+}
 
+function initAccountMenu() {
+  var accountBtn = document.getElementById('nav-account-btn');
+  var dropdown = document.getElementById('account-dropdown');
+  if (!accountBtn || !dropdown) return;
+
+  refreshAccountMenuDisplay();
+
+  var email = gateGetCookie('pavnika_email');
+  var decodedEmail = email ? decodeURIComponent(email) : '';
   if (decodedEmail === 'pavnikabysaranya@gmail.com') {
     var adminLink = document.createElement('a');
     adminLink.href = 'admin.html';
