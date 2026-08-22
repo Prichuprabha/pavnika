@@ -402,6 +402,12 @@ function initTouchRevealTiles() {
             if (t !== tile) t.classList.remove('is-revealed');
           });
           tile.classList.add('is-revealed');
+          // If this tile lives inside a draggable marquee, pause its
+          // auto-scroll too — otherwise the tile (and the "Explore
+          // more" button just revealed on it) keeps sliding away
+          // while someone's trying to tap it.
+          var track = tile.closest('.category-track, .reviews-track');
+          if (track) track.__pauseAutoScrollUntil = Date.now() + 3000;
         }
         // else: already revealed — let the tap navigate normally.
       });
@@ -3866,7 +3872,8 @@ function initDraggableMarquee(container, track, options) {
       momentumVelocity *= FRICTION;
     } else {
       momentumVelocity = 0;
-      if (!reduced && !isHovering && halfWidth > 0) {
+      var paused = Date.now() < (track.__pauseAutoScrollUntil || 0);
+      if (!reduced && !isHovering && !paused && halfWidth > 0) {
         offset += dir * speed;
       }
     }
@@ -3908,7 +3915,18 @@ function initDraggableMarquee(container, track, options) {
     isDragging = false;
     track.style.cursor = 'grab';
 
-    if (recentSamples.length >= 2) {
+    // If the most recent sample is stale (no movement for a while,
+    // even though still held/touched — e.g. dragged fast, then paused
+    // in place before actually releasing), there's no real velocity to
+    // carry forward, regardless of how fast the earlier movement was.
+    // Without this check, releasing from a dead stop could still
+    // launch momentum at whatever speed was recorded before the pause.
+    var STALE_THRESHOLD_MS = 100;
+    var lastSampleAge = recentSamples.length ? performance.now() - recentSamples[recentSamples.length - 1].t : Infinity;
+
+    if (lastSampleAge > STALE_THRESHOLD_MS) {
+      momentumVelocity = 0;
+    } else if (recentSamples.length >= 2) {
       var first = recentSamples[0];
       var last = recentSamples[recentSamples.length - 1];
       var dt = last.t - first.t;
@@ -3918,6 +3936,7 @@ function initDraggableMarquee(container, track, options) {
       }
     }
     recentSamples = [];
+    track.__pauseAutoScrollUntil = Date.now() + 3000; // give a few seconds before auto-scroll resumes, rather than snapping back to motion immediately
   }
 
   container.addEventListener('mousedown', function (e) { dragStart(e.clientX); e.preventDefault(); });
