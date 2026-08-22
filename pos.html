@@ -22,14 +22,14 @@
     <label>Password</label>
     <input type="password" id="pos-login-password" autocomplete="current-password">
     <p class="pos-error" id="pos-login-error"></p>
-    <button type="button" class="btn btn-primary" id="pos-login-btn">Sign In</button>
+    <button type="button" class="btn btn-gold" id="pos-login-btn">Sign In</button>
   </div>
 </div>
 
 <!-- MAIN APP (hidden until logged in) -->
 <div class="app" id="pos-app" style="display:none;">
   <div class="sidebar">
-    <div class="logo"><img src="assets/gate-logo-gold.png"></div>
+    <div class="logo"><img src="assets/pos-badge-icon.png" alt="Pavnika"></div>
     <nav>
       <a class="nav-link active" data-step="1"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>Item</a>
       <a class="nav-link" data-step="2"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>Customer</a>
@@ -65,8 +65,9 @@
           <div class="scroll-zone">
             <label>Scan / Enter Code</label>
             <div class="scan-row">
-              <input type="text" id="pos-item-code" placeholder="Scan or type code, then Enter">
+              <input type="text" id="pos-item-code" placeholder="Scan or type code, then Enter" autocomplete="off">
               <button id="pos-item-lookup-btn">Go</button>
+              <div class="pos-suggest-list" id="pos-suggest-list"></div>
             </div>
             <p class="pos-error" id="pos-item-error"></p>
             <label>Item Name</label>
@@ -83,7 +84,9 @@
         </div>
         <div class="panel saree-preview">
           <h3>Preview</h3>
-          <img id="pos-item-image" src="" style="display:none;">
+          <div class="pos-img-frame">
+            <img id="pos-item-image" src="" style="display:none;">
+          </div>
           <div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>
           <div class="qty-row">
             <button id="pos-qty-minus">&minus;</button>
@@ -123,21 +126,18 @@
                 <input type="text" id="pos-cust-name" placeholder="Enter name">
                 <label>Mobile Number *</label>
                 <div class="phone-row">
-                  <select id="pos-cust-code">
-                    <optgroup label="GCC">
-                      <option value="+971" selected>&#127462;&#127466; +971</option>
-                      <option value="+966">&#127472;&#127462; +966</option>
-                      <option value="+974">&#127478;&#127462; +974</option>
-                      <option value="+965">&#127472;&#127484; +965</option>
-                      <option value="+973">&#127463;&#127469; +973</option>
-                      <option value="+968">&#127476;&#127474; +968</option>
-                    </optgroup>
-                    <optgroup label="Other">
-                      <option value="+91">&#127470;&#127475; +91</option>
-                      <option value="+44">&#127468;&#127463; +44</option>
-                      <option value="+1">&#127482;&#127480; +1</option>
-                    </optgroup>
-                  </select>
+                  <input type="text" id="pos-cust-code" list="pos-cc-list" value="+971" placeholder="Country code">
+                  <datalist id="pos-cc-list">
+                    <option value="+971">UAE</option>
+                    <option value="+966">Saudi Arabia</option>
+                    <option value="+974">Qatar</option>
+                    <option value="+965">Kuwait</option>
+                    <option value="+973">Bahrain</option>
+                    <option value="+968">Oman</option>
+                    <option value="+91">India</option>
+                    <option value="+44">UK</option>
+                    <option value="+1">USA/Canada</option>
+                  </datalist>
                   <input type="text" id="pos-cust-phone" placeholder="5X XXX XXXX">
                 </div>
                 <label>Email</label>

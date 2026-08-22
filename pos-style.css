@@ -7,26 +7,38 @@
 html, body { height: 100%; margin: 0; overflow: hidden; }
 body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-size: 15px; }
 
-/* Login screen */
+/* Login screen — same solid-dark-card technique proven on the main
+   site's gate overlay, not a plain white card. No backdrop-filter
+   anywhere, since that's exactly what caused repeated cross-browser
+   problems there — this uses a plain solid background instead. */
 .pos-login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--green-deep); }
-.pos-login-card { background: #fff; border-radius: 16px; padding: 40px 36px; width: 360px; text-align: center; }
+.pos-login-card {
+  background: rgba(43, 13, 26, 0.92);
+  border: 1px solid rgba(182, 138, 105, 0.35);
+  border-radius: 12px; padding: 40px 36px; width: 360px; text-align: center;
+  box-shadow: 0 20px 50px -15px rgba(0,0,0,0.5);
+}
 .pos-login-logo { width: 56px; height: 56px; margin: 0 auto 10px; display: block; }
-.pos-login-card h1 { font-family: var(--display); color: var(--green-deep); font-size: 1.6rem; margin: 0 0 2px; }
-.pos-login-sub { color: #8a7266; font-size: 0.85rem; margin: 0 0 20px; }
-.pos-login-card label { display: block; text-align: left; font-size: 0.75rem; color: #8a7266; font-weight: 600; margin: 12px 0 5px; }
-.pos-login-card input { width: 100%; padding: 12px 13px; border: 1.5px solid var(--stone); border-radius: 8px; font-family: var(--body); font-size: 0.9rem; }
+.pos-login-card h1 { font-family: var(--display); color: var(--ivory); font-size: 1.6rem; margin: 0 0 2px; }
+.pos-login-sub { color: var(--gold-light); font-size: 0.85rem; margin: 0 0 20px; }
+.pos-login-card label { display: block; text-align: left; font-size: 0.75rem; color: var(--gold-light); font-weight: 600; margin: 12px 0 5px; }
+.pos-login-card input { width: 100%; padding: 12px 13px; background: rgba(255,255,255,0.08); border: 1.5px solid rgba(255,255,255,0.25); border-radius: 8px; font-family: var(--body); font-size: 0.9rem; color: var(--ivory); }
 .pos-login-card .btn { width: 100%; margin-top: 18px; }
-.pos-error { color: #B8142A; font-size: 0.8rem; min-height: 1.1em; margin: 8px 0 0; }
+.pos-error { color: #ff8080; font-size: 0.8rem; min-height: 1.1em; margin: 8px 0 0; }
 .pos-error:empty { display: none; margin: 0; }
+/* Item-step errors sit on a light panel, not the dark login card —
+   need a darker red there to stay readable. */
+.panel .pos-error { color: #B8142A; }
 
 .app { display: flex; height: 100vh; }
 .sidebar { width: 100px; background: var(--green-deep); color: var(--ivory); flex-shrink: 0; display: flex; flex-direction: column; }
 .sidebar .logo { padding: 14px 8px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.sidebar .logo img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+.sidebar .logo img { width: 44px; height: 44px; display: block; margin: 0 auto; }
 .sidebar nav a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 4px; color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.64rem; text-align: center; cursor: pointer; border-left: 3px solid transparent; min-height: 64px; justify-content: center; }
 .sidebar nav a .ic { width: 22px; height: 22px; }
 .sidebar nav a .ic svg { width: 100%; height: 100%; }
 .sidebar nav a.active { background: rgba(255,255,255,0.1); color: var(--ivory); border-left-color: var(--gold); font-weight: 700; }
+.sidebar nav a.locked { opacity: 0.4; cursor: not-allowed; }
 
 .main { flex: 1; display: flex; flex-direction: column; height: 100vh; min-width: 0; }
 .topbar { background: #fff; border-bottom: 1px solid var(--stone); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -36,6 +48,7 @@ body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-si
 
 .steps { display: flex; align-items: center; background: #fff; border-bottom: 1px solid var(--stone); flex-shrink: 0; padding: 16px 30px; }
 .step-item { display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative; cursor: pointer; }
+.step-item.locked { cursor: not-allowed; }
 .step-item .circle { width: 30px; height: 30px; border-radius: 50%; border: 2px solid #ddd; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; background: #fff; color: #b8a89d; z-index: 2; }
 .step-item .lbl { font-size: 0.7rem; font-weight: 700; color: #b8a89d; text-transform: uppercase; letter-spacing: 0.03em; }
 .step-item.active .circle { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
@@ -46,9 +59,9 @@ body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-si
 .step-line.done { background: #4a7c59; }
 
 .content { flex: 1; min-height: 0; padding: 14px; display: grid; gap: 12px; }
-.panel { background: #fff; border: 1px solid var(--stone); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; min-height: 0; }
+.panel { background: #fff; border: 1px solid var(--stone); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; min-height: 0; min-width: 0; }
 .panel h3 { margin: 0 0 10px; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--green-deep); font-weight: 700; flex-shrink: 0; }
-.scroll-zone { overflow-y: auto; flex: 1; min-height: 0; }
+.scroll-zone { overflow-y: auto; flex: 1; min-height: 0; min-width: 0; }
 label { display: block; font-size: 0.72rem; color: #8a7266; margin: 8px 0 4px; font-weight: 600; }
 input, select, textarea { width: 100%; padding: 10px 11px; border: 1.5px solid var(--stone); border-radius: 8px; font-family: var(--body); font-size: 0.88rem; }
 textarea { min-height: 50px; resize: none; }
@@ -59,28 +72,56 @@ textarea { min-height: 50px; resize: none; }
 .btn-gold:disabled { opacity: 0.5; cursor: not-allowed; }
 .num-total { font-family: var(--body); font-weight: 700; color: var(--green-deep); }
 
-.s1-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; height: 100%; }
-.scan-row { display: flex; gap: 8px; }
+/* FIX: the 3-column grid needs min-width:0 on its items (above, on
+   .panel) — without it, a grid item won't shrink below its content's
+   natural width, so a long item name in the cart list could quietly
+   force all 3 columns to grow/resize together. Text inside now
+   truncates properly instead. */
+.s1-grid { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 12px; height: 100%; min-width: 0; }
+.scan-row { display: flex; gap: 8px; position: relative; }
 .scan-row input { flex: 1; font-size: 1rem; font-weight: 600; text-align: center; }
 .scan-row button { background: var(--gold); border: none; color: #fff; border-radius: 8px; padding: 0 18px; cursor: pointer; font-weight: 700; }
 .field-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
-.saree-preview img { width: 100%; border-radius: 8px; max-height: 150px; object-fit: cover; flex-shrink: 0; }
-.pos-noimg { flex-shrink: 0; height: 150px; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--ivory-deep); border-radius: 8px; color: #8a7266; font-size: 0.8rem; padding: 10px; }
+
+/* Live search-as-you-type suggestions, shown under the code field */
+.pos-suggest-list { position: absolute; top: 100%; left: 0; right: 46px; background: #fff; border: 1px solid var(--stone); border-radius: 8px; margin-top: 4px; max-height: 260px; overflow-y: auto; z-index: 20; box-shadow: 0 10px 30px -10px rgba(43,13,26,0.3); display: none; }
+.pos-suggest-list.open { display: block; }
+.pos-suggest-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; cursor: pointer; border-bottom: 1px solid #f0e8e0; }
+.pos-suggest-item:last-child { border-bottom: none; }
+.pos-suggest-item:hover, .pos-suggest-item:active { background: var(--ivory-deep); }
+.pos-suggest-item img { width: 36px; height: 46px; object-fit: cover; border-radius: 5px; flex-shrink: 0; background: var(--ivory-deep); }
+.pos-suggest-item .si-info { flex: 1; min-width: 0; }
+.pos-suggest-item .si-name { font-size: 0.8rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-suggest-item .si-sub { font-size: 0.7rem; color: #8a7266; }
+.pos-suggest-item.si-sold .si-name { color: #B8142A; }
+
+/* Preview — portrait, fills the middle panel's available height,
+   matching real saree photo proportions rather than a small landscape
+   thumbnail. */
+.saree-preview { align-items: center; }
+.saree-preview .pos-img-frame { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+.saree-preview img { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 10px; object-fit: contain; }
+.pos-noimg { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--ivory-deep); border-radius: 10px; color: #8a7266; font-size: 0.8rem; padding: 10px; }
 .qty-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 12px 0; flex-shrink: 0; }
 .qty-row button { width: 44px; height: 44px; border-radius: 10px; border: 1.5px solid var(--stone); background: #fff; cursor: pointer; font-size: 1.3rem; font-weight: 700; color: var(--green-deep); }
 .qty-row .qty-num { font-size: 1.3rem; font-weight: 700; min-width: 32px; text-align: center; }
 
-.cart-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #f0e8e0; font-size: 0.82rem; }
-.cart-item:first-child { border-top: none; }
-.cart-item img { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: var(--ivory-deep); }
-.cart-item .ci-info { flex: 1; min-width: 0; }
-.cart-item .ci-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.cart-item .ci-sub { color: #8a7266; font-size: 0.72rem; }
-.cart-item .del-btn { width: 30px; height: 30px; border-radius: 7px; border: 1px solid var(--stone); background: #fff; cursor: pointer; flex-shrink: 0; }
+/* Cart items — same visual pattern as the customer-facing site's own
+   cart drawer (.cart-drawer-item in style.css): portrait thumbnail,
+   info block with min-width:0 so it truncates instead of forcing
+   growth, X to remove. Copied here rather than sharing the stylesheet,
+   since this is a deliberately separate, standalone app. */
+.pos-cart-item { display: flex; gap: 10px; padding: 10px; margin-bottom: 8px; border: 1px solid var(--stone); border-radius: 10px; align-items: center; }
+.pos-cart-item img { width: 42px; height: 54px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: var(--ivory-deep); }
+.pos-cart-item .ci-info { flex: 1; min-width: 0; }
+.pos-cart-item .ci-name { font-size: 0.84rem; font-weight: 600; color: var(--green-deep); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pos-cart-item .ci-sub { font-size: 0.72rem; color: #8a7266; margin-top: 2px; }
+.pos-cart-item .ci-total { font-size: 0.85rem; font-weight: 700; color: var(--green-deep); white-space: nowrap; flex-shrink: 0; }
+.pos-cart-item .del-btn { width: 28px; height: 28px; border-radius: 7px; border: 1px solid var(--stone); background: #fff; cursor: pointer; flex-shrink: 0; }
 .cart-total { display: flex; justify-content: space-between; padding-top: 10px; margin-top: 8px; border-top: 1px solid var(--stone); font-size: 1.35rem; flex-shrink: 0; }
 .pos-empty-note { color: #8a7266; font-size: 0.82rem; text-align: center; padding: 20px 10px; }
 
-.s2-grid { display: grid; grid-template-columns: 300px 1fr; gap: 12px; height: 100%; }
+.s2-grid { display: grid; grid-template-columns: 300px 1fr; gap: 12px; height: 100%; min-width: 0; }
 .cust-list-item { display: flex; flex-direction: column; padding: 12px 12px; border-radius: 8px; border: 1px solid #f0e8e0; margin-bottom: 6px; font-size: 0.85rem; cursor: pointer; }
 .cust-list-item:active, .cust-list-item.selected { background: var(--ivory-deep); border-color: var(--gold); }
 .cust-list-item .name { font-weight: 700; }
@@ -89,6 +130,9 @@ textarea { min-height: 50px; resize: none; }
 .seg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 4px; }
 .seg-btn { padding: 10px 4px; border: 1.5px solid var(--stone); border-radius: 8px; background: #fff; font-size: 0.76rem; font-weight: 600; cursor: pointer; text-align: center; }
 .seg-btn.active { background: var(--green-deep); color: #fff; border-color: var(--green-deep); }
-.phone-row { display: flex; gap: 8px; }
-.phone-row select { flex: 0 0 110px; font-size: 0.8rem; }
-.phone-row input { flex: 1; }
+
+/* Phone field — country code stacked ABOVE the number (was
+   side-by-side, and shrank awkwardly on resize). Country code is now
+   an editable input with a datalist, not a locked dropdown — GCC
+   countries listed first as suggestions, but any code can be typed. */
+.phone-row { display: flex; flex-direction: column; gap: 8px; }

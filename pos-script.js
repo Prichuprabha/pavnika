@@ -7,7 +7,7 @@ var POS_NAME_KEY = 'pavnika_pos_display_name';
 
 var posState = {
   cart: [],           // [{ id, name, price, qty, image }]
-  selectedCustomer: null, // { id, name, phone, ... } once picked/created
+  selectedCustomer: null, // set once picked from the list, or created via Proceed to Billing
   currentQty: 1,
   currentLookupItem: null
 };
@@ -74,15 +74,31 @@ function attemptLogin() {
 
 function updatePosDatetime() {
   var now = new Date();
-  var opts = { hour: '2-digit', minute: '2-digit', hour12: true };
-  var timeStr = now.toLocaleTimeString('en-US', opts);
+  var timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   var dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   document.getElementById('pos-datetime').textContent = timeStr + ' \u00b7 ' + dateStr;
 }
 
-// ---------- Step navigation ----------
+// ---------- Step navigation + validation ----------
+// A step can't be reached (by clicking the sidebar or the step
+// tracker directly) until the previous one's requirements are met —
+// only completing "Proceed" buttons should normally advance, but
+// direct clicks need the same gate, or someone could skip straight to
+// Payment with an empty cart.
+
+function canAccessStep(n) {
+  if (n <= 1) return true;
+  if (n === 2) return posState.cart.length > 0;
+  if (n >= 3) return posState.cart.length > 0 && !!posState.selectedCustomer;
+  return true;
+}
 
 function showStep(n) {
+  if (!canAccessStep(n)) {
+    if (n === 2) alert('Add at least one item to the cart first.');
+    else alert('Complete the Customer step (name and mobile number) first.');
+    return;
+  }
   document.querySelectorAll('.step-content').forEach(function (el) { el.style.display = 'none'; });
   document.getElementById('step-' + n).style.display = 'grid';
   document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
@@ -100,33 +116,33 @@ function showStep(n) {
     var idx = parseInt(el.getAttribute('data-line'), 10);
     el.classList.toggle('done', idx < n);
   });
+  refreshStepLocks();
 }
 
-// ---------- Item lookup (Step 1) ----------
+function refreshStepLocks() {
+  document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
+    var n = parseInt(el.getAttribute('data-step'), 10);
+    el.classList.toggle('locked', !canAccessStep(n));
+  });
+  document.querySelectorAll('.step-item').forEach(function (el) {
+    var n = parseInt(el.getAttribute('data-s'), 10);
+    el.classList.toggle('locked', !canAccessStep(n));
+  });
+}
+
+// ---------- Item lookup + live search (Step 1) ----------
 
 function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function lookupItem() {
-  var code = document.getElementById('pos-item-code').value.trim().toUpperCase();
-  var errorEl = document.getElementById('pos-item-error');
-  errorEl.textContent = '';
+function itemDisplayName(item) {
+  return (item.series ? item.series + ' \u2014 ' : '') + (item.type || item.material || '');
+}
 
-  if (!code) return;
-
-  var products = window.PRODUCTS || [];
-  var match = products.filter(function (p) { return p.id.toUpperCase() === code; })[0];
-
-  if (!match) {
-    errorEl.textContent = 'No item found with code "' + code + '".';
-    posState.currentLookupItem = null;
-    document.getElementById('pos-add-to-cart-btn').disabled = true;
-    return;
-  }
-
+function populateItemFields(match) {
   posState.currentLookupItem = match;
-  document.getElementById('pos-item-name').value = (match.series ? match.series + ' \u2014 ' : '') + (match.type || match.material || '');
+  document.getElementById('pos-item-name').value = itemDisplayName(match);
   document.getElementById('pos-item-category').value = match.category || '\u2014';
   document.getElementById('pos-item-material').value = match.material || '\u2014';
   document.getElementById('pos-item-colour').value = match.shade || '\u2014';
@@ -149,9 +165,67 @@ function lookupItem() {
   document.getElementById('pos-qty-num').textContent = '1';
   document.getElementById('pos-add-to-cart-btn').disabled = false;
 
-  if (match.sold) {
-    errorEl.textContent = 'Warning: this item is already marked sold. Double-check before adding.';
+  var errorEl = document.getElementById('pos-item-error');
+  errorEl.textContent = match.sold ? 'Warning: this item is already marked sold. Double-check before adding.' : '';
+}
+
+function lookupItem() {
+  var code = document.getElementById('pos-item-code').value.trim().toUpperCase();
+  var errorEl = document.getElementById('pos-item-error');
+  errorEl.textContent = '';
+  hideSuggestions();
+  if (!code) return;
+
+  var products = window.PRODUCTS || [];
+  var match = products.filter(function (p) { return p.id.toUpperCase() === code; })[0];
+
+  if (!match) {
+    errorEl.textContent = 'No item found with code "' + code + '".';
+    posState.currentLookupItem = null;
+    document.getElementById('pos-add-to-cart-btn').disabled = true;
+    return;
   }
+  populateItemFields(match);
+}
+
+function hideSuggestions() {
+  var list = document.getElementById('pos-suggest-list');
+  list.classList.remove('open');
+  list.innerHTML = '';
+}
+
+function showSuggestions(query) {
+  var list = document.getElementById('pos-suggest-list');
+  if (!query) { hideSuggestions(); return; }
+
+  var q = query.toUpperCase();
+  var products = window.PRODUCTS || [];
+  var matches = products.filter(function (p) {
+    return p.id.toUpperCase().indexOf(q) !== -1 ||
+      (p.type && p.type.toUpperCase().indexOf(q) !== -1) ||
+      (p.series && p.series.toUpperCase().indexOf(q) !== -1) ||
+      (p.material && p.material.toUpperCase().indexOf(q) !== -1);
+  }).slice(0, 8);
+
+  if (!matches.length) { hideSuggestions(); return; }
+
+  list.innerHTML = matches.map(function (m) {
+    var imgTag = m.image ? '<img src="' + m.image + '">' : '<div style="width:36px;height:46px;border-radius:5px;background:var(--ivory-deep);flex-shrink:0;"></div>';
+    return '<div class="pos-suggest-item' + (m.sold ? ' si-sold' : '') + '" data-id="' + m.id + '">' + imgTag +
+      '<div class="si-info"><div class="si-name">' + m.id + ' \u2014 ' + itemDisplayName(m) + '</div>' +
+      '<div class="si-sub">AED ' + formatAED(m.price) + (m.sold ? ' \u2014 Sold' : '') + '</div></div></div>';
+  }).join('');
+  list.classList.add('open');
+
+  list.querySelectorAll('[data-id]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var id = el.getAttribute('data-id');
+      var match = products.filter(function (p) { return p.id === id; })[0];
+      document.getElementById('pos-item-code').value = id;
+      hideSuggestions();
+      if (match) populateItemFields(match);
+    });
+  });
 }
 
 function changeQty(delta) {
@@ -167,18 +241,11 @@ function addToCart() {
   if (existing) {
     existing.qty += posState.currentQty;
   } else {
-    posState.cart.push({
-      id: item.id,
-      name: (item.series ? item.series + ' \u2014 ' : '') + (item.type || item.material || ''),
-      price: item.price,
-      qty: posState.currentQty,
-      image: item.image || ''
-    });
+    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: item.price, qty: posState.currentQty, image: item.image || '' });
   }
   renderCart();
+  refreshStepLocks();
 
-  // Reset for the next scan and refocus — a physical barcode scanner
-  // just needs the field focused and empty to keep working continuously.
   document.getElementById('pos-item-code').value = '';
   document.getElementById('pos-item-name').value = '';
   document.getElementById('pos-item-category').value = '';
@@ -200,6 +267,7 @@ function addToCart() {
 function removeFromCart(id) {
   posState.cart = posState.cart.filter(function (c) { return c.id !== id; });
   renderCart();
+  refreshStepLocks();
 }
 
 function cartTotal() {
@@ -212,11 +280,11 @@ function renderCart() {
     listEl.innerHTML = '<p class="pos-empty-note">No items added yet.</p>';
   } else {
     listEl.innerHTML = posState.cart.map(function (c) {
-      var imgTag = c.image ? '<img src="' + c.image + '">' : '<div class="cart-item-noimg" style="width:40px;height:40px;border-radius:6px;background:var(--ivory-deep);"></div>';
-      return '<div class="cart-item">' + imgTag +
+      var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
+      return '<div class="pos-cart-item">' + imgTag +
         '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
         '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div></div>' +
-        '<div class="num-total">' + formatAED(c.price * c.qty) + '</div>' +
+        '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div>' +
         '<button class="del-btn" data-remove="' + c.id + '">&times;</button></div>';
     }).join('');
   }
@@ -276,6 +344,7 @@ function selectCustomer(customer) {
   document.querySelectorAll('.cust-list-item').forEach(function (el) {
     el.classList.toggle('selected', el.getAttribute('data-cust-id') === customer.id);
   });
+  refreshStepLocks();
 }
 
 function clearCustomerForm() {
@@ -289,6 +358,7 @@ function clearCustomerForm() {
     btn.classList.toggle('active', i === 0);
   });
   document.querySelectorAll('.cust-list-item').forEach(function (el) { el.classList.remove('selected'); });
+  refreshStepLocks();
 }
 
 function proceedToBilling() {
@@ -302,8 +372,6 @@ function proceedToBilling() {
     return;
   }
 
-  // Already have a selected existing customer with the same details —
-  // no need to create a new record.
   if (posState.selectedCustomer && posState.selectedCustomer.name === name && posState.selectedCustomer.phone === phone) {
     showStep(3);
     return;
@@ -321,7 +389,7 @@ function proceedToBilling() {
       posToken: getPosToken(),
       name: name,
       phone: phone,
-      phoneCountryCode: document.getElementById('pos-cust-code').value,
+      phoneCountryCode: document.getElementById('pos-cust-code').value.trim() || '+971',
       email: document.getElementById('pos-cust-email').value.trim() || null,
       emirate: emirateBtn ? emirateBtn.getAttribute('data-v') : null,
       address: document.getElementById('pos-cust-address').value.trim() || null
@@ -336,6 +404,7 @@ function proceedToBilling() {
         return;
       }
       posState.selectedCustomer = result.data.customer;
+      refreshStepLocks();
       showStep(3);
     })
     .catch(function (e) {
@@ -372,18 +441,23 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Item entry
-  document.getElementById('pos-item-code').addEventListener('keydown', function (e) {
+  var codeInput = document.getElementById('pos-item-code');
+  codeInput.addEventListener('input', function (e) { showSuggestions(e.target.value.trim()); });
+  codeInput.addEventListener('keydown', function (e) {
     if (e.key === 'Enter') { e.preventDefault(); lookupItem(); }
+    if (e.key === 'Escape') hideSuggestions();
+  });
+  document.addEventListener('click', function (e) {
+    if (!codeInput.contains(e.target) && !document.getElementById('pos-suggest-list').contains(e.target)) {
+      hideSuggestions();
+    }
   });
   document.getElementById('pos-item-lookup-btn').addEventListener('click', lookupItem);
   document.getElementById('pos-qty-minus').addEventListener('click', function () { changeQty(-1); });
   document.getElementById('pos-qty-plus').addEventListener('click', function () { changeQty(1); });
   document.getElementById('pos-add-to-cart-btn').addEventListener('click', addToCart);
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
-    if (!posState.cart.length) {
-      alert('Add at least one item to the cart before proceeding.');
-      return;
-    }
+    if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
     showStep(2);
   });
 
@@ -401,5 +475,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-proceed-billing-btn').addEventListener('click', proceedToBilling);
 
   renderCart();
+  refreshStepLocks();
   showStep(1);
 });
