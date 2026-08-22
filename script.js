@@ -38,22 +38,22 @@ document.addEventListener('DOMContentLoaded', function () {
     showGateOverlay('generic', function () { window.location.href = href; });
   });
 
-  // The 4 pages that stay gated (Collections, Checkout, Payment,
-  // Order-success) are the only ones where cart/wishlist make sense —
-  // adding/viewing cart or wishlist items only ever happens through
-  // these. Every other page is now public, and shouldn't show cart or
-  // wishlist at all, not even as dead/non-functional icons.
+  // Checkout, Payment, and Order-success are the only pages that stay
+  // gated now — this still matters for the overlay/back-button logic
+  // below, even though it no longer controls cart/wishlist visibility.
   var isGatedPage = !!(
     document.getElementById('checkout-content') ||
     document.getElementById('payment-content') ||
     document.getElementById('order-loading')
   );
-  // Cart/wishlist show if either this is one of the 4 gated pages
-  // (where they're always relevant), or the visitor is already
-  // verified — a verified shopper should see their cart from any page,
-  // not just Collections. Only an unverified visitor on a public page
-  // sees them hidden, since there's genuinely nothing to show yet.
-  var showCartWishlist = isGatedPage || !!gateGetCookie('pavnika_verified');
+  // Cart/wishlist now show for everyone, everywhere — guests add items
+  // locally same as always, and the moment they eventually verify
+  // (checkout, the home popup, or "Get Full Access"), the existing
+  // 3-way merge logic combines their local items with anything already
+  // saved server-side for that email — this already worked correctly
+  // even for a first-ever verification, since an empty "last synced"
+  // baseline just means everything local gets treated as new.
+  var showCartWishlist = true;
   window.__isGatedPage = isGatedPage; // used later by initMobileBottomBar too
   window.__showCartWishlist = showCartWishlist;
 

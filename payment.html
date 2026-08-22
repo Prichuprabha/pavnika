@@ -15,12 +15,10 @@
   var isGated = gatedPages.indexOf(currentPage) !== -1;
   var verified = !!getCookie('pavnika_verified');
 
-  // Reveal cart/wishlist instantly if it's safe to — avoids the icons
-  // flashing in then disappearing, or the header shifting, while
-  // script.js is still loading and catching up.
-  if (isGated || verified) {
-    document.documentElement.classList.add('show-cart-wishlist');
-  }
+  // Cart/wishlist now show unconditionally, for every visitor — this
+  // just avoids the icons flashing in late, or the header shifting,
+  // while script.js is still loading and catching up.
+  document.documentElement.classList.add('show-cart-wishlist');
   // On a gated page while unverified, hide the whole body until the
   // real overlay (built once script.js loads) is ready to take over —
   // this is what actually prevents the "page flashes, then gets
