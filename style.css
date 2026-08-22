@@ -639,6 +639,17 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
   cursor: pointer;
   padding: 0;
 }
+.account-unlock {
+  background: none;
+  border: none;
+  color: #C89A2E;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  padding: 0;
+}
 
 /* Search panel — frosted glass overlay below the header */
 .search-panel {

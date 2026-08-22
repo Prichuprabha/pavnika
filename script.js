@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showGateOverlay(
           'dim',
           function () {},
-          'Verify your email to unlock our full collection, save favourites to your wishlist, and be the first to know about new arrivals.',
+          'Verify your email to sync your cart and wishlist across all your devices, and check out when you\u2019re ready.',
           true
         );
       }
@@ -2472,6 +2472,7 @@ function initAccountMenu() {
   var dropdown = document.getElementById('account-dropdown');
   var emailEl = document.getElementById('account-email');
   var logoutBtn = document.getElementById('account-logout');
+  var unlockBtn = document.getElementById('account-unlock');
   if (!accountBtn || !dropdown) return;
 
   var email = gateGetCookie('pavnika_email');
@@ -2479,6 +2480,12 @@ function initAccountMenu() {
   if (emailEl) {
     emailEl.textContent = decodedEmail || 'Guest';
   }
+
+  // Logout only makes sense once actually verified; Get Full Access
+  // only makes sense while still a guest — each replaces the other
+  // depending on which state the visitor is in.
+  if (logoutBtn) logoutBtn.style.display = decodedEmail ? '' : 'none';
+  if (unlockBtn) unlockBtn.style.display = decodedEmail ? 'none' : '';
 
   if (decodedEmail === 'pavnikabysaranya@gmail.com') {
     var adminLink = document.createElement('a');
@@ -2504,6 +2511,13 @@ function initAccountMenu() {
       gateSetCookie('pavnika_verified', '', -1);
       gateSetCookie('pavnika_email', '', -1);
       window.location.href = 'index.html';
+    });
+  }
+
+  if (unlockBtn) {
+    unlockBtn.addEventListener('click', function () {
+      dropdown.classList.remove('is-open');
+      showGateOverlay('dim', function () {}, 'Verify your email to sync your cart and wishlist across all your devices, and check out when you\u2019re ready.');
     });
   }
 
