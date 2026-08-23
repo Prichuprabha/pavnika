@@ -13,6 +13,9 @@
 
 <!-- LOGIN SCREEN -->
 <div id="pos-login-screen" class="pos-login-screen">
+  <div class="login-bg-layer login-bg-layer-1"></div>
+  <div class="login-bg-layer login-bg-layer-2"></div>
+  <div class="login-bg-layer login-bg-layer-3"></div>
   <div class="pos-login-card">
     <img src="assets/gate-logo-gold.png" alt="Pavnika by Saranya" class="pos-login-logo">
     <h1>Pavnika POS</h1>
@@ -43,6 +46,9 @@
       <div class="pos-brand">Pavnika POS</div>
       <div style="display:flex; align-items:center; gap:14px;">
         <div class="datetime" id="pos-datetime"></div>
+        <button class="logout" id="pos-reset-btn" title="Clear current transaction and start over">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
         <button class="logout" id="pos-logout-btn">Logout</button>
       </div>
     </div>
@@ -80,18 +86,21 @@
               <div><label>Price (AED)</label><input type="text" id="pos-item-price" readonly></div>
               <div><label>Stock Status</label><input type="text" id="pos-item-stock" readonly></div>
             </div>
+            <button type="button" class="btn btn-outline" id="pos-clear-item-btn" style="margin-top:14px;">Clear All Fields</button>
           </div>
         </div>
         <div class="panel saree-preview">
           <h3>Preview</h3>
-          <div class="pos-img-frame">
-            <img id="pos-item-image" src="" style="display:none;">
+          <div class="pos-preview-box" id="pos-preview-box">
+            <div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>
           </div>
-          <div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>
           <div class="qty-row">
-            <button id="pos-qty-minus">&minus;</button>
-            <span class="qty-num" id="pos-qty-num">1</span>
-            <button id="pos-qty-plus">+</button>
+            <span class="qty-label">Quantity</span>
+            <div class="qty-controls">
+              <button id="pos-qty-minus">&minus;</button>
+              <span class="qty-num" id="pos-qty-num">1</span>
+              <button id="pos-qty-plus">+</button>
+            </div>
           </div>
           <button class="btn btn-gold" id="pos-add-to-cart-btn" disabled>Add to Cart</button>
         </div>
@@ -163,6 +172,7 @@
               </div>
             </div>
             <p class="pos-error" id="pos-cust-error"></p>
+            <button type="button" class="btn btn-outline" id="pos-clear-cust-btn">Clear Fields</button>
           </div>
           <button class="btn btn-primary" id="pos-proceed-billing-btn">Proceed to Billing &rarr;</button>
         </div>
@@ -182,8 +192,15 @@
           <div class="panel bill-details-panel">
             <h3>Bill Details</h3>
             <div class="field-grid-2">
-              <div><label>Bill Number</label><input type="text" id="pos-bill-number" readonly value="Generating..."></div>
-              <div><label>Sales Person</label><input type="text" id="pos-bill-salesperson" readonly></div>
+              <div><label>Bill Number</label><div class="pos-fixed-value" id="pos-bill-number">Generating...</div></div>
+              <div>
+                <label>Sales Person</label>
+                <div style="display:flex; align-items:center; gap:8px; position:relative;">
+                  <div class="pos-fixed-value" id="pos-bill-salesperson"></div>
+                  <button type="button" id="pos-change-salesperson-btn" class="pos-change-link">Change</button>
+                  <div class="pos-suggest-list" id="pos-salesperson-dropdown" style="right:0; top:calc(100% + 4px);"></div>
+                </div>
+              </div>
             </div>
             <label>Notes</label>
             <textarea id="pos-bill-notes" placeholder="Optional"></textarea>
@@ -211,6 +228,7 @@
                 <button type="button" class="btn" id="pos-loyalty-redeem-btn" style="background:var(--gold); color:#fff; padding:8px 14px;">Redeem</button>
               </div>
             </div>
+            <div class="bill-row" id="pos-discount-summary-row" style="display:none;"><span id="pos-discount-summary-label">Discount</span><span id="pos-discount-summary-value">&minus; AED 0.00</span></div>
             <div class="cart-total"><span>Grand Total</span><span class="num-total" id="pos-grand-total">AED 0.00</span></div>
             <button class="btn btn-primary" id="pos-proceed-payment-btn">Proceed to Payment &rarr;</button>
           </div>
@@ -218,8 +236,89 @@
       </div>
     </div>
     <div class="content step-content" id="step-4" style="display:none;">
-      <div class="panel"><h3>Payment</h3><p style="padding:20px; color:#8a7266;">Coming in the next stage.</p></div>
+      <div class="s4-grid">
+        <div class="panel">
+          <h3>Payment Summary</h3>
+          <div class="bill-row"><span>Subtotal</span><span id="pos-pay-subtotal">AED 0.00</span></div>
+          <div class="bill-row" id="pos-pay-discount-row" style="display:none;"><span id="pos-pay-discount-label">Discount</span><span id="pos-pay-discount-value">&minus; AED 0.00</span></div>
+          <div class="bill-row"><span>VAT</span><span class="vat-note">Not applicable</span></div>
+          <div class="cart-total"><span>Total</span><span class="num-total" id="pos-pay-total">AED 0.00</span></div>
+        </div>
+        <div class="panel">
+          <h3>Payment Method</h3>
+          <div class="scroll-zone">
+            <div class="pay-methods">
+              <div class="pay-method active" data-method="Cash">
+                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                Cash
+              </div>
+              <div class="pay-method disabled" data-method="Card">
+                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                Card <span class="placeholder-tag">Later</span>
+              </div>
+              <div class="pay-method" data-method="Bank Transfer">
+                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="15" y1="21" x2="15" y2="13"/></svg>
+                Bank Transfer
+              </div>
+              <div class="pay-method" data-method="Other">
+                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                Other
+              </div>
+            </div>
+            <label>Amount Received</label>
+            <div class="keypad-field">
+              <input type="text" id="pos-amount-received" value="0" readonly>
+              <button type="button" class="kp-btn" data-akp="back">&#9003;</button>
+            </div>
+            <div class="keypad">
+              <button type="button" data-akp="1">1</button><button type="button" data-akp="2">2</button><button type="button" data-akp="3">3</button>
+              <button type="button" data-akp="4">4</button><button type="button" data-akp="5">5</button><button type="button" data-akp="6">6</button>
+              <button type="button" data-akp="7">7</button><button type="button" data-akp="8">8</button><button type="button" data-akp="9">9</button>
+              <button type="button" class="clear" data-akp="clear">C</button><button type="button" data-akp="0">0</button><button type="button" data-akp=".">.</button>
+            </div>
+            <div class="bill-row"><span>Change</span><span id="pos-pay-change">AED 0.00</span></div>
+            <label>Reference / Transaction ID</label>
+            <input type="text" id="pos-pay-reference" placeholder="Optional">
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Sale Actions</h3>
+          <button type="button" class="action-btn primary-action" id="pos-print-btn">Print Bill</button>
+          <button type="button" class="action-btn" id="pos-send-btn" disabled>Send Bill (Email)</button>
+          <p class="pos-error" id="pos-payment-error"></p>
+          <button type="button" class="action-btn complete" id="pos-complete-sale-btn" style="margin-top:auto;">Complete Sale</button>
+        </div>
+      </div>
     </div>
+
+    <!-- Confirm-without-printing modal -->
+    <div class="modal-backdrop" id="pos-confirm-modal">
+      <div class="modal-box">
+        <h3 style="margin:0; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Proceed without printing?</h3>
+        <p>You haven't printed or emailed this bill yet. Complete the sale anyway?</p>
+        <div class="modal-actions">
+          <button type="button" class="cancel" id="pos-modal-cancel">Go Back</button>
+          <button type="button" class="proceed" id="pos-modal-proceed">Yes, Complete Sale</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Password confirmation for changing sales person on this transaction -->
+    <div class="modal-backdrop" id="pos-salesperson-pw-modal">
+      <div class="modal-box">
+        <h3 style="margin:0; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Confirm Identity</h3>
+        <p id="pos-salesperson-pw-prompt">Enter password to confirm.</p>
+        <input type="password" id="pos-salesperson-pw-input" placeholder="Password" style="margin-bottom:8px;">
+        <p class="pos-error" id="pos-salesperson-pw-error"></p>
+        <div class="modal-actions">
+          <button type="button" class="cancel" id="pos-salesperson-pw-cancel">Cancel</button>
+          <button type="button" class="proceed" id="pos-salesperson-pw-confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Print-only receipt, hidden on screen, shown only via @media print -->
+    <div id="pos-print-receipt" class="pos-print-receipt"></div>
 
   </div>
 </div>

@@ -11,8 +11,34 @@ body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-si
    site's gate overlay, not a plain white card. No backdrop-filter
    anywhere, since that's exactly what caused repeated cross-browser
    problems there — this uses a plain solid background instead. */
-.pos-login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--green-deep); }
+.pos-login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--green-deep); position: relative; overflow: hidden; }
+
+/* Same 3-image cycling background as the main site's login page —
+   identical CSS, just ported into this separate stylesheet. */
+.login-bg-layer {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  animation-duration: 15s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+.login-bg-layer-1 { background-image: url("assets/login-bg-1.jpg"); animation-name: loginBgLayer1; }
+.login-bg-layer-2 { background-image: url("assets/login-bg-2.jpg"); animation-name: loginBgLayer2; }
+.login-bg-layer-3 { background-image: url("assets/login-bg-3.jpg"); animation-name: loginBgLayer3; }
+@keyframes loginBgLayer1 { 0% { opacity: 1; } 30% { opacity: 1; } 33.33% { opacity: 0; } 96.66% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes loginBgLayer2 { 0% { opacity: 0; } 30% { opacity: 0; } 33.33% { opacity: 1; } 63.33% { opacity: 1; } 66.66% { opacity: 0; } 100% { opacity: 0; } }
+@keyframes loginBgLayer3 { 0% { opacity: 0; } 63.33% { opacity: 0; } 66.66% { opacity: 1; } 96.66% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .login-bg-layer { animation: none; opacity: 0; }
+  .login-bg-layer-1 { opacity: 1; }
+}
+/* Dim overlay so the login card stays readable over any of the 3 photos */
+.pos-login-screen::before { content: ''; position: absolute; inset: 0; background: rgba(43,13,26,0.55); z-index: 1; }
 .pos-login-card {
+  position: relative; z-index: 2;
   background: rgba(43, 13, 26, 0.92);
   border: 1px solid rgba(182, 138, 105, 0.35);
   border-radius: 12px; padding: 40px 36px; width: 360px; text-align: center;
@@ -109,10 +135,12 @@ textarea { min-height: 50px; resize: none; }
    matching real saree photo proportions rather than a small landscape
    thumbnail. */
 .saree-preview { align-items: center; }
-.saree-preview .pos-img-frame { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
-.saree-preview img { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 10px; object-fit: contain; }
-.pos-noimg { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--ivory-deep); border-radius: 10px; color: #8a7266; font-size: 0.8rem; padding: 10px; }
-.qty-row { display: flex; align-items: center; justify-content: center; gap: 14px; margin: 12px 0; flex-shrink: 0; }
+.pos-preview-box { flex: 1; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; }
+.pos-preview-box img { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 10px; object-fit: contain; }
+.pos-noimg { width: 100%; height: 100%; min-height: 0; display: flex; align-items: center; justify-content: center; text-align: center; background: var(--ivory-deep); border-radius: 10px; color: #8a7266; font-size: 0.8rem; padding: 10px; box-sizing: border-box; }
+.qty-row { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 12px 0; flex-shrink: 0; }
+.qty-label { font-size: 0.85rem; color: var(--ink); font-weight: 600; }
+.qty-controls { display: flex; align-items: center; gap: 14px; }
 .qty-row button { width: 44px; height: 44px; border-radius: 10px; border: 1.5px solid var(--stone); background: #fff; cursor: pointer; font-size: 1.3rem; font-weight: 700; color: var(--green-deep); }
 .qty-row .qty-num { font-size: 1.3rem; font-weight: 700; min-width: 32px; text-align: center; }
 
@@ -173,3 +201,62 @@ textarea { min-height: 50px; resize: none; }
    to Cart tap, not by tapping Add to Cart repeatedly. Visible but not
    blocking — staff can still proceed if they genuinely do want it. */
 .pos-cart-item.pos-dupe-warning { background: #fdeaea; border-color: #e8b4b4; }
+
+.btn-outline { background: transparent; border: 1.5px solid var(--green-deep); color: var(--green-deep); width: 100%; flex-shrink: 0; margin-top: 10px; }
+.btn-outline:hover { background: var(--ivory-deep); }
+
+/* ---------- Payment step ---------- */
+.s4-grid { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 12px; height: 100%; min-width: 0; min-height: 0; }
+.pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-shrink: 0; margin-bottom: 10px; }
+.pay-method { border: 1.5px solid var(--stone); border-radius: 10px; padding: 14px 8px; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 6px; color: var(--ink); }
+.pay-method .pm-icon { width: 26px; height: 26px; }
+.pay-method.active { border-color: var(--green-deep); background: var(--ivory-deep); }
+.pay-method.disabled { opacity: 0.5; cursor: not-allowed; }
+.action-btn { display: block; width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 10px; border: 1.5px solid var(--stone); background: #fff; font-size: 0.84rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+.action-btn.primary-action { background: var(--green-deep); color: #fff; border: none; }
+.action-btn.complete { background: #4a7c59; color: #fff; border: none; font-size: 0.92rem; }
+.action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+#step-4 .panel:last-child { display: flex; flex-direction: column; }
+
+/* Confirm-without-printing modal */
+.modal-backdrop { position: fixed; inset: 0; background: rgba(43,13,26,0.55); display: none; align-items: center; justify-content: center; z-index: 200; }
+.modal-backdrop.open { display: flex; }
+.modal-box { background: #fff; border-radius: 14px; padding: 26px; width: 340px; text-align: center; }
+.modal-box p { font-size: 0.9rem; margin: 12px 0 20px; color: var(--ink); }
+.modal-actions { display: flex; gap: 10px; }
+.modal-actions button { flex: 1; padding: 12px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; cursor: pointer; }
+.modal-actions .cancel { background: #fff; border: 1.5px solid var(--stone); }
+.modal-actions .proceed { background: #4a7c59; color: #fff; border: none; }
+
+/* Print-only receipt — hidden on screen entirely, shown only when
+   actually printing, styled as a clean simple receipt rather than
+   printing the whole app UI as-is. */
+.pos-print-receipt { display: none; }
+@media print {
+  body > *:not(.pos-print-receipt) { display: none !important; }
+  .pos-print-receipt { display: block !important; font-family: Arial, sans-serif; color: #000; padding: 20px; max-width: 380px; margin: 0 auto; }
+  .pos-print-receipt h2 { text-align: center; margin: 0 0 4px; }
+  .pos-print-receipt .pr-sub { text-align: center; font-size: 12px; margin-bottom: 16px; }
+  .pos-print-receipt table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .pos-print-receipt td { padding: 4px 0; }
+  .pos-print-receipt .pr-total-row td { border-top: 1px solid #000; font-weight: bold; padding-top: 8px; }
+  .pos-print-receipt .pr-footer { text-align: center; font-size: 11px; margin-top: 20px; }
+}
+
+.pos-fixed-value { font-weight: 700; font-size: 0.95rem; color: var(--green-deep); padding: 10px 0; }
+.pos-change-link { background: none; border: none; color: #946B4A; text-decoration: underline; font-size: 0.75rem; cursor: pointer; padding: 0; flex-shrink: 0; }
+
+/* ---------- Touch feedback: a brief glow on tap, for every
+   interactive control — buttons, keypad, quantity steppers, payment
+   methods, etc. Makes it clear a tap registered, which matters more
+   on a touch screen than with a mouse cursor. ---------- */
+button, .pay-method, .seg-btn, .cust-list-item, .pos-suggest-item, .discount-toggle button {
+  transition: box-shadow 0.15s ease, transform 0.1s ease;
+}
+button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos-suggest-item:active, .discount-toggle button:active {
+  box-shadow: 0 0 0 4px rgba(182, 138, 105, 0.35);
+  transform: scale(0.97);
+}
+.btn-gold:active, .btn-primary:active, .action-btn.complete:active {
+  box-shadow: 0 0 0 5px rgba(200, 154, 46, 0.4);
+}

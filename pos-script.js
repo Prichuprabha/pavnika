@@ -4,6 +4,10 @@
 
 var POS_TOKEN_KEY = 'pavnika_pos_token';
 var POS_NAME_KEY = 'pavnika_pos_display_name';
+var POS_USERNAME_KEY = 'pavnika_pos_username';
+var POS_LOGIN_TIME_KEY = 'pavnika_pos_login_time';
+var POS_SAVED_STATE_KEY = 'pavnika_pos_saved_state';
+var SESSION_DURATION_MS = 8 * 60 * 60 * 1000; // 8 hours
 
 var posState = {
   cart: [],           // [{ id, name, price, qty, image }]
@@ -13,13 +17,60 @@ var posState = {
   billNumber: null,     // fetched once per transaction, not re-fetched on revisiting the step
   discountType: 'percent', // 'percent' or 'amount'
   discountValue: 0,
-  loyaltyRedeemed: 0     // points being redeemed this sale
+  loyaltyRedeemed: 0,    // points being redeemed this sale
+  paymentMethod: 'Cash',
+  amountReceived: 0,
+  printedOrSent: false,  // tracks whether Print or Send was used before Complete Sale
+  transactionSalesPerson: null // set only if changed mid-transaction; falls back to the logged-in user's name
 };
+var currentStepNum = 1; // tracked separately so it can be saved/restored alongside posState
 
 // Placeholder conversion rate — the real loyalty program rules are
 // still to be decided; this just makes the redeem button show
 // something sensible until that's defined.
 var LOYALTY_POINT_VALUE_AED = 0.10;
+
+// ---------- Transaction state persistence ----------
+// Saved continuously (not just on logout) so an in-progress
+// transaction survives both an accidental page refresh and an 8-hour
+// session timeout. Deliberately not cleared on logout or session
+// expiry — restored on the next successful login regardless of which
+// staff member logs back in, matching the confirmed behavior: a shift
+// change mid-sale should be able to pick up exactly where it left off.
+
+function saveTransactionState() {
+  try {
+    var toSave = {
+      cart: posState.cart,
+      selectedCustomer: posState.selectedCustomer,
+      discountType: posState.discountType,
+      discountValue: posState.discountValue,
+      loyaltyRedeemed: posState.loyaltyRedeemed,
+      paymentMethod: posState.paymentMethod,
+      transactionSalesPerson: posState.transactionSalesPerson,
+      currentStepNum: currentStepNum
+    };
+    localStorage.setItem(POS_SAVED_STATE_KEY, JSON.stringify(toSave));
+  } catch (e) { /* ignore storage errors */ }
+}
+
+function restoreTransactionState() {
+  try {
+    var raw = localStorage.getItem(POS_SAVED_STATE_KEY);
+    if (!raw) return;
+    var saved = JSON.parse(raw);
+    posState.cart = saved.cart || [];
+    posState.selectedCustomer = saved.selectedCustomer || null;
+    posState.discountType = saved.discountType || 'percent';
+    posState.discountValue = saved.discountValue || 0;
+    posState.loyaltyRedeemed = saved.loyaltyRedeemed || 0;
+    posState.paymentMethod = saved.paymentMethod || 'Cash';
+    posState.transactionSalesPerson = saved.transactionSalesPerson || null;
+    renderCart();
+    refreshStepLocks();
+    showStep(saved.currentStepNum || 1);
+  } catch (e) { /* ignore malformed saved state */ }
+}
 
 // ---------- Login ----------
 
@@ -27,9 +78,19 @@ function getPosToken() {
   return localStorage.getItem(POS_TOKEN_KEY);
 }
 
+function isSessionExpired() {
+  var loginTime = localStorage.getItem(POS_LOGIN_TIME_KEY);
+  if (!loginTime) return true;
+  return (Date.now() - parseInt(loginTime, 10)) > SESSION_DURATION_MS;
+}
+
 function posLogout() {
   localStorage.removeItem(POS_TOKEN_KEY);
   localStorage.removeItem(POS_NAME_KEY);
+  localStorage.removeItem(POS_LOGIN_TIME_KEY);
+  // Deliberately NOT removing POS_USERNAME_KEY or POS_SAVED_STATE_KEY —
+  // both are needed to pre-fill the username and restore the
+  // in-progress transaction on the next login, by design.
   window.location.reload();
 }
 
@@ -69,7 +130,10 @@ function attemptLogin() {
       }
       localStorage.setItem(POS_TOKEN_KEY, result.data.token);
       localStorage.setItem(POS_NAME_KEY, result.data.displayName);
+      localStorage.setItem(POS_USERNAME_KEY, result.data.username);
+      localStorage.setItem(POS_LOGIN_TIME_KEY, String(Date.now()));
       showPosApp(result.data.displayName);
+      restoreTransactionState();
     })
     .catch(function (e) {
       btn.disabled = false;
@@ -108,6 +172,7 @@ function showStep(n) {
     else alert('Complete the Customer step (name and mobile number) first.');
     return;
   }
+  currentStepNum = n;
   document.querySelectorAll('.step-content').forEach(function (el) { el.style.display = 'none'; });
   document.getElementById('step-' + n).style.display = 'grid';
   document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
@@ -126,6 +191,7 @@ function showStep(n) {
     el.classList.toggle('done', idx < n);
   });
   if (n === 3) renderBillingStep();
+  if (n === 4) renderPaymentStep();
   refreshStepLocks();
 }
 
@@ -158,17 +224,13 @@ function populateItemFields(match) {
   document.getElementById('pos-item-colour').value = match.shade || '\u2014';
   document.getElementById('pos-item-design').value = match.design || match.pattern || '\u2014';
   document.getElementById('pos-item-price').value = formatAED(match.price);
-  document.getElementById('pos-item-stock').value = match.sold ? 'Already Sold' : 'Available';
+  document.getElementById('pos-item-stock').value = match.sold ? 'Out of Stock' : 'Available';
 
-  var imgEl = document.getElementById('pos-item-image');
-  var noImgEl = document.getElementById('pos-item-noimg');
+  var boxEl = document.getElementById('pos-preview-box');
   if (match.image) {
-    imgEl.src = match.image;
-    imgEl.style.display = 'block';
-    noImgEl.style.display = 'none';
+    boxEl.innerHTML = '<img src="' + match.image + '" alt="">';
   } else {
-    imgEl.style.display = 'none';
-    noImgEl.style.display = 'flex';
+    boxEl.innerHTML = '<div id="pos-item-noimg" class="pos-noimg">No image available</div>';
   }
 
   posState.currentQty = 1;
@@ -177,6 +239,24 @@ function populateItemFields(match) {
 
   var errorEl = document.getElementById('pos-item-error');
   errorEl.textContent = match.sold ? 'Warning: this item is already marked sold. Double-check before adding.' : '';
+}
+
+function clearItemFields() {
+  document.getElementById('pos-item-code').value = '';
+  document.getElementById('pos-item-name').value = '';
+  document.getElementById('pos-item-category').value = '';
+  document.getElementById('pos-item-material').value = '';
+  document.getElementById('pos-item-colour').value = '';
+  document.getElementById('pos-item-design').value = '';
+  document.getElementById('pos-item-price').value = '';
+  document.getElementById('pos-item-stock').value = '';
+  document.getElementById('pos-item-error').textContent = '';
+  document.getElementById('pos-preview-box').innerHTML = '<div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>';
+  document.getElementById('pos-add-to-cart-btn').disabled = true;
+  posState.currentLookupItem = null;
+  posState.currentQty = 1;
+  document.getElementById('pos-qty-num').textContent = '1';
+  hideSuggestions();
 }
 
 function lookupItem() {
@@ -193,6 +273,7 @@ function lookupItem() {
     errorEl.textContent = 'No item found with code "' + code + '".';
     posState.currentLookupItem = null;
     document.getElementById('pos-add-to-cart-btn').disabled = true;
+    document.getElementById('pos-preview-box').innerHTML = '<div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>';
     return;
   }
   populateItemFields(match);
@@ -257,21 +338,7 @@ function addToCart() {
   renderCart();
   refreshStepLocks();
 
-  document.getElementById('pos-item-code').value = '';
-  document.getElementById('pos-item-name').value = '';
-  document.getElementById('pos-item-category').value = '';
-  document.getElementById('pos-item-material').value = '';
-  document.getElementById('pos-item-colour').value = '';
-  document.getElementById('pos-item-design').value = '';
-  document.getElementById('pos-item-price').value = '';
-  document.getElementById('pos-item-stock').value = '';
-  document.getElementById('pos-item-error').textContent = '';
-  document.getElementById('pos-item-image').style.display = 'none';
-  document.getElementById('pos-item-noimg').style.display = 'flex';
-  document.getElementById('pos-add-to-cart-btn').disabled = true;
-  posState.currentLookupItem = null;
-  posState.currentQty = 1;
-  document.getElementById('pos-qty-num').textContent = '1';
+  clearItemFields();
   document.getElementById('pos-item-code').focus();
 }
 
@@ -374,7 +441,7 @@ function searchCustomers(query) {
         });
       })
       .catch(function (e) { console.error('customer search error:', e); });
-  }, 150);
+  }, 80);
 }
 
 function selectCustomer(customer) {
@@ -480,6 +547,17 @@ function recalcBillingTotals() {
 
   document.getElementById('pos-bill-subtotal').textContent = 'AED ' + formatAED(subtotal);
   document.getElementById('pos-grand-total').textContent = 'AED ' + formatAED(grandTotal);
+
+  var summaryRow = document.getElementById('pos-discount-summary-row');
+  if (posState.discountValue > 0) {
+    summaryRow.style.display = 'flex';
+    var label = posState.discountType === 'percent' ? 'Discount (' + posState.discountValue + '%)' : 'Discount';
+    document.getElementById('pos-discount-summary-label').textContent = label;
+    document.getElementById('pos-discount-summary-value').textContent = '\u2212 AED ' + formatAED(discountAmount);
+  } else {
+    summaryRow.style.display = 'none';
+  }
+
   return { subtotal: subtotal, discountAmount: discountAmount, loyaltyAmount: loyaltyAmount, grandTotal: grandTotal };
 }
 
@@ -529,20 +607,20 @@ function fetchBillNumber() {
     .then(function (data) {
       if (data.billNumber) {
         posState.billNumber = data.billNumber;
-        el.value = data.billNumber;
+        el.textContent = data.billNumber;
       } else {
-        el.value = 'Will be assigned on completion';
+        el.textContent = 'Will be assigned on completion';
       }
     })
-    .catch(function () { el.value = 'Will be assigned on completion'; });
+    .catch(function () { el.textContent = 'Will be assigned on completion'; });
 }
 
 function renderBillingStep() {
   renderBillItems();
-  document.getElementById('pos-bill-salesperson').value = localStorage.getItem(POS_NAME_KEY) || '';
+  document.getElementById('pos-bill-salesperson').textContent = posState.transactionSalesPerson || localStorage.getItem(POS_NAME_KEY) || '';
 
   if (posState.billNumber) {
-    document.getElementById('pos-bill-number').value = posState.billNumber;
+    document.getElementById('pos-bill-number').textContent = posState.billNumber;
   } else {
     fetchBillNumber();
   }
@@ -567,20 +645,293 @@ function handleKeypadPress(key) {
   setDiscountValue(next);
 }
 
+// ---------- Payment (Step 4) ----------
+
+function renderPaymentStep() {
+  if (!posState.billNumber) fetchBillNumber();
+  var totals = recalcBillingTotals();
+  document.getElementById('pos-pay-subtotal').textContent = 'AED ' + formatAED(totals.subtotal);
+  document.getElementById('pos-pay-total').textContent = 'AED ' + formatAED(totals.grandTotal);
+
+  var discountRow = document.getElementById('pos-pay-discount-row');
+  var totalDiscount = totals.discountAmount + totals.loyaltyAmount;
+  if (totalDiscount > 0) {
+    discountRow.style.display = 'flex';
+    document.getElementById('pos-pay-discount-value').textContent = '\u2212 AED ' + formatAED(totalDiscount);
+  } else {
+    discountRow.style.display = 'none';
+  }
+
+  posState.amountReceived = 0;
+  document.getElementById('pos-amount-received').value = '0';
+  document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(-totals.grandTotal);
+  document.getElementById('pos-pay-reference').value = '';
+  posState.printedOrSent = false;
+  document.getElementById('pos-payment-error').textContent = '';
+
+  var sendBtn = document.getElementById('pos-send-btn');
+  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
+  sendBtn.disabled = !hasEmail;
+  sendBtn.textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
+}
+
+function recalcChange() {
+  var totals = recalcBillingTotals();
+  var change = posState.amountReceived - totals.grandTotal;
+  document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(change);
+}
+
+function setAmountReceived(newValueStr) {
+  if (newValueStr.length > 8) return;
+  if ((newValueStr.match(/\./g) || []).length > 1) return;
+  posState.amountReceived = parseFloat(newValueStr) || 0;
+  document.getElementById('pos-amount-received').value = newValueStr || '0';
+  recalcChange();
+}
+
+function handleAmountKeypad(key) {
+  var current = document.getElementById('pos-amount-received').value;
+  if (key === 'clear') { setAmountReceived('0'); return; }
+  if (key === 'back') { setAmountReceived(current.length > 1 ? current.slice(0, -1) : '0'); return; }
+  var next = (current === '0' && key !== '.') ? key : current + key;
+  setAmountReceived(next);
+}
+
+function buildPrintReceiptHtml() {
+  var totals = recalcBillingTotals();
+  var custName = posState.selectedCustomer ? posState.selectedCustomer.name : '';
+  var itemRows = posState.cart.map(function (c) {
+    return '<tr><td>' + c.id + ' - ' + c.name + ' (x' + c.qty + ')</td><td style="text-align:right;">' + formatAED(c.price * c.qty) + '</td></tr>';
+  }).join('');
+  return '<h2>Pavnika by Saranya</h2>' +
+    '<div class="pr-sub">' + (posState.billNumber || '') + '<br>' + new Date().toLocaleString() + '<br>' + custName + '</div>' +
+    '<table>' + itemRows +
+    '<tr><td>Subtotal</td><td style="text-align:right;">AED ' + formatAED(totals.subtotal) + '</td></tr>' +
+    (totals.discountAmount + totals.loyaltyAmount > 0 ? '<tr><td>Discount</td><td style="text-align:right;">- AED ' + formatAED(totals.discountAmount + totals.loyaltyAmount) + '</td></tr>' : '') +
+    '<tr><td>VAT</td><td style="text-align:right;">Not applicable</td></tr>' +
+    '<tr class="pr-total-row"><td>Total</td><td style="text-align:right;">AED ' + formatAED(totals.grandTotal) + '</td></tr>' +
+    '</table>' +
+    '<div class="pr-footer">Thank you for shopping with us!</div>';
+}
+
+function printBill() {
+  document.getElementById('pos-print-receipt').innerHTML = buildPrintReceiptHtml();
+  posState.printedOrSent = true;
+  window.print();
+}
+
+function sendBillEmail() {
+  var errorEl = document.getElementById('pos-payment-error');
+  errorEl.textContent = '';
+  if (!posState.selectedCustomer || !posState.selectedCustomer.email) return;
+
+  var totals = recalcBillingTotals();
+  var btn = document.getElementById('pos-send-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  fetch('/.netlify/functions/pos-send-bill-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      email: posState.selectedCustomer.email,
+      billNumber: posState.billNumber,
+      items: posState.cart,
+      subtotal: totals.subtotal,
+      discountAmount: totals.discountAmount + totals.loyaltyAmount,
+      total: totals.grandTotal
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      btn.textContent = 'Send Bill (Email)';
+      if (!result.ok) { errorEl.textContent = result.data.error || 'Could not send email.'; return; }
+      posState.printedOrSent = true;
+    })
+    .catch(function (e) {
+      btn.disabled = false;
+      btn.textContent = 'Send Bill (Email)';
+      errorEl.textContent = 'Could not reach the server. Please try again.';
+      console.error('send bill email error:', e);
+    });
+}
+
+function completeSale() {
+  var totals = recalcBillingTotals();
+  var errorEl = document.getElementById('pos-payment-error');
+  errorEl.textContent = '';
+
+  var btn = document.getElementById('pos-complete-sale-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  fetch('/.netlify/functions/pos-complete-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      items: posState.cart,
+      customerId: posState.selectedCustomer ? posState.selectedCustomer.id : null,
+      subtotal: totals.subtotal,
+      discountType: posState.discountType,
+      discountValue: posState.discountValue,
+      discountAmount: totals.discountAmount,
+      loyaltyPointsRedeemed: posState.loyaltyRedeemed,
+      vatAmount: 0,
+      total: totals.grandTotal,
+      paymentMethod: posState.paymentMethod,
+      amountReceived: posState.amountReceived,
+      referenceId: document.getElementById('pos-pay-reference').value.trim() || null,
+      salesPersonOverride: posState.transactionSalesPerson || null,
+      notes: document.getElementById('pos-bill-notes').value.trim() || null
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      btn.textContent = 'Complete Sale';
+      if (!result.ok) { errorEl.textContent = result.data.error || 'Could not complete the sale.'; return; }
+      alert('Sale completed! Bill number: ' + result.data.billNumber);
+      resetTransaction();
+    })
+    .catch(function (e) {
+      btn.disabled = false;
+      btn.textContent = 'Complete Sale';
+      errorEl.textContent = 'Could not reach the server. Please try again.';
+      console.error('complete sale error:', e);
+    });
+}
+
+function resetTransaction() {
+  posState.cart = [];
+  posState.selectedCustomer = null;
+  posState.billNumber = null;
+  posState.discountType = 'percent';
+  posState.discountValue = 0;
+  posState.loyaltyRedeemed = 0;
+  posState.paymentMethod = 'Cash';
+  posState.amountReceived = 0;
+  posState.printedOrSent = false;
+  posState.transactionSalesPerson = null;
+  clearItemFields();
+  clearCustomerForm();
+  renderCart();
+  refreshStepLocks();
+  showStep(1);
+  saveTransactionState();
+}
+
+// ---------- Change sales person mid-transaction ----------
+
+var pendingSalesPersonChange = null; // { username, displayName } while password modal is open
+
+function showSalesPersonDropdown() {
+  var dropdown = document.getElementById('pos-salesperson-dropdown');
+  fetch('/.netlify/functions/pos-list-usernames', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken() })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      var users = data.users || [];
+      if (!users.length) { dropdown.classList.remove('open'); return; }
+      dropdown.innerHTML = users.map(function (u) {
+        return '<div class="pos-suggest-item" data-username="' + u.username + '" data-displayname="' + u.display_name + '"><div class="si-info"><div class="si-name">' + u.display_name + '</div></div></div>';
+      }).join('');
+      dropdown.classList.add('open');
+      dropdown.querySelectorAll('[data-username]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          dropdown.classList.remove('open');
+          pendingSalesPersonChange = { username: el.getAttribute('data-username'), displayName: el.getAttribute('data-displayname') };
+          document.getElementById('pos-salesperson-pw-prompt').textContent = 'Enter password for ' + pendingSalesPersonChange.displayName + ' to confirm.';
+          document.getElementById('pos-salesperson-pw-input').value = '';
+          document.getElementById('pos-salesperson-pw-error').textContent = '';
+          document.getElementById('pos-salesperson-pw-modal').classList.add('open');
+        });
+      });
+    })
+    .catch(function () { dropdown.classList.remove('open'); });
+}
+
+function confirmSalesPersonChange() {
+  if (!pendingSalesPersonChange) return;
+  var errorEl = document.getElementById('pos-salesperson-pw-error');
+  var password = document.getElementById('pos-salesperson-pw-input').value;
+  errorEl.textContent = '';
+  if (!password) { errorEl.textContent = 'Password is required.'; return; }
+
+  var btn = document.getElementById('pos-salesperson-pw-confirm');
+  btn.disabled = true;
+  btn.textContent = 'Checking...';
+
+  fetch('/.netlify/functions/pos-verify-user-password', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), username: pendingSalesPersonChange.username, password: password })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      btn.textContent = 'Confirm';
+      if (!result.ok) { errorEl.textContent = result.data.error || 'Incorrect password.'; return; }
+      posState.transactionSalesPerson = result.data.displayName;
+      document.getElementById('pos-bill-salesperson').textContent = result.data.displayName;
+      document.getElementById('pos-salesperson-pw-modal').classList.remove('open');
+      pendingSalesPersonChange = null;
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Confirm';
+      errorEl.textContent = 'Could not reach the server. Please try again.';
+    });
+}
+
 // ---------- Wire everything up ----------
 
 document.addEventListener('DOMContentLoaded', function () {
   var existingToken = getPosToken();
   var existingName = localStorage.getItem(POS_NAME_KEY);
-  if (existingToken && existingName) {
+  var existingUsername = localStorage.getItem(POS_USERNAME_KEY);
+
+  if (existingToken && existingName && !isSessionExpired()) {
     showPosApp(existingName);
+    restoreTransactionState();
+  } else if (existingUsername) {
+    // A previous session existed but is now missing/expired — pre-fill
+    // the username so continuing feels like resuming, not starting
+    // over from scratch. The saved transaction state (if any) stays in
+    // localStorage untouched either way, ready to restore on whoever
+    // logs in next, per the confirmed behavior.
+    document.getElementById('pos-login-username').value = existingUsername;
   }
+
+  // Periodic save (covers any state change without needing to hook
+  // every single mutation point) and periodic expiry check (catches
+  // the 8-hour mark even if nobody reloads the page).
+  setInterval(function () {
+    if (document.getElementById('pos-app').style.display !== 'none') {
+      saveTransactionState();
+      if (isSessionExpired()) {
+        localStorage.removeItem(POS_TOKEN_KEY);
+        localStorage.removeItem(POS_NAME_KEY);
+        localStorage.removeItem(POS_LOGIN_TIME_KEY);
+        window.location.reload();
+      }
+    }
+  }, 5000);
 
   document.getElementById('pos-login-btn').addEventListener('click', attemptLogin);
   document.getElementById('pos-login-password').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') attemptLogin();
   });
   document.getElementById('pos-logout-btn').addEventListener('click', posLogout);
+  document.getElementById('pos-reset-btn').addEventListener('click', function () {
+    if (posState.cart.length === 0 && !posState.selectedCustomer) { resetTransaction(); return; }
+    if (confirm('Clear the current transaction and start over? This cannot be undone.')) resetTransaction();
+  });
 
   updatePosDatetime();
   setInterval(updatePosDatetime, 30000);
@@ -608,6 +959,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-qty-minus').addEventListener('click', function () { changeQty(-1); });
   document.getElementById('pos-qty-plus').addEventListener('click', function () { changeQty(1); });
   document.getElementById('pos-add-to-cart-btn').addEventListener('click', addToCart);
+  document.getElementById('pos-clear-item-btn').addEventListener('click', clearItemFields);
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
     showStep(2);
@@ -624,6 +976,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   });
   document.getElementById('pos-new-cust-btn').addEventListener('click', clearCustomerForm);
+  document.getElementById('pos-clear-cust-btn').addEventListener('click', clearCustomerForm);
 
   // Email domain quick-select — appends the tapped domain to whatever
   // was typed before any existing @, instead of requiring it be typed.
@@ -655,7 +1008,51 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.addEventListener('click', function () { handleKeypadPress(btn.getAttribute('data-kp')); });
   });
   document.getElementById('pos-loyalty-redeem-btn').addEventListener('click', toggleLoyaltyRedeem);
+
+  document.getElementById('pos-change-salesperson-btn').addEventListener('click', showSalesPersonDropdown);
+  document.addEventListener('click', function (e) {
+    var dropdown = document.getElementById('pos-salesperson-dropdown');
+    var btn = document.getElementById('pos-change-salesperson-btn');
+    if (!dropdown.contains(e.target) && e.target !== btn) dropdown.classList.remove('open');
+  });
+  document.getElementById('pos-salesperson-pw-confirm').addEventListener('click', confirmSalesPersonChange);
+  document.getElementById('pos-salesperson-pw-input').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') confirmSalesPersonChange();
+  });
+  document.getElementById('pos-salesperson-pw-cancel').addEventListener('click', function () {
+    document.getElementById('pos-salesperson-pw-modal').classList.remove('open');
+    pendingSalesPersonChange = null;
+  });
   document.getElementById('pos-proceed-payment-btn').addEventListener('click', function () { showStep(4); });
+
+  // Payment
+  document.querySelectorAll('.pay-method').forEach(function (el) {
+    el.addEventListener('click', function () {
+      if (el.classList.contains('disabled')) return; // Card — not wired up yet
+      document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
+      el.classList.add('active');
+      posState.paymentMethod = el.getAttribute('data-method');
+    });
+  });
+  document.querySelectorAll('[data-akp]').forEach(function (btn) {
+    btn.addEventListener('click', function () { handleAmountKeypad(btn.getAttribute('data-akp')); });
+  });
+  document.getElementById('pos-print-btn').addEventListener('click', printBill);
+  document.getElementById('pos-send-btn').addEventListener('click', sendBillEmail);
+  document.getElementById('pos-complete-sale-btn').addEventListener('click', function () {
+    if (!posState.printedOrSent) {
+      document.getElementById('pos-confirm-modal').classList.add('open');
+    } else {
+      completeSale();
+    }
+  });
+  document.getElementById('pos-modal-cancel').addEventListener('click', function () {
+    document.getElementById('pos-confirm-modal').classList.remove('open');
+  });
+  document.getElementById('pos-modal-proceed').addEventListener('click', function () {
+    document.getElementById('pos-confirm-modal').classList.remove('open');
+    completeSale();
+  });
 
   renderCart();
   refreshStepLocks();

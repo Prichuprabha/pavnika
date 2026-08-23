@@ -56,7 +56,7 @@ exports.handler = async function (event) {
         payment_method: body.paymentMethod,
         amount_received: body.amountReceived || null,
         reference_id: body.referenceId || null,
-        sales_person: session.displayName,
+        sales_person: body.salesPersonOverride || session.displayName,
         notes: body.notes || null
       })
     });
