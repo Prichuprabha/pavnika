@@ -157,6 +157,7 @@ function showAdminPanel(token, email) {
   initSidebarAdsEditor(token);
   initVideosEditor(token);
   initPromoCodesEditor(token);
+  initPosUsersEditor(token);
   initStatsDashboard(token);
   initOrdersView(token);
   initManualOrderView(token);
@@ -1948,6 +1949,95 @@ function initPromoCodesEditor(token) {
   });
 
   loadPromos();
+}
+
+/* ---------- POS Users ---------- */
+function initPosUsersEditor(token) {
+  var statusMsg = document.getElementById('admin-pos-users-status-msg');
+  function showStatus(type, msg) {
+    statusMsg.textContent = msg;
+    statusMsg.className = 'admin-status-msg ' + type;
+    setTimeout(function () { statusMsg.textContent = ''; }, 4000);
+  }
+
+  function renderUsers(users) {
+    var rowsEl = document.getElementById('admin-pos-users-rows');
+    if (!users.length) {
+      rowsEl.innerHTML = '<tr><td colspan="4" style="opacity:0.6;">No POS users yet.</td></tr>';
+      return;
+    }
+    rowsEl.innerHTML = users.map(function (u) {
+      var created = new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      return '<tr><td>' + u.username + '</td><td>' + u.display_name + '</td><td>' + created + '</td>' +
+        '<td><button type="button" class="admin-btn-secondary" data-delete-user="' + u.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
+    }).join('');
+
+    rowsEl.querySelectorAll('[data-delete-user]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var username = btn.closest('tr').querySelector('td').textContent;
+        if (!confirm('Delete POS user "' + username + '"? They will no longer be able to log in.')) return;
+        fetch('/.netlify/functions/admin-delete-pos-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, id: btn.getAttribute('data-delete-user') })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showStatus('error', result.data.error || 'Could not delete user.'); return; }
+            showStatus('success', 'User deleted.');
+            loadUsers();
+          })
+          .catch(function () { showStatus('error', 'Network error deleting user.'); });
+      });
+    });
+  }
+
+  function loadUsers() {
+    fetch('/.netlify/functions/admin-list-pos-users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) { renderUsers(data.users || []); })
+      .catch(function () { showStatus('error', 'Could not load POS users.'); });
+  }
+
+  document.getElementById('admin-pos-create-btn').addEventListener('click', function () {
+    var username = document.getElementById('admin-pos-username').value.trim();
+    var password = document.getElementById('admin-pos-password').value;
+    var displayName = document.getElementById('admin-pos-display-name').value.trim();
+
+    if (!username || !password) { showStatus('error', 'Username and password are required.'); return; }
+
+    var btn = document.getElementById('admin-pos-create-btn');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    fetch('/.netlify/functions/admin-create-pos-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, username: username, password: password, displayName: displayName })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        btn.disabled = false;
+        btn.textContent = 'Create User';
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not create user.'); return; }
+        showStatus('success', 'POS user created.');
+        document.getElementById('admin-pos-username').value = '';
+        document.getElementById('admin-pos-password').value = '';
+        document.getElementById('admin-pos-display-name').value = '';
+        loadUsers();
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Create User';
+        showStatus('error', 'Network error creating user.');
+      });
+  });
+
+  loadUsers();
 }
 
 /* ---------- Orders view ---------- */

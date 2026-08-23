@@ -510,6 +510,7 @@
     <div class="admin-nav-section-label">Marketing</div>
     <div class="admin-nav-item" data-view="banners"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>Banners</div>
     <div class="admin-nav-item" data-view="promos"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>Promo Codes</div>
+    <div class="admin-nav-item" data-view="pos-users"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>POS Users</div>
     <div class="admin-sidebar-footer">
       <p>Signed in as</p>
       <p class="admin-email" id="admin-email-display">&nbsp;</p>
@@ -867,6 +868,36 @@
       <table class="admin-table">
         <thead><tr><th>Code</th><th>Discount</th><th>Status</th></tr></thead>
         <tbody id="admin-promo-history-rows"></tbody>
+      </table>
+    </div>
+
+    <div class="admin-view" id="admin-view-pos-users" style="display:none;">
+      <div class="admin-heading"><h1>POS Users</h1></div>
+      <p class="admin-status-msg" id="admin-pos-users-status-msg"></p>
+
+      <div class="admin-form-card">
+        <h3>Create New POS User</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="admin-field" style="max-width:200px;">
+            <label>Username</label>
+            <input type="text" id="admin-pos-username" placeholder="e.g. Admin">
+          </div>
+          <div class="admin-field" style="max-width:200px;">
+            <label>Password</label>
+            <input type="password" id="admin-pos-password" placeholder="Min. 6 characters">
+          </div>
+          <div class="admin-field" style="max-width:200px;">
+            <label>Display Name</label>
+            <input type="text" id="admin-pos-display-name" placeholder="Shown as Sales Person">
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" id="admin-pos-create-btn" style="margin-top:14px;">Create User</button>
+      </div>
+
+      <h3 class="admin-stats-subheading">Existing POS users</h3>
+      <table class="admin-table">
+        <thead><tr><th>Username</th><th>Display Name</th><th>Created</th><th></th></tr></thead>
+        <tbody id="admin-pos-users-rows"></tbody>
       </table>
     </div>
 
