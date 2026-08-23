@@ -250,8 +250,9 @@ function addToCart() {
   var existing = posState.cart.filter(function (c) { return c.id === item.id; })[0];
   if (existing) {
     existing.qty += posState.currentQty;
+    existing.dupeWarning = true; // added as a separate action a second time — likely an accidental re-scan
   } else {
-    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: item.price, qty: posState.currentQty, image: item.image || '' });
+    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: item.price, qty: posState.currentQty, image: item.image || '', dupeWarning: false });
   }
   renderCart();
   refreshStepLocks();
@@ -284,6 +285,10 @@ function cartTotal() {
   return posState.cart.reduce(function (sum, c) { return sum + c.price * c.qty; }, 0);
 }
 
+function cartItemCount() {
+  return posState.cart.reduce(function (sum, c) { return sum + c.qty; }, 0);
+}
+
 function renderCart() {
   var listEl = document.getElementById('pos-cart-list');
   if (!posState.cart.length) {
@@ -291,14 +296,18 @@ function renderCart() {
   } else {
     listEl.innerHTML = posState.cart.map(function (c) {
       var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
-      return '<div class="pos-cart-item">' + imgTag +
+      var dupeClass = c.dupeWarning ? ' pos-dupe-warning' : '';
+      var dupeNote = c.dupeWarning ? '<div class="ci-sub" style="color:#B8142A;">Added twice separately \u2014 check this is intended</div>' : '';
+      return '<div class="pos-cart-item' + dupeClass + '">' + imgTag +
         '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
-        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div></div>' +
+        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + dupeNote + '</div>' +
         '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div>' +
         '<button class="del-btn" data-remove="' + c.id + '">&times;</button></div>';
     }).join('');
   }
   document.getElementById('pos-cart-total').textContent = 'AED ' + formatAED(cartTotal());
+  var countEl = document.getElementById('pos-cart-count');
+  if (countEl) countEl.textContent = posState.cart.length ? '(' + cartItemCount() + ' item' + (cartItemCount() === 1 ? '' : 's') + ')' : '';
 
   listEl.querySelectorAll('[data-remove]').forEach(function (btn) {
     btn.addEventListener('click', function () { removeFromCart(btn.getAttribute('data-remove')); });
@@ -325,6 +334,12 @@ function searchCustomers(query) {
     emptyNote.style.display = 'block';
     return;
   }
+
+  // Show feedback immediately rather than leaving the UI looking idle
+  // while the debounce timer and network round-trip are in progress.
+  hideCustDropdown();
+  emptyNote.textContent = 'Searching...';
+  emptyNote.style.display = 'block';
 
   custSearchDebounce = setTimeout(function () {
     fetch('/.netlify/functions/pos-search-customers', {
@@ -359,7 +374,7 @@ function searchCustomers(query) {
         });
       })
       .catch(function (e) { console.error('customer search error:', e); });
-  }, 300);
+  }, 150);
 }
 
 function selectCustomer(customer) {
@@ -477,6 +492,8 @@ function renderBillItems() {
       '<div class="ci-sub">Qty ' + c.qty + '</div></div>' +
       '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div></div>';
   }).join('');
+  var countEl = document.getElementById('pos-bill-count');
+  if (countEl) countEl.textContent = '(' + cartItemCount() + ' item' + (cartItemCount() === 1 ? '' : 's') + ')';
 }
 
 function renderLoyaltyBox() {
