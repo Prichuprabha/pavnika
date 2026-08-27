@@ -30,7 +30,7 @@ exports.handler = async function (event) {
   var query = (body.query || '').trim();
 
   try {
-    var url = `${SUPABASE_URL}/rest/v1/pos_customers?select=*&order=name.asc&limit=30`;
+    var url = `${SUPABASE_URL}/rest/v1/pos_customers?select=*&order=created_at.desc&limit=30`;
     if (query) {
       // Matches against name OR phone — a plain digit search (like
       // "5012") should find someone by phone just as easily as typing
