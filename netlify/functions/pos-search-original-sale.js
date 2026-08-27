@@ -61,12 +61,13 @@ exports.handler = async function (event) {
     var customerIds = sales.map(function (s) { return s.customer_id; }).filter(Boolean);
     var customersById = {};
     if (customerIds.length) {
-      var custsRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=in.(${customerIds.join(',')})&select=id,name,phone`, { headers: supabaseHeaders() });
+      var custsRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=in.(${customerIds.join(',')})&select=id,name,phone,phone_country_code,email`, { headers: supabaseHeaders() });
       var custs = await custsRes.json();
       custs.forEach(function (c) { customersById[c.id] = c; });
     }
     sales.forEach(function (s) {
       s.customer_name = s.customer_id && customersById[s.customer_id] ? customersById[s.customer_id].name : 'Walk-in Customer';
+      s.customer = s.customer_id && customersById[s.customer_id] ? customersById[s.customer_id] : null;
     });
 
     return { statusCode: 200, body: JSON.stringify({ sales: sales }) };

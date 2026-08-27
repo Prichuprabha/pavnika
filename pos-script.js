@@ -330,16 +330,20 @@ function deleteHeldSale(id) {
 
 // ---------- Return / Exchange page ----------
 
-var returnState = { selectedSale: null, selectedItemIds: [], actionType: null };
+var returnState = { selectedSale: null, selectedItemIds: [], actionType: null, refundMethod: null };
 
 function loadReturnPage() {
-  returnState = { selectedSale: null, selectedItemIds: [], actionType: null };
+  returnState = { selectedSale: null, selectedItemIds: [], actionType: null, refundMethod: null };
   document.getElementById('pos-return-search').value = '';
   document.getElementById('pos-return-no-sale').style.display = 'block';
   document.getElementById('pos-return-sale-detail').style.display = 'none';
   document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); });
+  document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) { el.classList.remove('active'); });
+  document.getElementById('pos-return-refund-method-box').style.display = 'none';
   document.getElementById('pos-return-refund-preview').style.display = 'none';
   document.getElementById('pos-return-process-btn').disabled = true;
+  document.getElementById('pos-return-process-btn').style.display = 'block';
+  document.getElementById('pos-return-receipt-box').style.display = 'none';
   document.getElementById('pos-return-error').textContent = '';
   searchOriginalSales('');
 }
@@ -403,8 +407,17 @@ function updateReturnRefundPreview() {
   errorEl.textContent = '';
   var previewBox = document.getElementById('pos-return-refund-preview');
   var processBtn = document.getElementById('pos-return-process-btn');
+  var methodBox = document.getElementById('pos-return-refund-method-box');
+
+  methodBox.style.display = returnState.actionType === 'return' ? 'block' : 'none';
+  if (returnState.actionType === 'exchange') returnState.refundMethod = 'gift_card';
 
   if (!returnState.selectedItemIds.length || !returnState.actionType) {
+    previewBox.style.display = 'none';
+    processBtn.disabled = true;
+    return;
+  }
+  if (returnState.actionType === 'return' && !returnState.refundMethod) {
     previewBox.style.display = 'none';
     processBtn.disabled = true;
     return;
@@ -438,7 +451,8 @@ function processReturn() {
       posToken: getPosToken(),
       originalSaleId: sale.id,
       items: selectedItems,
-      actionType: returnState.actionType
+      actionType: returnState.actionType,
+      refundMethod: returnState.refundMethod
     })
   })
     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
@@ -446,12 +460,15 @@ function processReturn() {
       btn.textContent = 'Process';
       if (!result.ok) { btn.disabled = false; errorEl.textContent = result.data.error || 'Could not process this return.'; return; }
 
-      if (returnState.actionType === 'exchange') {
-        alert('Return processed. Refund/credit of AED ' + formatAED(result.data.refundAmount) + ' can be applied as a discount on a new sale for the replacement item(s) \u2014 start a new sale from the Item step.');
-      } else {
-        alert('Return processed. Refund amount: AED ' + formatAED(result.data.refundAmount));
-      }
-      loadReturnPage();
+      returnState.lastResult = { refundAmount: result.data.refundAmount, items: selectedItems };
+      document.getElementById('pos-return-done-amount').textContent = formatAED(result.data.refundAmount);
+      document.getElementById('pos-return-receipt-box').style.display = 'block';
+      document.getElementById('pos-return-process-btn').style.display = 'none';
+
+      var hasEmail = sale.customer && sale.customer.email;
+      var emailBtn = document.getElementById('pos-return-email-btn');
+      emailBtn.disabled = !hasEmail;
+      emailBtn.textContent = hasEmail ? 'Send Receipt (Email)' : 'Send Receipt (no email on file)';
     })
     .catch(function () {
       btn.disabled = false;
@@ -459,6 +476,53 @@ function processReturn() {
       errorEl.textContent = 'Could not reach the server. Please try again.';
     });
 }
+
+function sendReturnReceiptEmail() {
+  var sale = returnState.selectedSale;
+  var last = returnState.lastResult;
+  var btn = document.getElementById('pos-return-email-btn');
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  fetch('/.netlify/functions/pos-send-refund-receipt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      email: sale.customer.email,
+      billNumber: sale.bill_number,
+      items: last.items,
+      refundAmount: last.refundAmount,
+      refundMethod: returnState.refundMethod,
+      actionType: returnState.actionType
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      btn.textContent = result.ok ? 'Receipt Sent \u2713' : 'Send Receipt (Email)';
+      if (!result.ok) alert(result.data.error || 'Could not send the email.');
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Send Receipt (Email)';
+      alert('Could not reach the server. Please try again.');
+    });
+}
+
+function sendReturnReceiptWhatsApp() {
+  var sale = returnState.selectedSale;
+  var last = returnState.lastResult;
+  if (!sale.customer || !sale.customer.phone) { alert('No phone number on file for this customer.'); return; }
+
+  var methodLabel = { gift_card: 'Gift Card credit', cash: 'Cash', bank_transfer: 'Bank Transfer' }[returnState.refundMethod] || returnState.refundMethod;
+  var msg = 'Hi ' + sale.customer.name + ', your ' + (returnState.actionType === 'exchange' ? 'exchange' : 'return') +
+    ' for Bill ' + sale.bill_number + ' has been processed. Refund: AED ' + formatAED(last.refundAmount) + ' via ' + methodLabel + '. \u2014 Pavnika by Saranya';
+  var fullPhone = (sale.customer.phone_country_code || '').replace('+', '') + sale.customer.phone;
+  var waLink = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(msg);
+  window.open(waLink, '_blank');
+}
+
 
 function refreshStepLocks() {
   document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
@@ -1564,10 +1628,23 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.pos-return-action').forEach(function (a) { a.classList.remove('active'); });
       el.classList.add('active');
       returnState.actionType = el.getAttribute('data-action');
+      returnState.refundMethod = null;
+      document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (b) { b.classList.remove('active'); });
       updateReturnRefundPreview();
     });
   });
   document.getElementById('pos-return-process-btn').addEventListener('click', processReturn);
+  document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (b) { b.classList.remove('active'); });
+      el.classList.add('active');
+      returnState.refundMethod = el.getAttribute('data-refund-method');
+      updateReturnRefundPreview();
+    });
+  });
+  document.getElementById('pos-return-email-btn').addEventListener('click', sendReturnReceiptEmail);
+  document.getElementById('pos-return-whatsapp-btn').addEventListener('click', sendReturnReceiptWhatsApp);
+  document.getElementById('pos-return-done-btn').addEventListener('click', loadReturnPage);
 
   updatePosDatetime();
   setInterval(updatePosDatetime, 30000);

@@ -456,19 +456,38 @@
         </div>
         <div class="panel">
           <h3>Action Type</h3>
-          <div class="pos-return-action" id="pos-return-action-return" data-action="return">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-            <span>Return</span>
+          <div class="scroll-zone">
+            <div class="pos-return-action" id="pos-return-action-return" data-action="return">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+              <span>Return <span style="font-weight:400; font-size:0.7rem; display:block;">Damaged items only \u2014 not restocked</span></span>
+            </div>
+            <div class="pos-return-action" id="pos-return-action-exchange" data-action="exchange">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+              <span>Exchange <span style="font-weight:400; font-size:0.7rem; display:block;">Item restocked \u2014 refund as gift card</span></span>
+            </div>
+
+            <div id="pos-return-refund-method-box" style="display:none;">
+              <label>Refund Method</label>
+              <div class="seg-grid" id="pos-return-refund-method" style="grid-template-columns:1fr 1fr 1fr;">
+                <div class="seg-btn" data-refund-method="gift_card">Gift Card</div>
+                <div class="seg-btn" data-refund-method="cash">Cash</div>
+                <div class="seg-btn" data-refund-method="bank_transfer">Bank Transfer</div>
+              </div>
+            </div>
+
+            <p class="pos-error" id="pos-return-error"></p>
+            <div id="pos-return-refund-preview" style="display:none; margin-top:10px; padding:12px; background:var(--ivory-deep); border-radius:10px; font-size:0.85rem;">
+              <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--green-deep);"><span>Refund Amount</span><span id="pos-return-refund-amount">AED 0.00</span></div>
+            </div>
           </div>
-          <div class="pos-return-action" id="pos-return-action-exchange" data-action="exchange">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-            <span>Exchange</span>
+          <button type="button" class="btn btn-primary" id="pos-return-process-btn" disabled>Process</button>
+
+          <div id="pos-return-receipt-box" style="display:none; margin-top:10px; padding-top:10px; border-top:1px solid var(--stone);">
+            <p style="font-size:0.78rem; color:#8a7266; margin:0 0 8px;">Processed. Refund: AED <span id="pos-return-done-amount"></span></p>
+            <button type="button" class="action-btn" id="pos-return-email-btn">Send Receipt (Email)</button>
+            <button type="button" class="action-btn" id="pos-return-whatsapp-btn">Send Receipt (WhatsApp)</button>
+            <button type="button" class="btn btn-outline" id="pos-return-done-btn" style="margin-top:6px;">Done</button>
           </div>
-          <p class="pos-error" id="pos-return-error"></p>
-          <div id="pos-return-refund-preview" style="display:none; margin-top:10px; padding:12px; background:var(--ivory-deep); border-radius:10px; font-size:0.85rem;">
-            <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--green-deep);"><span>Refund Amount</span><span id="pos-return-refund-amount">AED 0.00</span></div>
-          </div>
-          <button type="button" class="btn btn-primary" id="pos-return-process-btn" style="margin-top:auto;" disabled>Process</button>
         </div>
       </div>
     </div>
