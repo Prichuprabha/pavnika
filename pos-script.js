@@ -1070,11 +1070,15 @@ function renderPaymentBreakup() {
       rows.push('<div class="pos-breakup-row" style="color:' + (remaining > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + label + '</span><span>AED ' + formatAED(Math.abs(remaining)) + '</span></div>');
     }
   } else {
-    rows.push('<div class="pos-breakup-row"><span>' + posState.paymentMethod + '</span><span>AED ' + formatAED(posState.amountReceived) + '</span></div>');
-    var change = posState.amountReceived - totals.grandTotal;
-    if (posState.paymentMethod === 'Cash' && change !== 0) {
-      var changeLabel = change > 0 ? 'Change' : 'Remaining Due';
-      rows.push('<div class="pos-breakup-row" style="color:' + (change > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + changeLabel + '</span><span>AED ' + formatAED(Math.abs(change)) + '</span></div>');
+    if (posState.paymentMethod === 'Cash' && posState.amountReceived === 0) {
+      rows.push('<div class="pos-breakup-row" style="color:#B8142A; font-weight:700;"><span>Amount Due</span><span>AED ' + formatAED(totals.grandTotal) + '</span></div>');
+    } else {
+      rows.push('<div class="pos-breakup-row"><span>' + posState.paymentMethod + '</span><span>AED ' + formatAED(posState.amountReceived) + '</span></div>');
+      var change = posState.amountReceived - totals.grandTotal;
+      if (posState.paymentMethod === 'Cash' && change !== 0) {
+        var changeLabel = change > 0 ? 'Change' : 'Remaining Due';
+        rows.push('<div class="pos-breakup-row" style="color:' + (change > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + changeLabel + '</span><span>AED ' + formatAED(Math.abs(change)) + '</span></div>');
+      }
     }
   }
   el.innerHTML = rows.join('');
