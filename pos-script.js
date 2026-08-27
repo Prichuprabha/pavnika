@@ -858,6 +858,9 @@ function renderBillingStep() {
 function openDiscountModal() {
   document.getElementById('pos-discount-modal-value').value = String(posState.discountValue || 0);
   document.getElementById('pos-discount-modal').classList.add('open');
+  var input = document.getElementById('pos-discount-modal-value');
+  input.focus();
+  input.select();
 }
 
 function applyCoupon() {
@@ -1489,6 +1492,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (posState.paymentMethod !== 'Cash') {
         var totals = recalcBillingTotals();
         setAmountReceived(String(totals.grandTotal));
+      } else {
+        setAmountReceived('0');
       }
       lockPaymentConfirmation();
     });
