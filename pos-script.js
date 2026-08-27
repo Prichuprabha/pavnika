@@ -634,7 +634,6 @@ function filterCustomerList(query) {
 }
 
 function loadCustomerSummary(customerId) {
-  var box = document.getElementById('pos-cust-summary');
   fetch('/.netlify/functions/pos-customer-summary', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -646,7 +645,6 @@ function loadCustomerSummary(customerId) {
       document.getElementById('pos-cust-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
       document.getElementById('pos-cust-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
       document.getElementById('pos-cust-summary-points').textContent = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
-      box.style.display = 'block';
     })
     .catch(function (e) { console.error('customer summary error:', e); });
 }
@@ -674,7 +672,10 @@ function clearCustomerForm() {
   document.getElementById('pos-cust-email').value = '';
   document.getElementById('pos-cust-address').value = '';
   document.getElementById('pos-cust-error').textContent = '';
-  document.getElementById('pos-cust-summary').style.display = 'none';
+  document.getElementById('pos-cust-summary-purchases').textContent = 'N/A';
+  document.getElementById('pos-cust-summary-spent').textContent = 'N/A';
+  document.getElementById('pos-cust-summary-visit').textContent = 'N/A';
+  document.getElementById('pos-cust-summary-points').textContent = 'N/A';
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn, i) {
     btn.classList.toggle('active', i === 0);
   });
@@ -1014,7 +1015,7 @@ function renderSplitRows() {
   } else {
     el.innerHTML = posState.splitPayments.map(function (p, i) {
       return '<div class="pos-split-row"><span class="psr-method">' + p.method + '</span>' +
-        '<span>AED ' + formatAED(p.amount) + '</span>' +
+        '<span class="psr-amount">AED ' + formatAED(p.amount) + '</span>' +
         '<button type="button" class="psr-remove" data-split-remove="' + i + '">&times;</button></div>';
     }).join('');
     el.querySelectorAll('[data-split-remove]').forEach(function (btn) {
@@ -1048,7 +1049,7 @@ function lockPaymentConfirmation() {
   document.getElementById('pos-print-btn').disabled = true;
   document.getElementById('pos-send-btn').disabled = true;
   document.getElementById('pos-complete-sale-btn').disabled = true;
-  document.getElementById('pos-payment-breakup').innerHTML = '<p class="pos-empty-note">Confirm payment to see the breakup.</p>';
+  renderPaymentBreakup();
 }
 
 function renderPaymentBreakup() {
@@ -1060,11 +1061,17 @@ function renderPaymentBreakup() {
     posState.splitPayments.forEach(function (p) {
       rows.push('<div class="pos-breakup-row"><span>' + p.method + '</span><span>AED ' + formatAED(p.amount) + '</span></div>');
     });
+    var remaining = totals.grandTotal - splitTotal();
+    if (Math.abs(remaining) > 0.001) {
+      var label = remaining > 0 ? 'Remaining' : 'Over by';
+      rows.push('<div class="pos-breakup-row" style="color:' + (remaining > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + label + '</span><span>AED ' + formatAED(Math.abs(remaining)) + '</span></div>');
+    }
   } else {
     rows.push('<div class="pos-breakup-row"><span>' + posState.paymentMethod + '</span><span>AED ' + formatAED(posState.amountReceived) + '</span></div>');
     var change = posState.amountReceived - totals.grandTotal;
-    if (posState.paymentMethod === 'Cash' && change > 0) {
-      rows.push('<div class="pos-breakup-row"><span>Change</span><span>AED ' + formatAED(change) + '</span></div>');
+    if (posState.paymentMethod === 'Cash' && change !== 0) {
+      var changeLabel = change > 0 ? 'Change' : 'Remaining Due';
+      rows.push('<div class="pos-breakup-row" style="color:' + (change > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + changeLabel + '</span><span>AED ' + formatAED(Math.abs(change)) + '</span></div>');
     }
   }
   el.innerHTML = rows.join('');
@@ -1437,6 +1444,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-discount-value').addEventListener('click', openDiscountModal);
+  document.getElementById('pos-discount-modal-value').addEventListener('input', function (e) {
+    var cleaned = e.target.value.replace(/[^0-9.]/g, '');
+    var parts = cleaned.split('.');
+    if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
+    setModalDiscountValue(cleaned || '0');
+  });
   document.getElementById('pos-discount-modal-cancel').addEventListener('click', function () {
     document.getElementById('pos-discount-modal').classList.remove('open');
   });
@@ -1482,6 +1495,12 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   document.querySelectorAll('[data-akp]').forEach(function (btn) {
     btn.addEventListener('click', function () { handleAmountKeypad(btn.getAttribute('data-akp')); });
+  });
+  document.getElementById('pos-amount-received').addEventListener('input', function (e) {
+    var cleaned = e.target.value.replace(/[^0-9.]/g, '');
+    var parts = cleaned.split('.');
+    if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
+    setAmountReceived(cleaned || '0');
   });
   document.querySelectorAll('[data-pmode]').forEach(function (btn) {
     btn.addEventListener('click', function () {
