@@ -100,6 +100,25 @@ exports.handler = async function (event) {
       }
     }
 
+    // Redeem gift card balance if used — re-validate the real current
+    // balance here rather than trusting the client's own check, since
+    // this directly affects money.
+    if (body.customerId && body.giftCardRedeemed > 0) {
+      try {
+        var giftRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${body.customerId}&select=gift_card_balance`, { headers: supabaseHeaders() });
+        var giftRows = await giftRes.json();
+        var currentGiftBalance = (giftRows[0] && giftRows[0].gift_card_balance) || 0;
+        var newGiftBalance = Math.max(0, currentGiftBalance - body.giftCardRedeemed);
+        await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${body.customerId}`, {
+          method: 'PATCH',
+          headers: supabaseHeaders(),
+          body: JSON.stringify({ gift_card_balance: newGiftBalance })
+        });
+      } catch (e) {
+        console.error('Sale saved, but updating gift card balance failed:', e);
+      }
+    }
+
     // Mark the coupon used, same as the online checkout flow does —
     // keeps a code from being usable twice between in-store and online.
     if (body.couponCode) {

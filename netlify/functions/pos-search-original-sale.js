@@ -70,6 +70,28 @@ exports.handler = async function (event) {
       s.customer = s.customer_id && customersById[s.customer_id] ? customersById[s.customer_id] : null;
     });
 
+    // Mark items already returned/exchanged, and drop any sale that's
+    // fully processed already — nothing left to act on.
+    if (sales.length) {
+      var saleIds = sales.map(function (s) { return s.id; });
+      var returnsRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_returns?original_sale_id=in.(${saleIds.join(',')})&select=original_sale_id,items_returned`, { headers: supabaseHeaders() });
+      var returnRows = await returnsRes.json();
+      var returnedIdsBySale = {};
+      returnRows.forEach(function (r) {
+        if (!returnedIdsBySale[r.original_sale_id]) returnedIdsBySale[r.original_sale_id] = [];
+        (r.items_returned || []).forEach(function (it) { returnedIdsBySale[r.original_sale_id].push(it.id); });
+      });
+
+      sales.forEach(function (s) {
+        s.already_returned_item_ids = returnedIdsBySale[s.id] || [];
+      });
+      sales = sales.filter(function (s) {
+        var allItemIds = (s.items || []).map(function (it) { return it.id; });
+        var fullyProcessed = allItemIds.length > 0 && allItemIds.every(function (id) { return s.already_returned_item_ids.indexOf(id) !== -1; });
+        return !fullyProcessed;
+      });
+    }
+
     return { statusCode: 200, body: JSON.stringify({ sales: sales }) };
   } catch (e) {
     console.error('pos-search-original-sale error:', e);

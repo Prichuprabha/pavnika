@@ -24,6 +24,7 @@ var posState = {
   transactionSalesPerson: null, // set only if changed mid-transaction; falls back to the logged-in user's name
   couponCode: null,
   couponDiscountPercent: 0,
+  giftCardRedeemed: 0,
   paymentMode: 'single', // 'single' or 'split'
   splitPayments: [],      // [{ method, amount }] — only used when paymentMode === 'split'
   paymentConfirmed: false
@@ -385,11 +386,15 @@ function selectSaleForReturn(sale) {
   document.getElementById('pos-return-bill-no').textContent = sale.bill_number;
   document.getElementById('pos-return-bill-date').textContent = new Date(sale.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+  var alreadyReturned = sale.already_returned_item_ids || [];
   var itemsEl = document.getElementById('pos-return-items-list');
   itemsEl.innerHTML = (sale.items || []).map(function (it) {
+    var isReturned = alreadyReturned.indexOf(it.id) !== -1;
     var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:40px;height:52px;border-radius:5px;background:var(--ivory-deep);flex-shrink:0;"></div>';
-    return '<div class="pos-return-item-row"><input type="checkbox" data-return-item="' + it.id + '">' + imgTag +
-      '<div class="pri-info"><div class="pri-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="pri-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div></div></div>';
+    var checkbox = isReturned ? '<input type="checkbox" disabled>' : '<input type="checkbox" data-return-item="' + it.id + '">';
+    var statusNote = isReturned ? '<div class="pri-sub" style="color:#B8142A;">Already returned/exchanged</div>' : '';
+    return '<div class="pos-return-item-row"' + (isReturned ? ' style="opacity:0.5;"' : '') + '>' + checkbox + imgTag +
+      '<div class="pri-info"><div class="pri-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="pri-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div>' + statusNote + '</div></div>';
   }).join('');
 
   itemsEl.querySelectorAll('[data-return-item]').forEach(function (cb) {
@@ -1260,6 +1265,63 @@ function commitSplitAmountModal() {
   document.getElementById('pos-split-amount-modal').classList.remove('open');
 }
 
+// ---------- Gift card redemption (via "Other") ----------
+
+var giftCardModalContext = 'single'; // 'single' or 'split' — controls what "Apply" does
+
+function openGiftCardModal(context) {
+  if (!posState.selectedCustomer) {
+    alert('Select a customer first \u2014 a gift card can only be redeemed against a known customer.');
+    return;
+  }
+  giftCardModalContext = context;
+  var balance = posState.selectedCustomer.gift_card_balance || 0;
+  document.getElementById('pos-giftcard-balance').textContent = 'AED ' + formatAED(balance);
+  document.getElementById('pos-giftcard-modal-value').value = '0';
+  document.getElementById('pos-giftcard-error').textContent = '';
+  document.getElementById('pos-giftcard-modal').classList.add('open');
+  var input = document.getElementById('pos-giftcard-modal-value');
+  input.focus();
+  input.select();
+}
+
+function setGiftCardModalValue(newValueStr) {
+  if (newValueStr.length > 8) return;
+  if ((newValueStr.match(/\./g) || []).length > 1) return;
+  document.getElementById('pos-giftcard-modal-value').value = newValueStr || '0';
+}
+
+function handleGiftCardKeypad(key) {
+  var current = document.getElementById('pos-giftcard-modal-value').value;
+  if (key === 'clear') { setGiftCardModalValue('0'); return; }
+  if (key === 'back') { setGiftCardModalValue(current.length > 1 ? current.slice(0, -1) : '0'); return; }
+  var next = (current === '0' && key !== '.') ? key : current + key;
+  setGiftCardModalValue(next);
+}
+
+function commitGiftCardModal() {
+  var amount = parseFloat(document.getElementById('pos-giftcard-modal-value').value) || 0;
+  var balance = posState.selectedCustomer.gift_card_balance || 0;
+  var errorEl = document.getElementById('pos-giftcard-error');
+
+  if (amount <= 0) { errorEl.textContent = 'Enter an amount to redeem.'; return; }
+  if (amount > balance) { errorEl.textContent = 'That exceeds the available balance of AED ' + formatAED(balance) + '.'; return; }
+
+  posState.giftCardRedeemed += amount;
+
+  if (giftCardModalContext === 'single') {
+    posState.paymentMethod = 'Gift Card';
+    document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
+    setAmountReceived(String(amount));
+  } else {
+    posState.splitPayments.push({ method: 'Gift Card', amount: amount });
+    renderSplitRows();
+    lockPaymentConfirmation();
+  }
+
+  document.getElementById('pos-giftcard-modal').classList.remove('open');
+}
+
 function addSplitRow() {
   var method = document.getElementById('pos-split-method-select').value;
   var amount = parseFloat(document.getElementById('pos-split-amount-input').value);
@@ -1467,6 +1529,7 @@ function completeSale() {
       referenceId: document.getElementById('pos-pay-reference').value.trim() || null,
       salesPersonOverride: posState.transactionSalesPerson || null,
       couponCode: posState.couponCode || null,
+      giftCardRedeemed: posState.giftCardRedeemed || 0,
       notes: document.getElementById('pos-bill-notes').value.trim() || null
     })
   })
@@ -1499,6 +1562,11 @@ function resetTransaction() {
   posState.transactionSalesPerson = null;
   posState.couponCode = null;
   posState.couponDiscountPercent = 0;
+  posState.giftCardRedeemed = 0;
+  document.getElementById('pos-discount-value').value = '0';
+  document.querySelectorAll('.discount-toggle button[data-dtype]').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-dtype') === 'percent');
+  });
   document.getElementById('pos-coupon-applied').style.display = 'none';
   document.getElementById('pos-coupon-code').value = '';
   document.getElementById('pos-coupon-error').textContent = '';
@@ -1760,9 +1828,11 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.pay-method').forEach(function (el) {
     el.addEventListener('click', function () {
       if (el.classList.contains('disabled')) return; // Card — not wired up yet
+      var method = el.getAttribute('data-method');
+      if (method === 'Other') { openGiftCardModal('single'); return; }
       document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
       el.classList.add('active');
-      posState.paymentMethod = el.getAttribute('data-method');
+      posState.paymentMethod = method;
       var totals = recalcBillingTotals();
       setAmountReceived(String(totals.grandTotal));
       lockPaymentConfirmation();
@@ -1788,7 +1858,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-split-add-btn').addEventListener('click', addSplitRow);
-  document.getElementById('pos-split-amount-input').addEventListener('click', openSplitAmountModal);
+  document.getElementById('pos-split-amount-input').addEventListener('click', function () {
+    if (document.getElementById('pos-split-method-select').value === 'Other') { openGiftCardModal('split'); return; }
+    openSplitAmountModal();
+  });
   document.querySelectorAll('[data-splitkp]').forEach(function (btn) {
     btn.addEventListener('click', function () { handleSplitAmountKeypad(btn.getAttribute('data-splitkp')); });
   });
@@ -1802,6 +1875,19 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pos-split-amount-modal').classList.remove('open');
   });
   document.getElementById('pos-split-amount-modal-done').addEventListener('click', commitSplitAmountModal);
+  document.querySelectorAll('[data-gckp]').forEach(function (btn) {
+    btn.addEventListener('click', function () { handleGiftCardKeypad(btn.getAttribute('data-gckp')); });
+  });
+  document.getElementById('pos-giftcard-modal-value').addEventListener('input', function (e) {
+    var cleaned = e.target.value.replace(/[^0-9.]/g, '');
+    var parts = cleaned.split('.');
+    if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
+    setGiftCardModalValue(cleaned || '0');
+  });
+  document.getElementById('pos-giftcard-modal-cancel').addEventListener('click', function () {
+    document.getElementById('pos-giftcard-modal').classList.remove('open');
+  });
+  document.getElementById('pos-giftcard-modal-done').addEventListener('click', commitGiftCardModal);
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', sendBillEmail);

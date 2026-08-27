@@ -420,6 +420,29 @@
       </div>
     </div>
 
+    <!-- Gift card redemption — reached via the "Other" payment option -->
+    <div class="modal-backdrop" id="pos-giftcard-modal">
+      <div class="modal-box">
+        <h3 style="margin:0 0 6px; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Redeem Gift Card</h3>
+        <p style="font-size:0.85rem; color:#8a7266; margin:0 0 12px;">Balance available: <b id="pos-giftcard-balance">AED 0.00</b></p>
+        <div class="keypad-field">
+          <input type="text" id="pos-giftcard-modal-value" value="0" inputmode="decimal">
+          <button type="button" class="kp-btn" data-gckp="back">&#9003;</button>
+        </div>
+        <div class="keypad">
+          <button type="button" data-gckp="1">1</button><button type="button" data-gckp="2">2</button><button type="button" data-gckp="3">3</button>
+          <button type="button" data-gckp="4">4</button><button type="button" data-gckp="5">5</button><button type="button" data-gckp="6">6</button>
+          <button type="button" data-gckp="7">7</button><button type="button" data-gckp="8">8</button><button type="button" data-gckp="9">9</button>
+          <button type="button" class="clear" data-gckp="clear">C</button><button type="button" data-gckp="0">0</button><button type="button" data-gckp=".">.</button>
+        </div>
+        <p class="pos-error" id="pos-giftcard-error"></p>
+        <div class="modal-actions" style="margin-top:14px;">
+          <button type="button" class="cancel" id="pos-giftcard-modal-cancel">Cancel</button>
+          <button type="button" class="proceed" id="pos-giftcard-modal-done">Apply</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Print-only receipt, hidden on screen, shown only via @media print -->
     <div id="pos-print-receipt" class="pos-print-receipt"></div>
 
@@ -459,11 +482,11 @@
           <div class="scroll-zone">
             <div class="pos-return-action" id="pos-return-action-return" data-action="return">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-              <span>Return <span style="font-weight:400; font-size:0.7rem; display:block;">Damaged items only \u2014 not restocked</span></span>
+              <span>Return <span style="font-weight:400; font-size:0.7rem; display:block;">Damaged items only &mdash; not restocked</span></span>
             </div>
             <div class="pos-return-action" id="pos-return-action-exchange" data-action="exchange">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-              <span>Exchange <span style="font-weight:400; font-size:0.7rem; display:block;">Item restocked \u2014 refund as gift card</span></span>
+              <span>Exchange <span style="font-weight:400; font-size:0.7rem; display:block;">Item restocked &mdash; refund as gift card</span></span>
             </div>
 
             <div id="pos-return-refund-method-box" style="display:none;">
