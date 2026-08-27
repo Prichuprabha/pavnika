@@ -21,7 +21,9 @@ var posState = {
   paymentMethod: 'Cash',
   amountReceived: 0,
   printedOrSent: false,  // tracks whether Print or Send was used before Complete Sale
-  transactionSalesPerson: null // set only if changed mid-transaction; falls back to the logged-in user's name
+  transactionSalesPerson: null, // set only if changed mid-transaction; falls back to the logged-in user's name
+  couponCode: null,
+  couponDiscountPercent: 0
 };
 var currentStepNum = 1; // tracked separately so it can be saved/restored alongside posState
 
@@ -282,9 +284,15 @@ function clearItemFields() {
 
 function renderBrowseCats() {
   var products = window.PRODUCTS || [];
+  var preferredOrder = ['Budget', 'Mid Range', 'Premium', 'Bridal'];
   var cats = [];
   products.forEach(function (p) { if (p.category && cats.indexOf(p.category) === -1) cats.push(p.category); });
-  cats.sort();
+  cats.sort(function (a, b) {
+    var ai = preferredOrder.indexOf(a), bi = preferredOrder.indexOf(b);
+    if (ai === -1) ai = preferredOrder.length;
+    if (bi === -1) bi = preferredOrder.length;
+    return ai - bi;
+  });
   var el = document.getElementById('pos-browse-cats');
   el.innerHTML = '<button type="button" class="pos-browse-cat-btn active" data-cat="All">All</button>' +
     cats.map(function (c) { return '<button type="button" class="pos-browse-cat-btn" data-cat="' + c + '">' + c + '</button>'; }).join('');
@@ -438,6 +446,7 @@ function renderCart() {
   listEl.querySelectorAll('[data-remove]').forEach(function (btn) {
     btn.addEventListener('click', function () { removeFromCart(btn.getAttribute('data-remove')); });
   });
+  listEl.scrollTop = listEl.scrollHeight;
 }
 
 // ---------- Customer (Step 2) ----------
@@ -611,26 +620,41 @@ function calculateLoyaltyDiscount() {
   return posState.loyaltyRedeemed * LOYALTY_POINT_VALUE_AED;
 }
 
+function calculateCouponDiscount(subtotal) {
+  if (!posState.couponCode) return 0;
+  return subtotal * (posState.couponDiscountPercent / 100);
+}
+
 function recalcBillingTotals() {
   var subtotal = cartTotal();
   var discountAmount = calculateDiscountAmount(subtotal);
   var loyaltyAmount = calculateLoyaltyDiscount();
-  var grandTotal = Math.max(0, subtotal - discountAmount - loyaltyAmount);
+  var couponAmount = calculateCouponDiscount(subtotal);
+  var grandTotal = Math.max(0, subtotal - discountAmount - loyaltyAmount - couponAmount);
 
   document.getElementById('pos-bill-subtotal').textContent = 'AED ' + formatAED(subtotal);
   document.getElementById('pos-grand-total').textContent = 'AED ' + formatAED(grandTotal);
 
   var summaryRow = document.getElementById('pos-discount-summary-row');
-  if (posState.discountValue > 0) {
+  var totalDiscountShown = discountAmount + couponAmount;
+  if (totalDiscountShown > 0) {
     summaryRow.style.display = 'flex';
-    var label = posState.discountType === 'percent' ? 'Discount (' + posState.discountValue + '%)' : 'Discount';
+    var hasManualDiscount = posState.discountValue > 0;
+    var label;
+    if (hasManualDiscount && posState.couponCode) {
+      label = 'Discount + Coupon';
+    } else if (posState.couponCode) {
+      label = 'Coupon (' + posState.couponCode + ')';
+    } else {
+      label = posState.discountType === 'percent' ? 'Discount (' + posState.discountValue + '%)' : 'Discount';
+    }
     document.getElementById('pos-discount-summary-label').textContent = label;
-    document.getElementById('pos-discount-summary-value').textContent = '\u2212 AED ' + formatAED(discountAmount);
+    document.getElementById('pos-discount-summary-value').textContent = '\u2212 AED ' + formatAED(totalDiscountShown);
   } else {
     summaryRow.style.display = 'none';
   }
 
-  return { subtotal: subtotal, discountAmount: discountAmount, loyaltyAmount: loyaltyAmount, grandTotal: grandTotal };
+  return { subtotal: subtotal, discountAmount: discountAmount, loyaltyAmount: loyaltyAmount, couponAmount: couponAmount, grandTotal: grandTotal };
 }
 
 function renderBillItems() {
@@ -701,20 +725,106 @@ function renderBillingStep() {
   recalcBillingTotals();
 }
 
-function setDiscountValue(newValueStr) {
-  if (newValueStr.length > 8) return;
-  if ((newValueStr.match(/\./g) || []).length > 1) return;
-  posState.discountValue = parseFloat(newValueStr) || 0;
-  document.getElementById('pos-discount-value').value = newValueStr || '0';
+function openDiscountModal() {
+  document.getElementById('pos-discount-modal-value').value = String(posState.discountValue || 0);
+  document.getElementById('pos-discount-modal').classList.add('open');
+}
+
+function applyCoupon() {
+  var code = document.getElementById('pos-coupon-code').value.trim();
+  var errorEl = document.getElementById('pos-coupon-error');
+  errorEl.textContent = '';
+  if (!code) { errorEl.textContent = 'Enter a code first.'; return; }
+
+  var btn = document.getElementById('pos-coupon-apply-btn');
+  btn.disabled = true;
+  btn.textContent = '...';
+
+  fetch('/.netlify/functions/validate-promo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code: code })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      btn.disabled = false;
+      btn.textContent = 'Apply';
+      if (!data.valid) { errorEl.textContent = data.error || 'Invalid code.'; return; }
+      posState.couponCode = data.code;
+      posState.couponDiscountPercent = data.discountPercent;
+      document.getElementById('pos-coupon-applied-text').textContent = data.code + ' \u2014 ' + data.discountPercent + '% off';
+      document.getElementById('pos-coupon-applied').style.display = 'flex';
+      document.getElementById('pos-coupon-code').value = '';
+      recalcBillingTotals();
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Apply';
+      errorEl.textContent = 'Could not reach the server. Please try again.';
+    });
+}
+
+function removeCoupon() {
+  posState.couponCode = null;
+  posState.couponDiscountPercent = 0;
+  document.getElementById('pos-coupon-applied').style.display = 'none';
   recalcBillingTotals();
 }
 
+function holdCurrentSale() {
+  if (!posState.cart.length) { alert('Nothing to hold \u2014 the cart is empty.'); return; }
+  var btn = document.getElementById('pos-bill-hold-btn');
+  btn.disabled = true;
+  btn.textContent = 'Holding...';
+
+  fetch('/.netlify/functions/pos-hold-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      cart: posState.cart,
+      customer: posState.selectedCustomer,
+      discountType: posState.discountType,
+      discountValue: posState.discountValue,
+      couponCode: posState.couponCode,
+      notes: document.getElementById('pos-bill-notes').value.trim() || null
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      btn.textContent = 'Hold / Park Sale';
+      if (!result.ok) { alert(result.data.error || 'Could not park this sale.'); return; }
+      alert('Sale parked. You can resume it from the Hold/Parked Sales page.');
+      resetTransaction();
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Hold / Park Sale';
+      alert('Could not reach the server. Please try again.');
+    });
+}
+
+function commitDiscountValue() {
+  var raw = document.getElementById('pos-discount-modal-value').value;
+  posState.discountValue = parseFloat(raw) || 0;
+  document.getElementById('pos-discount-value').value = String(posState.discountValue);
+  document.getElementById('pos-discount-modal').classList.remove('open');
+  recalcBillingTotals();
+}
+
+function setModalDiscountValue(newValueStr) {
+  if (newValueStr.length > 8) return;
+  if ((newValueStr.match(/\./g) || []).length > 1) return;
+  document.getElementById('pos-discount-modal-value').value = newValueStr || '0';
+}
+
 function handleKeypadPress(key) {
-  var current = document.getElementById('pos-discount-value').value;
-  if (key === 'clear') { setDiscountValue('0'); return; }
-  if (key === 'back') { setDiscountValue(current.length > 1 ? current.slice(0, -1) : '0'); return; }
+  var current = document.getElementById('pos-discount-modal-value').value;
+  if (key === 'clear') { setModalDiscountValue('0'); return; }
+  if (key === 'back') { setModalDiscountValue(current.length > 1 ? current.slice(0, -1) : '0'); return; }
   var next = (current === '0' && key !== '.') ? key : current + key;
-  setDiscountValue(next);
+  setModalDiscountValue(next);
 }
 
 // ---------- Payment (Step 4) ----------
@@ -857,6 +967,7 @@ function completeSale() {
       amountReceived: posState.amountReceived,
       referenceId: document.getElementById('pos-pay-reference').value.trim() || null,
       salesPersonOverride: posState.transactionSalesPerson || null,
+      couponCode: posState.couponCode || null,
       notes: document.getElementById('pos-bill-notes').value.trim() || null
     })
   })
@@ -887,6 +998,11 @@ function resetTransaction() {
   posState.amountReceived = 0;
   posState.printedOrSent = false;
   posState.transactionSalesPerson = null;
+  posState.couponCode = null;
+  posState.couponDiscountPercent = 0;
+  document.getElementById('pos-coupon-applied').style.display = 'none';
+  document.getElementById('pos-coupon-code').value = '';
+  document.getElementById('pos-coupon-error').textContent = '';
   clearItemFields();
   clearCustomerForm();
   renderCart();
@@ -1071,13 +1187,24 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.discount-toggle button').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
       posState.discountType = btn.getAttribute('data-dtype');
-      setDiscountValue('0'); // reset on switching, so "50" isn't misread as the wrong unit
+      posState.discountValue = 0; // reset on switching, so "50" isn't misread as the wrong unit
+      document.getElementById('pos-discount-value').value = '0';
+      recalcBillingTotals();
     });
   });
+  document.getElementById('pos-discount-value').addEventListener('click', openDiscountModal);
+  document.getElementById('pos-discount-modal-cancel').addEventListener('click', function () {
+    document.getElementById('pos-discount-modal').classList.remove('open');
+  });
+  document.getElementById('pos-discount-modal-done').addEventListener('click', commitDiscountValue);
   document.querySelectorAll('[data-kp]').forEach(function (btn) {
     btn.addEventListener('click', function () { handleKeypadPress(btn.getAttribute('data-kp')); });
   });
   document.getElementById('pos-loyalty-redeem-btn').addEventListener('click', toggleLoyaltyRedeem);
+  document.getElementById('pos-bill-add-item-btn').addEventListener('click', function () { showStep(1); });
+  document.getElementById('pos-bill-hold-btn').addEventListener('click', holdCurrentSale);
+  document.getElementById('pos-coupon-apply-btn').addEventListener('click', applyCoupon);
+  document.getElementById('pos-coupon-remove-btn').addEventListener('click', removeCoupon);
 
   document.getElementById('pos-change-salesperson-btn').addEventListener('click', showSalesPersonDropdown);
   document.addEventListener('click', function (e) {

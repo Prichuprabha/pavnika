@@ -205,6 +205,10 @@
         <div class="panel bill-summary-panel">
           <h3>Bill Summary <span class="pos-item-count" id="pos-bill-count"></span></h3>
           <div class="scroll-zone" id="pos-bill-items"></div>
+          <div class="bill-actions-row">
+            <button type="button" class="btn btn-outline" id="pos-bill-add-item-btn" style="margin:0;">+ Add Item</button>
+            <button type="button" class="btn btn-outline" id="pos-bill-hold-btn" style="margin:0;">Hold / Park Sale</button>
+          </div>
           <div class="bill-row" style="border-top:1px solid var(--stone); margin-top:6px; padding-top:10px;"><span>Subtotal</span><span class="num-total" id="pos-bill-subtotal">AED 0.00</span></div>
           <div class="bill-row"><span>VAT</span><span class="vat-note">Not applicable (0%)</span></div>
         </div>
@@ -233,19 +237,22 @@
                 <button type="button" class="active" data-dtype="percent">%</button>
                 <button type="button" data-dtype="amount">AED</button>
               </div>
-              <div class="keypad-field">
-                <input type="text" id="pos-discount-value" value="0" readonly>
-                <button type="button" class="kp-btn" data-kp="back">&#9003;</button>
-              </div>
-              <div class="keypad">
-                <button type="button" data-kp="1">1</button><button type="button" data-kp="2">2</button><button type="button" data-kp="3">3</button>
-                <button type="button" data-kp="4">4</button><button type="button" data-kp="5">5</button><button type="button" data-kp="6">6</button>
-                <button type="button" data-kp="7">7</button><button type="button" data-kp="8">8</button><button type="button" data-kp="9">9</button>
-                <button type="button" class="clear" data-kp="clear">C</button><button type="button" data-kp="0">0</button><button type="button" data-kp=".">.</button>
-              </div>
+              <input type="text" id="pos-discount-value" value="0" readonly placeholder="Tap to enter discount" style="cursor:pointer;">
+
               <div class="loyalty-box" id="pos-loyalty-box" style="display:none;">
                 <span id="pos-loyalty-text"></span>
                 <button type="button" class="btn" id="pos-loyalty-redeem-btn" style="background:var(--gold); color:#fff; padding:8px 14px;">Redeem</button>
+              </div>
+
+              <label style="margin-top:16px;">Coupon</label>
+              <div class="scan-row">
+                <input type="text" id="pos-coupon-code" placeholder="Enter coupon code" autocomplete="off">
+                <button type="button" id="pos-coupon-apply-btn">Apply</button>
+              </div>
+              <p class="pos-error" id="pos-coupon-error"></p>
+              <div class="pos-coupon-applied" id="pos-coupon-applied" style="display:none;">
+                <span id="pos-coupon-applied-text"></span>
+                <button type="button" id="pos-coupon-remove-btn">&times;</button>
               </div>
             </div>
             <div class="bill-row" id="pos-discount-summary-row" style="display:none;"><span id="pos-discount-summary-label">Discount</span><span id="pos-discount-summary-value">&minus; AED 0.00</span></div>
@@ -333,6 +340,29 @@
         <div class="modal-actions">
           <button type="button" class="cancel" id="pos-salesperson-pw-cancel">Cancel</button>
           <button type="button" class="proceed" id="pos-salesperson-pw-confirm">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Discount entry — the keypad appears here as a popup only when
+         the discount field is tapped, rather than always taking up
+         space on the Billing page. -->
+    <div class="modal-backdrop" id="pos-discount-modal">
+      <div class="modal-box">
+        <h3 style="margin:0 0 12px; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Enter Discount</h3>
+        <div class="keypad-field">
+          <input type="text" id="pos-discount-modal-value" value="0" readonly>
+          <button type="button" class="kp-btn" data-kp="back">&#9003;</button>
+        </div>
+        <div class="keypad">
+          <button type="button" data-kp="1">1</button><button type="button" data-kp="2">2</button><button type="button" data-kp="3">3</button>
+          <button type="button" data-kp="4">4</button><button type="button" data-kp="5">5</button><button type="button" data-kp="6">6</button>
+          <button type="button" data-kp="7">7</button><button type="button" data-kp="8">8</button><button type="button" data-kp="9">9</button>
+          <button type="button" class="clear" data-kp="clear">C</button><button type="button" data-kp="0">0</button><button type="button" data-kp=".">.</button>
+        </div>
+        <div class="modal-actions" style="margin-top:14px;">
+          <button type="button" class="cancel" id="pos-discount-modal-cancel">Cancel</button>
+          <button type="button" class="proceed" id="pos-discount-modal-done">Done</button>
         </div>
       </div>
     </div>

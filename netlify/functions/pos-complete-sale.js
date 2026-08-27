@@ -99,6 +99,20 @@ exports.handler = async function (event) {
       }
     }
 
+    // Mark the coupon used, same as the online checkout flow does —
+    // keeps a code from being usable twice between in-store and online.
+    if (body.couponCode) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(body.couponCode)}`, {
+          method: 'PATCH',
+          headers: supabaseHeaders(),
+          body: JSON.stringify({ used: true })
+        });
+      } catch (e) {
+        console.error('Sale saved, but marking the coupon used failed:', e);
+      }
+    }
+
     return { statusCode: 200, body: JSON.stringify({ sale: saleRows[0], billNumber: billNumber }) };
   } catch (e) {
     console.error('pos-complete-sale error:', e);

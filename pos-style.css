@@ -160,6 +160,7 @@ textarea { min-height: 50px; resize: none; }
 .pos-empty-note { color: #8a7266; font-size: 0.82rem; text-align: center; padding: 20px 10px; }
 
 .s2-grid { display: grid; grid-template-columns: 300px 1fr; gap: 12px; height: 100%; min-width: 0; min-height: 0; }
+.s2-grid > .panel { height: 100%; min-height: 0; }
 .cust-list-item { display: flex; flex-direction: column; padding: 12px 12px; border-radius: 8px; border: 1px solid #f0e8e0; margin-bottom: 6px; font-size: 0.85rem; cursor: pointer; }
 .cust-list-item:active, .cust-list-item.selected { background: var(--ivory-deep); border-color: var(--gold); }
 .cust-list-item .name { font-weight: 700; }
@@ -273,7 +274,13 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-browse-tile.pt-sold { opacity: 0.4; }
 
 /* ---------- Customer summary card ---------- */
-.pos-cust-summary { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--stone); flex-shrink: 0; }
+.pos-cust-summary { margin-top: 14px; padding: 14px; border-radius: 10px; background: var(--ivory-deep); flex-shrink: 0; }
 .pos-cust-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
 .pcs-label { display: block; font-size: 0.68rem; color: #8a7266; text-transform: uppercase; letter-spacing: 0.04em; }
 .pcs-value { display: block; font-size: 0.9rem; font-weight: 700; color: var(--green-deep); margin-top: 2px; }
+
+/* ---------- Billing: action buttons, coupon display ---------- */
+.bill-actions-row { display: flex; gap: 8px; margin: 10px 0; flex-shrink: 0; }
+.bill-actions-row .btn { flex: 1; }
+.pos-coupon-applied { display: flex; justify-content: space-between; align-items: center; background: #e8f3ea; border: 1px solid #a8d5b0; border-radius: 8px; padding: 8px 12px; margin-top: 8px; font-size: 0.82rem; color: #2c5c37; font-weight: 600; }
+.pos-coupon-applied button { background: none; border: none; font-size: 1.1rem; color: #2c5c37; cursor: pointer; }
