@@ -391,16 +391,17 @@ function selectSaleForReturn(sale) {
   itemsEl.innerHTML = (sale.items || []).map(function (it) {
     var isReturned = alreadyReturned.indexOf(it.id) !== -1;
     var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:40px;height:52px;border-radius:5px;background:var(--ivory-deep);flex-shrink:0;"></div>';
-    var checkbox = isReturned ? '<input type="checkbox" disabled>' : '<input type="checkbox" data-return-item="' + it.id + '">';
     var statusNote = isReturned ? '<div class="pri-sub" style="color:#B8142A;">Already returned/exchanged</div>' : '';
-    return '<div class="pos-return-item-row"' + (isReturned ? ' style="opacity:0.5;"' : '') + '>' + checkbox + imgTag +
+    var attrs = isReturned ? ' style="opacity:0.5; cursor:not-allowed;"' : ' data-return-item="' + it.id + '"';
+    return '<div class="pos-return-item-row"' + attrs + '>' + imgTag +
       '<div class="pri-info"><div class="pri-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="pri-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div>' + statusNote + '</div></div>';
   }).join('');
 
-  itemsEl.querySelectorAll('[data-return-item]').forEach(function (cb) {
-    cb.addEventListener('change', function () {
-      var id = cb.getAttribute('data-return-item');
-      if (cb.checked) { if (returnState.selectedItemIds.indexOf(id) === -1) returnState.selectedItemIds.push(id); }
+  itemsEl.querySelectorAll('[data-return-item]').forEach(function (row) {
+    row.addEventListener('click', function () {
+      var id = row.getAttribute('data-return-item');
+      var isSelected = row.classList.toggle('selected');
+      if (isSelected) { if (returnState.selectedItemIds.indexOf(id) === -1) returnState.selectedItemIds.push(id); }
       else { returnState.selectedItemIds = returnState.selectedItemIds.filter(function (x) { return x !== id; }); }
       updateReturnRefundPreview();
     });
@@ -847,6 +848,7 @@ function loadCustomerSummary(customerId) {
       document.getElementById('pos-cust-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
       document.getElementById('pos-cust-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
       document.getElementById('pos-cust-summary-points').textContent = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
+      document.getElementById('pos-cust-summary-giftcard').textContent = 'AED ' + formatAED((posState.selectedCustomer && posState.selectedCustomer.gift_card_balance) || 0);
     })
     .catch(function (e) { console.error('customer summary error:', e); });
 }
@@ -878,6 +880,7 @@ function clearCustomerForm() {
   document.getElementById('pos-cust-summary-spent').textContent = 'N/A';
   document.getElementById('pos-cust-summary-visit').textContent = 'N/A';
   document.getElementById('pos-cust-summary-points').textContent = 'N/A';
+  document.getElementById('pos-cust-summary-giftcard').textContent = 'N/A';
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn, i) {
     btn.classList.toggle('active', i === 0);
   });
@@ -1380,6 +1383,11 @@ function sendToCardMachine(amount) {
   // TODO: replace with the real card machine integration once decided.
 }
 
+function showPaymentErrorModal(message) {
+  document.getElementById('pos-payment-error-modal-text').textContent = message;
+  document.getElementById('pos-payment-error-modal').classList.add('open');
+}
+
 function confirmPayment() {
   var errorEl = document.getElementById('pos-payment-error');
   errorEl.textContent = '';
@@ -1388,13 +1396,17 @@ function confirmPayment() {
   if (posState.paymentMode === 'split') {
     var diff = Math.round((splitTotal() - totals.grandTotal) * 100) / 100;
     if (diff !== 0) {
-      errorEl.textContent = diff > 0 ? 'Split payments exceed the total by AED ' + formatAED(diff) + '.' : 'Split payments are short by AED ' + formatAED(-diff) + '.';
+      var msg = diff > 0 ? 'Split payments exceed the total by AED ' + formatAED(diff) + '.' : 'Split payments are short by AED ' + formatAED(-diff) + '.';
+      errorEl.textContent = msg;
+      showPaymentErrorModal(msg);
       return;
     }
-    if (!posState.splitPayments.length) { errorEl.textContent = 'Add at least one payment method.'; return; }
+    if (!posState.splitPayments.length) { errorEl.textContent = 'Add at least one payment method.'; showPaymentErrorModal('Add at least one payment method.'); return; }
   } else {
     if (posState.paymentMethod === 'Cash' && posState.amountReceived < totals.grandTotal) {
-      errorEl.textContent = 'Amount received is less than the total due.';
+      var shortMsg = 'Amount received (AED ' + formatAED(posState.amountReceived) + ') is less than the total due (AED ' + formatAED(totals.grandTotal) + ').';
+      errorEl.textContent = shortMsg;
+      showPaymentErrorModal(shortMsg);
       return;
     }
   }
@@ -1859,7 +1871,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   document.getElementById('pos-split-add-btn').addEventListener('click', addSplitRow);
   document.getElementById('pos-split-amount-input').addEventListener('click', function () {
-    if (document.getElementById('pos-split-method-select').value === 'Other') { openGiftCardModal('split'); return; }
+    if (document.getElementById('pos-split-method-select').value === 'Gift Card') { openGiftCardModal('split'); return; }
     openSplitAmountModal();
   });
   document.querySelectorAll('[data-splitkp]').forEach(function (btn) {
@@ -1888,6 +1900,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pos-giftcard-modal').classList.remove('open');
   });
   document.getElementById('pos-giftcard-modal-done').addEventListener('click', commitGiftCardModal);
+  document.getElementById('pos-payment-error-modal-ok').addEventListener('click', function () {
+    document.getElementById('pos-payment-error-modal').classList.remove('open');
+  });
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', sendBillEmail);

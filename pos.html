@@ -193,6 +193,7 @@
                 <div><span class="pcs-label">Total Spent</span><span class="pcs-value" id="pos-cust-summary-spent">N/A</span></div>
                 <div><span class="pcs-label">Last Visit</span><span class="pcs-value" id="pos-cust-summary-visit">N/A</span></div>
                 <div><span class="pcs-label">Loyalty Points</span><span class="pcs-value" id="pos-cust-summary-points">N/A</span></div>
+                <div><span class="pcs-label">Gift Card Balance</span><span class="pcs-value" id="pos-cust-summary-giftcard">N/A</span></div>
               </div>
             </div>
           </div>
@@ -322,6 +323,7 @@
                   <option value="Cash">Cash</option>
                   <option value="Card">Card</option>
                   <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Gift Card">Gift Card</option>
                   <option value="Other">Other</option>
                 </select>
                 <input type="text" id="pos-split-amount-input" placeholder="Amount" readonly style="cursor:pointer;">
@@ -439,6 +441,17 @@
         <div class="modal-actions" style="margin-top:14px;">
           <button type="button" class="cancel" id="pos-giftcard-modal-cancel">Cancel</button>
           <button type="button" class="proceed" id="pos-giftcard-modal-done">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Payment mismatch popup -->
+    <div class="modal-backdrop" id="pos-payment-error-modal">
+      <div class="modal-box">
+        <h3 style="margin:0 0 10px; color:#B8142A; font-family:var(--display); font-size:1.3rem;">Amount Doesn't Match</h3>
+        <p id="pos-payment-error-modal-text">&nbsp;</p>
+        <div class="modal-actions">
+          <button type="button" class="proceed" id="pos-payment-error-modal-ok" style="width:100%;">OK</button>
         </div>
       </div>
     </div>
