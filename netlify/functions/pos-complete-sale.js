@@ -55,6 +55,7 @@ exports.handler = async function (event) {
         total: body.total,
         payment_method: body.paymentMethod,
         amount_received: body.amountReceived || null,
+        payment_breakdown: body.paymentBreakdown || null,
         reference_id: body.referenceId || null,
         sales_person: body.salesPersonOverride || session.displayName,
         notes: body.notes || null

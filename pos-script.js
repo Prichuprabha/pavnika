@@ -23,7 +23,10 @@ var posState = {
   printedOrSent: false,  // tracks whether Print or Send was used before Complete Sale
   transactionSalesPerson: null, // set only if changed mid-transaction; falls back to the logged-in user's name
   couponCode: null,
-  couponDiscountPercent: 0
+  couponDiscountPercent: 0,
+  paymentMode: 'single', // 'single' or 'split'
+  splitPayments: [],      // [{ method, amount }] — only used when paymentMode === 'split'
+  paymentConfirmed: false
 };
 var currentStepNum = 1; // tracked separately so it can be saved/restored alongside posState
 
@@ -836,7 +839,7 @@ function renderPaymentStep() {
   document.getElementById('pos-pay-total').textContent = 'AED ' + formatAED(totals.grandTotal);
 
   var discountRow = document.getElementById('pos-pay-discount-row');
-  var totalDiscount = totals.discountAmount + totals.loyaltyAmount;
+  var totalDiscount = totals.discountAmount + totals.loyaltyAmount + totals.couponAmount;
   if (totalDiscount > 0) {
     discountRow.style.display = 'flex';
     document.getElementById('pos-pay-discount-value').textContent = '\u2212 AED ' + formatAED(totalDiscount);
@@ -845,15 +848,21 @@ function renderPaymentStep() {
   }
 
   posState.amountReceived = 0;
+  posState.paymentMode = 'single';
+  posState.splitPayments = [];
   document.getElementById('pos-amount-received').value = '0';
   document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(-totals.grandTotal);
   document.getElementById('pos-pay-reference').value = '';
-  posState.printedOrSent = false;
+  document.getElementById('pos-single-payment-block').style.display = 'block';
+  document.getElementById('pos-split-payment-block').style.display = 'none';
+  document.querySelectorAll('[data-pmode]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-pmode') === 'single'); });
+  renderSplitRows();
+  lockPaymentConfirmation();
   document.getElementById('pos-payment-error').textContent = '';
+  posState.printedOrSent = false;
 
   var sendBtn = document.getElementById('pos-send-btn');
   var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
-  sendBtn.disabled = !hasEmail;
   sendBtn.textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
 }
 
@@ -863,12 +872,112 @@ function recalcChange() {
   document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(change);
 }
 
+// ---------- Split payment ----------
+
+function splitTotal() {
+  return posState.splitPayments.reduce(function (sum, p) { return sum + p.amount; }, 0);
+}
+
+function renderSplitRows() {
+  var el = document.getElementById('pos-split-rows');
+  var totals = recalcBillingTotals();
+  var remaining = totals.grandTotal - splitTotal();
+
+  if (!posState.splitPayments.length) {
+    el.innerHTML = '<p class="pos-empty-note">No payment methods added yet.</p>';
+  } else {
+    el.innerHTML = posState.splitPayments.map(function (p, i) {
+      return '<div class="pos-split-row"><span class="psr-method">' + p.method + '</span>' +
+        '<span>AED ' + formatAED(p.amount) + '</span>' +
+        '<button type="button" class="psr-remove" data-split-remove="' + i + '">&times;</button></div>';
+    }).join('');
+    el.querySelectorAll('[data-split-remove]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        posState.splitPayments.splice(parseInt(btn.getAttribute('data-split-remove'), 10), 1);
+        lockPaymentConfirmation();
+        renderSplitRows();
+      });
+    });
+  }
+
+  var remainingEl = document.getElementById('pos-split-remaining');
+  remainingEl.textContent = 'AED ' + formatAED(remaining);
+  remainingEl.style.color = remaining < 0 ? '#B8142A' : (remaining === 0 ? '#2c5c37' : 'inherit');
+}
+
+function addSplitRow() {
+  var method = document.getElementById('pos-split-method-select').value;
+  var amount = parseFloat(document.getElementById('pos-split-amount-input').value);
+  if (!amount || amount <= 0) { alert('Enter a valid amount first.'); return; }
+  posState.splitPayments.push({ method: method, amount: amount });
+  document.getElementById('pos-split-amount-input').value = '';
+  lockPaymentConfirmation();
+  renderSplitRows();
+}
+
+// ---------- Confirm payment ----------
+
+function lockPaymentConfirmation() {
+  posState.paymentConfirmed = false;
+  document.getElementById('pos-print-btn').disabled = true;
+  document.getElementById('pos-send-btn').disabled = true;
+  document.getElementById('pos-complete-sale-btn').disabled = true;
+  document.getElementById('pos-payment-breakup').innerHTML = '<p class="pos-empty-note">Confirm payment to see the breakup.</p>';
+}
+
+function renderPaymentBreakup() {
+  var totals = recalcBillingTotals();
+  var el = document.getElementById('pos-payment-breakup');
+  var rows = [];
+
+  if (posState.paymentMode === 'split') {
+    posState.splitPayments.forEach(function (p) {
+      rows.push('<div class="pos-breakup-row"><span>' + p.method + '</span><span>AED ' + formatAED(p.amount) + '</span></div>');
+    });
+  } else {
+    rows.push('<div class="pos-breakup-row"><span>' + posState.paymentMethod + '</span><span>AED ' + formatAED(posState.amountReceived) + '</span></div>');
+    var change = posState.amountReceived - totals.grandTotal;
+    if (posState.paymentMethod === 'Cash' && change > 0) {
+      rows.push('<div class="pos-breakup-row"><span>Change</span><span>AED ' + formatAED(change) + '</span></div>');
+    }
+  }
+  el.innerHTML = rows.join('');
+}
+
+function confirmPayment() {
+  var errorEl = document.getElementById('pos-payment-error');
+  errorEl.textContent = '';
+  var totals = recalcBillingTotals();
+
+  if (posState.paymentMode === 'split') {
+    var diff = Math.round((splitTotal() - totals.grandTotal) * 100) / 100;
+    if (diff !== 0) {
+      errorEl.textContent = diff > 0 ? 'Split payments exceed the total by AED ' + formatAED(diff) + '.' : 'Split payments are short by AED ' + formatAED(-diff) + '.';
+      return;
+    }
+    if (!posState.splitPayments.length) { errorEl.textContent = 'Add at least one payment method.'; return; }
+  } else {
+    if (posState.paymentMethod === 'Cash' && posState.amountReceived < totals.grandTotal) {
+      errorEl.textContent = 'Amount received is less than the total due.';
+      return;
+    }
+  }
+
+  posState.paymentConfirmed = true;
+  document.getElementById('pos-print-btn').disabled = false;
+  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
+  document.getElementById('pos-send-btn').disabled = !hasEmail;
+  document.getElementById('pos-complete-sale-btn').disabled = false;
+  renderPaymentBreakup();
+}
+
 function setAmountReceived(newValueStr) {
   if (newValueStr.length > 8) return;
   if ((newValueStr.match(/\./g) || []).length > 1) return;
   posState.amountReceived = parseFloat(newValueStr) || 0;
   document.getElementById('pos-amount-received').value = newValueStr || '0';
   recalcChange();
+  lockPaymentConfirmation();
 }
 
 function handleAmountKeypad(key) {
@@ -941,6 +1050,7 @@ function sendBillEmail() {
 }
 
 function completeSale() {
+  if (!posState.paymentConfirmed) { alert('Please confirm payment first.'); return; }
   var totals = recalcBillingTotals();
   var errorEl = document.getElementById('pos-payment-error');
   errorEl.textContent = '';
@@ -948,6 +1058,10 @@ function completeSale() {
   var btn = document.getElementById('pos-complete-sale-btn');
   btn.disabled = true;
   btn.textContent = 'Saving...';
+
+  var paymentMethodSummary = posState.paymentMode === 'split'
+    ? 'Split: ' + posState.splitPayments.map(function (p) { return p.method; }).join(', ')
+    : posState.paymentMethod;
 
   fetch('/.netlify/functions/pos-complete-sale', {
     method: 'POST',
@@ -963,8 +1077,9 @@ function completeSale() {
       loyaltyPointsRedeemed: posState.loyaltyRedeemed,
       vatAmount: 0,
       total: totals.grandTotal,
-      paymentMethod: posState.paymentMethod,
-      amountReceived: posState.amountReceived,
+      paymentMethod: paymentMethodSummary,
+      paymentBreakdown: posState.paymentMode === 'split' ? posState.splitPayments : [{ method: posState.paymentMethod, amount: posState.amountReceived }],
+      amountReceived: posState.paymentMode === 'split' ? totals.grandTotal : posState.amountReceived,
       referenceId: document.getElementById('pos-pay-reference').value.trim() || null,
       salesPersonOverride: posState.transactionSalesPerson || null,
       couponCode: posState.couponCode || null,
@@ -1229,11 +1344,28 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
       el.classList.add('active');
       posState.paymentMethod = el.getAttribute('data-method');
+      if (posState.paymentMethod !== 'Cash') {
+        var totals = recalcBillingTotals();
+        setAmountReceived(String(totals.grandTotal));
+      }
+      lockPaymentConfirmation();
     });
   });
   document.querySelectorAll('[data-akp]').forEach(function (btn) {
     btn.addEventListener('click', function () { handleAmountKeypad(btn.getAttribute('data-akp')); });
   });
+  document.querySelectorAll('[data-pmode]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('[data-pmode]').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      posState.paymentMode = btn.getAttribute('data-pmode');
+      document.getElementById('pos-single-payment-block').style.display = posState.paymentMode === 'single' ? 'block' : 'none';
+      document.getElementById('pos-split-payment-block').style.display = posState.paymentMode === 'split' ? 'block' : 'none';
+      lockPaymentConfirmation();
+    });
+  });
+  document.getElementById('pos-split-add-btn').addEventListener('click', addSplitRow);
+  document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', sendBillEmail);
   document.getElementById('pos-complete-sale-btn').addEventListener('click', function () {

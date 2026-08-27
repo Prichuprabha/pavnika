@@ -274,46 +274,75 @@
         <div class="panel">
           <h3>Payment Method</h3>
           <div class="scroll-zone">
-            <div class="pay-methods">
-              <div class="pay-method active" data-method="Cash">
-                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
-                Cash
+            <div class="discount-toggle" style="margin-bottom:10px;">
+              <button type="button" class="active" data-pmode="single">Single Payment</button>
+              <button type="button" data-pmode="split">Split Payment</button>
+            </div>
+
+            <div id="pos-single-payment-block">
+              <div class="pay-methods">
+                <div class="pay-method active" data-method="Cash">
+                  <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                  Cash
+                </div>
+                <div class="pay-method disabled" data-method="Card">
+                  <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  Card <span class="placeholder-tag">Later</span>
+                </div>
+                <div class="pay-method" data-method="Bank Transfer">
+                  <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="15" y1="21" x2="15" y2="13"/></svg>
+                  Bank Transfer
+                </div>
+                <div class="pay-method" data-method="Other">
+                  <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  Other
+                </div>
               </div>
-              <div class="pay-method disabled" data-method="Card">
-                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                Card <span class="placeholder-tag">Later</span>
+              <label>Amount Received</label>
+              <div class="keypad-field">
+                <input type="text" id="pos-amount-received" value="0" readonly>
+                <button type="button" class="kp-btn" data-akp="back">&#9003;</button>
               </div>
-              <div class="pay-method" data-method="Bank Transfer">
-                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="15" y1="21" x2="15" y2="13"/></svg>
-                Bank Transfer
+              <div class="keypad">
+                <button type="button" data-akp="1">1</button><button type="button" data-akp="2">2</button><button type="button" data-akp="3">3</button>
+                <button type="button" data-akp="4">4</button><button type="button" data-akp="5">5</button><button type="button" data-akp="6">6</button>
+                <button type="button" data-akp="7">7</button><button type="button" data-akp="8">8</button><button type="button" data-akp="9">9</button>
+                <button type="button" class="clear" data-akp="clear">C</button><button type="button" data-akp="0">0</button><button type="button" data-akp=".">.</button>
               </div>
-              <div class="pay-method" data-method="Other">
-                <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                Other
+              <div class="bill-row"><span>Change</span><span id="pos-pay-change">AED 0.00</span></div>
+            </div>
+
+            <div id="pos-split-payment-block" style="display:none;">
+              <div id="pos-split-rows"></div>
+              <div class="bill-row"><span>Remaining to Allocate</span><span id="pos-split-remaining">AED 0.00</span></div>
+              <div class="pos-split-add-row">
+                <select id="pos-split-method-select">
+                  <option value="Cash">Cash</option>
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="Other">Other</option>
+                </select>
+                <input type="number" id="pos-split-amount-input" placeholder="Amount" min="0" step="0.01">
+                <button type="button" id="pos-split-add-btn">+ Add</button>
               </div>
             </div>
-            <label>Amount Received</label>
-            <div class="keypad-field">
-              <input type="text" id="pos-amount-received" value="0" readonly>
-              <button type="button" class="kp-btn" data-akp="back">&#9003;</button>
-            </div>
-            <div class="keypad">
-              <button type="button" data-akp="1">1</button><button type="button" data-akp="2">2</button><button type="button" data-akp="3">3</button>
-              <button type="button" data-akp="4">4</button><button type="button" data-akp="5">5</button><button type="button" data-akp="6">6</button>
-              <button type="button" data-akp="7">7</button><button type="button" data-akp="8">8</button><button type="button" data-akp="9">9</button>
-              <button type="button" class="clear" data-akp="clear">C</button><button type="button" data-akp="0">0</button><button type="button" data-akp=".">.</button>
-            </div>
-            <div class="bill-row"><span>Change</span><span id="pos-pay-change">AED 0.00</span></div>
+
             <label>Reference / Transaction ID</label>
             <input type="text" id="pos-pay-reference" placeholder="Optional">
           </div>
         </div>
         <div class="panel">
-          <h3>Sale Actions</h3>
-          <button type="button" class="action-btn primary-action" id="pos-print-btn">Print Bill</button>
-          <button type="button" class="action-btn" id="pos-send-btn" disabled>Send Bill (Email)</button>
-          <p class="pos-error" id="pos-payment-error"></p>
-          <button type="button" class="action-btn complete" id="pos-complete-sale-btn" style="margin-top:auto;">Complete Sale</button>
+          <h3>Payment Breakup</h3>
+          <div id="pos-payment-breakup" class="scroll-zone">
+            <p class="pos-empty-note">Select a payment method to see the breakup.</p>
+          </div>
+          <button type="button" class="btn btn-primary" id="pos-confirm-payment-btn" style="margin-top:10px;">Confirm Payment</button>
+          <div style="margin-top:14px; border-top:1px solid var(--stone); padding-top:14px;">
+            <h3 style="margin-bottom:10px;">Sale Actions</h3>
+            <button type="button" class="action-btn primary-action" id="pos-print-btn" disabled>Print Bill</button>
+            <button type="button" class="action-btn" id="pos-send-btn" disabled>Send Bill (Email)</button>
+            <p class="pos-error" id="pos-payment-error"></p>
+            <button type="button" class="action-btn complete" id="pos-complete-sale-btn" disabled>Complete Sale</button>
+          </div>
         </div>
       </div>
     </div>
