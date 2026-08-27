@@ -72,10 +72,12 @@
             <label>Scan / Enter Code</label>
             <div class="scan-row">
               <input type="text" id="pos-item-code" placeholder="Scan or type code, then Enter" autocomplete="off">
-              <button id="pos-item-lookup-btn">Go</button>
+              <button id="pos-item-lookup-btn">Scan</button>
               <div class="pos-suggest-list" id="pos-suggest-list"></div>
             </div>
             <p class="pos-error" id="pos-item-error"></p>
+            <label>Item Code</label>
+            <input type="text" id="pos-item-matched-code" readonly>
             <label>Item Name</label>
             <input type="text" id="pos-item-name" readonly>
             <div class="field-grid-2">
@@ -90,19 +92,28 @@
           </div>
         </div>
         <div class="panel saree-preview">
-          <h3>Preview</h3>
-          <div class="pos-preview-box" id="pos-preview-box">
-            <div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>
-          </div>
-          <div class="qty-row">
-            <span class="qty-label">Quantity</span>
-            <div class="qty-controls">
-              <button id="pos-qty-minus">&minus;</button>
-              <span class="qty-num" id="pos-qty-num">1</span>
-              <button id="pos-qty-plus">+</button>
+          <h3 id="pos-preview-heading">Browse Sarees</h3>
+          <div class="pos-browse-cats" id="pos-browse-cats"></div>
+
+          <!-- Default view: visual grid to browse/select without typing a code -->
+          <div class="pos-browse-grid scroll-zone" id="pos-browse-grid"></div>
+
+          <!-- Shown once an item is selected, either by typing/scanning or clicking a grid tile -->
+          <div id="pos-selected-preview" style="display:none; flex:1; min-height:0; flex-direction:column;">
+            <div class="pos-preview-box" id="pos-preview-box">
+              <div id="pos-item-noimg" class="pos-noimg">Scan or enter a code to preview the item</div>
             </div>
+            <div class="qty-row">
+              <span class="qty-label">Quantity</span>
+              <div class="qty-controls">
+                <button id="pos-qty-minus">&minus;</button>
+                <span class="qty-num" id="pos-qty-num">1</span>
+                <button id="pos-qty-plus">+</button>
+              </div>
+            </div>
+            <button class="btn btn-gold" id="pos-add-to-cart-btn" disabled>Add to Cart</button>
+            <button type="button" class="btn btn-outline" id="pos-back-to-browse-btn" style="margin-top:8px;">&larr; Back to Browse</button>
           </div>
-          <button class="btn btn-gold" id="pos-add-to-cart-btn" disabled>Add to Cart</button>
         </div>
         <div class="panel">
           <h3>Cart Summary <span class="pos-item-count" id="pos-cart-count"></span></h3>

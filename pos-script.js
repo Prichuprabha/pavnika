@@ -216,8 +216,23 @@ function itemDisplayName(item) {
   return (item.series ? item.series + ' \u2014 ' : '') + (item.type || item.material || '');
 }
 
+function showBrowseView() {
+  document.getElementById('pos-preview-heading').textContent = 'Browse Sarees';
+  document.getElementById('pos-browse-cats').style.display = 'flex';
+  document.getElementById('pos-browse-grid').style.display = 'grid';
+  document.getElementById('pos-selected-preview').style.display = 'none';
+}
+
+function showSelectedView() {
+  document.getElementById('pos-preview-heading').textContent = 'Preview';
+  document.getElementById('pos-browse-cats').style.display = 'none';
+  document.getElementById('pos-browse-grid').style.display = 'none';
+  document.getElementById('pos-selected-preview').style.display = 'flex';
+}
+
 function populateItemFields(match) {
   posState.currentLookupItem = match;
+  document.getElementById('pos-item-matched-code').value = match.id;
   document.getElementById('pos-item-name').value = itemDisplayName(match);
   document.getElementById('pos-item-category').value = match.category || '\u2014';
   document.getElementById('pos-item-material').value = match.material || '\u2014';
@@ -236,6 +251,7 @@ function populateItemFields(match) {
   posState.currentQty = 1;
   document.getElementById('pos-qty-num').textContent = '1';
   document.getElementById('pos-add-to-cart-btn').disabled = false;
+  showSelectedView();
 
   var errorEl = document.getElementById('pos-item-error');
   errorEl.textContent = match.sold ? 'Warning: this item is already marked sold. Double-check before adding.' : '';
@@ -243,6 +259,7 @@ function populateItemFields(match) {
 
 function clearItemFields() {
   document.getElementById('pos-item-code').value = '';
+  document.getElementById('pos-item-matched-code').value = '';
   document.getElementById('pos-item-name').value = '';
   document.getElementById('pos-item-category').value = '';
   document.getElementById('pos-item-material').value = '';
@@ -257,7 +274,48 @@ function clearItemFields() {
   posState.currentQty = 1;
   document.getElementById('pos-qty-num').textContent = '1';
   hideSuggestions();
+  showBrowseView();
 }
+
+// ---------- Visual browse grid ----------
+
+function renderBrowseCats() {
+  var products = window.PRODUCTS || [];
+  var cats = [];
+  products.forEach(function (p) { if (p.category && cats.indexOf(p.category) === -1) cats.push(p.category); });
+  cats.sort();
+  var el = document.getElementById('pos-browse-cats');
+  el.innerHTML = '<button type="button" class="pos-browse-cat-btn active" data-cat="All">All</button>' +
+    cats.map(function (c) { return '<button type="button" class="pos-browse-cat-btn" data-cat="' + c + '">' + c + '</button>'; }).join('');
+  el.querySelectorAll('.pos-browse-cat-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      el.querySelectorAll('.pos-browse-cat-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      renderBrowseGrid(btn.getAttribute('data-cat'));
+    });
+  });
+}
+
+function renderBrowseGrid(categoryFilter) {
+  var products = window.PRODUCTS || [];
+  var filtered = (!categoryFilter || categoryFilter === 'All') ? products : products.filter(function (p) { return p.category === categoryFilter; });
+  var el = document.getElementById('pos-browse-grid');
+  if (!filtered.length) { el.innerHTML = '<p class="pos-empty-note">No items in this category.</p>'; return; }
+  el.innerHTML = filtered.map(function (p) {
+    var imgTag = p.image ? '<img src="' + p.image + '">' : '<div style="height:90px;background:var(--ivory-deep);"></div>';
+    return '<div class="pos-browse-tile' + (p.sold ? ' pt-sold' : '') + '" data-browse-id="' + p.id + '">' + imgTag +
+      '<div class="pt-code">' + p.id + '</div><div class="pt-price">AED ' + formatAED(p.price) + (p.sold ? ' \u2014 Sold' : '') + '</div></div>';
+  }).join('');
+  el.querySelectorAll('[data-browse-id]').forEach(function (tile) {
+    tile.addEventListener('click', function () {
+      var id = tile.getAttribute('data-browse-id');
+      var match = products.filter(function (p) { return p.id === id; })[0];
+      if (match) populateItemFields(match);
+    });
+  });
+}
+
+
 
 function lookupItem() {
   var code = document.getElementById('pos-item-code').value.trim().toUpperCase();
@@ -960,6 +1018,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-qty-plus').addEventListener('click', function () { changeQty(1); });
   document.getElementById('pos-add-to-cart-btn').addEventListener('click', addToCart);
   document.getElementById('pos-clear-item-btn').addEventListener('click', clearItemFields);
+  document.getElementById('pos-back-to-browse-btn').addEventListener('click', clearItemFields);
+  renderBrowseCats();
+  renderBrowseGrid('All');
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
     showStep(2);
