@@ -98,6 +98,7 @@ function showPosApp(displayName) {
   document.getElementById('pos-login-screen').style.display = 'none';
   document.getElementById('pos-app').style.display = 'flex';
   document.querySelector('.pos-brand').textContent = 'Pavnika POS \u2014 ' + displayName;
+  loadRecentCustomers();
 }
 
 function attemptLogin() {
@@ -1034,7 +1035,6 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-back-to-browse-btn').addEventListener('click', clearItemFields);
   renderBrowseCats();
   renderBrowseGrid('All');
-  loadRecentCustomers();
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
     showStep(2);

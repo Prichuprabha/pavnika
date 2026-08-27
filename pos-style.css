@@ -265,9 +265,9 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-browse-cats { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; flex-shrink: 0; }
 .pos-browse-cat-btn { padding: 6px 12px; border: 1.5px solid var(--stone); border-radius: 999px; background: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; color: var(--ink); }
 .pos-browse-cat-btn.active { background: var(--green-deep); color: #fff; border-color: var(--green-deep); }
-.pos-browse-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; flex: 1; min-height: 0; align-content: start; }
-.pos-browse-tile { border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; cursor: pointer; background: #fff; text-align: center; }
-.pos-browse-tile img { width: 100%; height: 90px; object-fit: cover; display: block; }
+.pos-browse-grid { display: grid; grid-template-columns: repeat(2, 1fr); grid-auto-rows: min-content; gap: 8px; flex: 1; min-height: 0; align-content: start; overflow-y: auto; }
+.pos-browse-tile { border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; cursor: pointer; background: #fff; text-align: center; flex-shrink: 0; }
+.pos-browse-tile img { width: 100%; height: 68px; object-fit: cover; display: block; }
 .pos-browse-tile .pt-code { font-size: 0.68rem; font-weight: 700; color: var(--green-deep); padding: 4px 4px 0; }
 .pos-browse-tile .pt-price { font-size: 0.66rem; color: #8a7266; padding: 0 4px 6px; }
 .pos-browse-tile.pt-sold { opacity: 0.4; }
