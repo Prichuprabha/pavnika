@@ -179,6 +179,8 @@ function showStep(n) {
     return;
   }
   currentStepNum = n;
+  document.querySelectorAll('.page-content').forEach(function (el) { el.style.display = 'none'; });
+  document.getElementById('stepTracker').style.display = 'flex';
   document.querySelectorAll('.step-content').forEach(function (el) { el.style.display = 'none'; });
   document.getElementById('step-' + n).style.display = 'grid';
   document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
@@ -199,6 +201,130 @@ function showStep(n) {
   if (n === 3) renderBillingStep();
   if (n === 4) renderPaymentStep();
   refreshStepLocks();
+}
+
+function showPage(pageName) {
+  document.querySelectorAll('.step-content').forEach(function (el) { el.style.display = 'none'; });
+  document.getElementById('stepTracker').style.display = 'none';
+  document.querySelectorAll('.page-content').forEach(function (el) { el.style.display = 'none'; });
+  document.getElementById('page-' + pageName).style.display = 'block';
+  document.querySelectorAll('.nav-link[data-step]').forEach(function (el) { el.classList.remove('active'); });
+  document.querySelectorAll('.nav-link[data-page]').forEach(function (el) {
+    el.classList.toggle('active', el.getAttribute('data-page') === pageName);
+  });
+  if (pageName === 'hold') loadHeldSales();
+}
+
+// ---------- Hold / Parked Sales page ----------
+
+function loadHeldSales() {
+  var rowsEl = document.getElementById('pos-held-sales-rows');
+  fetch('/.netlify/functions/pos-list-held-sales', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken() })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      var sales = data.heldSales || [];
+      if (!sales.length) {
+        rowsEl.innerHTML = '<tr><td colspan="6" style="opacity:0.6;">No parked sales right now.</td></tr>';
+        return;
+      }
+      rowsEl.innerHTML = sales.map(function (s) {
+        var cartId = 'CART-' + s.id.slice(0, 6).toUpperCase();
+        var customerName = s.customer_json ? s.customer_json.name : 'Walk-in Customer';
+        var itemCount = (s.cart_json || []).reduce(function (sum, c) { return sum + c.qty; }, 0);
+        var amount = (s.cart_json || []).reduce(function (sum, c) { return sum + c.price * c.qty; }, 0);
+        var time = new Date(s.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+        return '<tr><td>' + cartId + '</td><td>' + customerName + '</td><td>' + itemCount + '</td><td>AED ' + formatAED(amount) + '</td><td>' + time + '</td>' +
+          '<td><button type="button" class="table-action-btn btn-resume" data-resume="' + s.id + '">Resume</button>' +
+          '<button type="button" class="table-action-btn btn-delete" data-delete-held="' + s.id + '">Delete</button></td></tr>';
+      }).join('');
+
+      rowsEl.querySelectorAll('[data-resume]').forEach(function (btn) {
+        btn.addEventListener('click', function () { resumeHeldSale(btn.getAttribute('data-resume')); });
+      });
+      rowsEl.querySelectorAll('[data-delete-held]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          if (confirm('Delete this parked sale permanently? This cannot be undone.')) deleteHeldSale(btn.getAttribute('data-delete-held'));
+        });
+      });
+    })
+    .catch(function (e) {
+      console.error('load held sales error:', e);
+      rowsEl.innerHTML = '<tr><td colspan="6">Could not load parked sales.</td></tr>';
+    });
+}
+
+function resumeHeldSale(id) {
+  if (posState.cart.length && !confirm('You have items in the current cart already. Resuming this parked sale will replace them. Continue?')) {
+    return;
+  }
+  fetch('/.netlify/functions/pos-resume-held-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), id: id })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      if (!result.ok) { alert(result.data.error || 'Could not resume this sale.'); return; }
+      var held = result.data.heldSale;
+
+      posState.cart = held.cart_json || [];
+      posState.selectedCustomer = held.customer_json || null;
+      posState.discountType = held.discount_type || 'percent';
+      posState.discountValue = held.discount_value || 0;
+      posState.couponCode = null;
+      posState.couponDiscountPercent = 0;
+
+      renderCart();
+      refreshStepLocks();
+
+      // Re-validate the coupon rather than trusting the stored percent
+      // blindly — it may have expired or been used elsewhere since
+      // this sale was parked.
+      var finishResume = function () {
+        showStep(3);
+        if (held.notes) document.getElementById('pos-bill-notes').value = held.notes;
+      };
+
+      if (held.coupon_code) {
+        fetch('/.netlify/functions/validate-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code: held.coupon_code })
+        })
+          .then(function (res) { return res.json(); })
+          .then(function (data) {
+            if (data.valid) {
+              posState.couponCode = data.code;
+              posState.couponDiscountPercent = data.discountPercent;
+            } else {
+              alert('The coupon on this parked sale ("' + held.coupon_code + '") is no longer valid and was not re-applied.');
+            }
+            finishResume();
+          })
+          .catch(finishResume);
+      } else {
+        finishResume();
+      }
+    })
+    .catch(function () { alert('Could not reach the server. Please try again.'); });
+}
+
+function deleteHeldSale(id) {
+  fetch('/.netlify/functions/pos-delete-held-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), id: id })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      if (!result.ok) { alert(result.data.error || 'Could not delete this sale.'); return; }
+      loadHeldSales();
+    })
+    .catch(function () { alert('Could not reach the server. Please try again.'); });
 }
 
 function refreshStepLocks() {
@@ -1241,6 +1367,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
     el.addEventListener('click', function () { showStep(parseInt(el.getAttribute('data-step'), 10)); });
+  });
+  document.querySelectorAll('.nav-link[data-page]').forEach(function (el) {
+    el.addEventListener('click', function () { showPage(el.getAttribute('data-page')); });
   });
   document.querySelectorAll('.step-item').forEach(function (el) {
     el.addEventListener('click', function () { showStep(parseInt(el.getAttribute('data-s'), 10)); });

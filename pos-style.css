@@ -297,3 +297,12 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 /* ---------- Payment breakup panel ---------- */
 .pos-breakup-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #f0e8e0; }
 .pos-breakup-row:last-child { border-bottom: none; }
+
+/* ---------- Standalone pages (Hold/Park, Return/Exchange, Sales History) ---------- */
+.page-content { display: none; }
+.pos-data-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+.pos-data-table th { text-align: left; padding: 10px 8px; border-bottom: 2px solid var(--stone); color: #8a7266; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.pos-data-table td { padding: 10px 8px; border-bottom: 1px solid #f0e8e0; }
+.pos-data-table .table-action-btn { padding: 6px 12px; border-radius: 7px; border: none; font-size: 0.74rem; font-weight: 700; cursor: pointer; margin-right: 4px; }
+.pos-data-table .btn-resume { background: var(--gold); color: #fff; }
+.pos-data-table .btn-delete { background: #fdeaea; color: #B8142A; }
