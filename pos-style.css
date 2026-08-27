@@ -271,3 +271,9 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-browse-tile .pt-code { font-size: 0.68rem; font-weight: 700; color: var(--green-deep); padding: 4px 4px 0; }
 .pos-browse-tile .pt-price { font-size: 0.66rem; color: #8a7266; padding: 0 4px 6px; }
 .pos-browse-tile.pt-sold { opacity: 0.4; }
+
+/* ---------- Customer summary card ---------- */
+.pos-cust-summary { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--stone); flex-shrink: 0; }
+.pos-cust-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+.pcs-label { display: block; font-size: 0.68rem; color: #8a7266; text-transform: uppercase; letter-spacing: 0.04em; }
+.pcs-value { display: block; font-size: 0.9rem; font-weight: 700; color: var(--green-deep); margin-top: 2px; }

@@ -441,69 +441,80 @@ function renderCart() {
 
 // ---------- Customer (Step 2) ----------
 
-var custSearchDebounce = null;
+var recentCustomersCache = [];
 
-function hideCustDropdown() {
-  var list = document.getElementById('pos-cust-suggest-list');
-  list.classList.remove('open');
-  list.innerHTML = '';
+function loadRecentCustomers() {
+  fetch('/.netlify/functions/pos-search-customers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), query: '' })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      recentCustomersCache = data.customers || [];
+      renderCustomerList(recentCustomersCache);
+    })
+    .catch(function (e) {
+      console.error('load recent customers error:', e);
+      document.getElementById('pos-cust-list').innerHTML = '<p class="pos-empty-note">Could not load customers.</p>';
+    });
 }
 
-function searchCustomers(query) {
-  var emptyNote = document.getElementById('pos-cust-empty-note');
-  clearTimeout(custSearchDebounce);
-
-  if (!query) {
-    hideCustDropdown();
-    emptyNote.textContent = 'Type to search existing customers.';
-    emptyNote.style.display = 'block';
+function renderCustomerList(customers) {
+  var listEl = document.getElementById('pos-cust-list');
+  if (!customers.length) {
+    listEl.innerHTML = '<p class="pos-empty-note">No customers found.</p>';
     return;
   }
+  listEl.innerHTML = customers.map(function (c) {
+    return '<div class="cust-list-item" data-cust-id="' + c.id + '">' +
+      '<span class="name">' + c.name + '</span>' +
+      '<span class="phone">' + c.phone_country_code + ' ' + c.phone + '</span></div>';
+  }).join('');
+  listEl.querySelectorAll('[data-cust-id]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var picked = customers.filter(function (c) { return c.id === el.getAttribute('data-cust-id'); })[0];
+      if (picked) selectCustomer(picked);
+    });
+  });
+}
 
-  // Show feedback immediately rather than leaving the UI looking idle
-  // while the debounce timer and network round-trip are in progress.
-  hideCustDropdown();
-  emptyNote.textContent = 'Searching...';
-  emptyNote.style.display = 'block';
+// Filters the already-fetched list client-side — no network round-trip
+// per keystroke, since the whole recent-customers list is already in
+// memory. This is what actually fixes the earlier "search feels slow"
+// complaint properly: the remaining delay was genuinely network
+// latency per request, so removing the repeated requests removes the
+// delay entirely, rather than just shortening a debounce timer.
+function filterCustomerList(query) {
+  var q = query.trim().toLowerCase();
+  if (!q) { renderCustomerList(recentCustomersCache); return; }
+  var filtered = recentCustomersCache.filter(function (c) {
+    return c.name.toLowerCase().indexOf(q) !== -1 || c.phone.indexOf(q) !== -1;
+  });
+  renderCustomerList(filtered);
+}
 
-  custSearchDebounce = setTimeout(function () {
-    fetch('/.netlify/functions/pos-search-customers', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ posToken: getPosToken(), query: query })
+function loadCustomerSummary(customerId) {
+  var box = document.getElementById('pos-cust-summary');
+  fetch('/.netlify/functions/pos-customer-summary', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), customerId: customerId })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      document.getElementById('pos-cust-summary-purchases').textContent = data.totalPurchases;
+      document.getElementById('pos-cust-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
+      document.getElementById('pos-cust-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
+      document.getElementById('pos-cust-summary-points').textContent = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
+      box.style.display = 'block';
     })
-      .then(function (res) { return res.json(); })
-      .then(function (data) {
-        var customers = data.customers || [];
-        var list = document.getElementById('pos-cust-suggest-list');
-        if (!customers.length) {
-          hideCustDropdown();
-          emptyNote.textContent = 'No matching customers.';
-          emptyNote.style.display = 'block';
-          return;
-        }
-        emptyNote.style.display = 'none';
-        list.innerHTML = customers.map(function (c) {
-          return '<div class="pos-suggest-item" data-cust-id="' + c.id + '">' +
-            '<div class="si-info"><div class="si-name">' + c.name + '</div>' +
-            '<div class="si-sub">' + c.phone_country_code + ' ' + c.phone + '</div></div></div>';
-        }).join('');
-        list.classList.add('open');
-        list.querySelectorAll('[data-cust-id]').forEach(function (el) {
-          el.addEventListener('click', function () {
-            var picked = customers.filter(function (c) { return c.id === el.getAttribute('data-cust-id'); })[0];
-            hideCustDropdown();
-            document.getElementById('pos-cust-search').value = picked.name;
-            selectCustomer(picked);
-          });
-        });
-      })
-      .catch(function (e) { console.error('customer search error:', e); });
-  }, 80);
+    .catch(function (e) { console.error('customer summary error:', e); });
 }
 
 function selectCustomer(customer) {
   posState.selectedCustomer = customer;
+  document.getElementById('pos-cust-search').value = customer.name;
   document.getElementById('pos-cust-name').value = customer.name;
   document.getElementById('pos-cust-code').value = customer.phone_country_code;
   document.getElementById('pos-cust-phone').value = customer.phone;
@@ -512,6 +523,7 @@ function selectCustomer(customer) {
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn) {
     btn.classList.toggle('active', btn.getAttribute('data-v') === customer.emirate);
   });
+  loadCustomerSummary(customer.id);
   refreshStepLocks();
 }
 
@@ -523,10 +535,11 @@ function clearCustomerForm() {
   document.getElementById('pos-cust-email').value = '';
   document.getElementById('pos-cust-address').value = '';
   document.getElementById('pos-cust-error').textContent = '';
+  document.getElementById('pos-cust-summary').style.display = 'none';
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn, i) {
     btn.classList.toggle('active', i === 0);
   });
-  hideCustDropdown();
+  renderCustomerList(recentCustomersCache);
   refreshStepLocks();
 }
 
@@ -1021,6 +1034,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-back-to-browse-btn').addEventListener('click', clearItemFields);
   renderBrowseCats();
   renderBrowseGrid('All');
+  loadRecentCustomers();
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
     showStep(2);
@@ -1029,12 +1043,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Customer
   var custSearchInput = document.getElementById('pos-cust-search');
   custSearchInput.addEventListener('input', function (e) {
-    searchCustomers(e.target.value.trim());
-  });
-  document.addEventListener('click', function (e) {
-    if (!custSearchInput.contains(e.target) && !document.getElementById('pos-cust-suggest-list').contains(e.target)) {
-      hideCustDropdown();
-    }
+    filterCustomerList(e.target.value);
   });
   document.getElementById('pos-new-cust-btn').addEventListener('click', clearCustomerForm);
   document.getElementById('pos-clear-cust-btn').addEventListener('click', clearCustomerForm);

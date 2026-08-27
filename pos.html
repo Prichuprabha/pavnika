@@ -131,12 +131,11 @@
       <div class="s2-grid">
         <div class="panel">
           <h3>Existing Customer</h3>
-          <div style="position:relative;">
-            <input type="text" id="pos-cust-search" placeholder="Search by name or mobile" autocomplete="off">
-            <div class="pos-suggest-list pos-cust-dropdown" id="pos-cust-suggest-list"></div>
+          <input type="text" id="pos-cust-search" placeholder="Type name or mobile number" autocomplete="off">
+          <div class="scroll-zone" id="pos-cust-list" style="margin-top:8px;">
+            <p class="pos-empty-note">Loading recent customers...</p>
           </div>
-          <p class="pos-empty-note" id="pos-cust-empty-note">Type to search existing customers.</p>
-          <button class="btn btn-gold" id="pos-new-cust-btn" style="margin-top:12px;">+ New Customer</button>
+          <button class="btn btn-gold" id="pos-new-cust-btn" style="margin-top:12px; flex-shrink:0;">+ New Customer</button>
         </div>
         <div class="panel">
           <h3>Customer Details</h3>
@@ -184,6 +183,16 @@
             </div>
             <p class="pos-error" id="pos-cust-error"></p>
             <button type="button" class="btn btn-outline" id="pos-clear-cust-btn">Clear Fields</button>
+
+            <div class="pos-cust-summary" id="pos-cust-summary" style="display:none;">
+              <h3 style="margin-bottom:8px;">Customer Summary</h3>
+              <div class="pos-cust-summary-grid">
+                <div><span class="pcs-label">Total Purchases</span><span class="pcs-value" id="pos-cust-summary-purchases">—</span></div>
+                <div><span class="pcs-label">Total Spent</span><span class="pcs-value" id="pos-cust-summary-spent">—</span></div>
+                <div><span class="pcs-label">Last Visit</span><span class="pcs-value" id="pos-cust-summary-visit">—</span></div>
+                <div><span class="pcs-label">Loyalty Points</span><span class="pcs-value" id="pos-cust-summary-points">—</span></div>
+              </div>
+            </div>
           </div>
           <button class="btn btn-primary" id="pos-proceed-billing-btn">Proceed to Billing &rarr;</button>
         </div>
