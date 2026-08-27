@@ -275,7 +275,7 @@
         <div class="panel">
           <h3>Payment Method</h3>
           <div class="scroll-zone">
-            <div class="discount-toggle" style="margin-bottom:10px;">
+            <div class="discount-toggle pos-pmode-toggle" style="margin-bottom:10px;">
               <button type="button" class="active" data-pmode="single">Single Payment</button>
               <button type="button" data-pmode="split">Split Payment</button>
             </div>
@@ -313,16 +313,17 @@
               <div class="bill-row"><span>Change</span><span id="pos-pay-change">AED 0.00</span></div>
             </div>
 
-            <div id="pos-split-payment-block" style="display:none;">
-              <div id="pos-split-rows"></div>
-              <div class="bill-row"><span>Remaining to Allocate</span><span id="pos-split-remaining">AED 0.00</span></div>
-              <div class="pos-split-add-row">
+            <div id="pos-split-payment-block" style="display:none; flex:1; min-height:0; flex-direction:column;">
+              <div class="bill-row" style="flex-shrink:0;"><span>Remaining to Allocate</span><span id="pos-split-remaining">AED 0.00</span></div>
+              <div id="pos-split-rows" class="scroll-zone" style="margin:6px 0;"></div>
+              <div class="pos-split-add-row" style="flex-shrink:0;">
                 <select id="pos-split-method-select">
                   <option value="Cash">Cash</option>
+                  <option value="Card">Card</option>
                   <option value="Bank Transfer">Bank Transfer</option>
                   <option value="Other">Other</option>
                 </select>
-                <input type="number" id="pos-split-amount-input" placeholder="Amount" min="0" step="0.01">
+                <input type="text" id="pos-split-amount-input" placeholder="Amount" readonly style="cursor:pointer;">
                 <button type="button" id="pos-split-add-btn">+ Add</button>
               </div>
             </div>
@@ -393,6 +394,27 @@
         <div class="modal-actions" style="margin-top:14px;">
           <button type="button" class="cancel" id="pos-discount-modal-cancel">Cancel</button>
           <button type="button" class="proceed" id="pos-discount-modal-done">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Split payment amount entry — same popup keypad pattern as discount -->
+    <div class="modal-backdrop" id="pos-split-amount-modal">
+      <div class="modal-box">
+        <h3 style="margin:0 0 12px; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Enter Amount</h3>
+        <div class="keypad-field">
+          <input type="text" id="pos-split-amount-modal-value" value="0" inputmode="decimal">
+          <button type="button" class="kp-btn" data-splitkp="back">&#9003;</button>
+        </div>
+        <div class="keypad">
+          <button type="button" data-splitkp="1">1</button><button type="button" data-splitkp="2">2</button><button type="button" data-splitkp="3">3</button>
+          <button type="button" data-splitkp="4">4</button><button type="button" data-splitkp="5">5</button><button type="button" data-splitkp="6">6</button>
+          <button type="button" data-splitkp="7">7</button><button type="button" data-splitkp="8">8</button><button type="button" data-splitkp="9">9</button>
+          <button type="button" class="clear" data-splitkp="clear">C</button><button type="button" data-splitkp="0">0</button><button type="button" data-splitkp=".">.</button>
+        </div>
+        <div class="modal-actions" style="margin-top:14px;">
+          <button type="button" class="cancel" id="pos-split-amount-modal-cancel">Cancel</button>
+          <button type="button" class="proceed" id="pos-split-amount-modal-done">Done</button>
         </div>
       </div>
     </div>

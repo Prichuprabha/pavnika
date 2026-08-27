@@ -977,11 +977,11 @@ function renderPaymentStep() {
     discountRow.style.display = 'none';
   }
 
-  posState.amountReceived = 0;
+  posState.amountReceived = totals.grandTotal;
   posState.paymentMode = 'single';
   posState.splitPayments = [];
-  document.getElementById('pos-amount-received').value = '0';
-  document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(-totals.grandTotal);
+  document.getElementById('pos-amount-received').value = String(totals.grandTotal);
+  document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(0);
   document.getElementById('pos-pay-reference').value = '';
   document.getElementById('pos-single-payment-block').style.display = 'block';
   document.getElementById('pos-split-payment-block').style.display = 'none';
@@ -1035,6 +1035,34 @@ function renderSplitRows() {
   remainingEl.style.color = remaining < 0 ? '#B8142A' : (remaining === 0 ? '#2c5c37' : 'inherit');
 }
 
+function openSplitAmountModal() {
+  document.getElementById('pos-split-amount-modal-value').value = '0';
+  document.getElementById('pos-split-amount-modal').classList.add('open');
+  var input = document.getElementById('pos-split-amount-modal-value');
+  input.focus();
+  input.select();
+}
+
+function setSplitAmountModalValue(newValueStr) {
+  if (newValueStr.length > 8) return;
+  if ((newValueStr.match(/\./g) || []).length > 1) return;
+  document.getElementById('pos-split-amount-modal-value').value = newValueStr || '0';
+}
+
+function handleSplitAmountKeypad(key) {
+  var current = document.getElementById('pos-split-amount-modal-value').value;
+  if (key === 'clear') { setSplitAmountModalValue('0'); return; }
+  if (key === 'back') { setSplitAmountModalValue(current.length > 1 ? current.slice(0, -1) : '0'); return; }
+  var next = (current === '0' && key !== '.') ? key : current + key;
+  setSplitAmountModalValue(next);
+}
+
+function commitSplitAmountModal() {
+  var raw = document.getElementById('pos-split-amount-modal-value').value;
+  document.getElementById('pos-split-amount-input').value = raw;
+  document.getElementById('pos-split-amount-modal').classList.remove('open');
+}
+
 function addSplitRow() {
   var method = document.getElementById('pos-split-method-select').value;
   var amount = parseFloat(document.getElementById('pos-split-amount-input').value);
@@ -1084,6 +1112,15 @@ function renderPaymentBreakup() {
   el.innerHTML = rows.join('');
 }
 
+// Placeholder for the real card machine integration, to be discussed
+// and wired up later. For now this just makes the integration point
+// explicit and visible — every Card amount, whether the sole payment
+// method or one line within a split, passes through here.
+function sendToCardMachine(amount) {
+  console.log('[Card Machine] Would send AED ' + formatAED(amount) + ' to the card terminal.');
+  // TODO: replace with the real card machine integration once decided.
+}
+
 function confirmPayment() {
   var errorEl = document.getElementById('pos-payment-error');
   errorEl.textContent = '';
@@ -1101,6 +1138,16 @@ function confirmPayment() {
       errorEl.textContent = 'Amount received is less than the total due.';
       return;
     }
+  }
+
+  // Card machine hand-off — happens once payment is confirmed, for
+  // every Card amount involved, whether single or split.
+  if (posState.paymentMode === 'split') {
+    posState.splitPayments.forEach(function (p) {
+      if (p.method === 'Card') sendToCardMachine(p.amount);
+    });
+  } else if (posState.paymentMethod === 'Card') {
+    sendToCardMachine(posState.amountReceived);
   }
 
   posState.paymentConfirmed = true;
@@ -1440,9 +1487,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-proceed-billing-btn').addEventListener('click', proceedToBilling);
 
   // Billing
-  document.querySelectorAll('.discount-toggle button').forEach(function (btn) {
+  document.querySelectorAll('.discount-toggle button[data-dtype]').forEach(function (btn) {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('.discount-toggle button').forEach(function (b) { b.classList.remove('active'); });
+      document.querySelectorAll('.discount-toggle button[data-dtype]').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
       posState.discountType = btn.getAttribute('data-dtype');
       posState.discountValue = 0; // reset on switching, so "50" isn't misread as the wrong unit
@@ -1493,12 +1540,8 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
       el.classList.add('active');
       posState.paymentMethod = el.getAttribute('data-method');
-      if (posState.paymentMethod !== 'Cash') {
-        var totals = recalcBillingTotals();
-        setAmountReceived(String(totals.grandTotal));
-      } else {
-        setAmountReceived('0');
-      }
+      var totals = recalcBillingTotals();
+      setAmountReceived(String(totals.grandTotal));
       lockPaymentConfirmation();
     });
   });
@@ -1522,6 +1565,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-split-add-btn').addEventListener('click', addSplitRow);
+  document.getElementById('pos-split-amount-input').addEventListener('click', openSplitAmountModal);
+  document.querySelectorAll('[data-splitkp]').forEach(function (btn) {
+    btn.addEventListener('click', function () { handleSplitAmountKeypad(btn.getAttribute('data-splitkp')); });
+  });
+  document.getElementById('pos-split-amount-modal-value').addEventListener('input', function (e) {
+    var cleaned = e.target.value.replace(/[^0-9.]/g, '');
+    var parts = cleaned.split('.');
+    if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
+    setSplitAmountModalValue(cleaned || '0');
+  });
+  document.getElementById('pos-split-amount-modal-cancel').addEventListener('click', function () {
+    document.getElementById('pos-split-amount-modal').classList.remove('open');
+  });
+  document.getElementById('pos-split-amount-modal-done').addEventListener('click', commitSplitAmountModal);
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', sendBillEmail);
