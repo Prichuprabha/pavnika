@@ -195,8 +195,8 @@ textarea { min-height: 50px; resize: none; }
 .keypad-field { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .keypad-field input { text-align: right; font-size: 1.1rem; flex: 1; }
 .keypad-field .kp-btn { min-width: 44px; min-height: 44px; border-radius: 8px; border: 1.5px solid var(--stone); background: #fff; font-size: 1rem; cursor: pointer; }
-.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; flex-shrink: 0; }
-.keypad button { min-height: 42px; border-radius: 8px; border: 1.5px solid var(--stone); background: #fff; font-size: 1.05rem; font-weight: 700; cursor: pointer; color: var(--green-deep); }
+.keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 6px; flex-shrink: 0; }
+.keypad button { min-height: 34px; border-radius: 8px; border: 1.5px solid var(--stone); background: #fff; font-size: 1rem; font-weight: 700; cursor: pointer; color: var(--green-deep); }
 .keypad button.clear { color: #B8142A; }
 
 .pos-item-count { font-size: 0.68rem; text-transform: none; letter-spacing: normal; color: #8a7266; font-weight: 600; }
@@ -213,8 +213,8 @@ textarea { min-height: 50px; resize: none; }
 
 /* ---------- Payment step ---------- */
 .s4-grid { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 12px; height: 100%; min-width: 0; min-height: 0; }
-.pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; flex-shrink: 0; margin-bottom: 10px; }
-.pay-method { border: 1.5px solid var(--stone); border-radius: 10px; padding: 10px 8px; text-align: center; cursor: pointer; font-size: 0.8rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 5px; color: var(--ink); }
+.pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; margin-bottom: 6px; }
+.pay-method { border: 1.5px solid var(--stone); border-radius: 10px; padding: 7px 8px; text-align: center; cursor: pointer; font-size: 0.78rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--ink); }
 .pay-method .pm-icon { width: 36px; height: 36px; }
 .pay-method.active { border-color: var(--green-deep); background: var(--ivory-deep); }
 .pay-method.disabled { opacity: 0.5; cursor: not-allowed; }
@@ -316,3 +316,18 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 /* Fills remaining flex space, same as .scroll-zone, but without ever
    introducing a scrollbar — used where content is sized to always fit. */
 .pos-no-scroll-fill { flex: 1; min-height: 0; overflow: hidden; }
+
+/* ---------- Return / Exchange page ---------- */
+.pos-return-action { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1.5px solid var(--stone); border-radius: 10px; margin-bottom: 10px; cursor: pointer; font-weight: 700; color: var(--ink); }
+.pos-return-action.active { border-color: var(--green-deep); background: var(--ivory-deep); color: var(--green-deep); }
+.pos-return-item-row { display: flex; align-items: center; gap: 10px; padding: 8px; border: 1px solid var(--stone); border-radius: 8px; margin-bottom: 6px; }
+.pos-return-item-row img { width: 40px; height: 52px; object-fit: cover; border-radius: 5px; flex-shrink: 0; background: var(--ivory-deep); }
+.pos-return-item-row .pri-info { flex: 1; min-width: 0; font-size: 0.8rem; }
+.pos-return-item-row .pri-name { font-weight: 700; color: var(--green-deep); }
+.pos-return-item-row .pri-sub { color: #8a7266; font-size: 0.72rem; }
+
+/* Payment Method panel — compact spacing so the whole section fits
+   within the viewport at 1024x768 without needing to scroll. */
+.pos-compact-payment label { margin: 4px 0 3px; }
+.pos-compact-payment .bill-row { padding: 3px 0; }
+.pos-compact-payment .keypad-field input { padding: 6px 10px; }

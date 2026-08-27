@@ -281,6 +281,34 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
   });
 }
 
+async function markSareesAvailable(sareeIds) {
+  const gh = await fetchProductsFromGitHub();
+  const products = gh.products;
+  const fileData = gh.fileData;
+
+  var changed = false;
+  products.forEach(function (p) {
+    if (sareeIds.indexOf(p.id) !== -1 && p.sold) {
+      p.sold = false;
+      changed = true;
+    }
+  });
+
+  if (!changed) return; // already available, nothing to commit
+
+  const newContent = 'window.PRODUCTS = ' + JSON.stringify(products, null, 2) + ';\n';
+  await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${PRODUCTS_PATH}`, {
+    method: 'PUT',
+    headers: githubHeaders(),
+    body: JSON.stringify({
+      message: `Return processed: mark ${sareeIds.join(', ')} as available again`,
+      content: Buffer.from(newContent, 'utf-8').toString('base64'),
+      sha: fileData.sha,
+      branch: GITHUB_BRANCH
+    })
+  });
+}
+
 module.exports = {
   supabaseHeaders: supabaseHeaders,
   formatAED: formatAED,
@@ -288,5 +316,6 @@ module.exports = {
   generateOrderNumber: generateOrderNumber,
   sendReceiptEmail: sendReceiptEmail,
   markSareesSold: markSareesSold,
+  markSareesAvailable: markSareesAvailable,
   fetchProductsFromGitHub: fetchProductsFromGitHub
 };

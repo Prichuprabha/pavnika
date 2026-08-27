@@ -213,6 +213,7 @@ function showPage(pageName) {
     el.classList.toggle('active', el.getAttribute('data-page') === pageName);
   });
   if (pageName === 'hold') loadHeldSales();
+  if (pageName === 'return') loadReturnPage();
 }
 
 // ---------- Hold / Parked Sales page ----------
@@ -325,6 +326,138 @@ function deleteHeldSale(id) {
       loadHeldSales();
     })
     .catch(function () { alert('Could not reach the server. Please try again.'); });
+}
+
+// ---------- Return / Exchange page ----------
+
+var returnState = { selectedSale: null, selectedItemIds: [], actionType: null };
+
+function loadReturnPage() {
+  returnState = { selectedSale: null, selectedItemIds: [], actionType: null };
+  document.getElementById('pos-return-search').value = '';
+  document.getElementById('pos-return-no-sale').style.display = 'block';
+  document.getElementById('pos-return-sale-detail').style.display = 'none';
+  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); });
+  document.getElementById('pos-return-refund-preview').style.display = 'none';
+  document.getElementById('pos-return-process-btn').disabled = true;
+  document.getElementById('pos-return-error').textContent = '';
+  searchOriginalSales('');
+}
+
+function searchOriginalSales(query) {
+  fetch('/.netlify/functions/pos-search-original-sale', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), query: query })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      var sales = data.sales || [];
+      var listEl = document.getElementById('pos-return-sale-list');
+      if (!sales.length) {
+        listEl.innerHTML = '<p class="pos-empty-note">No matching sales found.</p>';
+        return;
+      }
+      listEl.innerHTML = sales.map(function (s) {
+        var time = new Date(s.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        return '<div class="cust-list-item" data-sale-id="' + s.id + '"><span class="name">' + s.bill_number + '</span>' +
+          '<span class="phone">' + s.customer_name + ' \u2014 AED ' + formatAED(s.total) + ' \u2014 ' + time + '</span></div>';
+      }).join('');
+      listEl.querySelectorAll('[data-sale-id]').forEach(function (el) {
+        el.addEventListener('click', function () {
+          var picked = sales.filter(function (s) { return s.id === el.getAttribute('data-sale-id'); })[0];
+          if (picked) selectSaleForReturn(picked);
+        });
+      });
+    })
+    .catch(function (e) { console.error('search original sale error:', e); });
+}
+
+function selectSaleForReturn(sale) {
+  returnState.selectedSale = sale;
+  returnState.selectedItemIds = [];
+  document.getElementById('pos-return-no-sale').style.display = 'none';
+  document.getElementById('pos-return-sale-detail').style.display = 'flex';
+  document.getElementById('pos-return-bill-no').textContent = sale.bill_number;
+  document.getElementById('pos-return-bill-date').textContent = new Date(sale.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+  var itemsEl = document.getElementById('pos-return-items-list');
+  itemsEl.innerHTML = (sale.items || []).map(function (it) {
+    var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:40px;height:52px;border-radius:5px;background:var(--ivory-deep);flex-shrink:0;"></div>';
+    return '<div class="pos-return-item-row"><input type="checkbox" data-return-item="' + it.id + '">' + imgTag +
+      '<div class="pri-info"><div class="pri-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="pri-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div></div></div>';
+  }).join('');
+
+  itemsEl.querySelectorAll('[data-return-item]').forEach(function (cb) {
+    cb.addEventListener('change', function () {
+      var id = cb.getAttribute('data-return-item');
+      if (cb.checked) { if (returnState.selectedItemIds.indexOf(id) === -1) returnState.selectedItemIds.push(id); }
+      else { returnState.selectedItemIds = returnState.selectedItemIds.filter(function (x) { return x !== id; }); }
+      updateReturnRefundPreview();
+    });
+  });
+}
+
+function updateReturnRefundPreview() {
+  var errorEl = document.getElementById('pos-return-error');
+  errorEl.textContent = '';
+  var previewBox = document.getElementById('pos-return-refund-preview');
+  var processBtn = document.getElementById('pos-return-process-btn');
+
+  if (!returnState.selectedItemIds.length || !returnState.actionType) {
+    previewBox.style.display = 'none';
+    processBtn.disabled = true;
+    return;
+  }
+
+  var sale = returnState.selectedSale;
+  var selectedItems = (sale.items || []).filter(function (it) { return returnState.selectedItemIds.indexOf(it.id) !== -1; });
+  var returnedListValue = selectedItems.reduce(function (sum, it) { return sum + it.price * it.qty; }, 0);
+  var effectiveRatio = sale.subtotal > 0 ? sale.total / sale.subtotal : 1;
+  var refund = Math.round(returnedListValue * effectiveRatio * 100) / 100;
+
+  document.getElementById('pos-return-refund-amount').textContent = 'AED ' + formatAED(refund);
+  previewBox.style.display = 'block';
+  processBtn.disabled = false;
+}
+
+function processReturn() {
+  var sale = returnState.selectedSale;
+  var selectedItems = (sale.items || []).filter(function (it) { return returnState.selectedItemIds.indexOf(it.id) !== -1; });
+  var errorEl = document.getElementById('pos-return-error');
+  errorEl.textContent = '';
+
+  var btn = document.getElementById('pos-return-process-btn');
+  btn.disabled = true;
+  btn.textContent = 'Processing...';
+
+  fetch('/.netlify/functions/pos-process-return', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      originalSaleId: sale.id,
+      items: selectedItems,
+      actionType: returnState.actionType
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.textContent = 'Process';
+      if (!result.ok) { btn.disabled = false; errorEl.textContent = result.data.error || 'Could not process this return.'; return; }
+
+      if (returnState.actionType === 'exchange') {
+        alert('Return processed. Refund/credit of AED ' + formatAED(result.data.refundAmount) + ' can be applied as a discount on a new sale for the replacement item(s) \u2014 start a new sale from the Item step.');
+      } else {
+        alert('Return processed. Refund amount: AED ' + formatAED(result.data.refundAmount));
+      }
+      loadReturnPage();
+    })
+    .catch(function () {
+      btn.disabled = false;
+      btn.textContent = 'Process';
+      errorEl.textContent = 'Could not reach the server. Please try again.';
+    });
 }
 
 function refreshStepLocks() {
@@ -1422,6 +1555,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (posState.cart.length === 0 && !posState.selectedCustomer) { resetTransaction(); return; }
     if (confirm('Clear the current transaction and start over? This cannot be undone.')) resetTransaction();
   });
+
+  document.getElementById('pos-return-search').addEventListener('input', function (e) {
+    searchOriginalSales(e.target.value.trim());
+  });
+  document.querySelectorAll('.pos-return-action').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('.pos-return-action').forEach(function (a) { a.classList.remove('active'); });
+      el.classList.add('active');
+      returnState.actionType = el.getAttribute('data-action');
+      updateReturnRefundPreview();
+    });
+  });
+  document.getElementById('pos-return-process-btn').addEventListener('click', processReturn);
 
   updatePosDatetime();
   setInterval(updatePosDatetime, 30000);

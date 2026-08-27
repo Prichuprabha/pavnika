@@ -39,6 +39,7 @@
       <a class="nav-link" data-step="3"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><line x1="10" y1="12" x2="14" y2="12"/></svg></span>Billing</a>
       <a class="nav-link" data-step="4"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>Payment</a>
       <a class="nav-link" data-page="hold"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>Hold / Park</a>
+      <a class="nav-link" data-page="return"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>Return / Exchange</a>
     </nav>
   </div>
 
@@ -274,8 +275,8 @@
         </div>
         <div class="panel">
           <h3>Payment Method</h3>
-          <div class="scroll-zone">
-            <div class="discount-toggle pos-pmode-toggle" style="margin-bottom:10px;">
+          <div class="pos-no-scroll-fill pos-compact-payment">
+            <div class="discount-toggle pos-pmode-toggle" style="margin-bottom:8px;">
               <button type="button" class="active" data-pmode="single">Single Payment</button>
               <button type="button" data-pmode="split">Split Payment</button>
             </div>
@@ -433,6 +434,42 @@
           </table>
         </div>
         <p style="font-size:0.75rem; color:#8a7266; margin-top:10px; flex-shrink:0;">Parked sales stay here until resumed or deleted.</p>
+      </div>
+    </div>
+
+    <!-- STANDALONE PAGE: RETURN / EXCHANGE -->
+    <div class="content page-content" id="page-return" style="display:none;">
+      <div class="s3-grid" style="grid-template-columns: 1fr 1.2fr 0.8fr;">
+        <div class="panel">
+          <h3>Find Original Sale</h3>
+          <input type="text" id="pos-return-search" placeholder="Search by Bill No. or Mobile" autocomplete="off">
+          <label style="margin-top:10px;">Recent Transactions</label>
+          <div class="scroll-zone" id="pos-return-sale-list"></div>
+        </div>
+        <div class="panel">
+          <h3>Select Items to Return / Exchange</h3>
+          <div id="pos-return-no-sale" class="pos-empty-note" style="padding:30px 10px; text-align:center;">Find and select a sale on the left first.</div>
+          <div id="pos-return-sale-detail" style="display:none; flex:1; min-height:0; flex-direction:column;">
+            <p style="font-size:0.8rem; color:#8a7266; margin:0 0 8px; flex-shrink:0;">Bill No: <b id="pos-return-bill-no"></b> &middot; Date: <span id="pos-return-bill-date"></span></p>
+            <div class="scroll-zone" id="pos-return-items-list"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>Action Type</h3>
+          <div class="pos-return-action" id="pos-return-action-return" data-action="return">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+            <span>Return</span>
+          </div>
+          <div class="pos-return-action" id="pos-return-action-exchange" data-action="exchange">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+            <span>Exchange</span>
+          </div>
+          <p class="pos-error" id="pos-return-error"></p>
+          <div id="pos-return-refund-preview" style="display:none; margin-top:10px; padding:12px; background:var(--ivory-deep); border-radius:10px; font-size:0.85rem;">
+            <div style="display:flex; justify-content:space-between; font-weight:700; color:var(--green-deep);"><span>Refund Amount</span><span id="pos-return-refund-amount">AED 0.00</span></div>
+          </div>
+          <button type="button" class="btn btn-primary" id="pos-return-process-btn" style="margin-top:auto;" disabled>Process</button>
+        </div>
       </div>
     </div>
 
