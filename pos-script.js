@@ -1111,6 +1111,7 @@ function clearCustomerForm() {
   document.getElementById('pos-cust-search').value = '';
   document.getElementById('pos-cust-name').value = '';
   document.getElementById('pos-cust-phone').value = '';
+  document.getElementById('pos-cust-code').value = '+971';
   document.getElementById('pos-cust-email').value = '';
   document.getElementById('pos-cust-address').value = '';
   document.getElementById('pos-cust-error').textContent = '';
@@ -1448,8 +1449,8 @@ function renderPaymentStep() {
   posState.printedOrSent = false;
 
   var sendBtn = document.getElementById('pos-send-btn');
-  var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
-  sendBtn.querySelector('.btn-label').textContent = hasPhone ? 'Send Bill (WhatsApp)' : 'Send Bill (no phone on file)';
+  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
+  sendBtn.querySelector('.btn-label').textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
 }
 
 // ---------- Split payment ----------
@@ -1675,17 +1676,15 @@ function confirmPayment() {
   posState.paymentConfirmed = true;
   document.getElementById('pos-confirm-payment-btn').disabled = true;
   document.getElementById('pos-print-btn').disabled = false;
-  var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
-  document.getElementById('pos-send-btn').disabled = !hasPhone;
+  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
+  document.getElementById('pos-send-btn').disabled = !hasEmail;
   document.getElementById('pos-complete-sale-btn').disabled = false;
   renderPaymentBreakup();
 
-  // Auto-open WhatsApp with the receipt pre-filled the moment payment
-  // is confirmed — this is as close to "automatic" as a wa.me link
-  // allows, since WhatsApp itself still requires one tap to actually
-  // send. The manual button below stays available too, in case this
-  // window gets closed or needs resending.
-  openWhatsAppReceipt();
+  // Sends the receipt email automatically the moment payment is
+  // confirmed. The manual button below stays available too, in case
+  // it needs resending.
+  sendBillEmail();
 }
 
 function buildPrintReceiptHtml() {
@@ -1765,6 +1764,54 @@ function sendBillWhatsApp() {
   errorEl.textContent = '';
   var sent = openWhatsAppReceipt();
   if (!sent) errorEl.textContent = 'No phone number on file for this customer.';
+}
+
+function sendBillEmail() {
+  if (!posState.selectedCustomer || !posState.selectedCustomer.email) return false;
+
+  var totals = recalcBillingTotals();
+  fetch('/.netlify/functions/pos-send-bill-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      email: posState.selectedCustomer.email,
+      billNumber: posState.billNumber,
+      customerName: posState.selectedCustomer.name,
+      salesPerson: posState.transactionSalesPerson || localStorage.getItem(POS_NAME_KEY) || '',
+      billDate: new Date().toISOString(),
+      paymentMethod: posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod,
+      items: posState.cart,
+      subtotal: totals.subtotal,
+      discountAmount: totals.discountAmount + totals.loyaltyAmount + totals.couponAmount,
+      total: totals.grandTotal
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      var btn = document.getElementById('pos-send-btn');
+      if (btn) btn.querySelector('.btn-label').textContent = result.ok ? 'Receipt Sent \u2713' : 'Send Bill (Email)';
+      if (!result.ok) {
+        var errorEl = document.getElementById('pos-payment-error');
+        errorEl.textContent = result.data.error || 'Could not send email.';
+      }
+    })
+    .catch(function (e) { console.error('send bill email error:', e); });
+
+  posState.printedOrSent = true;
+  return true;
+}
+
+function manualSendBillEmail() {
+  var errorEl = document.getElementById('pos-payment-error');
+  errorEl.textContent = '';
+  var btn = document.getElementById('pos-send-btn');
+  btn.querySelector('.btn-label').textContent = 'Sending...';
+  var sent = sendBillEmail();
+  if (!sent) {
+    errorEl.textContent = 'No email address on file for this customer.';
+    btn.querySelector('.btn-label').textContent = 'Send Bill (Email)';
+  }
 }
 
 function completeSale() {
@@ -2187,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
-  document.getElementById('pos-send-btn').addEventListener('click', sendBillWhatsApp);
+  document.getElementById('pos-send-btn').addEventListener('click', manualSendBillEmail);
   document.getElementById('pos-complete-sale-btn').addEventListener('click', function () {
     if (!posState.printedOrSent) {
       document.getElementById('pos-confirm-modal').classList.add('open');
