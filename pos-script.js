@@ -224,6 +224,7 @@ function showPage(pageName) {
   });
   if (pageName === 'hold') loadHeldSales();
   if (pageName === 'return') loadReturnPage();
+  if (pageName === 'sales-history') loadSalesHistory();
 }
 
 // ---------- Hold / Parked Sales page ----------
@@ -499,6 +500,156 @@ function updateReturnRefundPreview() {
   document.getElementById('pos-return-refund-amount').textContent = 'AED ' + formatAED(refund);
   previewBox.style.display = 'block';
   processBtn.disabled = false;
+}
+
+// ---------- Sales History ----------
+
+var salesHistoryCache = [];
+
+function loadSalesHistory() {
+  var query = document.getElementById('pos-sh-search').value.trim();
+  var dateFilter = document.getElementById('pos-sh-date-filter').value;
+  var rowsEl = document.getElementById('pos-sh-rows');
+  rowsEl.innerHTML = '<tr><td colspan="6" style="opacity:0.6;">Loading...</td></tr>';
+
+  fetch('/.netlify/functions/pos-list-sales-history', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), query: query, dateFilter: dateFilter })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      salesHistoryCache = data.sales || [];
+      renderSalesHistory();
+    })
+    .catch(function (e) {
+      console.error('load sales history error:', e);
+      rowsEl.innerHTML = '<tr><td colspan="6">Could not load sales history.</td></tr>';
+    });
+}
+
+function renderSalesHistory() {
+  var rowsEl = document.getElementById('pos-sh-rows');
+  if (!salesHistoryCache.length) {
+    rowsEl.innerHTML = '<tr><td colspan="6" style="opacity:0.6;">No sales found.</td></tr>';
+    return;
+  }
+  var statusColors = { 'Completed': '#2c5c37', 'Returned': '#B8142A', 'Exchanged': '#946B4A', 'Partially Returned': '#946B4A' };
+  rowsEl.innerHTML = salesHistoryCache.map(function (s) {
+    var time = new Date(s.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    var color = statusColors[s.status] || '#8a7266';
+    return '<tr><td>' + s.bill_number + '</td><td>' + time + '</td><td>' + s.customer_name + '</td><td>AED ' + formatAED(s.total) + '</td>' +
+      '<td style="color:' + color + '; font-weight:600;">' + s.status + '</td>' +
+      '<td>' +
+      '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-view="' + s.id + '">View</button>' +
+      '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-print="' + s.id + '">Print</button>' +
+      '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-send="' + s.id + '">WhatsApp</button>' +
+      '<button type="button" class="table-action-btn btn-resume" data-sh-return="' + s.id + '">Return</button>' +
+      '</td></tr>';
+  }).join('');
+
+  rowsEl.querySelectorAll('[data-sh-view]').forEach(function (btn) {
+    btn.addEventListener('click', function () { viewSalesHistoryBill(btn.getAttribute('data-sh-view')); });
+  });
+  rowsEl.querySelectorAll('[data-sh-print]').forEach(function (btn) {
+    btn.addEventListener('click', function () { printSalesHistoryBill(btn.getAttribute('data-sh-print')); });
+  });
+  rowsEl.querySelectorAll('[data-sh-send]').forEach(function (btn) {
+    btn.addEventListener('click', function () { sendSalesHistoryWhatsApp(btn.getAttribute('data-sh-send')); });
+  });
+  rowsEl.querySelectorAll('[data-sh-return]').forEach(function (btn) {
+    btn.addEventListener('click', function () { showPage('return'); });
+  });
+}
+
+function findHistorySale(id) {
+  return salesHistoryCache.filter(function (s) { return s.id === id; })[0];
+}
+
+function viewSalesHistoryBill(id) {
+  var sale = findHistorySale(id);
+  if (!sale) return;
+
+  document.getElementById('pos-sh-view-bill-no').textContent = sale.bill_number;
+  document.getElementById('pos-sh-view-customer').textContent = sale.customer_name;
+  document.getElementById('pos-sh-view-date').textContent = new Date(sale.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  document.getElementById('pos-sh-view-status').textContent = sale.status;
+  document.getElementById('pos-sh-view-method').textContent = sale.payment_method || '\u2014';
+
+  var itemsEl = document.getElementById('pos-sh-view-items');
+  itemsEl.innerHTML = (sale.items || []).map(function (it) {
+    var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
+    return '<div class="pos-cart-item">' + imgTag +
+      '<div class="ci-info"><div class="ci-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="ci-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div></div>' +
+      '<div class="ci-total">' + formatAED(it.price * it.qty) + '</div></div>';
+  }).join('');
+
+  document.getElementById('pos-sh-view-subtotal').textContent = 'AED ' + formatAED(sale.subtotal);
+  var discountRow = document.getElementById('pos-sh-view-discount-row');
+  if (sale.discount_amount > 0) {
+    discountRow.style.display = 'flex';
+    document.getElementById('pos-sh-view-discount').textContent = '\u2212 AED ' + formatAED(sale.discount_amount);
+  } else {
+    discountRow.style.display = 'none';
+  }
+  document.getElementById('pos-sh-view-total').textContent = 'AED ' + formatAED(sale.total);
+  document.getElementById('pos-sh-view-modal').classList.add('open');
+}
+
+function buildHistoricalReceiptHtml(sale) {
+  var itemLines = (sale.items || []).map(function (it) {
+    return '<div>' + it.id + ' ' + it.name + '</div>' +
+      '<div class="pr-row"><span>' + it.qty + ' x ' + formatAED(it.price) + '</span><span>' + formatAED(it.price * it.qty) + '</span></div>';
+  }).join('');
+
+  return '<div class="pr-header">' +
+      '<div class="pr-shop-name">PAVNIKA BY SARANYA</div>' +
+      '<div class="pr-shop-sub">Al Barsha South 4, Dubai</div>' +
+      '<div class="pr-shop-sub">+971 52 66 30307</div>' +
+    '</div>' +
+    '<div class="pr-dashed">' +
+      '<div>Bill No: ' + sale.bill_number + '</div>' +
+      '<div>Date: ' + new Date(sale.created_at).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + '</div>' +
+      '<div>Customer: ' + sale.customer_name + '</div>' +
+      '<div>Sales Person: ' + (sale.sales_person || '') + '</div>' +
+    '</div>' +
+    '<div class="pr-dashed">' + itemLines + '</div>' +
+    '<div class="pr-dashed">' +
+      '<div class="pr-row"><span>Subtotal</span><span>' + formatAED(sale.subtotal) + '</span></div>' +
+      (sale.discount_amount > 0 ? '<div class="pr-row"><span>Discount</span><span>-' + formatAED(sale.discount_amount) + '</span></div>' : '') +
+      '<div class="pr-row"><span>VAT</span><span>N/A</span></div>' +
+    '</div>' +
+    '<div class="pr-total-row pr-row"><span>TOTAL</span><span>AED ' + formatAED(sale.total) + '</span></div>' +
+    '<div class="pr-dashed">Payment Method: ' + (sale.payment_method || '') + '</div>' +
+    '<div class="pr-dashed pr-footer">Thank you for shopping with us!</div>' +
+    '<div class="pr-footer-small">Goods once sold are subject to</div>' +
+    '<div class="pr-footer-small">our exchange/return policy.</div>';
+}
+
+function printSalesHistoryBill(id) {
+  var sale = findHistorySale(id);
+  if (!sale) return;
+  document.getElementById('pos-print-receipt').innerHTML = buildHistoricalReceiptHtml(sale);
+  window.print();
+}
+
+function sendSalesHistoryWhatsApp(id) {
+  var sale = findHistorySale(id);
+  if (!sale || !sale.customer || !sale.customer.phone) { alert('No phone number on file for this customer.'); return; }
+
+  var lines = [];
+  lines.push('Hi ' + sale.customer.name + ', thank you for shopping with Pavnika by Saranya!');
+  lines.push('');
+  lines.push('Bill ' + sale.bill_number + ' \u00b7 ' + new Date(sale.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }));
+  (sale.items || []).forEach(function (it) {
+    lines.push(it.id + ' \u2014 ' + it.name + ' x' + it.qty + ' \u2014 AED ' + formatAED(it.price * it.qty));
+  });
+  if (sale.discount_amount > 0) lines.push('Discount: \u2212AED ' + formatAED(sale.discount_amount));
+  lines.push('Total: AED ' + formatAED(sale.total));
+
+  var fullPhone = (sale.customer.phone_country_code || '').replace('+', '') + sale.customer.phone;
+  var waLink = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(lines.join('\n'));
+  window.open(waLink, '_blank');
 }
 
 function processReturn() {
@@ -1287,6 +1438,10 @@ function renderPaymentStep() {
   document.querySelectorAll('[data-pmode]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-pmode') === 'single'); });
   document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-splitmethod') === 'Cash'); });
   document.getElementById('pos-split-giftcard-balance').style.display = 'none';
+
+  var hasGiftBalance = posState.selectedCustomer && (posState.selectedCustomer.gift_card_balance || 0) > 0;
+  document.getElementById('pos-single-giftcard-tile').classList.toggle('disabled', !hasGiftBalance);
+  document.getElementById('pos-split-giftcard-tile').classList.toggle('disabled', !hasGiftBalance);
   renderSplitRows();
   lockPaymentConfirmation();
   document.getElementById('pos-payment-error').textContent = '';
@@ -1443,6 +1598,7 @@ function addSplitRow() {
 
 function lockPaymentConfirmation() {
   posState.paymentConfirmed = false;
+  document.getElementById('pos-confirm-payment-btn').disabled = false;
   document.getElementById('pos-print-btn').disabled = true;
   document.getElementById('pos-send-btn').disabled = true;
   document.getElementById('pos-complete-sale-btn').disabled = true;
@@ -1517,6 +1673,7 @@ function confirmPayment() {
   }
 
   posState.paymentConfirmed = true;
+  document.getElementById('pos-confirm-payment-btn').disabled = true;
   document.getElementById('pos-print-btn').disabled = false;
   var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
   document.getElementById('pos-send-btn').disabled = !hasPhone;
@@ -1985,6 +2142,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-split-add-btn').addEventListener('click', addSplitRow);
   document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (el) {
     el.addEventListener('click', function () {
+      if (el.classList.contains('disabled')) return;
       document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (p) { p.classList.remove('active'); });
       el.classList.add('active');
       splitSelectedMethod = el.getAttribute('data-splitmethod');

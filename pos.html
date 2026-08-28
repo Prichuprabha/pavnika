@@ -40,6 +40,7 @@
       <a class="nav-link" data-step="4"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>Payment</a>
       <a class="nav-link" data-page="hold"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>Hold / Park</a>
       <a class="nav-link" data-page="return"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg></span>Return / Exchange</a>
+      <a class="nav-link" data-page="settings"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>Settings</a>
     </nav>
   </div>
 
@@ -322,7 +323,7 @@
                     <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="15" y1="21" x2="15" y2="13"/></svg>
                     Bank Transfer
                   </div>
-                  <div class="pay-method" data-splitmethod="Gift Card" style="padding:6px 4px; font-size:0.66rem;">
+                  <div class="pay-method" data-splitmethod="Gift Card" id="pos-split-giftcard-tile" style="padding:6px 4px; font-size:0.66rem;">
                     <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="14.5" x2="10" y2="14.5"/></svg>
                     Gift Card
                   </div>
@@ -503,6 +504,20 @@
       </div>
     </div>
 
+    <!-- Sales History: view a completed bill -->
+    <div class="modal-backdrop" id="pos-sh-view-modal">
+      <div class="modal-box" style="width:400px; text-align:left; max-height:80vh; display:flex; flex-direction:column;">
+        <h3 style="margin:0 0 4px; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Bill <span id="pos-sh-view-bill-no"></span></h3>
+        <p style="font-size:0.8rem; color:#8a7266; margin:0 0 10px;"><span id="pos-sh-view-customer"></span> &middot; <span id="pos-sh-view-date"></span> &middot; <span id="pos-sh-view-status"></span></p>
+        <div class="scroll-zone" id="pos-sh-view-items" style="max-height:220px;"></div>
+        <div class="bill-row" style="border-top:1px solid var(--stone); margin-top:8px; padding-top:8px;"><span>Subtotal</span><span id="pos-sh-view-subtotal">AED 0.00</span></div>
+        <div class="bill-row" id="pos-sh-view-discount-row" style="display:none;"><span>Discount</span><span id="pos-sh-view-discount">&minus; AED 0.00</span></div>
+        <div class="bill-row"><span>Payment Method</span><span id="pos-sh-view-method"></span></div>
+        <div class="cart-total"><span>Total</span><span class="num-total" id="pos-sh-view-total">AED 0.00</span></div>
+        <button type="button" class="btn btn-outline" id="pos-sh-view-close" style="margin-top:10px;">Close</button>
+      </div>
+    </div>
+
     <!-- STANDALONE PAGE: RETURN / EXCHANGE -->
     <div class="content page-content" id="page-return" style="display:none;">
       <div class="s3-grid" style="grid-template-columns: 1fr 1.2fr 0.8fr;">
@@ -554,6 +569,44 @@
             <button type="button" class="action-btn" id="pos-return-whatsapp-btn">Send Receipt (WhatsApp)</button>
             <button type="button" class="btn btn-outline" id="pos-return-done-btn" style="margin-top:6px;">Done</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDALONE PAGE: SETTINGS HUB -->
+    <div class="content page-content" id="page-settings" style="display:none;">
+      <div class="pos-settings-grid">
+        <div class="pos-settings-card" data-settings-link="sales-history">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.1-4-4L3 15.5"/></svg>
+          <h3>Sales History</h3>
+          <p>Search past bills, view receipts, print or resend, and start a return or exchange.</p>
+        </div>
+        <div class="pos-settings-card" data-settings-link="customer-db">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <h3>Customer Database</h3>
+          <p>Edit customer details, and review their purchase history and gift card balance.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- STANDALONE PAGE: SALES HISTORY -->
+    <div class="content page-content" id="page-sales-history" style="display:none;">
+      <div class="panel" style="height:100%;">
+        <h3>Sales History</h3>
+        <div style="display:flex; gap:10px; align-items:center; flex-shrink:0; margin-bottom:10px;">
+          <input type="text" id="pos-sh-search" placeholder="Search by Bill No., Customer, or Mobile" autocomplete="off" style="flex:1;">
+          <select id="pos-sh-date-filter" style="width:150px;">
+            <option value="all">All Time</option>
+            <option value="today" selected>Today</option>
+            <option value="7days">Last 7 Days</option>
+            <option value="30days">Last 30 Days</option>
+          </select>
+        </div>
+        <div class="scroll-zone">
+          <table class="pos-data-table">
+            <thead><tr><th>Bill No.</th><th>Date &amp; Time</th><th>Customer</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="pos-sh-rows"></tbody>
+          </table>
         </div>
       </div>
     </div>

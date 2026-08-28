@@ -337,3 +337,11 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-compact-payment label { margin: 4px 0 3px; }
 .pos-compact-payment .bill-row { padding: 3px 0; }
 .pos-compact-payment .keypad-field input { padding: 6px 10px; }
+
+/* ---------- Settings hub ---------- */
+.pos-settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.pos-settings-card { background: #fff; border: 1.5px solid var(--stone); border-radius: 12px; padding: 24px 20px; cursor: pointer; }
+.pos-settings-card:hover { border-color: var(--gold); }
+.pos-settings-card svg { color: var(--green-deep); margin-bottom: 10px; }
+.pos-settings-card h3 { font-family: var(--display); font-size: 1.2rem; color: var(--green-deep); margin: 0 0 6px; text-transform: none; letter-spacing: normal; }
+.pos-settings-card p { font-size: 0.82rem; color: #8a7266; margin: 0; line-height: 1.5; }
