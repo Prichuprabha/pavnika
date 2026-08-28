@@ -426,6 +426,14 @@ function searchOriginalSales(query) {
 function selectSaleForReturn(sale) {
   returnState.selectedSale = sale;
   returnState.selectedItemIds = [];
+  returnState.actionType = null;
+  returnState.refundMethod = null;
+  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); });
+  document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) { el.classList.remove('active'); });
+  document.getElementById('pos-return-refund-method-box').style.display = 'none';
+  document.getElementById('pos-return-refund-preview').style.display = 'none';
+  document.getElementById('pos-return-process-btn').disabled = true;
+  document.getElementById('pos-return-error').textContent = '';
   document.getElementById('pos-return-no-sale').style.display = 'none';
   document.getElementById('pos-return-sale-detail').style.display = 'flex';
   document.getElementById('pos-return-bill-no').textContent = sale.bill_number;
@@ -853,8 +861,9 @@ function renderCustomerList(customers) {
     listEl.innerHTML = '<p class="pos-empty-note">No customers found.</p>';
     return;
   }
+  var selectedId = posState.selectedCustomer ? posState.selectedCustomer.id : null;
   listEl.innerHTML = customers.map(function (c) {
-    return '<div class="cust-list-item" data-cust-id="' + c.id + '">' +
+    return '<div class="cust-list-item' + (c.id === selectedId ? ' selected' : '') + '" data-cust-id="' + c.id + '">' +
       '<span class="name">' + c.name + '</span>' +
       '<span class="phone">' + c.phone_country_code + ' ' + c.phone + '</span></div>';
   }).join('');
@@ -916,6 +925,9 @@ function loadCustomerSummary(customerId) {
 
 function selectCustomer(customer) {
   posState.selectedCustomer = customer;
+  document.querySelectorAll('.cust-list-item').forEach(function (el) {
+    el.classList.toggle('selected', el.getAttribute('data-cust-id') === customer.id);
+  });
   document.getElementById('pos-cust-search').value = customer.name;
   document.getElementById('pos-cust-name').value = customer.name;
   document.getElementById('pos-cust-code').value = customer.phone_country_code;
@@ -1247,6 +1259,7 @@ function renderPaymentStep() {
   posState.amountReceived = totals.grandTotal;
   posState.paymentMode = 'single';
   posState.splitPayments = [];
+  posState.giftCardRedeemed = 0;
   splitSelectedMethod = 'Cash';
   document.getElementById('pos-single-giftcard-info').style.display = 'none';
   document.getElementById('pos-single-payment-error').textContent = '';
@@ -1288,9 +1301,15 @@ function renderSplitRows() {
     }).join('');
     el.querySelectorAll('[data-split-remove]').forEach(function (btn) {
       btn.addEventListener('click', function () {
-        posState.splitPayments.splice(parseInt(btn.getAttribute('data-split-remove'), 10), 1);
+        var idx = parseInt(btn.getAttribute('data-split-remove'), 10);
+        var removed = posState.splitPayments[idx];
+        if (removed && removed.method === 'Gift Card') {
+          posState.giftCardRedeemed = Math.max(0, posState.giftCardRedeemed - removed.amount);
+        }
+        posState.splitPayments.splice(idx, 1);
         lockPaymentConfirmation();
         renderSplitRows();
+        updateSplitGiftCardBalanceDisplay();
       });
     });
   }
@@ -1333,6 +1352,18 @@ function commitSplitAmountModal() {
 var giftCardModalContext = 'split'; // gift card modal is only ever opened from split mode now
 var splitSelectedMethod = 'Cash'; // tracks the active split-method button, replacing the removed dropdown
 
+function updateSplitGiftCardBalanceDisplay() {
+  var balanceEl = document.getElementById('pos-split-giftcard-balance');
+  if (splitSelectedMethod === 'Gift Card' && posState.selectedCustomer) {
+    var rawBalance = posState.selectedCustomer.gift_card_balance || 0;
+    var remaining = rawBalance - (posState.giftCardRedeemed || 0);
+    balanceEl.textContent = 'Available balance: AED ' + formatAED(remaining);
+    balanceEl.style.display = 'block';
+  } else {
+    balanceEl.style.display = 'none';
+  }
+}
+
 function openGiftCardModal(context) {
   if (!posState.selectedCustomer) {
     alert('Select a customer first \u2014 a gift card can only be redeemed against a known customer.');
@@ -1365,16 +1396,18 @@ function handleGiftCardKeypad(key) {
 
 function commitGiftCardModal() {
   var amount = parseFloat(document.getElementById('pos-giftcard-modal-value').value) || 0;
-  var balance = posState.selectedCustomer.gift_card_balance || 0;
+  var rawBalance = posState.selectedCustomer.gift_card_balance || 0;
+  var remainingBalance = rawBalance - (posState.giftCardRedeemed || 0);
   var errorEl = document.getElementById('pos-giftcard-error');
 
   if (amount <= 0) { errorEl.textContent = 'Enter an amount to redeem.'; return; }
-  if (amount > balance) { errorEl.textContent = 'That exceeds the available balance of AED ' + formatAED(balance) + '.'; return; }
+  if (amount > remainingBalance) { errorEl.textContent = 'That exceeds the available balance of AED ' + formatAED(remainingBalance) + '.'; return; }
 
   posState.giftCardRedeemed += amount;
   posState.splitPayments.push({ method: 'Gift Card', amount: amount });
   renderSplitRows();
   lockPaymentConfirmation();
+  updateSplitGiftCardBalanceDisplay();
 
   document.getElementById('pos-giftcard-modal').classList.remove('open');
 }
@@ -1476,15 +1509,22 @@ function confirmPayment() {
 
 function buildPrintReceiptHtml() {
   var totals = recalcBillingTotals();
-  var custName = posState.selectedCustomer ? posState.selectedCustomer.name : '';
+  var custName = posState.selectedCustomer ? posState.selectedCustomer.name : 'Walk-in Customer';
+  var salesPerson = posState.transactionSalesPerson || localStorage.getItem(POS_NAME_KEY) || '';
+  var paymentMethodLabel = posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod;
   var itemRows = posState.cart.map(function (c) {
     return '<tr><td>' + c.id + ' - ' + c.name + ' (x' + c.qty + ')</td><td style="text-align:right;">' + formatAED(c.price * c.qty) + '</td></tr>';
   }).join('');
   return '<h2>Pavnika by Saranya</h2>' +
-    '<div class="pr-sub">' + (posState.billNumber || '') + '<br>' + new Date().toLocaleString() + '<br>' + custName + '</div>' +
+    '<div class="pr-sub">' + (posState.billNumber || '') + '<br>' + new Date().toLocaleString() + '</div>' +
+    '<table style="margin:10px 0; font-size:11px;">' +
+    '<tr><td>Customer</td><td style="text-align:right;">' + custName + '</td></tr>' +
+    '<tr><td>Sales Person</td><td style="text-align:right;">' + salesPerson + '</td></tr>' +
+    '<tr><td>Payment Method</td><td style="text-align:right;">' + paymentMethodLabel + '</td></tr>' +
+    '</table>' +
     '<table>' + itemRows +
     '<tr><td>Subtotal</td><td style="text-align:right;">AED ' + formatAED(totals.subtotal) + '</td></tr>' +
-    (totals.discountAmount + totals.loyaltyAmount > 0 ? '<tr><td>Discount</td><td style="text-align:right;">- AED ' + formatAED(totals.discountAmount + totals.loyaltyAmount) + '</td></tr>' : '') +
+    (totals.discountAmount + totals.loyaltyAmount + totals.couponAmount > 0 ? '<tr><td>Discount</td><td style="text-align:right;">- AED ' + formatAED(totals.discountAmount + totals.loyaltyAmount + totals.couponAmount) + '</td></tr>' : '') +
     '<tr><td>VAT</td><td style="text-align:right;">Not applicable</td></tr>' +
     '<tr class="pr-total-row"><td>Total</td><td style="text-align:right;">AED ' + formatAED(totals.grandTotal) + '</td></tr>' +
     '</table>' +
@@ -1514,6 +1554,8 @@ function sendBillEmail() {
       posToken: getPosToken(),
       email: posState.selectedCustomer.email,
       billNumber: posState.billNumber,
+      customerName: posState.selectedCustomer.name,
+      paymentMethod: posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod,
       items: posState.cart,
       subtotal: totals.subtotal,
       discountAmount: totals.discountAmount + totals.loyaltyAmount,
@@ -1912,13 +1954,7 @@ document.addEventListener('DOMContentLoaded', function () {
       document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (p) { p.classList.remove('active'); });
       el.classList.add('active');
       splitSelectedMethod = el.getAttribute('data-splitmethod');
-      var balanceEl = document.getElementById('pos-split-giftcard-balance');
-      if (splitSelectedMethod === 'Gift Card' && posState.selectedCustomer) {
-        balanceEl.textContent = 'Available balance: AED ' + formatAED(posState.selectedCustomer.gift_card_balance || 0);
-        balanceEl.style.display = 'block';
-      } else {
-        balanceEl.style.display = 'none';
-      }
+      updateSplitGiftCardBalanceDisplay();
     });
   });
   document.getElementById('pos-split-amount-input').addEventListener('click', function () {
