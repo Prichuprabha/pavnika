@@ -187,6 +187,7 @@ function showStep(n) {
   document.querySelectorAll('.nav-link[data-step]').forEach(function (el) {
     el.classList.toggle('active', el.getAttribute('data-step') === String(n));
   });
+  document.querySelectorAll('.nav-link[data-page]').forEach(function (el) { el.classList.remove('active'); });
   document.querySelectorAll('.step-item').forEach(function (el) {
     var s = parseInt(el.getAttribute('data-s'), 10);
     el.classList.remove('active', 'done');
@@ -237,13 +238,22 @@ function loadHeldSales() {
         var cartId = 'CART-' + s.id.slice(0, 6).toUpperCase();
         var customerName = s.customer_json ? s.customer_json.name : 'Walk-in Customer';
         var itemCount = (s.cart_json || []).reduce(function (sum, c) { return sum + c.qty; }, 0);
-        var amount = (s.cart_json || []).reduce(function (sum, c) { return sum + c.price * c.qty; }, 0);
+        var subtotal = (s.cart_json || []).reduce(function (sum, c) { return sum + c.price * c.qty; }, 0);
+        var discountAmt = s.discount_type === 'percent' ? subtotal * ((s.discount_value || 0) / 100) : (s.discount_value || 0);
+        var dueAmount = Math.max(0, subtotal - discountAmt);
         var time = new Date(s.created_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
-        return '<tr><td>' + cartId + '</td><td>' + customerName + '</td><td>' + itemCount + '</td><td>AED ' + formatAED(amount) + '</td><td>' + time + '</td>' +
-          '<td><button type="button" class="table-action-btn btn-resume" data-resume="' + s.id + '">Resume</button>' +
+        return '<tr><td>' + cartId + '</td><td>' + customerName + '</td><td>' + itemCount + '</td><td>AED ' + formatAED(dueAmount) + '</td><td>' + time + '</td>' +
+          '<td><button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-preview-held="' + s.id + '">Preview</button>' +
+          '<button type="button" class="table-action-btn btn-resume" data-resume="' + s.id + '">Resume</button>' +
           '<button type="button" class="table-action-btn btn-delete" data-delete-held="' + s.id + '">Delete</button></td></tr>';
       }).join('');
 
+      rowsEl.querySelectorAll('[data-preview-held]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var picked = sales.filter(function (s) { return s.id === btn.getAttribute('data-preview-held'); })[0];
+          if (picked) previewHeldSale(picked);
+        });
+      });
       rowsEl.querySelectorAll('[data-resume]').forEach(function (btn) {
         btn.addEventListener('click', function () { resumeHeldSale(btn.getAttribute('data-resume')); });
       });
@@ -313,6 +323,41 @@ function resumeHeldSale(id) {
       }
     })
     .catch(function () { alert('Could not reach the server. Please try again.'); });
+}
+
+function previewHeldSale(sale) {
+  var customerName = sale.customer_json ? sale.customer_json.name : 'Walk-in Customer';
+  var customerPhone = sale.customer_json ? ((sale.customer_json.phone_country_code || '') + ' ' + sale.customer_json.phone) : '\u2014';
+  document.getElementById('pos-held-preview-customer').textContent = customerName;
+  document.getElementById('pos-held-preview-phone').textContent = customerPhone;
+
+  var items = sale.cart_json || [];
+  var itemsEl = document.getElementById('pos-held-preview-items');
+  itemsEl.innerHTML = items.map(function (it) {
+    var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
+    return '<div class="pos-cart-item">' + imgTag +
+      '<div class="ci-info"><div class="ci-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="ci-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div></div>' +
+      '<div class="ci-total">' + formatAED(it.price * it.qty) + '</div></div>';
+  }).join('');
+
+  var subtotal = items.reduce(function (sum, it) { return sum + it.price * it.qty; }, 0);
+  var discountAmt = sale.discount_type === 'percent' ? subtotal * ((sale.discount_value || 0) / 100) : (sale.discount_value || 0);
+  var dueAmount = Math.max(0, subtotal - discountAmt);
+
+  var discountRow = document.getElementById('pos-held-preview-discount-row');
+  if (discountAmt > 0 || sale.coupon_code) {
+    discountRow.style.display = 'flex';
+    var label = sale.discount_value > 0 ? 'Discount (' + (sale.discount_type === 'percent' ? sale.discount_value + '%' : 'AED') + ')' : 'Discount';
+    if (sale.coupon_code) label += ' + Coupon (' + sale.coupon_code + ')';
+    document.getElementById('pos-held-preview-discount-label').textContent = label;
+    document.getElementById('pos-held-preview-discount-value').textContent = '\u2212 AED ' + formatAED(discountAmt);
+  } else {
+    discountRow.style.display = 'none';
+  }
+
+  document.getElementById('pos-held-preview-subtotal').textContent = 'AED ' + formatAED(subtotal);
+  document.getElementById('pos-held-preview-due').textContent = 'AED ' + formatAED(dueAmount);
+  document.getElementById('pos-held-preview-modal').classList.add('open');
 }
 
 function deleteHeldSale(id) {
@@ -837,6 +882,14 @@ function filterCustomerList(query) {
 }
 
 function loadCustomerSummary(customerId) {
+  // Show a loading state immediately, so a slow request never leaves
+  // the previous customer's numbers on screen where they could be
+  // mistaken for the newly-selected customer's actual balance.
+  ['pos-cust-summary-purchases', 'pos-cust-summary-spent', 'pos-cust-summary-visit', 'pos-cust-summary-points', 'pos-cust-summary-giftcard'].forEach(function (id) {
+    document.getElementById(id).textContent = 'Fetching...';
+  });
+  document.getElementById('pos-cust-summary-giftcard').classList.remove('has-balance');
+
   fetch('/.netlify/functions/pos-customer-summary', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -848,9 +901,17 @@ function loadCustomerSummary(customerId) {
       document.getElementById('pos-cust-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
       document.getElementById('pos-cust-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
       document.getElementById('pos-cust-summary-points').textContent = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
-      document.getElementById('pos-cust-summary-giftcard').textContent = 'AED ' + formatAED((posState.selectedCustomer && posState.selectedCustomer.gift_card_balance) || 0);
+      var giftBalance = (posState.selectedCustomer && posState.selectedCustomer.gift_card_balance) || 0;
+      var giftEl = document.getElementById('pos-cust-summary-giftcard');
+      giftEl.textContent = 'AED ' + formatAED(giftBalance);
+      giftEl.classList.toggle('has-balance', giftBalance > 0);
     })
-    .catch(function (e) { console.error('customer summary error:', e); });
+    .catch(function (e) {
+      console.error('customer summary error:', e);
+      ['pos-cust-summary-purchases', 'pos-cust-summary-spent', 'pos-cust-summary-visit', 'pos-cust-summary-points', 'pos-cust-summary-giftcard'].forEach(function (id) {
+        document.getElementById(id).textContent = 'Error';
+      });
+    });
 }
 
 function selectCustomer(customer) {
@@ -1182,15 +1243,20 @@ function renderPaymentStep() {
     discountRow.style.display = 'none';
   }
 
+  posState.paymentMethod = 'Cash';
   posState.amountReceived = totals.grandTotal;
   posState.paymentMode = 'single';
   posState.splitPayments = [];
-  document.getElementById('pos-amount-received').value = String(totals.grandTotal);
-  document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(0);
+  splitSelectedMethod = 'Cash';
+  document.getElementById('pos-single-due-amount').textContent = 'AED ' + formatAED(totals.grandTotal);
+  document.getElementById('pos-single-payment-error').textContent = '';
+  document.querySelectorAll('#pos-single-payment-block .pay-method').forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-method') === 'Cash'); });
   document.getElementById('pos-pay-reference').value = '';
   document.getElementById('pos-single-payment-block').style.display = 'block';
   document.getElementById('pos-split-payment-block').style.display = 'none';
   document.querySelectorAll('[data-pmode]').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-pmode') === 'single'); });
+  document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-splitmethod') === 'Cash'); });
+  document.getElementById('pos-split-giftcard-balance').style.display = 'none';
   renderSplitRows();
   lockPaymentConfirmation();
   document.getElementById('pos-payment-error').textContent = '';
@@ -1199,12 +1265,6 @@ function renderPaymentStep() {
   var sendBtn = document.getElementById('pos-send-btn');
   var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
   sendBtn.textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
-}
-
-function recalcChange() {
-  var totals = recalcBillingTotals();
-  var change = posState.amountReceived - totals.grandTotal;
-  document.getElementById('pos-pay-change').textContent = 'AED ' + formatAED(change);
 }
 
 // ---------- Split payment ----------
@@ -1270,7 +1330,8 @@ function commitSplitAmountModal() {
 
 // ---------- Gift card redemption (via "Other") ----------
 
-var giftCardModalContext = 'single'; // 'single' or 'split' — controls what "Apply" does
+var giftCardModalContext = 'split'; // gift card modal is only ever opened from split mode now
+var splitSelectedMethod = 'Cash'; // tracks the active split-method button, replacing the removed dropdown
 
 function openGiftCardModal(context) {
   if (!posState.selectedCustomer) {
@@ -1311,22 +1372,15 @@ function commitGiftCardModal() {
   if (amount > balance) { errorEl.textContent = 'That exceeds the available balance of AED ' + formatAED(balance) + '.'; return; }
 
   posState.giftCardRedeemed += amount;
-
-  if (giftCardModalContext === 'single') {
-    posState.paymentMethod = 'Gift Card';
-    document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
-    setAmountReceived(String(amount));
-  } else {
-    posState.splitPayments.push({ method: 'Gift Card', amount: amount });
-    renderSplitRows();
-    lockPaymentConfirmation();
-  }
+  posState.splitPayments.push({ method: 'Gift Card', amount: amount });
+  renderSplitRows();
+  lockPaymentConfirmation();
 
   document.getElementById('pos-giftcard-modal').classList.remove('open');
 }
 
 function addSplitRow() {
-  var method = document.getElementById('pos-split-method-select').value;
+  var method = splitSelectedMethod;
   var amount = parseFloat(document.getElementById('pos-split-amount-input').value);
   if (!amount || amount <= 0) { alert('Enter a valid amount first.'); return; }
   posState.splitPayments.push({ method: method, amount: amount });
@@ -1360,16 +1414,7 @@ function renderPaymentBreakup() {
       rows.push('<div class="pos-breakup-row" style="color:' + (remaining > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + label + '</span><span>AED ' + formatAED(Math.abs(remaining)) + '</span></div>');
     }
   } else {
-    if (posState.paymentMethod === 'Cash' && posState.amountReceived === 0) {
-      rows.push('<div class="pos-breakup-row" style="color:#B8142A; font-weight:700;"><span>Amount Due</span><span>AED ' + formatAED(totals.grandTotal) + '</span></div>');
-    } else {
-      rows.push('<div class="pos-breakup-row"><span>' + posState.paymentMethod + '</span><span>AED ' + formatAED(posState.amountReceived) + '</span></div>');
-      var change = posState.amountReceived - totals.grandTotal;
-      if (posState.paymentMethod === 'Cash' && change !== 0) {
-        var changeLabel = change > 0 ? 'Change' : 'Remaining Due';
-        rows.push('<div class="pos-breakup-row" style="color:' + (change > 0 ? '#8a7266' : '#B8142A') + '; font-weight:700;"><span>' + changeLabel + '</span><span>AED ' + formatAED(Math.abs(change)) + '</span></div>');
-      }
-    }
+    rows.push('<div class="pos-breakup-row"><span>' + posState.paymentMethod + '</span><span>AED ' + formatAED(posState.amountReceived) + '</span></div>');
   }
   el.innerHTML = rows.join('');
 }
@@ -1427,23 +1472,6 @@ function confirmPayment() {
   document.getElementById('pos-send-btn').disabled = !hasEmail;
   document.getElementById('pos-complete-sale-btn').disabled = false;
   renderPaymentBreakup();
-}
-
-function setAmountReceived(newValueStr) {
-  if (newValueStr.length > 8) return;
-  if ((newValueStr.match(/\./g) || []).length > 1) return;
-  posState.amountReceived = parseFloat(newValueStr) || 0;
-  document.getElementById('pos-amount-received').value = newValueStr || '0';
-  recalcChange();
-  lockPaymentConfirmation();
-}
-
-function handleAmountKeypad(key) {
-  var current = document.getElementById('pos-amount-received').value;
-  if (key === 'clear') { setAmountReceived('0'); return; }
-  if (key === 'back') { setAmountReceived(current.length > 1 ? current.slice(0, -1) : '0'); return; }
-  var next = (current === '0' && key !== '.') ? key : current + key;
-  setAmountReceived(next);
 }
 
 function buildPrintReceiptHtml() {
@@ -1837,27 +1865,32 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-proceed-payment-btn').addEventListener('click', function () { showStep(4); });
 
   // Payment
-  document.querySelectorAll('.pay-method').forEach(function (el) {
+  document.querySelectorAll('#pos-single-payment-block .pay-method').forEach(function (el) {
     el.addEventListener('click', function () {
       if (el.classList.contains('disabled')) return; // Card — not wired up yet
       var method = el.getAttribute('data-method');
-      if (method === 'Other') { openGiftCardModal('single'); return; }
-      document.querySelectorAll('.pay-method').forEach(function (p) { p.classList.remove('active'); });
+      var errorEl = document.getElementById('pos-single-payment-error');
+      errorEl.textContent = '';
+      var totals = recalcBillingTotals();
+
+      if (method === 'Gift Card') {
+        if (!posState.selectedCustomer) { errorEl.textContent = 'Select a customer first to use their gift card.'; return; }
+        var balance = posState.selectedCustomer.gift_card_balance || 0;
+        if (balance < totals.grandTotal) {
+          errorEl.textContent = 'Gift card balance (AED ' + formatAED(balance) + ') doesn\u2019t cover the full amount (AED ' + formatAED(totals.grandTotal) + '). Use Split Payment to combine it with another method.';
+          return;
+        }
+        posState.giftCardRedeemed = totals.grandTotal;
+      } else {
+        posState.giftCardRedeemed = 0;
+      }
+
+      document.querySelectorAll('#pos-single-payment-block .pay-method').forEach(function (p) { p.classList.remove('active'); });
       el.classList.add('active');
       posState.paymentMethod = method;
-      var totals = recalcBillingTotals();
-      setAmountReceived(String(totals.grandTotal));
+      posState.amountReceived = totals.grandTotal;
       lockPaymentConfirmation();
     });
-  });
-  document.querySelectorAll('[data-akp]').forEach(function (btn) {
-    btn.addEventListener('click', function () { handleAmountKeypad(btn.getAttribute('data-akp')); });
-  });
-  document.getElementById('pos-amount-received').addEventListener('input', function (e) {
-    var cleaned = e.target.value.replace(/[^0-9.]/g, '');
-    var parts = cleaned.split('.');
-    if (parts.length > 2) cleaned = parts[0] + '.' + parts.slice(1).join('');
-    setAmountReceived(cleaned || '0');
   });
   document.querySelectorAll('[data-pmode]').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -1870,8 +1903,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-split-add-btn').addEventListener('click', addSplitRow);
+  document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (el) {
+    el.addEventListener('click', function () {
+      document.querySelectorAll('#pos-split-method-buttons .pay-method').forEach(function (p) { p.classList.remove('active'); });
+      el.classList.add('active');
+      splitSelectedMethod = el.getAttribute('data-splitmethod');
+      var balanceEl = document.getElementById('pos-split-giftcard-balance');
+      if (splitSelectedMethod === 'Gift Card' && posState.selectedCustomer) {
+        balanceEl.textContent = 'Available balance: AED ' + formatAED(posState.selectedCustomer.gift_card_balance || 0);
+        balanceEl.style.display = 'block';
+      } else {
+        balanceEl.style.display = 'none';
+      }
+    });
+  });
   document.getElementById('pos-split-amount-input').addEventListener('click', function () {
-    if (document.getElementById('pos-split-method-select').value === 'Gift Card') { openGiftCardModal('split'); return; }
+    if (splitSelectedMethod === 'Gift Card') { openGiftCardModal('split'); return; }
     openSplitAmountModal();
   });
   document.querySelectorAll('[data-splitkp]').forEach(function (btn) {
@@ -1902,6 +1949,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-giftcard-modal-done').addEventListener('click', commitGiftCardModal);
   document.getElementById('pos-payment-error-modal-ok').addEventListener('click', function () {
     document.getElementById('pos-payment-error-modal').classList.remove('open');
+  });
+  document.getElementById('pos-held-preview-close').addEventListener('click', function () {
+    document.getElementById('pos-held-preview-modal').classList.remove('open');
   });
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
