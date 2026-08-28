@@ -270,7 +270,7 @@
         <div class="panel">
           <h3>Payment Summary</h3>
           <div class="bill-row"><span>Subtotal</span><span id="pos-pay-subtotal">AED 0.00</span></div>
-          <div class="bill-row" id="pos-pay-discount-row" style="display:none;"><span id="pos-pay-discount-label">Discount</span><span id="pos-pay-discount-value">&minus; AED 0.00</span></div>
+          <div class="bill-row" id="pos-pay-discount-row" style="display:none;"><span id="pos-pay-discount-label">Discount</span><span id="pos-pay-discount-value" style="color:#B8142A; font-weight:700;">&minus; AED 0.00</span></div>
           <div class="bill-row"><span>VAT</span><span class="vat-note">Not applicable</span></div>
           <div class="cart-total"><span>Total</span><span class="num-total" id="pos-pay-total">AED 0.00</span></div>
         </div>
@@ -290,7 +290,7 @@
                 </div>
                 <div class="pay-method disabled" data-method="Card">
                   <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-                  Card <span class="placeholder-tag">Later</span>
+                  <span>Card <span class="placeholder-tag">Later</span></span>
                 </div>
                 <div class="pay-method" data-method="Bank Transfer">
                   <svg class="pm-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="15" y1="21" x2="15" y2="13"/></svg>
@@ -301,7 +301,7 @@
                   Gift Card
                 </div>
               </div>
-              <p style="font-size:0.8rem; color:#8a7266; text-align:center; margin:10px 0 0;">Single payment is always the full amount due: <b id="pos-single-due-amount" style="color:var(--green-deep);">AED 0.00</b></p>
+              <p id="pos-single-giftcard-info" style="display:none; font-size:0.78rem; color:#A15C1E; font-weight:700; text-align:center; margin:10px 0 0;"></p>
               <p class="pos-error" id="pos-single-payment-error" style="text-align:center;"></p>
             </div>
 
@@ -309,11 +309,26 @@
               <div class="bill-row" style="flex-shrink:0;"><span>Remaining to Allocate</span><span id="pos-split-remaining">AED 0.00</span></div>
               <div id="pos-split-rows" class="scroll-zone" style="margin:6px 0;"></div>
               <div class="pay-methods" id="pos-split-method-buttons" style="grid-template-columns:repeat(3,1fr); margin-bottom:4px; flex-shrink:0;">
-                <div class="pay-method active" data-splitmethod="Cash" style="padding:6px 4px; font-size:0.7rem;">Cash</div>
-                <div class="pay-method" data-splitmethod="Card" style="padding:6px 4px; font-size:0.7rem;">Card</div>
-                <div class="pay-method" data-splitmethod="Bank Transfer" style="padding:6px 4px; font-size:0.7rem;">Bank Transfer</div>
-                <div class="pay-method" data-splitmethod="Gift Card" style="padding:6px 4px; font-size:0.7rem;">Gift Card</div>
-                <div class="pay-method" data-splitmethod="Other" style="padding:6px 4px; font-size:0.7rem;">Other</div>
+                <div class="pay-method active" data-splitmethod="Cash" style="padding:6px 4px; font-size:0.66rem;">
+                  <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg>
+                  Cash
+                </div>
+                <div class="pay-method" data-splitmethod="Card" style="padding:6px 4px; font-size:0.66rem;">
+                  <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                  Card
+                </div>
+                <div class="pay-method" data-splitmethod="Bank Transfer" style="padding:6px 4px; font-size:0.66rem;">
+                  <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 21h18"/><path d="M5 21V9l7-5 7 5v12"/><line x1="9" y1="21" x2="9" y2="13"/><line x1="15" y1="21" x2="15" y2="13"/></svg>
+                  Bank Transfer
+                </div>
+                <div class="pay-method" data-splitmethod="Gift Card" style="padding:6px 4px; font-size:0.66rem;">
+                  <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="14.5" x2="10" y2="14.5"/></svg>
+                  Gift Card
+                </div>
+                <div class="pay-method" data-splitmethod="Other" style="padding:6px 4px; font-size:0.66rem;">
+                  <svg class="pm-icon" style="width:22px;height:22px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+                  Other
+                </div>
               </div>
               <p id="pos-split-giftcard-balance" style="display:none; font-size:0.76rem; color:#A15C1E; font-weight:700; text-align:center; margin:0 0 6px;"></p>
               <div class="pos-split-add-row" style="flex-shrink:0;">
@@ -334,10 +349,19 @@
           <button type="button" class="btn btn-primary" id="pos-confirm-payment-btn" style="margin-top:10px;">Confirm Payment</button>
           <div style="margin-top:14px; border-top:1px solid var(--stone); padding-top:14px;">
             <h3 style="margin-bottom:10px;">Sale Actions</h3>
-            <button type="button" class="action-btn primary-action" id="pos-print-btn" disabled>Print Bill</button>
-            <button type="button" class="action-btn" id="pos-send-btn" disabled>Send Bill (Email)</button>
+            <button type="button" class="action-btn primary-action" id="pos-print-btn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              <span class="btn-label">Print Bill</span>
+            </button>
+            <button type="button" class="action-btn" id="pos-send-btn" disabled>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6 12 13 2 6"/><path d="M2 6h20v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6z"/></svg>
+              <span class="btn-label">Send Bill (Email)</span>
+            </button>
             <p class="pos-error" id="pos-payment-error"></p>
-            <button type="button" class="action-btn complete" id="pos-complete-sale-btn" disabled>Complete Sale</button>
+            <button type="button" class="action-btn complete" id="pos-complete-sale-btn" disabled>
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+              <span class="btn-label">Complete Sale</span>
+            </button>
           </div>
         </div>
       </div>

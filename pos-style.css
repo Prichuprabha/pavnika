@@ -214,11 +214,12 @@ textarea { min-height: 50px; resize: none; }
 /* ---------- Payment step ---------- */
 .s4-grid { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 12px; height: 100%; min-width: 0; min-height: 0; }
 .pay-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; flex-shrink: 0; margin-bottom: 6px; }
-.pay-method { border: 1.5px solid var(--stone); border-radius: 10px; padding: 7px 8px; text-align: center; cursor: pointer; font-size: 0.78rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--ink); }
+.pay-method { border: 1.5px solid var(--stone); border-radius: 10px; padding: 7px 8px; text-align: center; cursor: pointer; font-size: 0.78rem; font-weight: 700; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--ink); min-height: 62px; }
 .pay-method .pm-icon { width: 36px; height: 36px; }
+.placeholder-tag { font-size: 0.6rem; font-weight: 600; color: #a08b7f; }
 .pay-method.active { border-color: var(--green-deep); background: var(--ivory-deep); }
 .pay-method.disabled { opacity: 0.5; cursor: not-allowed; }
-.action-btn { display: block; width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 10px; border: 1.5px solid var(--stone); background: #fff; font-size: 0.84rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
+.action-btn { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 10px; border: 1.5px solid var(--stone); background: #fff; font-size: 0.84rem; font-weight: 700; cursor: pointer; flex-shrink: 0; }
 .action-btn.primary-action { background: var(--green-deep); color: #fff; border: none; }
 .action-btn.complete { background: #4a7c59; color: #fff; border: none; font-size: 0.92rem; }
 .action-btn:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -297,9 +298,8 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-split-row .psr-amount { text-align: right; padding-right: 8px; }
 .pos-split-row .psr-remove { background: none; border: none; color: #B8142A; font-size: 1rem; cursor: pointer; justify-self: end; }
 .pos-split-add-row { display: flex; gap: 6px; margin-top: 10px; }
-.pos-split-add-row select { flex: 1; padding: 9px 6px; font-size: 0.8rem; }
-.pos-split-add-row input { width: 90px; padding: 9px 8px; font-size: 0.8rem; }
-.pos-split-add-row button { background: var(--gold); border: none; color: #fff; border-radius: 8px; padding: 0 12px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
+.pos-split-add-row input { flex: 1; padding: 10px 10px; font-size: 0.85rem; }
+.pos-split-add-row button { background: var(--gold); border: none; color: #fff; border-radius: 8px; padding: 0 16px; font-size: 0.78rem; font-weight: 700; cursor: pointer; }
 
 /* ---------- Payment breakup panel ---------- */
 .pos-breakup-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.85rem; border-bottom: 1px solid #f0e8e0; }

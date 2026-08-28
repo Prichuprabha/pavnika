@@ -1248,7 +1248,7 @@ function renderPaymentStep() {
   posState.paymentMode = 'single';
   posState.splitPayments = [];
   splitSelectedMethod = 'Cash';
-  document.getElementById('pos-single-due-amount').textContent = 'AED ' + formatAED(totals.grandTotal);
+  document.getElementById('pos-single-giftcard-info').style.display = 'none';
   document.getElementById('pos-single-payment-error').textContent = '';
   document.querySelectorAll('#pos-single-payment-block .pay-method').forEach(function (p) { p.classList.toggle('active', p.getAttribute('data-method') === 'Cash'); });
   document.getElementById('pos-pay-reference').value = '';
@@ -1264,7 +1264,7 @@ function renderPaymentStep() {
 
   var sendBtn = document.getElementById('pos-send-btn');
   var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
-  sendBtn.textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
+  sendBtn.querySelector('.btn-label').textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
 }
 
 // ---------- Split payment ----------
@@ -1505,7 +1505,7 @@ function sendBillEmail() {
   var totals = recalcBillingTotals();
   var btn = document.getElementById('pos-send-btn');
   btn.disabled = true;
-  btn.textContent = 'Sending...';
+  btn.querySelector('.btn-label').textContent = 'Sending...';
 
   fetch('/.netlify/functions/pos-send-bill-email', {
     method: 'POST',
@@ -1523,13 +1523,13 @@ function sendBillEmail() {
     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
     .then(function (result) {
       btn.disabled = false;
-      btn.textContent = 'Send Bill (Email)';
+      btn.querySelector('.btn-label').textContent = 'Send Bill (Email)';
       if (!result.ok) { errorEl.textContent = result.data.error || 'Could not send email.'; return; }
       posState.printedOrSent = true;
     })
     .catch(function (e) {
       btn.disabled = false;
-      btn.textContent = 'Send Bill (Email)';
+      btn.querySelector('.btn-label').textContent = 'Send Bill (Email)';
       errorEl.textContent = 'Could not reach the server. Please try again.';
       console.error('send bill email error:', e);
     });
@@ -1543,7 +1543,7 @@ function completeSale() {
 
   var btn = document.getElementById('pos-complete-sale-btn');
   btn.disabled = true;
-  btn.textContent = 'Saving...';
+  btn.querySelector('.btn-label').textContent = 'Saving...';
 
   var paymentMethodSummary = posState.paymentMode === 'split'
     ? 'Split: ' + posState.splitPayments.map(function (p) { return p.method; }).join(', ')
@@ -1576,14 +1576,14 @@ function completeSale() {
     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
     .then(function (result) {
       btn.disabled = false;
-      btn.textContent = 'Complete Sale';
+      btn.querySelector('.btn-label').textContent = 'Complete Sale';
       if (!result.ok) { errorEl.textContent = result.data.error || 'Could not complete the sale.'; return; }
       alert('Sale completed! Bill number: ' + result.data.billNumber);
       resetTransaction();
     })
     .catch(function (e) {
       btn.disabled = false;
-      btn.textContent = 'Complete Sale';
+      btn.querySelector('.btn-label').textContent = 'Complete Sale';
       errorEl.textContent = 'Could not reach the server. Please try again.';
       console.error('complete sale error:', e);
     });
@@ -1870,7 +1870,9 @@ document.addEventListener('DOMContentLoaded', function () {
       if (el.classList.contains('disabled')) return; // Card — not wired up yet
       var method = el.getAttribute('data-method');
       var errorEl = document.getElementById('pos-single-payment-error');
+      var giftInfoEl = document.getElementById('pos-single-giftcard-info');
       errorEl.textContent = '';
+      giftInfoEl.style.display = 'none';
       var totals = recalcBillingTotals();
 
       if (method === 'Gift Card') {
@@ -1881,6 +1883,8 @@ document.addEventListener('DOMContentLoaded', function () {
           return;
         }
         posState.giftCardRedeemed = totals.grandTotal;
+        giftInfoEl.textContent = 'Gift Card Balance: AED ' + formatAED(balance) + '  \u2022  Remaining after this purchase: AED ' + formatAED(balance - totals.grandTotal);
+        giftInfoEl.style.display = 'block';
       } else {
         posState.giftCardRedeemed = 0;
       }
