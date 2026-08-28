@@ -2232,6 +2232,18 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-held-preview-close').addEventListener('click', function () {
     document.getElementById('pos-held-preview-modal').classList.remove('open');
   });
+  document.querySelectorAll('.pos-settings-card').forEach(function (el) {
+    el.addEventListener('click', function () { showPage(el.getAttribute('data-settings-link')); });
+  });
+  var shSearchDebounce;
+  document.getElementById('pos-sh-search').addEventListener('input', function () {
+    clearTimeout(shSearchDebounce);
+    shSearchDebounce = setTimeout(loadSalesHistory, 300);
+  });
+  document.getElementById('pos-sh-date-filter').addEventListener('change', function () { loadSalesHistory(); });
+  document.getElementById('pos-sh-view-close').addEventListener('click', function () {
+    document.getElementById('pos-sh-view-modal').classList.remove('open');
+  });
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', manualSendBillEmail);
