@@ -1010,6 +1010,7 @@ function proceedToBilling() {
         return;
       }
       posState.selectedCustomer = result.data.customer;
+      recentCustomersCache.unshift(result.data.customer);
       refreshStepLocks();
       showStep(3);
     })
@@ -1950,7 +1951,7 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.classList.add('active');
       posState.paymentMode = btn.getAttribute('data-pmode');
       document.getElementById('pos-single-payment-block').style.display = posState.paymentMode === 'single' ? 'block' : 'none';
-      document.getElementById('pos-split-payment-block').style.display = posState.paymentMode === 'split' ? 'block' : 'none';
+      document.getElementById('pos-split-payment-block').style.display = posState.paymentMode === 'split' ? 'flex' : 'none';
       lockPaymentConfirmation();
     });
   });
