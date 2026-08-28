@@ -791,7 +791,6 @@ function addToCart() {
   refreshStepLocks();
 
   clearItemFields();
-  document.getElementById('pos-item-code').focus();
 }
 
 function removeFromCart(id) {
@@ -909,8 +908,15 @@ function loadCustomerSummary(customerId) {
       document.getElementById('pos-cust-summary-purchases').textContent = data.totalPurchases;
       document.getElementById('pos-cust-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
       document.getElementById('pos-cust-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
-      document.getElementById('pos-cust-summary-points').textContent = (posState.selectedCustomer && posState.selectedCustomer.loyalty_points) || 0;
-      var giftBalance = (posState.selectedCustomer && posState.selectedCustomer.gift_card_balance) || 0;
+      document.getElementById('pos-cust-summary-points').textContent = data.loyaltyPoints || 0;
+      var giftBalance = data.giftCardBalance || 0;
+      // Keep the cached customer object in sync too, so anything else
+      // that reads posState.selectedCustomer.gift_card_balance (like
+      // the gift card redemption modals) also sees the current value.
+      if (posState.selectedCustomer) {
+        posState.selectedCustomer.gift_card_balance = giftBalance;
+        posState.selectedCustomer.loyalty_points = data.loyaltyPoints || 0;
+      }
       var giftEl = document.getElementById('pos-cust-summary-giftcard');
       giftEl.textContent = 'AED ' + formatAED(giftBalance);
       giftEl.classList.toggle('has-balance', giftBalance > 0);

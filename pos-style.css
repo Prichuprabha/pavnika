@@ -316,7 +316,7 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 
 /* Fills remaining flex space, same as .scroll-zone, but without ever
    introducing a scrollbar — used where content is sized to always fit. */
-.pos-no-scroll-fill { flex: 1; min-height: 0; overflow: hidden; }
+.pos-no-scroll-fill { display: flex; flex-direction: column; flex: 1; min-height: 0; overflow: hidden; }
 
 /* ---------- Return / Exchange page ---------- */
 .pos-return-action { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1.5px solid var(--stone); border-radius: 10px; margin-bottom: 10px; cursor: pointer; font-weight: 700; color: var(--ink); }

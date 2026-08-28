@@ -1,7 +1,8 @@
 // Computes a selected customer's purchase summary — total purchases,
 // total spent, and last visit date — by querying their pos_sales
-// history. Loyalty points come directly from pos_customers itself,
-// not computed here.
+// history. Also fetches gift_card_balance fresh, since a cached
+// customer object (from whenever they were last loaded into the
+// list) could be stale if a redemption or exchange changed it since.
 const { verifyPosToken } = require('./_pos-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -47,9 +48,17 @@ exports.handler = async function (event) {
     var totalSpent = sales.reduce(function (sum, s) { return sum + Number(s.total || 0); }, 0);
     var lastVisit = sales.length ? sales[0].created_at : null;
 
+    var custRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${encodeURIComponent(body.customerId)}&select=gift_card_balance,loyalty_points`,
+      { headers: supabaseHeaders() }
+    );
+    var custRows = await custRes.json();
+    var giftCardBalance = (custRows[0] && custRows[0].gift_card_balance) || 0;
+    var loyaltyPoints = (custRows[0] && custRows[0].loyalty_points) || 0;
+
     return {
       statusCode: 200,
-      body: JSON.stringify({ totalPurchases: totalPurchases, totalSpent: totalSpent, lastVisit: lastVisit })
+      body: JSON.stringify({ totalPurchases: totalPurchases, totalSpent: totalSpent, lastVisit: lastVisit, giftCardBalance: giftCardBalance, loyaltyPoints: loyaltyPoints })
     };
   } catch (e) {
     console.error('pos-customer-summary error:', e);

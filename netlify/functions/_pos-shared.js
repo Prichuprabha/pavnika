@@ -17,9 +17,9 @@ function supabaseHeaders() {
   };
 }
 
-// BILL-DDMOYY-SEQ — same method as the site's own order numbers
+// POS-DDMOYY-SEQ — same method as the site's own order numbers
 // (generateOrderNumber in _order-shared.js), minus the hour/minute,
-// with a 3-digit daily sequence and a BILL prefix: BILL-220826-001.
+// with a 3-digit daily sequence and a POS prefix: POS-220826-001.
 //
 // Note for callers: this counts today's existing pos_sales rows and
 // adds 1 — it doesn't reserve a number. Two calls close together
@@ -51,7 +51,7 @@ async function generateBillNumber() {
     console.error('Could not count today\'s POS sales, defaulting sequence to 1:', e);
   }
 
-  return 'BILL-' + datePart + '-' + String(seq).padStart(3, '0');
+  return 'POS-' + datePart + '-' + String(seq).padStart(3, '0');
 }
 
 module.exports = { generateBillNumber: generateBillNumber, supabaseHeaders: supabaseHeaders };
