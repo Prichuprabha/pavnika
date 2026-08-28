@@ -207,6 +207,7 @@ textarea { min-height: 50px; resize: none; }
    to Cart tap, not by tapping Add to Cart repeatedly. Visible but not
    blocking — staff can still proceed if they genuinely do want it. */
 .pos-cart-item.pos-dupe-warning { background: #fdeaea; border-color: #e8b4b4; }
+.pos-cart-item.pos-sold-warning { background: #fdeaea; border-color: #B8142A; border-width: 1.5px; }
 
 .btn-outline { background: transparent; border: 1.5px solid var(--green-deep); color: var(--green-deep); width: 100%; flex-shrink: 0; margin-top: 10px; }
 .btn-outline:hover { background: var(--ivory-deep); }
@@ -240,14 +241,17 @@ textarea { min-height: 50px; resize: none; }
    printing the whole app UI as-is. */
 .pos-print-receipt { display: none; }
 @media print {
+  @page { margin: 0; size: 80mm auto; }
   body > *:not(.pos-print-receipt) { display: none !important; }
-  .pos-print-receipt { display: block !important; font-family: Arial, sans-serif; color: #000; padding: 20px; max-width: 380px; margin: 0 auto; }
-  .pos-print-receipt h2 { text-align: center; margin: 0 0 4px; }
-  .pos-print-receipt .pr-sub { text-align: center; font-size: 12px; margin-bottom: 16px; }
-  .pos-print-receipt table { width: 100%; border-collapse: collapse; font-size: 12px; }
-  .pos-print-receipt td { padding: 4px 0; }
-  .pos-print-receipt .pr-total-row td { border-top: 1px solid #000; font-weight: bold; padding-top: 8px; }
-  .pos-print-receipt .pr-footer { text-align: center; font-size: 11px; margin-top: 20px; }
+  .pos-print-receipt { display: block !important; font-family: 'Courier New', monospace; color: #000; padding: 12px 10px; width: 280px; margin: 0 auto; font-size: 12px; line-height: 1.5; }
+  .pos-print-receipt .pr-header { text-align: center; }
+  .pos-print-receipt .pr-shop-name { font-weight: bold; font-size: 14px; }
+  .pos-print-receipt .pr-shop-sub { font-size: 10px; }
+  .pos-print-receipt .pr-dashed { border-top: 1px dashed #000; margin: 8px 0; padding-top: 8px; }
+  .pos-print-receipt .pr-row { display: flex; justify-content: space-between; }
+  .pos-print-receipt .pr-total-row { border-top: 1px solid #000; margin-top: 6px; padding-top: 6px; font-weight: bold; font-size: 14px; }
+  .pos-print-receipt .pr-footer { text-align: center; }
+  .pos-print-receipt .pr-footer-small { text-align: center; font-size: 10px; }
 }
 
 .pos-fixed-value { font-weight: 700; font-size: 0.95rem; color: var(--green-deep); padding: 5px 0; }

@@ -785,7 +785,7 @@ function addToCart() {
     existing.qty += posState.currentQty;
     existing.dupeWarning = true; // added as a separate action a second time — likely an accidental re-scan
   } else {
-    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: item.price, qty: posState.currentQty, image: item.image || '', dupeWarning: false });
+    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: item.price, qty: posState.currentQty, image: item.image || '', dupeWarning: false, sold: !!item.sold });
   }
   renderCart();
   refreshStepLocks();
@@ -814,11 +814,12 @@ function renderCart() {
   } else {
     listEl.innerHTML = posState.cart.map(function (c) {
       var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
-      var dupeClass = c.dupeWarning ? ' pos-dupe-warning' : '';
+      var warnClass = (c.dupeWarning || c.sold) ? (c.sold ? ' pos-sold-warning' : ' pos-dupe-warning') : '';
+      var soldNote = c.sold ? '<div class="ci-sub" style="color:#B8142A; font-weight:600;">Out of stock \u2014 check before proceeding</div>' : '';
       var dupeNote = c.dupeWarning ? '<div class="ci-sub" style="color:#B8142A;">Added twice separately \u2014 check this is intended</div>' : '';
-      return '<div class="pos-cart-item' + dupeClass + '">' + imgTag +
+      return '<div class="pos-cart-item' + warnClass + '">' + imgTag +
         '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
-        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + dupeNote + '</div>' +
+        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + soldNote + dupeNote + '</div>' +
         '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div>' +
         '<button class="del-btn" data-remove="' + c.id + '">&times;</button></div>';
     }).join('');
@@ -1076,9 +1077,11 @@ function renderBillItems() {
   var el = document.getElementById('pos-bill-items');
   el.innerHTML = posState.cart.map(function (c) {
     var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
-    return '<div class="pos-cart-item">' + imgTag +
+    var soldClass = c.sold ? ' pos-sold-warning' : '';
+    var soldNote = c.sold ? '<div class="ci-sub" style="color:#B8142A; font-weight:600;">Out of stock \u2014 check before proceeding</div>' : '';
+    return '<div class="pos-cart-item' + soldClass + '">' + imgTag +
       '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
-      '<div class="ci-sub">Qty ' + c.qty + '</div></div>' +
+      '<div class="ci-sub">Qty ' + c.qty + '</div>' + soldNote + '</div>' +
       '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div></div>';
   }).join('');
   var countEl = document.getElementById('pos-bill-count');
@@ -1519,23 +1522,35 @@ function buildPrintReceiptHtml() {
   var custName = posState.selectedCustomer ? posState.selectedCustomer.name : 'Walk-in Customer';
   var salesPerson = posState.transactionSalesPerson || localStorage.getItem(POS_NAME_KEY) || '';
   var paymentMethodLabel = posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod;
-  var itemRows = posState.cart.map(function (c) {
-    return '<tr><td>' + c.id + ' - ' + c.name + ' (x' + c.qty + ')</td><td style="text-align:right;">' + formatAED(c.price * c.qty) + '</td></tr>';
+  var totalDiscount = totals.discountAmount + totals.loyaltyAmount + totals.couponAmount;
+
+  var itemLines = posState.cart.map(function (c) {
+    return '<div>' + c.id + ' ' + c.name + '</div>' +
+      '<div class="pr-row"><span>' + c.qty + ' x ' + formatAED(c.price) + '</span><span>' + formatAED(c.price * c.qty) + '</span></div>';
   }).join('');
-  return '<h2>Pavnika by Saranya</h2>' +
-    '<div class="pr-sub">' + (posState.billNumber || '') + '<br>' + new Date().toLocaleString() + '</div>' +
-    '<table style="margin:10px 0; font-size:11px;">' +
-    '<tr><td>Customer</td><td style="text-align:right;">' + custName + '</td></tr>' +
-    '<tr><td>Sales Person</td><td style="text-align:right;">' + salesPerson + '</td></tr>' +
-    '<tr><td>Payment Method</td><td style="text-align:right;">' + paymentMethodLabel + '</td></tr>' +
-    '</table>' +
-    '<table>' + itemRows +
-    '<tr><td>Subtotal</td><td style="text-align:right;">AED ' + formatAED(totals.subtotal) + '</td></tr>' +
-    (totals.discountAmount + totals.loyaltyAmount + totals.couponAmount > 0 ? '<tr><td>Discount</td><td style="text-align:right;">- AED ' + formatAED(totals.discountAmount + totals.loyaltyAmount + totals.couponAmount) + '</td></tr>' : '') +
-    '<tr><td>VAT</td><td style="text-align:right;">Not applicable</td></tr>' +
-    '<tr class="pr-total-row"><td>Total</td><td style="text-align:right;">AED ' + formatAED(totals.grandTotal) + '</td></tr>' +
-    '</table>' +
-    '<div class="pr-footer">Thank you for shopping with us!</div>';
+
+  return '<div class="pr-header">' +
+      '<div class="pr-shop-name">PAVNIKA BY SARANYA</div>' +
+      '<div class="pr-shop-sub">Al Barsha South 4, Dubai</div>' +
+      '<div class="pr-shop-sub">+971 52 66 30307</div>' +
+    '</div>' +
+    '<div class="pr-dashed">' +
+      '<div>Bill No: ' + (posState.billNumber || '') + '</div>' +
+      '<div>Date: ' + new Date().toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + '</div>' +
+      '<div>Customer: ' + custName + '</div>' +
+      '<div>Sales Person: ' + salesPerson + '</div>' +
+    '</div>' +
+    '<div class="pr-dashed">' + itemLines + '</div>' +
+    '<div class="pr-dashed">' +
+      '<div class="pr-row"><span>Subtotal</span><span>' + formatAED(totals.subtotal) + '</span></div>' +
+      (totalDiscount > 0 ? '<div class="pr-row"><span>Discount</span><span>-' + formatAED(totalDiscount) + '</span></div>' : '') +
+      '<div class="pr-row"><span>VAT</span><span>N/A</span></div>' +
+    '</div>' +
+    '<div class="pr-total-row pr-row"><span>TOTAL</span><span>AED ' + formatAED(totals.grandTotal) + '</span></div>' +
+    '<div class="pr-dashed">Payment Method: ' + paymentMethodLabel + '</div>' +
+    '<div class="pr-dashed pr-footer">Thank you for shopping with us!</div>' +
+    '<div class="pr-footer-small">Goods once sold are subject to</div>' +
+    '<div class="pr-footer-small">our exchange/return policy.</div>';
 }
 
 function printBill() {
@@ -1562,6 +1577,8 @@ function sendBillEmail() {
       email: posState.selectedCustomer.email,
       billNumber: posState.billNumber,
       customerName: posState.selectedCustomer.name,
+      salesPerson: posState.transactionSalesPerson || localStorage.getItem(POS_NAME_KEY) || '',
+      billDate: new Date().toISOString(),
       paymentMethod: posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod,
       items: posState.cart,
       subtotal: totals.subtotal,
