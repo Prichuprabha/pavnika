@@ -174,6 +174,10 @@ function canAccessStep(n) {
 }
 
 function showStep(n) {
+  if (posState.paymentConfirmed && n !== 4) {
+    alert('Payment is confirmed for this sale. Press Complete Sale before doing anything else.');
+    return;
+  }
   if (!canAccessStep(n)) {
     if (n === 2) alert('Add at least one item to the cart first.');
     else alert('Complete the Customer step (name and mobile number) first.');
@@ -206,6 +210,10 @@ function showStep(n) {
 }
 
 function showPage(pageName) {
+  if (posState.paymentConfirmed) {
+    alert('Payment is confirmed for this sale. Press Complete Sale before doing anything else.');
+    return;
+  }
   document.querySelectorAll('.step-content').forEach(function (el) { el.style.display = 'none'; });
   document.getElementById('stepTracker').style.display = 'none';
   document.querySelectorAll('.page-content').forEach(function (el) { el.style.display = 'none'; });
@@ -815,11 +823,10 @@ function renderCart() {
     listEl.innerHTML = posState.cart.map(function (c) {
       var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
       var warnClass = (c.dupeWarning || c.sold) ? (c.sold ? ' pos-sold-warning' : ' pos-dupe-warning') : '';
-      var soldNote = c.sold ? '<div class="ci-sub" style="color:#B8142A; font-weight:600;">Out of stock \u2014 check before proceeding</div>' : '';
       var dupeNote = c.dupeWarning ? '<div class="ci-sub" style="color:#B8142A;">Added twice separately \u2014 check this is intended</div>' : '';
       return '<div class="pos-cart-item' + warnClass + '">' + imgTag +
         '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
-        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + soldNote + dupeNote + '</div>' +
+        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + dupeNote + '</div>' +
         '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div>' +
         '<button class="del-btn" data-remove="' + c.id + '">&times;</button></div>';
     }).join('');
@@ -1286,8 +1293,8 @@ function renderPaymentStep() {
   posState.printedOrSent = false;
 
   var sendBtn = document.getElementById('pos-send-btn');
-  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
-  sendBtn.querySelector('.btn-label').textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
+  var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
+  sendBtn.querySelector('.btn-label').textContent = hasPhone ? 'Send Bill (WhatsApp)' : 'Send Bill (no phone on file)';
 }
 
 // ---------- Split payment ----------
@@ -1511,10 +1518,17 @@ function confirmPayment() {
 
   posState.paymentConfirmed = true;
   document.getElementById('pos-print-btn').disabled = false;
-  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
-  document.getElementById('pos-send-btn').disabled = !hasEmail;
+  var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
+  document.getElementById('pos-send-btn').disabled = !hasPhone;
   document.getElementById('pos-complete-sale-btn').disabled = false;
   renderPaymentBreakup();
+
+  // Auto-open WhatsApp with the receipt pre-filled the moment payment
+  // is confirmed — this is as close to "automatic" as a wa.me link
+  // allows, since WhatsApp itself still requires one tap to actually
+  // send. The manual button below stays available too, in case this
+  // window gets closed or needs resending.
+  openWhatsAppReceipt();
 }
 
 function buildPrintReceiptHtml() {
@@ -1559,46 +1573,41 @@ function printBill() {
   window.print();
 }
 
-function sendBillEmail() {
+function buildWhatsAppReceiptMessage() {
+  var totals = recalcBillingTotals();
+  var totalDiscount = totals.discountAmount + totals.loyaltyAmount + totals.couponAmount;
+  var billDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  var lines = [];
+  lines.push('Hi ' + posState.selectedCustomer.name + ', thank you for shopping with Pavnika by Saranya!');
+  lines.push('');
+  lines.push('Bill ' + (posState.billNumber || '') + ' \u00b7 ' + billDate);
+  posState.cart.forEach(function (c) {
+    lines.push(c.id + ' \u2014 ' + c.name + ' x' + c.qty + ' \u2014 AED ' + formatAED(c.price * c.qty));
+  });
+  if (totalDiscount > 0) {
+    lines.push('Discount: \u2212AED ' + formatAED(totalDiscount));
+  }
+  lines.push('Total: AED ' + formatAED(totals.grandTotal));
+
+  return lines.join('\n');
+}
+
+function openWhatsAppReceipt() {
+  if (!posState.selectedCustomer || !posState.selectedCustomer.phone) return false;
+  var msg = buildWhatsAppReceiptMessage();
+  var fullPhone = (posState.selectedCustomer.phone_country_code || '').replace('+', '') + posState.selectedCustomer.phone;
+  var waLink = 'https://wa.me/' + fullPhone + '?text=' + encodeURIComponent(msg);
+  window.open(waLink, '_blank');
+  posState.printedOrSent = true;
+  return true;
+}
+
+function sendBillWhatsApp() {
   var errorEl = document.getElementById('pos-payment-error');
   errorEl.textContent = '';
-  if (!posState.selectedCustomer || !posState.selectedCustomer.email) return;
-
-  var totals = recalcBillingTotals();
-  var btn = document.getElementById('pos-send-btn');
-  btn.disabled = true;
-  btn.querySelector('.btn-label').textContent = 'Sending...';
-
-  fetch('/.netlify/functions/pos-send-bill-email', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      posToken: getPosToken(),
-      email: posState.selectedCustomer.email,
-      billNumber: posState.billNumber,
-      customerName: posState.selectedCustomer.name,
-      salesPerson: posState.transactionSalesPerson || localStorage.getItem(POS_NAME_KEY) || '',
-      billDate: new Date().toISOString(),
-      paymentMethod: posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod,
-      items: posState.cart,
-      subtotal: totals.subtotal,
-      discountAmount: totals.discountAmount + totals.loyaltyAmount,
-      total: totals.grandTotal
-    })
-  })
-    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-    .then(function (result) {
-      btn.disabled = false;
-      btn.querySelector('.btn-label').textContent = 'Send Bill (Email)';
-      if (!result.ok) { errorEl.textContent = result.data.error || 'Could not send email.'; return; }
-      posState.printedOrSent = true;
-    })
-    .catch(function (e) {
-      btn.disabled = false;
-      btn.querySelector('.btn-label').textContent = 'Send Bill (Email)';
-      errorEl.textContent = 'Could not reach the server. Please try again.';
-      console.error('send bill email error:', e);
-    });
+  var sent = openWhatsAppReceipt();
+  if (!sent) errorEl.textContent = 'No phone number on file for this customer.';
 }
 
 function completeSale() {
@@ -1669,6 +1678,7 @@ function resetTransaction() {
   posState.couponCode = null;
   posState.couponDiscountPercent = 0;
   posState.giftCardRedeemed = 0;
+  posState.paymentConfirmed = false;
   document.getElementById('pos-discount-value').value = '0';
   document.querySelectorAll('.discount-toggle button[data-dtype]').forEach(function (b) {
     b.classList.toggle('active', b.getAttribute('data-dtype') === 'percent');
@@ -2019,7 +2029,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
-  document.getElementById('pos-send-btn').addEventListener('click', sendBillEmail);
+  document.getElementById('pos-send-btn').addEventListener('click', sendBillWhatsApp);
   document.getElementById('pos-complete-sale-btn').addEventListener('click', function () {
     if (!posState.printedOrSent) {
       document.getElementById('pos-confirm-modal').classList.add('open');
