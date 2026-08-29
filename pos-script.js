@@ -225,6 +225,7 @@ function showPage(pageName) {
   if (pageName === 'hold') loadHeldSales();
   if (pageName === 'return') loadReturnPage();
   if (pageName === 'sales-history') loadSalesHistory();
+  if (pageName === 'customer-db') loadCustomerDbList('');
 }
 
 // ---------- Hold / Parked Sales page ----------
@@ -503,6 +504,135 @@ function updateReturnRefundPreview() {
 }
 
 // ---------- Sales History ----------
+
+// ---------- Customer Database ----------
+
+var customerDbCache = [];
+var customerDbSelectedId = null;
+
+function loadCustomerDbList(query) {
+  var listEl = document.getElementById('pos-cdb-list');
+  fetch('/.netlify/functions/pos-search-customers', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), query: query || '' })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      customerDbCache = data.customers || [];
+      renderCustomerDbList();
+    })
+    .catch(function (e) {
+      console.error('load customer db list error:', e);
+      listEl.innerHTML = '<p class="pos-empty-note">Could not load customers.</p>';
+    });
+}
+
+function renderCustomerDbList() {
+  var listEl = document.getElementById('pos-cdb-list');
+  if (!customerDbCache.length) {
+    listEl.innerHTML = '<p class="pos-empty-note">No customers found.</p>';
+    return;
+  }
+  listEl.innerHTML = customerDbCache.map(function (c) {
+    return '<div class="cust-list-item' + (c.id === customerDbSelectedId ? ' selected' : '') + '" data-cdb-id="' + c.id + '">' +
+      '<span class="name">' + c.name + '</span>' +
+      '<span class="phone">' + c.phone_country_code + ' ' + c.phone + '</span></div>';
+  }).join('');
+  listEl.querySelectorAll('[data-cdb-id]').forEach(function (el) {
+    el.addEventListener('click', function () {
+      var picked = customerDbCache.filter(function (c) { return c.id === el.getAttribute('data-cdb-id'); })[0];
+      if (picked) selectCustomerDb(picked);
+    });
+  });
+}
+
+function selectCustomerDb(customer) {
+  customerDbSelectedId = customer.id;
+  renderCustomerDbList();
+
+  document.getElementById('pos-cdb-no-selection').style.display = 'none';
+  document.getElementById('pos-cdb-detail').style.display = 'flex';
+  document.getElementById('pos-cdb-error').textContent = '';
+
+  document.getElementById('pos-cdb-name').value = customer.name || '';
+  document.getElementById('pos-cdb-code').value = customer.phone_country_code || '+971';
+  document.getElementById('pos-cdb-phone').value = customer.phone || '';
+  document.getElementById('pos-cdb-email').value = customer.email || '';
+  document.getElementById('pos-cdb-address').value = customer.address || '';
+  document.querySelectorAll('#pos-cdb-emirate .seg-btn').forEach(function (btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-v') === customer.emirate);
+  });
+
+  ['pos-cdb-summary-purchases', 'pos-cdb-summary-spent', 'pos-cdb-summary-visit', 'pos-cdb-summary-points', 'pos-cdb-summary-giftcard'].forEach(function (id) {
+    document.getElementById(id).textContent = 'Fetching...';
+  });
+
+  fetch('/.netlify/functions/pos-customer-summary', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), customerId: customer.id })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      document.getElementById('pos-cdb-summary-purchases').textContent = data.totalPurchases;
+      document.getElementById('pos-cdb-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
+      document.getElementById('pos-cdb-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
+      document.getElementById('pos-cdb-summary-points').textContent = data.loyaltyPoints || 0;
+      document.getElementById('pos-cdb-summary-giftcard').textContent = 'AED ' + formatAED(data.giftCardBalance || 0);
+    })
+    .catch(function (e) { console.error('customer db summary error:', e); });
+}
+
+function saveCustomerDb() {
+  if (!customerDbSelectedId) return;
+  var name = document.getElementById('pos-cdb-name').value.trim();
+  var phone = document.getElementById('pos-cdb-phone').value.trim();
+  var errorEl = document.getElementById('pos-cdb-error');
+  errorEl.textContent = '';
+
+  if (!name || !phone) {
+    errorEl.textContent = 'Customer name and mobile number are required.';
+    return;
+  }
+
+  var emirateBtn = document.querySelector('#pos-cdb-emirate .seg-btn.active');
+  var btn = document.getElementById('pos-cdb-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  fetch('/.netlify/functions/pos-update-customer', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      posToken: getPosToken(),
+      customerId: customerDbSelectedId,
+      name: name,
+      phone: phone,
+      phoneCountryCode: document.getElementById('pos-cdb-code').value.trim() || '+971',
+      email: document.getElementById('pos-cdb-email').value.trim(),
+      emirate: emirateBtn ? emirateBtn.getAttribute('data-v') : null,
+      address: document.getElementById('pos-cdb-address').value.trim()
+    })
+  })
+    .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    .then(function (result) {
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+      if (!result.ok) { errorEl.textContent = result.data.error || 'Could not save changes.'; return; }
+      // Reflect the saved values back into the cached list (name/phone shown there)
+      customerDbCache.forEach(function (c, idx) {
+        if (c.id === customerDbSelectedId) customerDbCache[idx] = result.data.customer;
+      });
+      renderCustomerDbList();
+    })
+    .catch(function (e) {
+      btn.disabled = false;
+      btn.textContent = 'Save Changes';
+      errorEl.textContent = 'Could not reach the server. Please try again.';
+      console.error('save customer db error:', e);
+    });
+}
 
 var salesHistoryCache = [];
 
@@ -2244,6 +2374,19 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-sh-view-close').addEventListener('click', function () {
     document.getElementById('pos-sh-view-modal').classList.remove('open');
   });
+  var cdbSearchDebounce;
+  document.getElementById('pos-cdb-search').addEventListener('input', function (e) {
+    clearTimeout(cdbSearchDebounce);
+    var q = e.target.value;
+    cdbSearchDebounce = setTimeout(function () { loadCustomerDbList(q); }, 300);
+  });
+  document.querySelectorAll('#pos-cdb-emirate .seg-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      document.querySelectorAll('#pos-cdb-emirate .seg-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+    });
+  });
+  document.getElementById('pos-cdb-save-btn').addEventListener('click', saveCustomerDb);
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', manualSendBillEmail);

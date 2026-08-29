@@ -612,6 +612,57 @@
       </div>
     </div>
 
+    <!-- STANDALONE PAGE: CUSTOMER DATABASE -->
+    <div class="content page-content" id="page-customer-db" style="display:none;">
+      <div class="s3-grid" style="grid-template-columns: 1fr 1.4fr;">
+        <div class="panel">
+          <h3>Customers</h3>
+          <input type="text" id="pos-cdb-search" placeholder="Search by name or mobile" autocomplete="off">
+          <div class="scroll-zone" id="pos-cdb-list" style="margin-top:10px;"></div>
+        </div>
+        <div class="panel">
+          <h3>Customer Details</h3>
+          <div id="pos-cdb-no-selection" class="pos-empty-note" style="padding:30px 10px; text-align:center;">Select a customer on the left first.</div>
+          <div id="pos-cdb-detail" style="display:none; flex:1; min-height:0; flex-direction:column; overflow-y:auto;">
+            <div class="cust-grid pos-compact-form">
+              <div>
+                <label>Customer Name *</label>
+                <input type="text" id="pos-cdb-name" placeholder="Enter name">
+                <label>Mobile Number *</label>
+                <div class="phone-row">
+                  <input type="text" id="pos-cdb-code" list="pos-cc-list" value="+971" placeholder="Country code">
+                  <input type="text" id="pos-cdb-phone" placeholder="5X XXX XXXX">
+                </div>
+                <label>Email</label>
+                <input type="text" id="pos-cdb-email" placeholder="Optional">
+              </div>
+              <div>
+                <label>Emirate</label>
+                <div class="seg-grid" id="pos-cdb-emirate">
+                  <div class="seg-btn active" data-v="Dubai">Dubai</div>
+                  <div class="seg-btn" data-v="Abu Dhabi">Abu Dhabi</div>
+                  <div class="seg-btn" data-v="Sharjah">Sharjah</div>
+                  <div class="seg-btn" data-v="Other">Other</div>
+                </div>
+                <label>Address</label>
+                <textarea id="pos-cdb-address" placeholder="Optional"></textarea>
+              </div>
+            </div>
+            <p class="pos-error" id="pos-cdb-error"></p>
+            <button type="button" class="btn btn-primary" id="pos-cdb-save-btn">Save Changes</button>
+
+            <div class="pos-cust-summary-grid" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--stone);">
+              <div><span class="pcs-label">Total Purchases</span><span class="pcs-value" id="pos-cdb-summary-purchases">N/A</span></div>
+              <div><span class="pcs-label">Total Spent</span><span class="pcs-value" id="pos-cdb-summary-spent">N/A</span></div>
+              <div><span class="pcs-label">Last Visit</span><span class="pcs-value" id="pos-cdb-summary-visit">N/A</span></div>
+              <div><span class="pcs-label">Loyalty Points</span><span class="pcs-value" id="pos-cdb-summary-points">N/A</span></div>
+              <div><span class="pcs-label">Gift Card Balance</span><span class="pcs-value" id="pos-cdb-summary-giftcard">N/A</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
