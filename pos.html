@@ -75,7 +75,9 @@
             <label>Scan / Enter Code</label>
             <div class="scan-row">
               <input type="text" id="pos-item-code" placeholder="Scan or type code, then Enter" autocomplete="off">
-              <button id="pos-item-lookup-btn">Scan</button>
+              <button id="pos-item-lookup-btn" style="display:flex; align-items:center; justify-content:center;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="4" width="1.6" height="16"/><rect x="5" y="4" width="1" height="16"/><rect x="7.2" y="4" width="2.2" height="16"/><rect x="11" y="4" width="1" height="16"/><rect x="13.2" y="4" width="1.6" height="16"/><rect x="16" y="4" width="1" height="16"/><rect x="18" y="4" width="2.2" height="16"/><rect x="21" y="4" width="1" height="16"/></svg>
+              </button>
               <div class="pos-suggest-list" id="pos-suggest-list"></div>
             </div>
             <p class="pos-error" id="pos-item-error"></p>
@@ -562,7 +564,7 @@
           <div style="display:flex; gap:8px; align-items:center;">
             <input type="text" id="pos-return-search" placeholder="Search by Bill No. or Mobile" autocomplete="off" style="flex:1;">
             <button type="button" class="btn btn-outline" id="pos-return-scan-btn" style="width:auto; flex-shrink:0; padding:10px 12px; margin-top:0;">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="4" width="1.6" height="16"/><rect x="5" y="4" width="1" height="16"/><rect x="7.2" y="4" width="2.2" height="16"/><rect x="11" y="4" width="1" height="16"/><rect x="13.2" y="4" width="1.6" height="16"/><rect x="16" y="4" width="1" height="16"/><rect x="18" y="4" width="2.2" height="16"/><rect x="21" y="4" width="1" height="16"/></svg>
             </button>
           </div>
           <label style="margin-top:10px;">Recent Transactions</label>
@@ -640,7 +642,7 @@
             <button type="button" class="pos-search-clear-btn" id="pos-sh-search-clear" style="display:none;">&times;</button>
           </div>
           <button type="button" class="btn btn-outline" id="pos-sh-scan-btn" style="width:auto; flex-shrink:0; padding:10px 14px; margin-top:0;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><line x1="7" y1="12" x2="17" y2="12"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="4" width="1.6" height="16"/><rect x="5" y="4" width="1" height="16"/><rect x="7.2" y="4" width="2.2" height="16"/><rect x="11" y="4" width="1" height="16"/><rect x="13.2" y="4" width="1.6" height="16"/><rect x="16" y="4" width="1" height="16"/><rect x="18" y="4" width="2.2" height="16"/><rect x="21" y="4" width="1" height="16"/></svg>
           </button>
           <select id="pos-sh-date-filter" style="width:150px;">
             <option value="all" selected>All Time</option>
