@@ -2368,7 +2368,12 @@ document.addEventListener('DOMContentLoaded', function () {
       hideSuggestions();
     }
   });
-  document.getElementById('pos-item-lookup-btn').addEventListener('click', lookupItem);
+  document.getElementById('pos-item-lookup-btn').addEventListener('click', function () {
+    codeInput.value = '';
+    document.getElementById('pos-item-error').textContent = '';
+    hideSuggestions();
+    codeInput.focus();
+  });
   document.getElementById('pos-qty-minus').addEventListener('click', function () { changeQty(-1); });
   document.getElementById('pos-qty-plus').addEventListener('click', function () { changeQty(1); });
   document.getElementById('pos-add-to-cart-btn').addEventListener('click', addToCart);
