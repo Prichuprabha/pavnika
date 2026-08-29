@@ -877,18 +877,7 @@ function printSalesHistoryBill(id) {
   var sale = findHistorySale(id);
   if (!sale) return;
   document.getElementById('pos-print-receipt').innerHTML = buildHistoricalReceiptHtml(sale);
-  try {
-    JsBarcode('#pr-barcode', sale.bill_number || '', {
-      format: 'CODE128',
-      width: 1.6,
-      height: 40,
-      displayValue: true,
-      fontSize: 12,
-      margin: 0
-    });
-  } catch (e) {
-    console.error('barcode generation failed:', e);
-  }
+  renderReceiptBarcode(sale.bill_number);
   window.print();
 }
 
@@ -2016,10 +2005,10 @@ function buildPrintReceiptHtml() {
     '<div class="pr-footer-small">our exchange/return policy.</div>';
 }
 
-function printBill() {
-  document.getElementById('pos-print-receipt').innerHTML = buildPrintReceiptHtml();
+function renderReceiptBarcode(billNumber) {
   try {
-    JsBarcode('#pr-barcode', posState.billNumber || '', {
+    if (typeof JsBarcode === 'undefined') throw new Error('JsBarcode not loaded');
+    JsBarcode('#pr-barcode', billNumber || '', {
       format: 'CODE128',
       width: 1.6,
       height: 40,
@@ -2028,8 +2017,15 @@ function printBill() {
       margin: 0
     });
   } catch (e) {
-    console.error('barcode generation failed:', e);
+    console.error('barcode generation failed, falling back to plain text:', e);
+    var el = document.getElementById('pr-barcode');
+    if (el) el.outerHTML = '<div style="font-size:11px; letter-spacing:1px;">' + (billNumber || '') + '</div>';
   }
+}
+
+function printBill() {
+  document.getElementById('pos-print-receipt').innerHTML = buildPrintReceiptHtml();
+  renderReceiptBarcode(posState.billNumber);
   posState.printedOrSent = true;
   window.print();
 }
