@@ -243,6 +243,11 @@
   .admin-date-range-popover.is-open { display: block; }
 
   .admin-metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 28px; }
+  .admin-channel-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+  .admin-channel-tab { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 12px; border-radius: 10px; border: 1.5px solid var(--stone, #DED0C7); background: #fff; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: #8a7266; }
+  .admin-channel-tab svg { width: 18px; height: 18px; }
+  .admin-channel-tab.active { color: #B8142A; border-color: #F0997B; background: #FAECE7; }
+  .admin-channel-tab[data-channel="shop"].active { color: #B68A69; border-color: #B68A69; background: #F8ECE2; }
   .admin-metric-card {
     background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px;
     padding: 16px 18px; border-left: 3px solid var(--green);
@@ -568,10 +573,21 @@
             </div>
           </div>
         </div>
-        <input type="text" id="admin-orders-search" placeholder="Search order #, name, email...">
+        <input type="text" id="admin-orders-search" placeholder="Search order #, name, email, item...">
       </div>
 
-      <table class="admin-table admin-orders-table-desktop">
+      <div class="admin-channel-tabs">
+        <button type="button" class="admin-channel-tab active" data-channel="online" id="admin-tab-online">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Online Orders (<span id="admin-tab-online-count">0</span>)
+        </button>
+        <button type="button" class="admin-channel-tab" data-channel="shop" id="admin-tab-shop">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l1-5h16l1 5"/><path d="M4 9h16v11H4z"/><path d="M9 21v-6h6v6"/></svg>
+          Shop Orders (<span id="admin-tab-shop-count">0</span>)
+        </button>
+      </div>
+
+      <table class="admin-table admin-orders-table-desktop" id="admin-orders-table-online">
         <thead>
           <tr>
             <th class="admin-sortable" data-sort="order_number">Order #</th>
@@ -586,7 +602,23 @@
         <tbody id="admin-orders-rows"></tbody>
       </table>
 
+      <table class="admin-table admin-orders-table-desktop" id="admin-orders-table-shop" style="display:none;">
+        <thead>
+          <tr>
+            <th class="admin-sortable" data-sort="order_number">Bill No.</th>
+            <th class="admin-sortable" data-sort="created_at">Date</th>
+            <th>Customer</th>
+            <th>Items</th>
+            <th class="admin-sortable" data-sort="total">Total</th>
+            <th>Sales Person</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="admin-shop-orders-rows"></tbody>
+      </table>
+
       <div id="admin-orders-mobile-list" class="admin-orders-mobile-list"></div>
+      <div id="admin-shop-orders-mobile-list" class="admin-orders-mobile-list" style="display:none;"></div>
     </div>
 
     <div class="admin-order-drawer-overlay" id="admin-order-drawer-overlay">

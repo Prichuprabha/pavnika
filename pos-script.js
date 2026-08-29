@@ -409,10 +409,17 @@ function loadReturnPage() {
   document.getElementById('pos-return-process-btn').style.display = 'block';
   document.getElementById('pos-return-receipt-box').style.display = 'none';
   document.getElementById('pos-return-error').textContent = '';
-  searchOriginalSales('');
+
+  if (pendingReturnBillNumber) {
+    document.getElementById('pos-return-search').value = pendingReturnBillNumber;
+    searchOriginalSales(pendingReturnBillNumber, pendingReturnBillNumber);
+    pendingReturnBillNumber = null;
+  } else {
+    searchOriginalSales('');
+  }
 }
 
-function searchOriginalSales(query) {
+function searchOriginalSales(query, autoSelectBillNumber) {
   fetch('/.netlify/functions/pos-search-original-sale', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -437,6 +444,15 @@ function searchOriginalSales(query) {
           if (picked) selectSaleForReturn(picked);
         });
       });
+
+      if (autoSelectBillNumber) {
+        var match = sales.filter(function (s) { return s.bill_number === autoSelectBillNumber; })[0];
+        if (match) {
+          selectSaleForReturn(match);
+          var row = listEl.querySelector('[data-sale-id="' + match.id + '"]');
+          if (row) row.classList.add('selected');
+        }
+      }
     })
     .catch(function (e) { console.error('search original sale error:', e); });
 }
@@ -675,6 +691,7 @@ function saveCustomerDb() {
 }
 
 var salesHistoryCache = [];
+var pendingReturnBillNumber = null;
 
 function loadSalesHistory() {
   var query = document.getElementById('pos-sh-search').value.trim();
@@ -728,7 +745,11 @@ function renderSalesHistory() {
     btn.addEventListener('click', function () { sendSalesHistoryWhatsApp(btn.getAttribute('data-sh-send')); });
   });
   rowsEl.querySelectorAll('[data-sh-return]').forEach(function (btn) {
-    btn.addEventListener('click', function () { showPage('return'); });
+    btn.addEventListener('click', function () {
+      var sale = findHistorySale(btn.getAttribute('data-sh-return'));
+      pendingReturnBillNumber = sale ? sale.bill_number : null;
+      showPage('return');
+    });
   });
 }
 
@@ -1263,7 +1284,6 @@ function selectCustomer(customer) {
   document.querySelectorAll('.cust-list-item').forEach(function (el) {
     el.classList.toggle('selected', el.getAttribute('data-cust-id') === customer.id);
   });
-  document.getElementById('pos-cust-search').value = customer.name;
   document.getElementById('pos-cust-name').value = customer.name;
   document.getElementById('pos-cust-code').value = customer.phone_country_code;
   document.getElementById('pos-cust-phone').value = customer.phone;

@@ -48,50 +48,72 @@ exports.handler = async function (event) {
       dateClause = `&created_at=gte.${since}`;
     }
 
-    var url;
+    var sales;
+
     if (!query) {
-      url = `${SUPABASE_URL}/rest/v1/pos_sales?select=*&order=created_at.desc&limit=100${dateClause}`;
+      var res = await fetch(`${SUPABASE_URL}/rest/v1/pos_sales?select=*&order=created_at.desc&limit=100${dateClause}`, { headers: supabaseHeaders() });
+      if (!res.ok) throw new Error(`Supabase query failed: ${res.status}`);
+      sales = await res.json();
     } else {
+      // Search by bill number, customer (name/phone), and amount all
+      // at once in parallel, then merge — rather than trying each one
+      // sequentially and only falling back if the previous came back
+      // empty, which was adding unnecessary round-trip latency.
       var encoded = encodeURIComponent(`%${query}%`);
-      url = `${SUPABASE_URL}/rest/v1/pos_sales?select=*&bill_number=ilike.${encoded}&order=created_at.desc&limit=100${dateClause}`;
-    }
-    var res = await fetch(url, { headers: supabaseHeaders() });
-    if (!res.ok) throw new Error(`Supabase query failed: ${res.status}`);
-    var sales = await res.json();
+      var numericQuery = parseFloat(query);
+      var isNumeric = !isNaN(numericQuery) && /^[\d.]+$/.test(query);
 
-    // If searching and nothing matched by bill number, also try by
-    // customer name or mobile.
-    if (query && !sales.length) {
-      var custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?or=(name.ilike.${encodeURIComponent('%' + query + '%')},phone.ilike.${encodeURIComponent('%' + query + '%')})&select=id`, { headers: supabaseHeaders() });
-      var custRows = await custRes.json();
-      if (custRows.length) {
-        var custIds = custRows.map(function (c) { return c.id; }).join(',');
-        var salesByCustRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_sales?select=*&customer_id=in.(${custIds})&order=created_at.desc&limit=100${dateClause}`, { headers: supabaseHeaders() });
-        sales = await salesByCustRes.json();
-      }
-    }
+      var billPromise = fetch(`${SUPABASE_URL}/rest/v1/pos_sales?select=*&bill_number=ilike.${encoded}&order=created_at.desc&limit=100${dateClause}`, { headers: supabaseHeaders() })
+        .then(function (r) { return r.json(); });
 
-    // Attach customer info and return status
-    var customerIds = sales.map(function (s) { return s.customer_id; }).filter(Boolean);
-    var customersById = {};
-    if (customerIds.length) {
-      var custsRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=in.(${customerIds.join(',')})&select=id,name,phone,phone_country_code,email`, { headers: supabaseHeaders() });
-      var custs = await custsRes.json();
-      custs.forEach(function (c) { customersById[c.id] = c; });
+      var custPromise = fetch(`${SUPABASE_URL}/rest/v1/pos_customers?or=(name.ilike.${encoded},phone.ilike.${encoded})&select=id`, { headers: supabaseHeaders() })
+        .then(function (r) { return r.json(); })
+        .then(function (custRows) {
+          if (!custRows.length) return [];
+          var custIds = custRows.map(function (c) { return c.id; }).join(',');
+          return fetch(`${SUPABASE_URL}/rest/v1/pos_sales?select=*&customer_id=in.(${custIds})&order=created_at.desc&limit=100${dateClause}`, { headers: supabaseHeaders() })
+            .then(function (r) { return r.json(); });
+        });
+
+      var amountPromise = isNumeric
+        ? fetch(`${SUPABASE_URL}/rest/v1/pos_sales?select=*&total=gte.${numericQuery - 0.01}&total=lte.${numericQuery + 0.01}&order=created_at.desc&limit=100${dateClause}`, { headers: supabaseHeaders() })
+          .then(function (r) { return r.json(); })
+        : Promise.resolve([]);
+
+      var results = await Promise.all([billPromise, custPromise, amountPromise]);
+      var merged = {};
+      results.forEach(function (list) {
+        (list || []).forEach(function (s) { merged[s.id] = s; });
+      });
+      sales = Object.values(merged).sort(function (a, b) { return new Date(b.created_at) - new Date(a.created_at); });
     }
 
     var saleIds = sales.map(function (s) { return s.id; });
+    var customerIds = sales.map(function (s) { return s.customer_id; }).filter(Boolean);
+
+    // These two lookups don't depend on each other — run them
+    // together instead of one after another.
+    var lookups = await Promise.all([
+      customerIds.length
+        ? fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=in.(${customerIds.join(',')})&select=id,name,phone,phone_country_code,email`, { headers: supabaseHeaders() }).then(function (r) { return r.json(); })
+        : Promise.resolve([]),
+      saleIds.length
+        ? fetch(`${SUPABASE_URL}/rest/v1/pos_returns?original_sale_id=in.(${saleIds.join(',')})&select=original_sale_id,items_returned,is_damaged`, { headers: supabaseHeaders() }).then(function (r) { return r.json(); })
+        : Promise.resolve([])
+    ]);
+    var custs = lookups[0];
+    var returnRows = lookups[1];
+
+    var customersById = {};
+    custs.forEach(function (c) { customersById[c.id] = c; });
+
     var returnedIdsBySale = {};
     var isDamagedBySale = {};
-    if (saleIds.length) {
-      var returnsRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_returns?original_sale_id=in.(${saleIds.join(',')})&select=original_sale_id,items_returned,is_damaged`, { headers: supabaseHeaders() });
-      var returnRows = await returnsRes.json();
-      returnRows.forEach(function (r) {
-        if (!returnedIdsBySale[r.original_sale_id]) returnedIdsBySale[r.original_sale_id] = [];
-        (r.items_returned || []).forEach(function (it) { returnedIdsBySale[r.original_sale_id].push(it.id); });
-        if (r.is_damaged) isDamagedBySale[r.original_sale_id] = true;
-      });
-    }
+    returnRows.forEach(function (r) {
+      if (!returnedIdsBySale[r.original_sale_id]) returnedIdsBySale[r.original_sale_id] = [];
+      (r.items_returned || []).forEach(function (it) { returnedIdsBySale[r.original_sale_id].push(it.id); });
+      if (r.is_damaged) isDamagedBySale[r.original_sale_id] = true;
+    });
 
     sales.forEach(function (s) {
       s.customer_name = s.customer_id && customersById[s.customer_id] ? customersById[s.customer_id].name : 'Walk-in Customer';

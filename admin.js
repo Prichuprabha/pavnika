@@ -2068,6 +2068,8 @@ function initOrdersView(token) {
   var searchInput = document.getElementById('admin-orders-search');
 
   var allOrders = [];
+  var allShopOrders = [];
+  var activeChannel = 'online';
   var sortKey = 'created_at';
   var sortDir = 'desc';
 
@@ -2094,19 +2096,18 @@ function initOrdersView(token) {
 
   function renderSummary() {
     var pendingDispatch = allOrders.filter(function (o) { return o.status === 'paid'; });
-    var totalOrders = allOrders.length;
-    var processing = allOrders.filter(function (o) { return o.status === 'paid' || o.status === 'shipped'; }).length;
-    var completed = allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length;
-    var cancelled = allOrders.filter(function (o) { return o.status === 'cancelled' || o.status === 'refunded' || o.status === 'payment_error'; }).length;
-    var totalRevenue = allOrders.filter(function (o) { return o.status !== 'cancelled' && o.status !== 'payment_error'; })
+    var onlineReturned = allOrders.filter(function (o) { return o.status === 'cancelled' || o.status === 'refunded'; }).length;
+    var shopReturned = allShopOrders.filter(function (o) { return o.status !== 'Completed'; }).length;
+    var allOrdersCount = allOrders.length + allShopOrders.length;
+    var onlineRevenue = allOrders.filter(function (o) { return o.status !== 'cancelled' && o.status !== 'payment_error'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+    var shopRevenue = allShopOrders.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
 
     summaryEl.innerHTML =
-      buildStatCardHtml('All Orders', totalOrders, 'box', 'gold') +
-      buildStatCardHtml('Processing', processing, 'clock', 'orange') +
-      buildStatCardHtml('Completed', completed, 'check', 'green') +
-      buildStatCardHtml('Cancelled', cancelled, 'cross', 'red') +
-      buildStatCardHtml('Total Revenue (AED)', Math.round(totalRevenue).toLocaleString(), 'wallet', 'red');
+      buildStatCardHtml('All Orders', allOrdersCount, 'box', 'gold') +
+      buildStatCardHtml('Returned / Exchanged', onlineReturned + shopReturned, 'cross', 'red') +
+      buildStatCardHtml('Online Revenue (AED)', Math.round(onlineRevenue).toLocaleString() + ' \u00b7 ' + allOrders.length + ' orders', 'wallet', 'orange') +
+      buildStatCardHtml('Shop Revenue (AED)', Math.round(shopRevenue).toLocaleString() + ' \u00b7 ' + allShopOrders.length + ' orders', 'wallet', 'green');
 
     if (pendingDispatch.length) {
       pendingListEl.innerHTML =
@@ -2127,10 +2128,13 @@ function initOrdersView(token) {
 
     var filtered = allOrders.filter(function (o) {
       var okStatus = !statusVal || (o.status || 'pending') === statusVal;
+      var itemsText = '';
+      try { itemsText = (JSON.parse(o.items || '[]')).map(function (it) { return (it.name || '') + ' ' + (it.id || ''); }).join(' ').toLowerCase(); } catch (e) {}
       var okSearch = !query ||
         (o.order_number || '').toLowerCase().indexOf(query) !== -1 ||
         (o.customer_name || '').toLowerCase().indexOf(query) !== -1 ||
-        (o.customer_email || '').toLowerCase().indexOf(query) !== -1;
+        (o.customer_email || '').toLowerCase().indexOf(query) !== -1 ||
+        itemsText.indexOf(query) !== -1;
       var orderTime = new Date(o.created_at).getTime();
       var okFrom = !dateFrom || orderTime >= new Date(dateFrom + 'T00:00:00').getTime();
       var okTo = !dateTo || orderTime <= new Date(dateTo + 'T23:59:59').getTime();
@@ -2191,6 +2195,84 @@ function initOrdersView(token) {
     }).join('') : '<p style="font-size:0.85rem; opacity:0.6; padding:16px;">No orders match.</p>';
   }
 
+  function getFilteredSortedShop() {
+    var query = searchInput.value.trim().toLowerCase();
+    var dateFrom = document.getElementById('admin-orders-date-from').value;
+    var dateTo = document.getElementById('admin-orders-date-to').value;
+
+    var filtered = allShopOrders.filter(function (o) {
+      var itemsText = '';
+      try { itemsText = (JSON.parse(o.items || '[]')).map(function (it) { return (it.name || '') + ' ' + (it.id || ''); }).join(' ').toLowerCase(); } catch (e) {}
+      var okSearch = !query ||
+        (o.order_number || '').toLowerCase().indexOf(query) !== -1 ||
+        (o.customer_name || '').toLowerCase().indexOf(query) !== -1 ||
+        (o.customer_email || '').toLowerCase().indexOf(query) !== -1 ||
+        itemsText.indexOf(query) !== -1;
+      var orderTime = new Date(o.created_at).getTime();
+      var okFrom = !dateFrom || orderTime >= new Date(dateFrom + 'T00:00:00').getTime();
+      var okTo = !dateTo || orderTime <= new Date(dateTo + 'T23:59:59').getTime();
+      return okSearch && okFrom && okTo;
+    });
+
+    filtered.sort(function (a, b) {
+      var av = a[sortKey], bv = b[sortKey];
+      if (sortKey === 'total') { av = Number(av) || 0; bv = Number(bv) || 0; }
+      if (av < bv) return sortDir === 'asc' ? -1 : 1;
+      if (av > bv) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }
+
+  function shopStatusBadgeColor(status) {
+    if (status === 'Completed') return 'background:#EAF3DE; color:#3B6D11;';
+    if (status === 'Exchanged') return 'background:#FAEEDA; color:#854F0B;';
+    return 'background:#FBEAEA; color:#B8142A;'; // Returned, Partially Returned
+  }
+
+  function renderShopTable() {
+    var filtered = getFilteredSortedShop();
+    var shopRowsEl = document.getElementById('admin-shop-orders-rows');
+    shopRowsEl.innerHTML = filtered.length ? filtered.map(function (o) {
+      var items = [];
+      try { items = JSON.parse(o.items || '[]'); } catch (e) {}
+      var itemsSummary = items.map(function (it) { return it.id; }).join(', ');
+
+      return (
+        '<tr class="admin-orders-clickable-row" data-channel="shop" data-id="' + o.id + '">' +
+          '<td>' + (o.order_number || '\u2014') + '</td>' +
+          '<td>' + new Date(o.created_at).toLocaleString() + '</td>' +
+          '<td>' + (o.customer_name || '\u2014') + '<br><span style="opacity:0.6; font-size:0.72rem;">' + (o.customer_email || '') + '</span></td>' +
+          '<td style="font-size:0.76rem;">' + itemsSummary + '</td>' +
+          '<td>AED ' + Number(o.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) + '</td>' +
+          '<td style="font-size:0.76rem;">' + (o.sales_person || '\u2014') + '</td>' +
+          '<td><span style="font-size:0.72rem; font-weight:700; padding:3px 10px; border-radius:6px; ' + shopStatusBadgeColor(o.status) + '">' + o.status + '</span></td>' +
+        '</tr>'
+      );
+    }).join('') : '<tr><td colspan="7">No shop orders match.</td></tr>';
+
+    var mobileListEl = document.getElementById('admin-shop-orders-mobile-list');
+    mobileListEl.innerHTML = filtered.length ? filtered.map(function (o) {
+      var dateLabel = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      return (
+        '<div class="admin-order-mobile-card admin-orders-clickable-row" data-channel="shop" data-id="' + o.id + '">' +
+          '<div class="admin-order-mobile-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l1-5h16l1 5"/><path d="M4 9h16v11H4z"/></svg></div>' +
+          '<div class="admin-order-mobile-info">' +
+            '<p class="omn">' + (o.order_number || '\u2014') + '</p>' +
+            '<p class="omd">&#128197; ' + dateLabel + '</p>' +
+            '<p class="omc">' + (o.customer_name || '\u2014') + '</p>' +
+          '</div>' +
+          '<div class="admin-order-mobile-right">' +
+            '<p class="omt">AED ' + Number(o.total || 0).toFixed(2) + '</p>' +
+            '<span class="admin-order-mobile-badge" style="' + shopStatusBadgeColor(o.status) + '">' + o.status + '</span>' +
+          '</div>' +
+          '<span class="admin-order-mobile-chevron">&rsaquo;</span>' +
+        '</div>'
+      );
+    }).join('') : '<p style="font-size:0.85rem; opacity:0.6; padding:16px;">No shop orders match.</p>';
+  }
+
   function buildStatusSelect(o) {
     var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'payment_error', 'cancelled', 'refunded'];
     var options = statuses.map(function (s) {
@@ -2231,11 +2313,12 @@ function initOrdersView(token) {
         sortDir = 'desc';
       }
       renderTable();
+      renderShopTable();
     });
   });
 
   statusFilter.addEventListener('change', renderTable);
-  searchInput.addEventListener('input', renderTable);
+  searchInput.addEventListener('input', function () { renderTable(); renderShopTable(); });
 
   var ordersDateBtn = document.getElementById('admin-orders-date-range-btn');
   var ordersDatePopover = document.getElementById('admin-orders-date-range-popover');
@@ -2265,6 +2348,7 @@ function initOrdersView(token) {
     ordersDateLabel.textContent = formatOrdersRangeLabel(from, till);
     ordersDatePopover.classList.remove('is-open');
     renderTable();
+    renderShopTable();
   });
 
   document.getElementById('admin-orders-date-reset-btn').addEventListener('click', function () {
@@ -2273,6 +2357,7 @@ function initOrdersView(token) {
     ordersDateLabel.textContent = 'All Dates';
     ordersDatePopover.classList.remove('is-open');
     renderTable();
+    renderShopTable();
   });
 
   // ---------- Right-side order drawer ----------
@@ -2289,8 +2374,9 @@ function initOrdersView(token) {
   }
 
   function openOrderDrawer(order) {
-    drawerNumber.textContent = 'Order #' + (order.order_number || order.id);
-    drawerStatusBadge.textContent = statusLabel(order.status);
+    var isShop = order.channel === 'shop';
+    drawerNumber.textContent = (isShop ? 'Bill ' : 'Order #') + (order.order_number || order.id);
+    drawerStatusBadge.textContent = isShop ? order.status : statusLabel(order.status);
 
     var items = [];
     try { items = JSON.parse(order.items || '[]'); } catch (e) {}
@@ -2307,7 +2393,7 @@ function initOrdersView(token) {
     var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
     var discount = Number(order.discount_amount) || 0;
 
-    drawerBody.innerHTML =
+    var html =
       '<h4>Customer</h4>' +
       '<p style="margin:0;"><strong>' + (order.customer_name || '—') + '</strong></p>' +
       '<p style="margin:0;">' + (order.customer_email || '') + '</p>' +
@@ -2321,14 +2407,25 @@ function initOrdersView(token) {
       '<div class="admin-order-drawer-totals-row total"><span>Total</span><span>AED ' + Number(order.total || 0).toFixed(2) + '</span></div>' +
 
       '<h4>Payment Method</h4>' +
-      '<p style="margin:0;">' + (order.payment_method || 'Not recorded') + '</p>' +
+      '<p style="margin:0;">' + (order.payment_method || 'Not recorded') + '</p>';
 
-      '<h4>Billing Address</h4>' + addressBlock(order.billing_address) +
-      '<h4>Shipping Address' + (order.billing_address === order.shipping_address ? ' (same as billing)' : '') + '</h4>' + addressBlock(order.shipping_address) +
+    if (isShop) {
+      html +=
+        (order.sales_person ? '<h4>Sales Person</h4><p style="margin:0;">' + order.sales_person + '</p>' : '') +
+        '<h4>Fulfillment</h4>' +
+        '<p style="margin:0; opacity:0.7;">In-store purchase — no shipping address.</p>' +
+        '<h4>Status</h4>' +
+        '<span style="font-size:0.78rem; font-weight:700; padding:4px 12px; border-radius:6px; ' + shopStatusBadgeColor(order.status) + '">' + order.status + '</span>' +
+        '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Reflects returns/exchanges recorded in the POS — not editable here.</p>';
+    } else {
+      html +=
+        '<h4>Billing Address</h4>' + addressBlock(order.billing_address) +
+        '<h4>Shipping Address' + (order.billing_address === order.shipping_address ? ' (same as billing)' : '') + '</h4>' + addressBlock(order.shipping_address) +
+        '<h4>Update Status</h4>' +
+        buildStatusSelect(order);
+    }
 
-      '<h4>Update Status</h4>' +
-      buildStatusSelect(order);
-
+    drawerBody.innerHTML = html;
     drawerOverlay.classList.add('is-open');
   }
 
@@ -2340,11 +2437,15 @@ function initOrdersView(token) {
     if (e.target.closest('select')) return; // clicking the status dropdown updates status, doesn't open the drawer
     var row = e.target.closest('.admin-orders-clickable-row');
     if (!row) return;
-    var order = allOrders.find(function (o) { return String(o.id) === String(row.getAttribute('data-id')); });
+    var isShop = row.getAttribute('data-channel') === 'shop';
+    var source = isShop ? allShopOrders : allOrders;
+    var order = source.find(function (o) { return String(o.id) === String(row.getAttribute('data-id')); });
     if (order) openOrderDrawer(order);
   }
   rowsEl.addEventListener('click', handleOrderRowClick);
   document.getElementById('admin-orders-mobile-list').addEventListener('click', handleOrderRowClick);
+  document.getElementById('admin-shop-orders-rows').addEventListener('click', handleOrderRowClick);
+  document.getElementById('admin-shop-orders-mobile-list').addEventListener('click', handleOrderRowClick);
 
   document.getElementById('admin-order-drawer-close').addEventListener('click', closeOrderDrawer);
   drawerOverlay.addEventListener('click', function (e) {
@@ -2382,20 +2483,47 @@ function initOrdersView(token) {
   });
 
   function loadOrders() {
-    fetch('/.netlify/functions/admin-get-orders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) { showStatus('error', result.data.error || 'Could not load orders.'); return; }
-        allOrders = result.data.orders || [];
+    Promise.all([
+      fetch('/.netlify/functions/admin-get-orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token })
+      }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); }),
+      fetch('/.netlify/functions/admin-get-pos-sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token })
+      }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+    ])
+      .then(function (results) {
+        var onlineResult = results[0];
+        var shopResult = results[1];
+        if (!onlineResult.ok) { showStatus('error', onlineResult.data.error || 'Could not load online orders.'); }
+        if (!shopResult.ok) { showStatus('error', shopResult.data.error || 'Could not load shop orders.'); }
+        allOrders = onlineResult.data.orders || [];
+        allShopOrders = shopResult.data.sales || [];
+        document.getElementById('admin-tab-online-count').textContent = allOrders.length;
+        document.getElementById('admin-tab-shop-count').textContent = allShopOrders.length;
         renderSummary();
         renderTable();
+        renderShopTable();
       })
       .catch(function () { showStatus('error', 'Network error loading orders.'); });
   }
+
+  document.querySelectorAll('.admin-channel-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      activeChannel = tab.getAttribute('data-channel');
+      document.querySelectorAll('.admin-channel-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      var isOnline = activeChannel === 'online';
+      document.getElementById('admin-orders-table-online').style.display = isOnline ? 'table' : 'none';
+      document.getElementById('admin-orders-table-shop').style.display = isOnline ? 'none' : 'table';
+      document.getElementById('admin-orders-mobile-list').style.display = isOnline ? 'block' : 'none';
+      document.getElementById('admin-shop-orders-mobile-list').style.display = isOnline ? 'none' : 'block';
+      document.getElementById('admin-orders-status-filter').style.display = isOnline ? '' : 'none';
+    });
+  });
 
   loadOrders();
   window.__refreshOrders = loadOrders;
