@@ -2061,7 +2061,6 @@ function initPosUsersEditor(token) {
 /* ---------- Orders view ---------- */
 function initOrdersView(token) {
   var statusMsg = document.getElementById('admin-orders-status-msg');
-  var summaryEl = document.getElementById('admin-orders-summary');
   var pendingListEl = document.getElementById('admin-pending-list');
   var rowsEl = document.getElementById('admin-orders-rows');
   var statusFilter = document.getElementById('admin-orders-status-filter');
@@ -2096,18 +2095,33 @@ function initOrdersView(token) {
 
   function renderSummary() {
     var pendingDispatch = allOrders.filter(function (o) { return o.status === 'paid'; });
-    var onlineReturned = allOrders.filter(function (o) { return o.status === 'cancelled' || o.status === 'refunded'; }).length;
-    var shopReturned = allShopOrders.filter(function (o) { return o.status !== 'Completed'; }).length;
+
+    // Overall
     var allOrdersCount = allOrders.length + allShopOrders.length;
     var onlineRevenue = allOrders.filter(function (o) { return o.status !== 'cancelled' && o.status !== 'payment_error'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
     var shopRevenue = allShopOrders.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
-
-    summaryEl.innerHTML =
+    document.getElementById('admin-orders-summary-overall').innerHTML =
       buildStatCardHtml('All Orders', allOrdersCount, 'box', 'gold') +
-      buildStatCardHtml('Returned / Exchanged', onlineReturned + shopReturned, 'cross', 'red') +
-      buildStatCardHtml('Online Revenue (AED)', Math.round(onlineRevenue).toLocaleString() + ' \u00b7 ' + allOrders.length + ' orders', 'wallet', 'orange') +
-      buildStatCardHtml('Shop Revenue (AED)', Math.round(shopRevenue).toLocaleString() + ' \u00b7 ' + allShopOrders.length + ' orders', 'wallet', 'green');
+      buildStatCardHtml('Total Revenue (AED)', Math.round(onlineRevenue + shopRevenue).toLocaleString(), 'wallet', 'red');
+
+    // Online
+    var processing = allOrders.filter(function (o) { return o.status === 'paid' || o.status === 'shipped'; }).length;
+    var completed = allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length;
+    var cancelled = allOrders.filter(function (o) { return o.status === 'cancelled' || o.status === 'refunded' || o.status === 'payment_error'; }).length;
+    document.getElementById('admin-orders-summary-online').innerHTML =
+      buildStatCardHtml('Orders', allOrders.length, 'box', 'gold') +
+      buildStatCardHtml('Processing', processing, 'clock', 'orange') +
+      buildStatCardHtml('Completed', completed, 'check', 'green') +
+      buildStatCardHtml('Cancelled', cancelled, 'cross', 'red') +
+      buildStatCardHtml('Revenue (AED)', Math.round(onlineRevenue).toLocaleString(), 'wallet', 'orange');
+
+    // Shop
+    var shopReturned = allShopOrders.filter(function (o) { return o.status !== 'Completed'; }).length;
+    document.getElementById('admin-orders-summary-shop').innerHTML =
+      buildStatCardHtml('Orders', allShopOrders.length, 'box', 'gold') +
+      buildStatCardHtml('Returned / Exchanged', shopReturned, 'cross', 'red') +
+      buildStatCardHtml('Revenue (AED)', Math.round(shopRevenue).toLocaleString(), 'wallet', 'green');
 
     if (pendingDispatch.length) {
       pendingListEl.innerHTML =
@@ -2517,10 +2531,10 @@ function initOrdersView(token) {
       document.querySelectorAll('.admin-channel-tab').forEach(function (t) { t.classList.remove('active'); });
       tab.classList.add('active');
       var isOnline = activeChannel === 'online';
-      document.getElementById('admin-orders-table-online').style.display = isOnline ? 'table' : 'none';
-      document.getElementById('admin-orders-table-shop').style.display = isOnline ? 'none' : 'table';
-      document.getElementById('admin-orders-mobile-list').style.display = isOnline ? 'block' : 'none';
-      document.getElementById('admin-shop-orders-mobile-list').style.display = isOnline ? 'none' : 'block';
+      document.getElementById('admin-orders-table-online').classList.toggle('admin-channel-hidden', !isOnline);
+      document.getElementById('admin-orders-table-shop').classList.toggle('admin-channel-hidden', isOnline);
+      document.getElementById('admin-orders-mobile-list').classList.toggle('admin-channel-hidden', !isOnline);
+      document.getElementById('admin-shop-orders-mobile-list').classList.toggle('admin-channel-hidden', isOnline);
       document.getElementById('admin-orders-status-filter').style.display = isOnline ? '' : 'none';
     });
   });

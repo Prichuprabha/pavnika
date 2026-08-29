@@ -248,6 +248,9 @@
   .admin-channel-tab svg { width: 18px; height: 18px; }
   .admin-channel-tab.active { color: #B8142A; border-color: #F0997B; background: #FAECE7; }
   .admin-channel-tab[data-channel="shop"].active { color: #B68A69; border-color: #B68A69; background: #F8ECE2; }
+  .admin-channel-hidden { display: none !important; }
+  .admin-orders-section-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: #8a7266; margin: 22px 0 10px; }
+  .admin-orders-section-label:first-child { margin-top: 0; }
   .admin-metric-card {
     background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px;
     padding: 16px 18px; border-left: 3px solid var(--green);
@@ -540,7 +543,14 @@
       </div>
       <p class="admin-status-msg" id="admin-orders-status-msg"></p>
 
-      <div class="admin-metric-grid" id="admin-orders-summary"></div>
+      <p class="admin-orders-section-label">Overall Summary</p>
+      <div class="admin-metric-grid" id="admin-orders-summary-overall"></div>
+
+      <p class="admin-orders-section-label">Online Orders</p>
+      <div class="admin-metric-grid" id="admin-orders-summary-online"></div>
+
+      <p class="admin-orders-section-label">In Shop Orders</p>
+      <div class="admin-metric-grid" id="admin-orders-summary-shop"></div>
 
       <div id="admin-pending-list" style="margin-bottom:24px;"></div>
 
@@ -602,7 +612,7 @@
         <tbody id="admin-orders-rows"></tbody>
       </table>
 
-      <table class="admin-table admin-orders-table-desktop" id="admin-orders-table-shop" style="display:none;">
+      <table class="admin-table admin-orders-table-desktop admin-channel-hidden" id="admin-orders-table-shop">
         <thead>
           <tr>
             <th class="admin-sortable" data-sort="order_number">Bill No.</th>
@@ -618,7 +628,7 @@
       </table>
 
       <div id="admin-orders-mobile-list" class="admin-orders-mobile-list"></div>
-      <div id="admin-shop-orders-mobile-list" class="admin-orders-mobile-list" style="display:none;"></div>
+      <div id="admin-shop-orders-mobile-list" class="admin-orders-mobile-list admin-channel-hidden"></div>
     </div>
 
     <div class="admin-order-drawer-overlay" id="admin-order-drawer-overlay">
