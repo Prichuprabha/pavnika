@@ -401,9 +401,11 @@ function loadReturnPage() {
   document.getElementById('pos-return-search').value = '';
   document.getElementById('pos-return-no-sale').style.display = 'block';
   document.getElementById('pos-return-sale-detail').style.display = 'none';
-  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); el.classList.add('pra-disabled'); });
+  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); el.classList.add('pra-disabled'); el.classList.remove('pos-return-locked'); });
   document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) { el.classList.remove('active'); });
   document.getElementById('pos-return-refund-method-box').style.display = 'none';
+  document.getElementById('pos-return-refund-method-box').classList.remove('pos-return-locked');
+  document.getElementById('pos-return-items-list').classList.remove('pos-return-locked');
   document.getElementById('pos-return-refund-preview').style.display = 'none';
   document.getElementById('pos-return-process-btn').disabled = true;
   document.getElementById('pos-return-process-btn').style.display = 'block';
@@ -441,7 +443,10 @@ function searchOriginalSales(query, autoSelectBillNumber) {
       listEl.querySelectorAll('[data-sale-id]').forEach(function (el) {
         el.addEventListener('click', function () {
           var picked = sales.filter(function (s) { return s.id === el.getAttribute('data-sale-id'); })[0];
-          if (picked) selectSaleForReturn(picked);
+          if (!picked) return;
+          listEl.querySelectorAll('[data-sale-id]').forEach(function (row) { row.classList.remove('selected'); });
+          el.classList.add('selected');
+          selectSaleForReturn(picked);
         });
       });
 
@@ -462,9 +467,11 @@ function selectSaleForReturn(sale) {
   returnState.selectedItemIds = [];
   returnState.actionType = null;
   returnState.refundMethod = null;
-  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); el.classList.add('pra-disabled'); });
+  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); el.classList.add('pra-disabled'); el.classList.remove('pos-return-locked'); });
   document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) { el.classList.remove('active'); });
   document.getElementById('pos-return-refund-method-box').style.display = 'none';
+  document.getElementById('pos-return-refund-method-box').classList.remove('pos-return-locked');
+  document.getElementById('pos-return-items-list').classList.remove('pos-return-locked');
   document.getElementById('pos-return-refund-preview').style.display = 'none';
   document.getElementById('pos-return-process-btn').disabled = true;
   document.getElementById('pos-return-error').textContent = '';
@@ -731,7 +738,9 @@ function renderSalesHistory() {
       '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-view="' + s.id + '">View</button>' +
       '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-print="' + s.id + '">Print</button>' +
       '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-send="' + s.id + '">WhatsApp</button>' +
-      '<button type="button" class="table-action-btn btn-resume" data-sh-return="' + s.id + '">Return</button>' +
+      (s.status === 'Exchanged'
+        ? '<button type="button" class="table-action-btn" style="background:#F8ECE2; color:#A15C1E;" data-sh-giftcard="' + s.id + '">Gift Card Usage</button>'
+        : '<button type="button" class="table-action-btn btn-resume" data-sh-return="' + s.id + '">Return</button>') +
       '</td></tr>';
   }).join('');
 
@@ -751,6 +760,49 @@ function renderSalesHistory() {
       showPage('return');
     });
   });
+  rowsEl.querySelectorAll('[data-sh-giftcard]').forEach(function (btn) {
+    btn.addEventListener('click', function () { showGiftCardUsage(btn.getAttribute('data-sh-giftcard')); });
+  });
+}
+
+function showGiftCardUsage(saleId) {
+  var sale = findHistorySale(saleId);
+  if (!sale || !sale.customer_id) { alert('No customer on file for this sale.'); return; }
+
+  document.getElementById('pos-gcu-credit').textContent = 'AED ' + formatAED(sale.gift_card_credit || 0);
+  document.getElementById('pos-gcu-customer').textContent = 'Fetching...';
+  document.getElementById('pos-gcu-balance').textContent = 'Fetching...';
+  document.getElementById('pos-gcu-sales-since').innerHTML = '';
+  document.getElementById('pos-gcu-modal').classList.add('open');
+
+  fetch('/.netlify/functions/pos-gift-card-usage', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ posToken: getPosToken(), customerId: sale.customer_id, sinceDate: sale.created_at, excludeSaleId: sale.id })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      document.getElementById('pos-gcu-customer').textContent = data.customerName || sale.customer_name;
+      document.getElementById('pos-gcu-phone').textContent = data.customerPhone || '';
+      document.getElementById('pos-gcu-balance').textContent = 'AED ' + formatAED(data.currentBalance || 0);
+
+      var listEl = document.getElementById('pos-gcu-sales-since');
+      if (!data.salesSince || !data.salesSince.length) {
+        listEl.innerHTML = '<p class="pos-empty-note">No purchases since this exchange.</p>';
+        return;
+      }
+      listEl.innerHTML = data.salesSince.map(function (s) {
+        var time = new Date(s.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        var itemNames = (s.items || []).map(function (it) { return it.id; }).join(', ');
+        return '<div class="cust-list-item"><span class="name">' + s.bill_number + ' \u2014 AED ' + formatAED(s.total) + '</span>' +
+          '<span class="phone">' + time + ' \u2014 ' + itemNames + '</span></div>';
+      }).join('');
+    })
+    .catch(function (e) {
+      console.error('gift card usage error:', e);
+      document.getElementById('pos-gcu-customer').textContent = sale.customer_name;
+      document.getElementById('pos-gcu-balance').textContent = 'Could not load';
+    });
 }
 
 function findHistorySale(id) {
@@ -873,6 +925,15 @@ function processReturn() {
       document.getElementById('pos-return-done-amount').textContent = formatAED(result.data.refundAmount);
       document.getElementById('pos-return-receipt-box').style.display = 'block';
       document.getElementById('pos-return-process-btn').style.display = 'none';
+
+      // Lock everything about this order's return/exchange choices —
+      // item selection, action type, refund method — until Done is
+      // pressed, since the return has already been processed and
+      // changing any of these now wouldn't do anything meaningful.
+      // Send Receipt stays active regardless.
+      document.getElementById('pos-return-items-list').classList.add('pos-return-locked');
+      document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.add('pos-return-locked'); });
+      document.getElementById('pos-return-refund-method-box').classList.add('pos-return-locked');
 
       var hasEmail = sale.customer && sale.customer.email;
       var emailBtn = document.getElementById('pos-return-email-btn');
@@ -2470,6 +2531,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-sh-date-filter').addEventListener('change', function () { loadSalesHistory(); });
   document.getElementById('pos-sh-view-close').addEventListener('click', function () {
     document.getElementById('pos-sh-view-modal').classList.remove('open');
+  });
+  document.getElementById('pos-gcu-close').addEventListener('click', function () {
+    document.getElementById('pos-gcu-modal').classList.remove('open');
   });
   var cdbSearchDebounce;
   document.getElementById('pos-cdb-search').addEventListener('input', function (e) {

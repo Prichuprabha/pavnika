@@ -538,6 +538,22 @@
       </div>
     </div>
 
+    <!-- Gift Card Usage detail — shown for Exchanged sales instead of Return -->
+    <div class="modal-backdrop" id="pos-gcu-modal">
+      <div class="modal-box" style="width:400px; text-align:left; max-height:80vh; display:flex; flex-direction:column; overflow-y:auto;">
+        <h3 style="margin:0 0 4px; color:var(--green-deep); font-family:var(--display); font-size:1.3rem;">Gift Card Usage</h3>
+        <p style="font-size:0.85rem; margin:0 0 12px;"><b id="pos-gcu-customer"></b> &middot; <span id="pos-gcu-phone"></span></p>
+
+        <div class="bill-row"><span>Credit from this exchange</span><span id="pos-gcu-credit" style="font-weight:700; color:#A15C1E;">AED 0.00</span></div>
+        <div class="bill-row"><span>Current gift card balance</span><span id="pos-gcu-balance" style="font-weight:700;">AED 0.00</span></div>
+
+        <p style="font-size:0.72rem; color:#8a7266; margin:10px 0 6px;">Purchases made since this exchange &mdash; shown for context, not a proof this specific credit paid for any of them:</p>
+        <div class="scroll-zone" id="pos-gcu-sales-since" style="max-height:180px;"></div>
+
+        <button type="button" class="btn btn-outline" id="pos-gcu-close" style="margin-top:10px;">Close</button>
+      </div>
+    </div>
+
     <!-- STANDALONE PAGE: RETURN / EXCHANGE -->
     <div class="content page-content" id="page-return" style="display:none;">
       <div class="s3-grid" style="grid-template-columns: 1fr 1.2fr 0.8fr;">

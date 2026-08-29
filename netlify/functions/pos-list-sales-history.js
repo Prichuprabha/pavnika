@@ -98,7 +98,7 @@ exports.handler = async function (event) {
         ? fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=in.(${customerIds.join(',')})&select=id,name,phone,phone_country_code,email`, { headers: supabaseHeaders() }).then(function (r) { return r.json(); })
         : Promise.resolve([]),
       saleIds.length
-        ? fetch(`${SUPABASE_URL}/rest/v1/pos_returns?original_sale_id=in.(${saleIds.join(',')})&select=original_sale_id,items_returned,is_damaged`, { headers: supabaseHeaders() }).then(function (r) { return r.json(); })
+        ? fetch(`${SUPABASE_URL}/rest/v1/pos_returns?original_sale_id=in.(${saleIds.join(',')})&select=original_sale_id,items_returned,is_damaged,refund_amount,refund_method`, { headers: supabaseHeaders() }).then(function (r) { return r.json(); })
         : Promise.resolve([])
     ]);
     var custs = lookups[0];
@@ -109,10 +109,14 @@ exports.handler = async function (event) {
 
     var returnedIdsBySale = {};
     var isDamagedBySale = {};
+    var giftCardCreditBySale = {};
     returnRows.forEach(function (r) {
       if (!returnedIdsBySale[r.original_sale_id]) returnedIdsBySale[r.original_sale_id] = [];
       (r.items_returned || []).forEach(function (it) { returnedIdsBySale[r.original_sale_id].push(it.id); });
       if (r.is_damaged) isDamagedBySale[r.original_sale_id] = true;
+      if (r.refund_method === 'gift_card') {
+        giftCardCreditBySale[r.original_sale_id] = (giftCardCreditBySale[r.original_sale_id] || 0) + (Number(r.refund_amount) || 0);
+      }
     });
 
     sales.forEach(function (s) {
@@ -127,6 +131,7 @@ exports.handler = async function (event) {
       } else {
         s.status = 'Partially Returned';
       }
+      s.gift_card_credit = giftCardCreditBySale[s.id] || 0;
     });
 
     return { statusCode: 200, body: JSON.stringify({ sales: sales }) };
