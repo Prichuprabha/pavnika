@@ -867,7 +867,8 @@ function buildHistoricalReceiptHtml(sale) {
     '</div>' +
     '<div class="pr-total-row pr-row"><span>TOTAL</span><span>AED ' + formatAED(sale.total) + '</span></div>' +
     '<div class="pr-dashed">Payment Method: ' + (sale.payment_method || '') + '</div>' +
-    '<div class="pr-dashed pr-footer">Thank you for shopping with us!</div>' +
+    '<div class="pr-dashed pr-barcode-wrap"><svg id="pr-barcode"></svg></div>' +
+    '<div class="pr-footer">Thank you for shopping with us!</div>' +
     '<div class="pr-footer-small">Goods once sold are subject to</div>' +
     '<div class="pr-footer-small">our exchange/return policy.</div>';
 }
@@ -876,6 +877,18 @@ function printSalesHistoryBill(id) {
   var sale = findHistorySale(id);
   if (!sale) return;
   document.getElementById('pos-print-receipt').innerHTML = buildHistoricalReceiptHtml(sale);
+  try {
+    JsBarcode('#pr-barcode', sale.bill_number || '', {
+      format: 'CODE128',
+      width: 1.6,
+      height: 40,
+      displayValue: true,
+      fontSize: 12,
+      margin: 0
+    });
+  } catch (e) {
+    console.error('barcode generation failed:', e);
+  }
   window.print();
 }
 
