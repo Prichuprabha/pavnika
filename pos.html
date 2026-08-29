@@ -485,8 +485,12 @@
           <tr><td style="padding:8px 0 4px; color:#8a7266; border-top:1px solid var(--stone);">Amount</td><td style="text-align:right; font-weight:700; border-top:1px solid var(--stone); padding-top:8px; font-size:1rem; color:var(--gold);" id="pos-pc-amount"></td></tr>
         </table>
         <p id="pos-pc-channel-note" style="font-size:0.85rem; background:var(--ivory-deep); border-radius:8px; padding:10px 12px; text-align:center; color:var(--green-deep); font-weight:600;"></p>
-        <div class="modal-actions">
+        <div class="modal-actions" id="pos-pc-ok-actions">
           <button type="button" class="proceed" id="pos-payment-confirmed-modal-ok" style="width:100%;">OK</button>
+        </div>
+        <div class="modal-actions" id="pos-pc-whatsapp-actions" style="display:none;">
+          <button type="button" class="cancel" id="pos-pc-whatsapp-close" style="flex:1;">Close</button>
+          <button type="button" class="proceed" id="pos-pc-whatsapp-send" style="flex:1;">Send WhatsApp</button>
         </div>
       </div>
     </div>
@@ -557,11 +561,11 @@
           <div class="scroll-zone">
             <div class="pos-return-action" id="pos-return-action-return" data-action="return">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
-              <span>Return <span style="font-weight:400; font-size:0.7rem; display:block;">Damaged items only &mdash; not restocked</span></span>
+              <span class="pra-text"><span class="pra-title">Return</span><span class="pra-subtitle">Damaged items only &mdash; not restocked</span></span>
             </div>
             <div class="pos-return-action" id="pos-return-action-exchange" data-action="exchange">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
-              <span>Exchange <span style="font-weight:400; font-size:0.7rem; display:block;">Item restocked &mdash; refund as gift card</span></span>
+              <span class="pra-text"><span class="pra-title">Exchange</span><span class="pra-subtitle">Item restocked &mdash; refund as gift card</span></span>
             </div>
 
             <div id="pos-return-refund-method-box" style="display:none;">

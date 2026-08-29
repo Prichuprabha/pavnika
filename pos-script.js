@@ -401,7 +401,7 @@ function loadReturnPage() {
   document.getElementById('pos-return-search').value = '';
   document.getElementById('pos-return-no-sale').style.display = 'block';
   document.getElementById('pos-return-sale-detail').style.display = 'none';
-  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); });
+  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); el.classList.add('pra-disabled'); });
   document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) { el.classList.remove('active'); });
   document.getElementById('pos-return-refund-method-box').style.display = 'none';
   document.getElementById('pos-return-refund-preview').style.display = 'none';
@@ -446,7 +446,7 @@ function selectSaleForReturn(sale) {
   returnState.selectedItemIds = [];
   returnState.actionType = null;
   returnState.refundMethod = null;
-  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); });
+  document.querySelectorAll('.pos-return-action').forEach(function (el) { el.classList.remove('active'); el.classList.add('pra-disabled'); });
   document.querySelectorAll('#pos-return-refund-method .seg-btn').forEach(function (el) { el.classList.remove('active'); });
   document.getElementById('pos-return-refund-method-box').style.display = 'none';
   document.getElementById('pos-return-refund-preview').style.display = 'none';
@@ -485,6 +485,10 @@ function updateReturnRefundPreview() {
   var previewBox = document.getElementById('pos-return-refund-preview');
   var processBtn = document.getElementById('pos-return-process-btn');
   var methodBox = document.getElementById('pos-return-refund-method-box');
+
+  document.querySelectorAll('.pos-return-action').forEach(function (el) {
+    el.classList.toggle('pra-disabled', returnState.selectedItemIds.length === 0);
+  });
 
   methodBox.style.display = returnState.actionType === 'return' ? 'block' : 'none';
   if (returnState.actionType === 'exchange') returnState.refundMethod = 'gift_card';
@@ -657,6 +661,7 @@ function saveCustomerDb() {
       recentCustomersCache.forEach(function (c, idx) {
         if (c.id === customerDbSelectedId) recentCustomersCache[idx] = result.data.customer;
       });
+      renderCustomerList(recentCustomersCache);
       if (posState.selectedCustomer && posState.selectedCustomer.id === customerDbSelectedId) {
         posState.selectedCustomer = result.data.customer;
       }
@@ -1846,32 +1851,34 @@ function confirmPayment() {
   document.getElementById('pos-complete-sale-btn').disabled = false;
   renderPaymentBreakup();
 
-  // Email is sent automatically on confirmation, with WhatsApp as the
-  // automatic fallback when there's no email on file. The WhatsApp
-  // button in Sale Actions stays separate and manual, for whenever
-  // the customer wants a WhatsApp copy in addition to whichever of
-  // these went out automatically.
+  // Email is sent automatically on confirmation. WhatsApp is never
+  // sent automatically — if there's no email on file, the popup
+  // offers an explicit "Send WhatsApp" choice instead, since opening
+  // WhatsApp on someone's behalf without asking isn't appropriate.
   var channelNote;
+  var offerWhatsAppChoice = false;
   if (posState.selectedCustomer && posState.selectedCustomer.email) {
     sendBillEmail();
     channelNote = 'Receipt emailed to ' + posState.selectedCustomer.email;
   } else if (hasPhone) {
-    openWhatsAppReceipt();
-    channelNote = 'No email on file \u2014 WhatsApp receipt sent instead';
+    channelNote = 'No email on file for this customer.';
+    offerWhatsAppChoice = true;
   } else {
     channelNote = 'No email or phone on file \u2014 receipt not sent automatically';
   }
 
-  showPaymentConfirmedModal(channelNote);
+  showPaymentConfirmedModal(channelNote, offerWhatsAppChoice);
 }
 
-function showPaymentConfirmedModal(channelNote) {
+function showPaymentConfirmedModal(channelNote, offerWhatsAppChoice) {
   var totals = recalcBillingTotals();
   document.getElementById('pos-pc-customer').textContent = posState.selectedCustomer ? posState.selectedCustomer.name : 'Walk-in Customer';
   document.getElementById('pos-pc-phone').textContent = posState.selectedCustomer ? ((posState.selectedCustomer.phone_country_code || '') + ' ' + posState.selectedCustomer.phone) : '\u2014';
   document.getElementById('pos-pc-bill').textContent = posState.billNumber || '';
   document.getElementById('pos-pc-amount').textContent = 'AED ' + formatAED(totals.grandTotal);
   document.getElementById('pos-pc-channel-note').textContent = channelNote;
+  document.getElementById('pos-pc-ok-actions').style.display = offerWhatsAppChoice ? 'none' : 'flex';
+  document.getElementById('pos-pc-whatsapp-actions').style.display = offerWhatsAppChoice ? 'flex' : 'none';
   document.getElementById('pos-payment-confirmed-modal').classList.add('open');
 }
 
@@ -2199,6 +2206,10 @@ document.addEventListener('DOMContentLoaded', function () {
   });
   document.querySelectorAll('.pos-return-action').forEach(function (el) {
     el.addEventListener('click', function () {
+      if (!returnState.selectedItemIds.length) {
+        alert('Select at least one item to return or exchange first.');
+        return;
+      }
       document.querySelectorAll('.pos-return-action').forEach(function (a) { a.classList.remove('active'); });
       el.classList.add('active');
       returnState.actionType = el.getAttribute('data-action');
@@ -2416,6 +2427,13 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('pos-payment-error-modal').classList.remove('open');
   });
   document.getElementById('pos-payment-confirmed-modal-ok').addEventListener('click', function () {
+    document.getElementById('pos-payment-confirmed-modal').classList.remove('open');
+  });
+  document.getElementById('pos-pc-whatsapp-close').addEventListener('click', function () {
+    document.getElementById('pos-payment-confirmed-modal').classList.remove('open');
+  });
+  document.getElementById('pos-pc-whatsapp-send').addEventListener('click', function () {
+    openWhatsAppReceipt();
     document.getElementById('pos-payment-confirmed-modal').classList.remove('open');
   });
   document.getElementById('pos-held-preview-close').addEventListener('click', function () {
