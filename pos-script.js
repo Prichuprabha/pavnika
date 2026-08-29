@@ -232,7 +232,10 @@ function showPage(pageName) {
   });
   if (pageName === 'hold') loadHeldSales();
   if (pageName === 'return') loadReturnPage();
-  if (pageName === 'sales-history') loadSalesHistory();
+  if (pageName === 'sales-history') {
+    loadSalesHistory();
+    document.getElementById('pos-sh-search-clear').style.display = document.getElementById('pos-sh-search').value ? 'flex' : 'none';
+  }
   if (pageName === 'customer-db') loadCustomerDbList('');
 }
 
@@ -734,12 +737,12 @@ function renderSalesHistory() {
     var color = statusColors[s.status] || '#8a7266';
     return '<tr><td>' + s.bill_number + '</td><td>' + time + '</td><td>' + s.customer_name + '</td><td>AED ' + formatAED(s.total) + '</td>' +
       '<td style="color:' + color + '; font-weight:600;">' + s.status + '</td>' +
-      '<td>' +
+      '<td class="pos-sh-actions-cell">' +
       '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-view="' + s.id + '">View</button>' +
       '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-print="' + s.id + '">Print</button>' +
       '<button type="button" class="table-action-btn" style="background:var(--ivory-deep); color:var(--green-deep);" data-sh-send="' + s.id + '">WhatsApp</button>' +
       (s.status === 'Exchanged'
-        ? '<button type="button" class="table-action-btn" style="background:#F8ECE2; color:#A15C1E;" data-sh-giftcard="' + s.id + '">Gift Card Usage</button>'
+        ? '<button type="button" class="table-action-btn" style="background:#F8ECE2; color:#A15C1E;" data-sh-giftcard="' + s.id + '">Gift Card</button>'
         : '<button type="button" class="table-action-btn btn-resume" data-sh-return="' + s.id + '">Return</button>') +
       '</td></tr>';
   }).join('');
@@ -1994,13 +1997,26 @@ function buildPrintReceiptHtml() {
     '</div>' +
     '<div class="pr-total-row pr-row"><span>TOTAL</span><span>AED ' + formatAED(totals.grandTotal) + '</span></div>' +
     '<div class="pr-dashed">Payment Method: ' + paymentMethodLabel + '</div>' +
-    '<div class="pr-dashed pr-footer">Thank you for shopping with us!</div>' +
+    '<div class="pr-dashed pr-barcode-wrap"><svg id="pr-barcode"></svg></div>' +
+    '<div class="pr-footer">Thank you for shopping with us!</div>' +
     '<div class="pr-footer-small">Goods once sold are subject to</div>' +
     '<div class="pr-footer-small">our exchange/return policy.</div>';
 }
 
 function printBill() {
   document.getElementById('pos-print-receipt').innerHTML = buildPrintReceiptHtml();
+  try {
+    JsBarcode('#pr-barcode', posState.billNumber || '', {
+      format: 'CODE128',
+      width: 1.6,
+      height: 40,
+      displayValue: true,
+      fontSize: 12,
+      margin: 0
+    });
+  } catch (e) {
+    console.error('barcode generation failed:', e);
+  }
   posState.printedOrSent = true;
   window.print();
 }
@@ -2285,6 +2301,12 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-return-search').addEventListener('input', function (e) {
     searchOriginalSales(e.target.value.trim());
   });
+  document.getElementById('pos-return-scan-btn').addEventListener('click', function () {
+    var input = document.getElementById('pos-return-search');
+    input.value = '';
+    searchOriginalSales('');
+    input.focus();
+  });
   document.querySelectorAll('.pos-return-action').forEach(function (el) {
     el.addEventListener('click', function () {
       if (!returnState.selectedItemIds.length) {
@@ -2524,9 +2546,24 @@ document.addEventListener('DOMContentLoaded', function () {
     el.addEventListener('click', function () { showPage(el.getAttribute('data-settings-link')); });
   });
   var shSearchDebounce;
-  document.getElementById('pos-sh-search').addEventListener('input', function () {
+  document.getElementById('pos-sh-search').addEventListener('input', function (e) {
+    document.getElementById('pos-sh-search-clear').style.display = e.target.value ? 'flex' : 'none';
     clearTimeout(shSearchDebounce);
     shSearchDebounce = setTimeout(loadSalesHistory, 300);
+  });
+  document.getElementById('pos-sh-search-clear').addEventListener('click', function () {
+    var input = document.getElementById('pos-sh-search');
+    input.value = '';
+    document.getElementById('pos-sh-search-clear').style.display = 'none';
+    loadSalesHistory();
+    input.focus();
+  });
+  document.getElementById('pos-sh-scan-btn').addEventListener('click', function () {
+    var input = document.getElementById('pos-sh-search');
+    input.value = '';
+    document.getElementById('pos-sh-search-clear').style.display = 'none';
+    loadSalesHistory();
+    input.focus();
   });
   document.getElementById('pos-sh-date-filter').addEventListener('change', function () { loadSalesHistory(); });
   document.getElementById('pos-sh-view-close').addEventListener('click', function () {
