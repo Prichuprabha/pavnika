@@ -2090,6 +2090,7 @@ function initOrdersView(token) {
 
   function statusLabel(s) {
     if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
+    if (s === 'refunded_giftcard') return 'Refunded (To Gift Card)';
     return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
@@ -2098,9 +2099,10 @@ function initOrdersView(token) {
 
     // Overall
     var allOrdersCount = allOrders.length + allShopOrders.length;
-    var onlineRevenue = allOrders.filter(function (o) { return o.status !== 'cancelled' && o.status !== 'payment_error'; })
+    var onlineRevenue = allOrders.filter(function (o) { return ['cancelled', 'payment_error', 'refunded'].indexOf(o.status) === -1; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
-    var shopRevenue = allShopOrders.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+    var shopRevenue = allShopOrders.filter(function (o) { return o.status !== 'Returned'; })
+      .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
     document.getElementById('admin-orders-summary-overall').innerHTML =
       buildStatCardHtml('All Orders', allOrdersCount, 'box', 'gold') +
       buildStatCardHtml('Total Revenue (AED)', Math.round(onlineRevenue + shopRevenue).toLocaleString(), 'wallet', 'red');
@@ -2108,7 +2110,7 @@ function initOrdersView(token) {
     // Online
     var processing = allOrders.filter(function (o) { return o.status === 'paid' || o.status === 'shipped'; }).length;
     var completed = allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length;
-    var cancelled = allOrders.filter(function (o) { return o.status === 'cancelled' || o.status === 'refunded' || o.status === 'payment_error'; }).length;
+    var cancelled = allOrders.filter(function (o) { return ['cancelled', 'refunded', 'refunded_giftcard', 'payment_error'].indexOf(o.status) !== -1; }).length;
     document.getElementById('admin-orders-summary-online').innerHTML =
       buildStatCardHtml('Orders', allOrders.length, 'box', 'gold') +
       buildStatCardHtml('Processing', processing, 'clock', 'orange') +
@@ -2288,7 +2290,7 @@ function initOrdersView(token) {
   }
 
   function buildStatusSelect(o) {
-    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'payment_error', 'cancelled', 'refunded'];
+    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard'];
     var options = statuses.map(function (s) {
       return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
     }).join('');
@@ -2399,7 +2401,7 @@ function initOrdersView(token) {
       var img = p ? p.image : (it.image || '');
       return '<div class="admin-order-drawer-item">' +
         (img ? '<img src="' + img + '">' : '') +
-        '<span style="flex:1;">' + (it.name || it.id) + (it.qty && it.qty > 1 ? ' &times; ' + it.qty : '') + '</span>' +
+        '<span style="flex:1;">' + (it.id ? it.id + ' \u2014 ' : '') + (it.name || it.id || 'Item') + (it.qty && it.qty > 1 ? ' &times; ' + it.qty : '') + '</span>' +
         '<span style="font-weight:600;">AED ' + Number(it.price || 0).toFixed(2) + '</span>' +
       '</div>';
     }).join('') || '<p style="opacity:0.6;">No items on record.</p>';
