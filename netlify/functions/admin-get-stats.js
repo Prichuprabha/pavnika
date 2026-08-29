@@ -25,8 +25,12 @@ async function supabaseFetch(path) {
 
 function dateRangeFilter(column, fromDate, toDate) {
   var parts = [];
-  if (fromDate) parts.push(`${column}=gte.${fromDate}T00:00:00`);
-  if (toDate) parts.push(`${column}=lte.${toDate}T23:59:59`);
+  // fromDate/toDate can be either a plain "YYYY-MM-DD" (from the manual
+  // date pickers, meaning "start/end of that calendar day") or a full
+  // ISO timestamp (from a rolling-window preset like "Last 24 Hours",
+  // which needs hour-level precision, not just a day boundary).
+  if (fromDate) parts.push(`${column}=gte.${fromDate.indexOf('T') !== -1 ? fromDate : fromDate + 'T00:00:00'}`);
+  if (toDate) parts.push(`${column}=lte.${toDate.indexOf('T') !== -1 ? toDate : toDate + 'T23:59:59'}`);
   return parts.length ? '&' + parts.join('&') : '';
 }
 
