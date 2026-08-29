@@ -474,6 +474,23 @@
       </div>
     </div>
 
+    <!-- Payment confirmed popup -->
+    <div class="modal-backdrop" id="pos-payment-confirmed-modal">
+      <div class="modal-box" style="text-align:left;">
+        <h3 style="margin:0 0 12px; color:var(--green-deep); font-family:var(--display); font-size:1.3rem; text-align:center;">Payment Confirmed</h3>
+        <table style="width:100%; font-size:0.85rem; margin-bottom:12px;">
+          <tr><td style="padding:4px 0; color:#8a7266;">Customer</td><td style="text-align:right; font-weight:700;" id="pos-pc-customer"></td></tr>
+          <tr><td style="padding:4px 0; color:#8a7266;">Mobile</td><td style="text-align:right;" id="pos-pc-phone"></td></tr>
+          <tr><td style="padding:4px 0; color:#8a7266;">Bill No.</td><td style="text-align:right; font-weight:700;" id="pos-pc-bill"></td></tr>
+          <tr><td style="padding:8px 0 4px; color:#8a7266; border-top:1px solid var(--stone);">Amount</td><td style="text-align:right; font-weight:700; border-top:1px solid var(--stone); padding-top:8px; font-size:1rem; color:var(--gold);" id="pos-pc-amount"></td></tr>
+        </table>
+        <p id="pos-pc-channel-note" style="font-size:0.85rem; background:var(--ivory-deep); border-radius:8px; padding:10px 12px; text-align:center; color:var(--green-deep); font-weight:600;"></p>
+        <div class="modal-actions">
+          <button type="button" class="proceed" id="pos-payment-confirmed-modal-ok" style="width:100%;">OK</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Print-only receipt, hidden on screen, shown only via @media print -->
     <div id="pos-print-receipt" class="pos-print-receipt"></div>
 

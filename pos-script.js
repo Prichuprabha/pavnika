@@ -1846,10 +1846,33 @@ function confirmPayment() {
   document.getElementById('pos-complete-sale-btn').disabled = false;
   renderPaymentBreakup();
 
-  // The receipt email sends automatically the moment payment is
-  // confirmed. The WhatsApp button below is separate and manual —
-  // only used if the customer specifically wants a WhatsApp copy too.
-  sendBillEmail();
+  // Email is sent automatically on confirmation, with WhatsApp as the
+  // automatic fallback when there's no email on file. The WhatsApp
+  // button in Sale Actions stays separate and manual, for whenever
+  // the customer wants a WhatsApp copy in addition to whichever of
+  // these went out automatically.
+  var channelNote;
+  if (posState.selectedCustomer && posState.selectedCustomer.email) {
+    sendBillEmail();
+    channelNote = 'Receipt emailed to ' + posState.selectedCustomer.email;
+  } else if (hasPhone) {
+    openWhatsAppReceipt();
+    channelNote = 'No email on file \u2014 WhatsApp receipt sent instead';
+  } else {
+    channelNote = 'No email or phone on file \u2014 receipt not sent automatically';
+  }
+
+  showPaymentConfirmedModal(channelNote);
+}
+
+function showPaymentConfirmedModal(channelNote) {
+  var totals = recalcBillingTotals();
+  document.getElementById('pos-pc-customer').textContent = posState.selectedCustomer ? posState.selectedCustomer.name : 'Walk-in Customer';
+  document.getElementById('pos-pc-phone').textContent = posState.selectedCustomer ? ((posState.selectedCustomer.phone_country_code || '') + ' ' + posState.selectedCustomer.phone) : '\u2014';
+  document.getElementById('pos-pc-bill').textContent = posState.billNumber || '';
+  document.getElementById('pos-pc-amount').textContent = 'AED ' + formatAED(totals.grandTotal);
+  document.getElementById('pos-pc-channel-note').textContent = channelNote;
+  document.getElementById('pos-payment-confirmed-modal').classList.add('open');
 }
 
 function buildPrintReceiptHtml() {
@@ -1954,8 +1977,6 @@ function sendBillEmail() {
   })
     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
     .then(function (result) {
-      var btn = document.getElementById('pos-send-btn');
-      if (btn) btn.querySelector('.btn-label').textContent = result.ok ? 'Receipt Sent \u2713' : 'Send Bill (Email)';
       if (!result.ok) {
         var errorEl = document.getElementById('pos-payment-error');
         errorEl.textContent = result.data.error || 'Could not send email.';
@@ -2393,6 +2414,9 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-giftcard-modal-done').addEventListener('click', commitGiftCardModal);
   document.getElementById('pos-payment-error-modal-ok').addEventListener('click', function () {
     document.getElementById('pos-payment-error-modal').classList.remove('open');
+  });
+  document.getElementById('pos-payment-confirmed-modal-ok').addEventListener('click', function () {
+    document.getElementById('pos-payment-confirmed-modal').classList.remove('open');
   });
   document.getElementById('pos-held-preview-close').addEventListener('click', function () {
     document.getElementById('pos-held-preview-modal').classList.remove('open');
