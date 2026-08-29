@@ -241,6 +241,9 @@
     display: none; min-width: 320px;
   }
   .admin-date-range-popover.is-open { display: block; }
+  .admin-date-preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--stone); }
+  .admin-date-preset-btn { padding: 6px 12px; border-radius: 20px; border: 1.5px solid var(--stone); background: #fff; font-size: 0.76rem; font-weight: 700; cursor: pointer; color: var(--ink); white-space: nowrap; }
+  .admin-date-preset-btn.active { background: var(--green-deep, #3C1223); border-color: var(--green-deep, #3C1223); color: #fff; }
 
   .admin-metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin-bottom: 28px; }
   .admin-channel-tabs { display: flex; gap: 8px; margin-bottom: 18px; }
@@ -574,6 +577,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="admin-date-range-popover" id="admin-orders-date-range-popover">
+            <div class="admin-date-preset-row">
+              <button type="button" class="admin-date-preset-btn" data-orders-preset="all">All Dates</button>
+              <button type="button" class="admin-date-preset-btn" data-orders-preset="24h">Last 24 Hours</button>
+              <button type="button" class="admin-date-preset-btn" data-orders-preset="7d">Last 7 Days</button>
+              <button type="button" class="admin-date-preset-btn" data-orders-preset="30d">Last 30 Days</button>
+            </div>
             <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
               <div class="admin-field" style="max-width:170px;"><label>From</label><input type="date" id="admin-orders-date-from"></div>
               <div class="admin-field" style="max-width:170px;"><label>Till</label><input type="date" id="admin-orders-date-to"></div>
@@ -1066,6 +1075,12 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="11" height="11"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="admin-date-range-popover admin-date-range-popover-right" id="admin-date-range-popover">
+            <div class="admin-date-preset-row">
+              <button type="button" class="admin-date-preset-btn" data-stats-preset="all">All-time</button>
+              <button type="button" class="admin-date-preset-btn" data-stats-preset="24h">Last 24 Hours</button>
+              <button type="button" class="admin-date-preset-btn" data-stats-preset="7d">Last 7 Days</button>
+              <button type="button" class="admin-date-preset-btn" data-stats-preset="30d">Last 30 Days</button>
+            </div>
             <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
               <div class="admin-field" style="max-width:170px;"><label>From</label><input type="date" id="admin-stats-from"></div>
               <div class="admin-field" style="max-width:170px;"><label>Till</label><input type="date" id="admin-stats-till"></div>

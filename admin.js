@@ -1536,8 +1536,8 @@ function initStatsDashboard(token) {
 
   function loadStats() {
     metricGrid.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading stats...</p>';
-    var fromDate = document.getElementById('admin-stats-from').value || null;
-    var toDate = document.getElementById('admin-stats-till').value || null;
+    var fromDate = statsPresetFromISO || document.getElementById('admin-stats-from').value || null;
+    var toDate = statsPresetFromISO ? null : (document.getElementById('admin-stats-till').value || null);
 
     Promise.all([
       fetch('/.netlify/functions/admin-get-stats', {
@@ -1590,17 +1590,43 @@ function initStatsDashboard(token) {
       showStatus('error', 'Pick at least one date, or use "Reset to all-time" instead.');
       return;
     }
+    statsPresetFromISO = null;
+    document.querySelectorAll('[data-stats-preset]').forEach(function (b) { b.classList.remove('active'); });
     dateRangeLabel.textContent = formatRangeLabel(from, till);
     dateRangePopover.classList.remove('is-open');
     loadStats();
   });
 
   document.getElementById('admin-stats-reset-btn').addEventListener('click', function () {
+    statsPresetFromISO = null;
+    document.querySelectorAll('[data-stats-preset]').forEach(function (b) { b.classList.remove('active'); });
     document.getElementById('admin-stats-from').value = '';
     document.getElementById('admin-stats-till').value = '';
     dateRangeLabel.textContent = 'All-time';
     dateRangePopover.classList.remove('is-open');
     loadStats();
+  });
+
+  var statsPresetFromISO = null; // set when a rolling-window preset (24h/7d/30d) is active, overriding the manual date inputs
+  var statsPresetLabels = { all: 'All-time', '24h': 'Last 24 Hours', '7d': 'Last 7 Days', '30d': 'Last 30 Days' };
+  document.querySelectorAll('[data-stats-preset]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var preset = btn.getAttribute('data-stats-preset');
+      document.querySelectorAll('[data-stats-preset]').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('admin-stats-from').value = '';
+      document.getElementById('admin-stats-till').value = '';
+
+      if (preset === 'all') {
+        statsPresetFromISO = null;
+      } else {
+        var hoursBack = preset === '24h' ? 24 : (preset === '7d' ? 24 * 7 : 24 * 30);
+        statsPresetFromISO = new Date(Date.now() - hoursBack * 60 * 60 * 1000).toISOString();
+      }
+      dateRangeLabel.textContent = statsPresetLabels[preset];
+      dateRangePopover.classList.remove('is-open');
+      loadStats();
+    });
   });
 
   document.getElementById('admin-track-btn').addEventListener('click', function () {
@@ -2136,11 +2162,24 @@ function initOrdersView(token) {
     }
   }
 
+  var ordersPresetFromTime = null; // set when a rolling-window preset (24h/7d/30d) is active, overriding the manual date inputs
+
+  function getOrdersDateBounds() {
+    if (ordersPresetFromTime !== null) {
+      return { fromTime: ordersPresetFromTime, toTime: null };
+    }
+    var dateFrom = document.getElementById('admin-orders-date-from').value;
+    var dateTo = document.getElementById('admin-orders-date-to').value;
+    return {
+      fromTime: dateFrom ? new Date(dateFrom + 'T00:00:00').getTime() : null,
+      toTime: dateTo ? new Date(dateTo + 'T23:59:59').getTime() : null
+    };
+  }
+
   function getFilteredSorted() {
     var statusVal = statusFilter.value;
     var query = searchInput.value.trim().toLowerCase();
-    var dateFrom = document.getElementById('admin-orders-date-from').value;
-    var dateTo = document.getElementById('admin-orders-date-to').value;
+    var dateBounds = getOrdersDateBounds();
 
     var filtered = allOrders.filter(function (o) {
       var okStatus = !statusVal || (o.status || 'pending') === statusVal;
@@ -2152,8 +2191,8 @@ function initOrdersView(token) {
         (o.customer_email || '').toLowerCase().indexOf(query) !== -1 ||
         itemsText.indexOf(query) !== -1;
       var orderTime = new Date(o.created_at).getTime();
-      var okFrom = !dateFrom || orderTime >= new Date(dateFrom + 'T00:00:00').getTime();
-      var okTo = !dateTo || orderTime <= new Date(dateTo + 'T23:59:59').getTime();
+      var okFrom = dateBounds.fromTime === null || orderTime >= dateBounds.fromTime;
+      var okTo = dateBounds.toTime === null || orderTime <= dateBounds.toTime;
       return okStatus && okSearch && okFrom && okTo;
     });
 
@@ -2213,8 +2252,7 @@ function initOrdersView(token) {
 
   function getFilteredSortedShop() {
     var query = searchInput.value.trim().toLowerCase();
-    var dateFrom = document.getElementById('admin-orders-date-from').value;
-    var dateTo = document.getElementById('admin-orders-date-to').value;
+    var dateBounds = getOrdersDateBounds();
 
     var filtered = allShopOrders.filter(function (o) {
       var itemsText = '';
@@ -2225,8 +2263,8 @@ function initOrdersView(token) {
         (o.customer_email || '').toLowerCase().indexOf(query) !== -1 ||
         itemsText.indexOf(query) !== -1;
       var orderTime = new Date(o.created_at).getTime();
-      var okFrom = !dateFrom || orderTime >= new Date(dateFrom + 'T00:00:00').getTime();
-      var okTo = !dateTo || orderTime <= new Date(dateTo + 'T23:59:59').getTime();
+      var okFrom = dateBounds.fromTime === null || orderTime >= dateBounds.fromTime;
+      var okTo = dateBounds.toTime === null || orderTime <= dateBounds.toTime;
       return okSearch && okFrom && okTo;
     });
 
@@ -2361,6 +2399,8 @@ function initOrdersView(token) {
   document.getElementById('admin-orders-date-apply-btn').addEventListener('click', function () {
     var from = document.getElementById('admin-orders-date-from').value;
     var till = document.getElementById('admin-orders-date-to').value;
+    ordersPresetFromTime = null;
+    document.querySelectorAll('[data-orders-preset]').forEach(function (b) { b.classList.remove('active'); });
     ordersDateLabel.textContent = formatOrdersRangeLabel(from, till);
     ordersDatePopover.classList.remove('is-open');
     renderTable();
@@ -2368,12 +2408,36 @@ function initOrdersView(token) {
   });
 
   document.getElementById('admin-orders-date-reset-btn').addEventListener('click', function () {
+    ordersPresetFromTime = null;
+    document.querySelectorAll('[data-orders-preset]').forEach(function (b) { b.classList.remove('active'); });
     document.getElementById('admin-orders-date-from').value = '';
     document.getElementById('admin-orders-date-to').value = '';
     ordersDateLabel.textContent = 'All Dates';
     ordersDatePopover.classList.remove('is-open');
     renderTable();
     renderShopTable();
+  });
+
+  var ordersPresetLabels = { all: 'All Dates', '24h': 'Last 24 Hours', '7d': 'Last 7 Days', '30d': 'Last 30 Days' };
+  document.querySelectorAll('[data-orders-preset]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var preset = btn.getAttribute('data-orders-preset');
+      document.querySelectorAll('[data-orders-preset]').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      document.getElementById('admin-orders-date-from').value = '';
+      document.getElementById('admin-orders-date-to').value = '';
+
+      if (preset === 'all') {
+        ordersPresetFromTime = null;
+      } else {
+        var hoursBack = preset === '24h' ? 24 : (preset === '7d' ? 24 * 7 : 24 * 30);
+        ordersPresetFromTime = Date.now() - hoursBack * 60 * 60 * 1000;
+      }
+      ordersDateLabel.textContent = ordersPresetLabels[preset];
+      ordersDatePopover.classList.remove('is-open');
+      renderTable();
+      renderShopTable();
+    });
   });
 
   // ---------- Right-side order drawer ----------
