@@ -34,8 +34,8 @@ function verifyPassword(password, hash, salt) {
   return crypto.timingSafeEqual(candidateBuf, hashBuf);
 }
 
-function signPosToken(userId, username, displayName) {
-  var payload = JSON.stringify({ userId: userId, username: username, displayName: displayName, exp: Date.now() + TOKEN_TTL_MS });
+function signPosToken(userId, username, displayName, isAdmin) {
+  var payload = JSON.stringify({ userId: userId, username: username, displayName: displayName, isAdmin: !!isAdmin, exp: Date.now() + TOKEN_TTL_MS });
   var payloadB64 = Buffer.from(payload).toString('base64url');
   var sig = crypto.createHmac('sha256', getSecret()).update(payloadB64).digest('base64url');
   return payloadB64 + '.' + sig;

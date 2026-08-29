@@ -59,13 +59,14 @@ exports.handler = async function (event) {
         password_hash: hashed.hash,
         password_salt: hashed.salt,
         display_name: displayName,
-        active: true
+        active: true,
+        is_admin: !!body.isAdmin
       })
     });
     if (!res.ok) throw new Error(`Supabase insert failed: ${res.status}`);
     var rows = await res.json();
     var user = rows[0];
-    return { statusCode: 200, body: JSON.stringify({ user: { id: user.id, username: user.username, display_name: user.display_name, active: user.active, created_at: user.created_at } }) };
+    return { statusCode: 200, body: JSON.stringify({ user: { id: user.id, username: user.username, display_name: user.display_name, active: user.active, is_admin: user.is_admin, created_at: user.created_at } }) };
   } catch (e) {
     console.error('admin-create-pos-user error:', e);
     return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong' }) };

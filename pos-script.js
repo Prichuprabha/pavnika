@@ -4,6 +4,7 @@
 
 var POS_TOKEN_KEY = 'pavnika_pos_token';
 var POS_NAME_KEY = 'pavnika_pos_display_name';
+var POS_IS_ADMIN_KEY = 'pavnika_pos_is_admin';
 var POS_USERNAME_KEY = 'pavnika_pos_username';
 var POS_LOGIN_TIME_KEY = 'pavnika_pos_login_time';
 var POS_SAVED_STATE_KEY = 'pavnika_pos_saved_state';
@@ -93,6 +94,7 @@ function isSessionExpired() {
 function posLogout() {
   localStorage.removeItem(POS_TOKEN_KEY);
   localStorage.removeItem(POS_NAME_KEY);
+  localStorage.removeItem(POS_IS_ADMIN_KEY);
   localStorage.removeItem(POS_LOGIN_TIME_KEY);
   // Deliberately NOT removing POS_USERNAME_KEY or POS_SAVED_STATE_KEY —
   // both are needed to pre-fill the username and restore the
@@ -100,10 +102,15 @@ function posLogout() {
   window.location.reload();
 }
 
+function isPosAdmin() {
+  return localStorage.getItem(POS_IS_ADMIN_KEY) === 'true';
+}
+
 function showPosApp(displayName) {
   document.getElementById('pos-login-screen').style.display = 'none';
   document.getElementById('pos-app').style.display = 'flex';
   document.querySelector('.pos-brand').textContent = 'Pavnika POS \u2014 ' + displayName;
+  document.querySelector('.nav-link[data-page="settings"]').style.display = isPosAdmin() ? 'flex' : 'none';
   loadRecentCustomers();
 }
 
@@ -137,6 +144,7 @@ function attemptLogin() {
       }
       localStorage.setItem(POS_TOKEN_KEY, result.data.token);
       localStorage.setItem(POS_NAME_KEY, result.data.displayName);
+      localStorage.setItem(POS_IS_ADMIN_KEY, String(!!result.data.isAdmin));
       localStorage.setItem(POS_USERNAME_KEY, result.data.username);
       localStorage.setItem(POS_LOGIN_TIME_KEY, String(Date.now()));
       showPosApp(result.data.displayName);
@@ -564,9 +572,13 @@ function selectCustomerDb(customer) {
     btn.classList.toggle('active', btn.getAttribute('data-v') === customer.emirate);
   });
 
-  ['pos-cdb-summary-purchases', 'pos-cdb-summary-spent', 'pos-cdb-summary-visit', 'pos-cdb-summary-points', 'pos-cdb-summary-giftcard'].forEach(function (id) {
+  ['pos-cdb-summary-purchases', 'pos-cdb-summary-spent', 'pos-cdb-summary-visit'].forEach(function (id) {
     document.getElementById(id).textContent = 'Fetching...';
   });
+  document.getElementById('pos-cdb-summary-points').value = '';
+  document.getElementById('pos-cdb-summary-giftcard').value = '';
+  document.getElementById('pos-cdb-summary-points').placeholder = 'Loading...';
+  document.getElementById('pos-cdb-summary-giftcard').placeholder = 'Loading...';
 
   fetch('/.netlify/functions/pos-customer-summary', {
     method: 'POST',
@@ -578,8 +590,8 @@ function selectCustomerDb(customer) {
       document.getElementById('pos-cdb-summary-purchases').textContent = data.totalPurchases;
       document.getElementById('pos-cdb-summary-spent').textContent = 'AED ' + formatAED(data.totalSpent);
       document.getElementById('pos-cdb-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
-      document.getElementById('pos-cdb-summary-points').textContent = data.loyaltyPoints || 0;
-      document.getElementById('pos-cdb-summary-giftcard').textContent = 'AED ' + formatAED(data.giftCardBalance || 0);
+      document.getElementById('pos-cdb-summary-points').value = data.loyaltyPoints || 0;
+      document.getElementById('pos-cdb-summary-giftcard').value = data.giftCardBalance || 0;
     })
     .catch(function (e) { console.error('customer db summary error:', e); });
 }
@@ -588,11 +600,21 @@ function saveCustomerDb() {
   if (!customerDbSelectedId) return;
   var name = document.getElementById('pos-cdb-name').value.trim();
   var phone = document.getElementById('pos-cdb-phone').value.trim();
+  var loyaltyPoints = parseInt(document.getElementById('pos-cdb-summary-points').value, 10);
+  var giftCardBalance = parseFloat(document.getElementById('pos-cdb-summary-giftcard').value);
   var errorEl = document.getElementById('pos-cdb-error');
   errorEl.textContent = '';
 
   if (!name || !phone) {
     errorEl.textContent = 'Customer name and mobile number are required.';
+    return;
+  }
+  if (isNaN(loyaltyPoints) || loyaltyPoints < 0) {
+    errorEl.textContent = 'Loyalty points must be a valid number, 0 or more.';
+    return;
+  }
+  if (isNaN(giftCardBalance) || giftCardBalance < 0) {
+    errorEl.textContent = 'Gift card balance must be a valid amount, 0 or more.';
     return;
   }
 
@@ -612,7 +634,9 @@ function saveCustomerDb() {
       phoneCountryCode: document.getElementById('pos-cdb-code').value.trim() || '+971',
       email: document.getElementById('pos-cdb-email').value.trim(),
       emirate: emirateBtn ? emirateBtn.getAttribute('data-v') : null,
-      address: document.getElementById('pos-cdb-address').value.trim()
+      address: document.getElementById('pos-cdb-address').value.trim(),
+      loyaltyPoints: loyaltyPoints,
+      giftCardBalance: giftCardBalance
     })
   })
     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
@@ -625,6 +649,17 @@ function saveCustomerDb() {
         if (c.id === customerDbSelectedId) customerDbCache[idx] = result.data.customer;
       });
       renderCustomerDbList();
+
+      // The main Customer step keeps its own separate cache — sync it
+      // too, otherwise this edit would only show up there after a
+      // full page refresh (recentCustomersCache is only ever fetched
+      // once, at login).
+      recentCustomersCache.forEach(function (c, idx) {
+        if (c.id === customerDbSelectedId) recentCustomersCache[idx] = result.data.customer;
+      });
+      if (posState.selectedCustomer && posState.selectedCustomer.id === customerDbSelectedId) {
+        posState.selectedCustomer = result.data.customer;
+      }
     })
     .catch(function (e) {
       btn.disabled = false;
@@ -1579,8 +1614,8 @@ function renderPaymentStep() {
   posState.printedOrSent = false;
 
   var sendBtn = document.getElementById('pos-send-btn');
-  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
-  sendBtn.querySelector('.btn-label').textContent = hasEmail ? 'Send Bill (Email)' : 'Send Bill (no email on file)';
+  var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
+  sendBtn.querySelector('.btn-label').textContent = hasPhone ? 'Send Bill (WhatsApp)' : 'Send Bill (no phone on file)';
 }
 
 // ---------- Split payment ----------
@@ -1806,14 +1841,14 @@ function confirmPayment() {
   posState.paymentConfirmed = true;
   document.getElementById('pos-confirm-payment-btn').disabled = true;
   document.getElementById('pos-print-btn').disabled = false;
-  var hasEmail = posState.selectedCustomer && posState.selectedCustomer.email;
-  document.getElementById('pos-send-btn').disabled = !hasEmail;
+  var hasPhone = posState.selectedCustomer && posState.selectedCustomer.phone;
+  document.getElementById('pos-send-btn').disabled = !hasPhone;
   document.getElementById('pos-complete-sale-btn').disabled = false;
   renderPaymentBreakup();
 
-  // Sends the receipt email automatically the moment payment is
-  // confirmed. The manual button below stays available too, in case
-  // it needs resending.
+  // The receipt email sends automatically the moment payment is
+  // confirmed. The WhatsApp button below is separate and manual —
+  // only used if the customer specifically wants a WhatsApp copy too.
   sendBillEmail();
 }
 
@@ -2389,7 +2424,7 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-cdb-save-btn').addEventListener('click', saveCustomerDb);
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
-  document.getElementById('pos-send-btn').addEventListener('click', manualSendBillEmail);
+  document.getElementById('pos-send-btn').addEventListener('click', sendBillWhatsApp);
   document.getElementById('pos-complete-sale-btn').addEventListener('click', function () {
     if (!posState.printedOrSent) {
       document.getElementById('pos-confirm-modal').classList.add('open');

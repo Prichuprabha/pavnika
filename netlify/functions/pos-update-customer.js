@@ -1,9 +1,8 @@
-// Updates an existing customer's contact details from the Customer
-// Database settings page. Deliberately does NOT accept gift_card_balance
-// or loyalty_points here — those are only ever changed through the
-// actual transaction flows (sales, returns, redemptions), never
-// hand-edited, to keep them consistent with the underlying ledger of
-// what actually happened.
+// Updates an existing customer's details from the Customer Database
+// settings page — contact info, plus (by explicit request) a manual
+// override for loyalty points and gift card balance. Admin-gated,
+// since this bypasses the normal transaction ledger those two numbers
+// would otherwise only ever move through.
 const { verifyPosToken } = require('./_pos-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -30,8 +29,12 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
-  if (!verifyPosToken(body.posToken)) {
+  var session = verifyPosToken(body.posToken);
+  if (!session) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Session expired, please log in again' }) };
+  }
+  if (!session.isAdmin) {
+    return { statusCode: 403, body: JSON.stringify({ error: 'Admin access required' }) };
   }
 
   if (!body.customerId) {
@@ -44,6 +47,15 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Name and mobile number are required' }) };
   }
 
+  var loyaltyPoints = parseInt(body.loyaltyPoints, 10);
+  var giftCardBalance = parseFloat(body.giftCardBalance);
+  if (isNaN(loyaltyPoints) || loyaltyPoints < 0) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Loyalty points must be a valid number, 0 or more' }) };
+  }
+  if (isNaN(giftCardBalance) || giftCardBalance < 0) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Gift card balance must be a valid amount, 0 or more' }) };
+  }
+
   try {
     var res = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${encodeURIComponent(body.customerId)}`, {
       method: 'PATCH',
@@ -54,7 +66,9 @@ exports.handler = async function (event) {
         phone_country_code: (body.phoneCountryCode || '+971').trim(),
         email: (body.email || '').trim() || null,
         emirate: body.emirate || null,
-        address: (body.address || '').trim() || null
+        address: (body.address || '').trim() || null,
+        loyalty_points: loyaltyPoints,
+        gift_card_balance: giftCardBalance
       })
     });
     if (!res.ok) throw new Error(`Supabase update failed: ${res.status}`);

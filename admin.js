@@ -1969,8 +1969,25 @@ function initPosUsersEditor(token) {
     rowsEl.innerHTML = users.map(function (u) {
       var created = new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       return '<tr><td>' + u.username + '</td><td>' + u.display_name + '</td><td>' + created + '</td>' +
+        '<td><input type="checkbox" data-toggle-admin="' + u.id + '"' + (u.is_admin ? ' checked' : '') + '></td>' +
         '<td><button type="button" class="admin-btn-secondary" data-delete-user="' + u.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
     }).join('');
+
+    rowsEl.querySelectorAll('[data-toggle-admin]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        fetch('/.netlify/functions/admin-toggle-pos-admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, id: cb.getAttribute('data-toggle-admin'), isAdmin: cb.checked })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showStatus('error', result.data.error || 'Could not update admin access.'); cb.checked = !cb.checked; return; }
+            showStatus('success', cb.checked ? 'Admin access granted.' : 'Admin access removed.');
+          })
+          .catch(function () { showStatus('error', 'Network error updating admin access.'); cb.checked = !cb.checked; });
+      });
+    });
 
     rowsEl.querySelectorAll('[data-delete-user]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -2017,7 +2034,7 @@ function initPosUsersEditor(token) {
     fetch('/.netlify/functions/admin-create-pos-user', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, username: username, password: password, displayName: displayName })
+      body: JSON.stringify({ adminToken: token, username: username, password: password, displayName: displayName, isAdmin: document.getElementById('admin-pos-is-admin').checked })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -2028,6 +2045,7 @@ function initPosUsersEditor(token) {
         document.getElementById('admin-pos-username').value = '';
         document.getElementById('admin-pos-password').value = '';
         document.getElementById('admin-pos-display-name').value = '';
+        document.getElementById('admin-pos-is-admin').checked = false;
         loadUsers();
       })
       .catch(function () {

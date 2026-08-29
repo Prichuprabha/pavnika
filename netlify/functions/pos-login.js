@@ -45,10 +45,10 @@ exports.handler = async function (event) {
       return { statusCode: 401, body: JSON.stringify({ error: 'Invalid username or password' }) };
     }
 
-    var token = signPosToken(user.id, user.username, user.display_name);
+    var token = signPosToken(user.id, user.username, user.display_name, user.is_admin);
     return {
       statusCode: 200,
-      body: JSON.stringify({ token: token, displayName: user.display_name, username: user.username })
+      body: JSON.stringify({ token: token, displayName: user.display_name, username: user.username, isAdmin: !!user.is_admin })
     };
   } catch (e) {
     console.error('pos-login error:', e);

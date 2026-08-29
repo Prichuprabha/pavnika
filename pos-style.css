@@ -288,6 +288,7 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-cust-summary-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px 12px; }
 .pcs-label { display: block; font-size: 0.62rem; color: #8a7266; text-transform: uppercase; letter-spacing: 0.03em; line-height: 1.3; }
 .pcs-value { display: block; font-size: 0.82rem; font-weight: 700; color: var(--green-deep); margin-top: 2px; white-space: nowrap; }
+.pcs-edit-input { width: 100%; margin-top: 2px; padding: 5px 8px; font-size: 0.82rem; font-weight: 700; color: var(--green-deep); border: 1px solid var(--stone); border-radius: 6px; }
 .pcs-value.has-balance { color: #A15C1E; }
 
 /* ---------- Billing: action buttons, coupon display ---------- */

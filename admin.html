@@ -890,13 +890,16 @@
             <label>Display Name</label>
             <input type="text" id="admin-pos-display-name" placeholder="Shown as Sales Person">
           </div>
+          <div class="admin-field" style="max-width:160px; display:flex; align-items:flex-end; padding-bottom:8px;">
+            <label style="display:flex; align-items:center; gap:6px; font-weight:400;"><input type="checkbox" id="admin-pos-is-admin"> Admin access</label>
+          </div>
         </div>
         <button type="button" class="btn btn-primary" id="admin-pos-create-btn" style="margin-top:14px;">Create User</button>
       </div>
 
       <h3 class="admin-stats-subheading">Existing POS users</h3>
       <table class="admin-table">
-        <thead><tr><th>Username</th><th>Display Name</th><th>Created</th><th></th></tr></thead>
+        <thead><tr><th>Username</th><th>Display Name</th><th>Created</th><th>Admin</th><th></th></tr></thead>
         <tbody id="admin-pos-users-rows"></tbody>
       </table>
     </div>
