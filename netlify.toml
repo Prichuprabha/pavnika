@@ -7,3 +7,6 @@
   for = "/robots.txt"
   [headers.values]
     Content-Type = "text/plain; charset=utf-8"
+
+[functions."cleanup-pending-orders"]
+  schedule = "@hourly"
