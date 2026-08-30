@@ -51,8 +51,8 @@ exports.handler = async function (event) {
   const email = (customer.email || '').trim().toLowerCase();
   const firstName = (customer.firstName || '').trim();
   const lastName = (customer.lastName || '').trim();
-  if (!email || !firstName || !lastName) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Customer first name, last name, and email are required.' }) };
+  if (!email || !firstName) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Customer first name and email are required.' }) };
   }
 
   const billing = body.billingAddress || {};
