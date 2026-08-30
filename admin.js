@@ -2164,6 +2164,7 @@ function initOrdersView(token) {
   }
 
   var ordersPresetFromTime = null; // set when a rolling-window preset (24h/7d/30d) is active, overriding the manual date inputs
+  var currentDrawerShopOrder = null; // the shop order currently open in the detail drawer, for the Delete button
 
   function getOrdersDateBounds() {
     if (ordersPresetFromTime !== null) {
@@ -2285,6 +2286,71 @@ function initOrdersView(token) {
     if (status === 'Exchanged') return 'background:#FAEEDA; color:#854F0B;';
     return 'background:#FBEAEA; color:#B8142A;'; // Returned, Partially Returned
   }
+
+  var pendingDeleteSale = null;
+
+  function openDeleteSaleWarning(order) {
+    var items = [];
+    try { items = JSON.parse(order.items || '[]'); } catch (e) {}
+    var itemsSummary = items.map(function (it) { return it.id; }).join(', ') || 'No items on record';
+
+    var html =
+      '<p style="margin:0 0 4px;"><strong>' + (order.order_number || order.id) + '</strong> \u2014 ' + (order.customer_name || 'Walk-in Customer') + '</p>' +
+      '<p style="margin:0 0 4px; opacity:0.75;">Items: ' + itemsSummary + '</p>' +
+      '<p style="margin:0 0 12px; opacity:0.75;">Total: AED ' + Number(order.total || 0).toFixed(2) + '</p>';
+
+    if (order.gift_card_credit > 0) {
+      html +=
+        '<div style="background:#FBEAEA; border-radius:8px; padding:12px; margin-bottom:8px;">' +
+          '<p style="margin:0 0 6px; font-weight:700; color:#B8142A;">This sale has an exchange/return on record</p>' +
+          '<p style="margin:0 0 6px;">It credited AED ' + Number(order.gift_card_credit).toFixed(2) + ' to this customer\u2019s gift card. Deleting this sale will also delete that return record (cascading automatically).</p>' +
+          '<p style="margin:0; font-weight:700;">Important: the customer\u2019s actual gift card balance will NOT be reversed. They keep the credit \u2014 only the record explaining where it came from will be gone.</p>' +
+        '</div>';
+    } else {
+      html += '<p style="margin:0; opacity:0.75; font-size:0.8rem;">No associated return/exchange record on this sale.</p>';
+    }
+
+    html += '<p style="margin:12px 0 0; font-weight:700;">This cannot be undone.</p>';
+
+    document.getElementById('admin-delete-sale-details').innerHTML = html;
+    document.getElementById('admin-delete-sale-overlay').classList.add('is-open');
+    pendingDeleteSale = order;
+  }
+
+  document.getElementById('admin-delete-sale-cancel-btn').addEventListener('click', function () {
+    document.getElementById('admin-delete-sale-overlay').classList.remove('is-open');
+    pendingDeleteSale = null;
+  });
+  document.getElementById('admin-delete-sale-confirm-btn').addEventListener('click', function () {
+    if (!pendingDeleteSale) return;
+    var btn = document.getElementById('admin-delete-sale-confirm-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    fetch('/.netlify/functions/admin-delete-pos-sale', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, saleId: pendingDeleteSale.id })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        btn.disabled = false;
+        btn.textContent = 'Delete Permanently';
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not delete this sale.'); return; }
+
+        allShopOrders = allShopOrders.filter(function (o) { return o.id !== pendingDeleteSale.id; });
+        renderSummary();
+        renderShopTable();
+        document.getElementById('admin-delete-sale-overlay').classList.remove('is-open');
+        drawerOverlay.classList.remove('is-open');
+        pendingDeleteSale = null;
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Delete Permanently';
+        showStatus('error', 'Network error deleting this sale.');
+      });
+  });
 
   function renderShopTable() {
     var filtered = getFilteredSortedShop();
@@ -2497,7 +2563,9 @@ function initOrdersView(token) {
         '<p style="margin:0; opacity:0.7;">In-store purchase — no shipping address.</p>' +
         '<h4>Status</h4>' +
         '<span style="font-size:0.78rem; font-weight:700; padding:4px 12px; border-radius:6px; ' + shopStatusBadgeColor(order.status) + '">' + order.status + '</span>' +
-        '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Reflects returns/exchanges recorded in the POS — not editable here.</p>';
+        '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Reflects returns/exchanges recorded in the POS — not editable here.</p>' +
+        '<h4>Danger Zone</h4>' +
+        '<button type="button" class="btn btn-ghost" id="admin-shop-delete-btn" style="width:100%; color:#B8142A; border-color:#B8142A;">Delete This Sale</button>';
     } else {
       html +=
         '<h4>Billing Address</h4>' + addressBlock(order.billing_address) +
@@ -2508,6 +2576,13 @@ function initOrdersView(token) {
 
     drawerBody.innerHTML = html;
     drawerOverlay.classList.add('is-open');
+
+    currentDrawerShopOrder = isShop ? order : null;
+    if (isShop) {
+      document.getElementById('admin-shop-delete-btn').addEventListener('click', function () {
+        openDeleteSaleWarning(order);
+      });
+    }
   }
 
   function closeOrderDrawer() {
