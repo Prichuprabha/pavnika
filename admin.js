@@ -2125,7 +2125,7 @@ function initOrdersView(token) {
 
     // Overall
     var allOrdersCount = allOrders.length + allShopOrders.length;
-    var onlineRevenue = allOrders.filter(function (o) { return ['cancelled', 'payment_error', 'refunded'].indexOf(o.status) === -1; })
+    var onlineRevenue = allOrders.filter(function (o) { return ['pending', 'cancelled', 'payment_error', 'refunded'].indexOf(o.status) === -1; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
     var shopRevenue = allShopOrders.filter(function (o) { return o.status !== 'Returned'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
