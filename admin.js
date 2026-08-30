@@ -2521,6 +2521,8 @@ function initOrdersView(token) {
   }
 
   function openOrderDrawer(order) {
+    drawerStatusMsg.className = 'admin-status-msg';
+    drawerStatusMsg.textContent = '';
     var isShop = order.channel === 'shop';
     drawerNumber.textContent = (isShop ? 'Bill ' : 'Order #') + (order.order_number || order.id);
     drawerStatusBadge.textContent = isShop ? order.status : statusLabel(order.status);
@@ -2614,11 +2616,18 @@ function initOrdersView(token) {
   // The drawer's own status select uses the same change handler as
   // the table's (delegated on rowsEl), so it also needs its own
   // listener since it isn't inside rowsEl.
+  var drawerStatusMsg = document.getElementById('admin-drawer-status-msg');
+  function showDrawerStatus(type, msg) {
+    drawerStatusMsg.className = 'admin-status-msg admin-status-' + type;
+    drawerStatusMsg.textContent = msg;
+  }
+
   drawerBody.addEventListener('change', function (e) {
     var select = e.target.closest('.admin-order-status-select');
     if (!select) return;
     var orderId = select.getAttribute('data-id');
     var newStatus = select.value;
+    showDrawerStatus('success', 'Saving...');
 
     fetch('/.netlify/functions/admin-update-order-status', {
       method: 'POST',
@@ -2627,15 +2636,15 @@ function initOrdersView(token) {
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
-        if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
+        if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); return; }
         var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
         if (order) order.status = newStatus;
         drawerStatusBadge.textContent = statusLabel(newStatus);
-        showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
+        showDrawerStatus('success', 'Updated to ' + statusLabel(newStatus) + '.');
         renderSummary();
         renderTable();
       })
-      .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
+      .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); });
   });
 
   function loadOrders() {
