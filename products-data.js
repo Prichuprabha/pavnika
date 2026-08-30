@@ -2041,7 +2041,7 @@ window.PRODUCTS = [
     "material": "Mysore Silk",
     "shade": "Beige / Mauve",
     "price": 221,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CUzDGxj7HFDAxdhjuk11.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GBKxfCxzdSPVnBMK9PYf.jpg",
