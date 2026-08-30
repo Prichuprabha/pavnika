@@ -2734,6 +2734,14 @@ function initManualOrderView(token) {
     return !!(addr && addr.building && addr.street && addr.city && addr.state && pincodeOk && addr.country);
   }
 
+  function showValidationError(message) {
+    document.getElementById('admin-mo-error-text').textContent = message;
+    document.getElementById('admin-mo-error-overlay').classList.add('is-open');
+  }
+  document.getElementById('admin-mo-error-ok-btn').addEventListener('click', function () {
+    document.getElementById('admin-mo-error-overlay').classList.remove('is-open');
+  });
+
   function computeTotals() {
     var subtotal = pickedItems.reduce(function (sum, it) { return sum + (Number(it.price) || 0) * (Number(it.qty) || 1); }, 0);
     var discountInput = Number(discountValueInput.value) || 0;
@@ -2843,14 +2851,14 @@ function initManualOrderView(token) {
     showStatus('', '');
 
     if (!pickedItems.length) {
-      showStatus('error', 'Add at least one saree before submitting.');
+      showValidationError('Add at least one saree before submitting.');
       return;
     }
     var firstName = document.getElementById('admin-mo-first-name').value.trim();
     var lastName = document.getElementById('admin-mo-last-name').value.trim();
     var email = document.getElementById('admin-mo-email').value.trim();
-    if (!firstName || !lastName || !email) {
-      showStatus('error', 'First name, last name, and email are required.');
+    if (!firstName || !email) {
+      showValidationError('First name and email are required.');
       return;
     }
 
@@ -2863,7 +2871,7 @@ function initManualOrderView(token) {
       country: billingCountrySelect.value
     };
     if (!isAddressComplete(billing)) {
-      showStatus('error', 'Billing address is incomplete \u2014 building, street, city, and state are required (pincode too, outside the UAE).');
+      showValidationError('Billing address is incomplete \u2014 building, street, city, and state are required (pincode too, outside the UAE).');
       return;
     }
     var sameAddress = sameAddressBox.checked;
