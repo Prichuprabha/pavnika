@@ -2726,6 +2726,12 @@ function initManualOrderView(token) {
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg admin-status-' + type;
     statusMsg.innerHTML = html;
+    if (html) statusMsg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function isAddressComplete(addr) {
+    var pincodeOk = addr.country === 'United Arab Emirates' || !!addr.pincode;
+    return !!(addr && addr.building && addr.street && addr.city && addr.state && pincodeOk && addr.country);
   }
 
   function computeTotals() {
@@ -2856,6 +2862,10 @@ function initManualOrderView(token) {
       pincode: document.getElementById('admin-mo-billing-pincode').value.trim(),
       country: billingCountrySelect.value
     };
+    if (!isAddressComplete(billing)) {
+      showStatus('error', 'Billing address is incomplete \u2014 building, street, city, and state are required (pincode too, outside the UAE).');
+      return;
+    }
     var sameAddress = sameAddressBox.checked;
     var shipping = sameAddress ? billing : {
       building: document.getElementById('admin-mo-shipping-building').value.trim(),

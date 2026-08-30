@@ -3622,7 +3622,11 @@ function initCheckoutPage() {
   }
 
   function addressIsComplete(addr) {
-    return addr.building && addr.street && addr.city && addr.state && addr.pincode && addr.country;
+    // UAE doesn't use postal codes, so pincode isn't required there —
+    // still required for every other country, where it's genuinely
+    // needed for delivery.
+    var pincodeOk = addr.country === 'United Arab Emirates' || !!addr.pincode;
+    return addr.building && addr.street && addr.city && addr.state && pincodeOk && addr.country;
   }
 
   /* ---- Live validation for Nomod-bound customer fields ----
