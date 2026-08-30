@@ -2117,6 +2117,7 @@ function initOrdersView(token) {
   function statusLabel(s) {
     if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
     if (s === 'refunded_giftcard') return 'Refunded (To Gift Card)';
+    if (s === 'cod_pending') return 'Cash on Delivery (Pending)';
     return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
@@ -2125,7 +2126,7 @@ function initOrdersView(token) {
 
     // Overall
     var allOrdersCount = allOrders.length + allShopOrders.length;
-    var onlineRevenue = allOrders.filter(function (o) { return ['pending', 'cancelled', 'payment_error', 'refunded'].indexOf(o.status) === -1; })
+    var onlineRevenue = allOrders.filter(function (o) { return ['pending', 'cod_pending', 'cancelled', 'payment_error', 'refunded'].indexOf(o.status) === -1; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
     var shopRevenue = allShopOrders.filter(function (o) { return o.status !== 'Returned'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
@@ -2328,7 +2329,7 @@ function initOrdersView(token) {
   }
 
   function buildStatusSelect(o) {
-    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard'];
+    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard'];
     var options = statuses.map(function (s) {
       return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
     }).join('');

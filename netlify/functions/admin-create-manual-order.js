@@ -92,7 +92,7 @@ exports.handler = async function (event) {
     subtotal: subtotal,
     discount_amount: discountAmount,
     total: total,
-    status: 'delivered_direct_pay',
+    status: paymentMode === 'COD' ? 'cod_pending' : 'delivered_direct_pay',
     payment_method: paymentMode,
     billing_address: JSON.stringify(billing),
     shipping_address: JSON.stringify(shipping)
