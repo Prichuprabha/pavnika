@@ -3388,6 +3388,19 @@ function initCheckoutPage() {
     select.innerHTML = COUNTRY_LIST.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
   });
 
+  // Everything below this point — phone hint element, address
+  // validation, promo code UI, and critically the Pay Online submit
+  // handler — must only ever be set up ONCE. This function gets
+  // called a second time by syncCartFromServer() after cart sync
+  // completes (see that function's own comment on why), intended
+  // only as a quiet re-render of the items/totals above. Without this
+  // guard, that second call re-attached every listener a second time
+  // — duplicating the phone hint text, the billing-address alert, and
+  // the actual "Pay Online" click handler, which is what caused two
+  // separate orders to be created in Supabase from a single click.
+  if (window.__checkoutOneTimeSetupDone) return;
+  window.__checkoutOneTimeSetupDone = true;
+
   // Phone: the country code + number split is purely a UX convenience —
   // reuses the same PHONE_COUNTRY_CODES list as the appointment form.
   // Whatever the visitor picks/types, this reconstructs the exact same
