@@ -21,7 +21,8 @@ const { supabaseHeaders, generateOrderNumber, sendReceiptEmail, markSareesSold }
 const SUPABASE_URL = process.env.SUPABASE_URL;
 
 function isAddressComplete(addr) {
-  return !!(addr && addr.building && addr.street && addr.city && addr.state && addr.pincode && addr.country);
+  var pincodeOk = addr && (addr.country === 'United Arab Emirates' || !!addr.pincode);
+  return !!(addr && addr.building && addr.street && addr.city && addr.state && pincodeOk && addr.country);
 }
 
 exports.handler = async function (event) {
