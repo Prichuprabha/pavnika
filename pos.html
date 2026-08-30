@@ -556,6 +556,17 @@
       </div>
     </div>
 
+    <div class="modal-backdrop" id="pos-cdb-delete-modal">
+      <div class="modal-box" style="width:400px; text-align:left;">
+        <h3 style="margin:0 0 10px; color:#B8142A; font-family:var(--display); font-size:1.3rem;">Delete this customer permanently?</h3>
+        <div id="pos-cdb-delete-details" style="font-size:0.85rem; margin-bottom:16px;"></div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-outline" id="pos-cdb-delete-cancel-btn" style="flex:1;">Cancel</button>
+          <button type="button" class="btn btn-primary" id="pos-cdb-delete-confirm-btn" style="flex:1; background:#B8142A; border-color:#B8142A;">Delete Permanently</button>
+        </div>
+      </div>
+    </div>
+
     <!-- STANDALONE PAGE: RETURN / EXCHANGE -->
     <div class="content page-content" id="page-return" style="display:none;">
       <div class="s3-grid" style="grid-template-columns: 1fr 1.2fr 0.8fr;">
@@ -697,7 +708,10 @@
               </div>
             </div>
             <p class="pos-error" id="pos-cdb-error"></p>
-            <button type="button" class="btn btn-primary" id="pos-cdb-save-btn">Save Changes</button>
+            <div style="display:flex; gap:8px;">
+              <button type="button" class="btn btn-primary" id="pos-cdb-save-btn" style="flex:1;">Save Changes</button>
+              <button type="button" class="btn btn-outline" id="pos-cdb-delete-btn" style="flex-shrink:0; color:#B8142A; border-color:#B8142A;">Delete Customer</button>
+            </div>
 
             <div class="pos-cust-summary-grid" style="margin-top:16px; padding-top:16px; border-top:1px solid var(--stone);">
               <div><span class="pcs-label">Total Purchases</span><span class="pcs-value" id="pos-cdb-summary-purchases">N/A</span></div>

@@ -2599,6 +2599,62 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-cdb-save-btn').addEventListener('click', saveCustomerDb);
+
+  document.getElementById('pos-cdb-delete-btn').addEventListener('click', function () {
+    if (!customerDbSelectedId) return;
+    var name = document.getElementById('pos-cdb-name').value || 'this customer';
+    var giftCardBalance = Number(document.getElementById('pos-cdb-summary-giftcard').value) || 0;
+
+    var html = '<p style="margin:0 0 10px;"><strong>' + name + '</strong></p>';
+    if (giftCardBalance > 0) {
+      html +=
+        '<div style="background:#FBEAEA; border-radius:8px; padding:12px; margin-bottom:8px;">' +
+          '<p style="margin:0; font-weight:700; color:#B8142A;">This customer has AED ' + giftCardBalance.toFixed(2) + ' in gift card balance.</p>' +
+          '<p style="margin:6px 0 0;">Deleting them will lose this balance entirely \u2014 it isn\u2019t tracked anywhere else.</p>' +
+        '</div>';
+    }
+    html += '<p style="margin:12px 0 0; font-weight:700;">Their past sales stay on record, just no longer linked to a customer. This cannot be undone.</p>';
+
+    document.getElementById('pos-cdb-delete-details').innerHTML = html;
+    document.getElementById('pos-cdb-delete-modal').classList.add('open');
+  });
+
+  document.getElementById('pos-cdb-delete-cancel-btn').addEventListener('click', function () {
+    document.getElementById('pos-cdb-delete-modal').classList.remove('open');
+  });
+
+  document.getElementById('pos-cdb-delete-confirm-btn').addEventListener('click', function () {
+    var btn = document.getElementById('pos-cdb-delete-confirm-btn');
+    btn.disabled = true;
+    btn.textContent = 'Deleting...';
+
+    fetch('/.netlify/functions/pos-delete-customer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ posToken: getPosToken(), customerId: customerDbSelectedId })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        btn.disabled = false;
+        btn.textContent = 'Delete Permanently';
+        if (!result.ok) {
+          document.getElementById('pos-cdb-error').textContent = result.data.error || 'Could not delete this customer.';
+          return;
+        }
+        document.getElementById('pos-cdb-delete-modal').classList.remove('open');
+        document.getElementById('pos-cdb-detail').style.display = 'none';
+        document.getElementById('pos-cdb-no-selection').style.display = 'block';
+        var deletedId = customerDbSelectedId;
+        customerDbSelectedId = null;
+        customerDbCache = customerDbCache.filter(function (c) { return c.id !== deletedId; });
+        loadCustomerDbList();
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Delete Permanently';
+        document.getElementById('pos-cdb-error').textContent = 'Network error deleting this customer.';
+      });
+  });
   document.getElementById('pos-confirm-payment-btn').addEventListener('click', confirmPayment);
   document.getElementById('pos-print-btn').addEventListener('click', printBill);
   document.getElementById('pos-send-btn').addEventListener('click', sendBillWhatsApp);
