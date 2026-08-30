@@ -145,11 +145,21 @@ exports.handler = async function (event) {
       headers: {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
         'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
       },
       body: JSON.stringify({ status: status })
     });
     if (!res.ok) throw new Error(`Supabase error ${res.status}`);
+
+    const updatedRows = await res.json();
+    if (!updatedRows.length) {
+      // The HTTP request itself succeeded, but matched zero rows — this
+      // would otherwise silently report "success" while nothing in the
+      // database actually changed, which is exactly what made this bug
+      // so hard to notice in the first place.
+      return { statusCode: 404, body: JSON.stringify({ error: 'No order found with that ID — nothing was updated.' }) };
+    }
 
     return { statusCode: 200, body: JSON.stringify({ success: true }) };
   } catch (err) {
