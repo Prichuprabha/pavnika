@@ -2254,9 +2254,11 @@ function initOrdersView(token) {
 
   function getFilteredSortedShop() {
     var query = searchInput.value.trim().toLowerCase();
+    var statusVal = document.getElementById('admin-shop-status-filter').value;
     var dateBounds = getOrdersDateBounds();
 
     var filtered = allShopOrders.filter(function (o) {
+      var okStatus = !statusVal || o.status === statusVal;
       var itemsText = '';
       try { itemsText = (JSON.parse(o.items || '[]')).map(function (it) { return (it.name || '') + ' ' + (it.id || ''); }).join(' ').toLowerCase(); } catch (e) {}
       var okSearch = !query ||
@@ -2267,7 +2269,7 @@ function initOrdersView(token) {
       var orderTime = new Date(o.created_at).getTime();
       var okFrom = dateBounds.fromTime === null || orderTime >= dateBounds.fromTime;
       var okTo = dateBounds.toTime === null || orderTime <= dateBounds.toTime;
-      return okSearch && okFrom && okTo;
+      return okStatus && okSearch && okFrom && okTo;
     });
 
     filtered.sort(function (a, b) {
@@ -2439,6 +2441,7 @@ function initOrdersView(token) {
   });
 
   statusFilter.addEventListener('change', renderTable);
+  document.getElementById('admin-shop-status-filter').addEventListener('change', renderShopTable);
   searchInput.addEventListener('input', function () { renderTable(); renderShopTable(); });
 
   var ordersDateBtn = document.getElementById('admin-orders-date-range-btn');
@@ -2687,6 +2690,7 @@ function initOrdersView(token) {
       document.getElementById('admin-orders-mobile-list').classList.toggle('admin-channel-hidden', !isOnline);
       document.getElementById('admin-shop-orders-mobile-list').classList.toggle('admin-channel-hidden', isOnline);
       document.getElementById('admin-orders-status-filter').style.display = isOnline ? '' : 'none';
+      document.getElementById('admin-shop-status-filter').style.display = isOnline ? 'none' : '';
     });
   });
 

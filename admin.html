@@ -87,7 +87,7 @@
   .admin-sortable:hover { color: var(--green); }
   .admin-sortable::after { content: ' \2195'; opacity: 0.4; font-size: 0.65rem; }
 
-  #admin-orders-status-filter, #admin-orders-search {
+  #admin-orders-status-filter, #admin-shop-status-filter, #admin-orders-search {
     padding: 8px 12px; border: 1px solid var(--stone); border-radius: 3px;
     font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
   }
@@ -584,6 +584,13 @@
           <option value="refunded">Refunded</option>
           <option value="refunded_giftcard">Refunded (To Gift Card)</option>
           <option value="cod_pending">Cash on Delivery (Pending)</option>
+        </select>
+        <select id="admin-shop-status-filter" style="display:none;">
+          <option value="">All statuses</option>
+          <option value="Completed">Completed</option>
+          <option value="Exchanged">Exchanged</option>
+          <option value="Returned">Returned</option>
+          <option value="Partially Returned">Partially Returned</option>
         </select>
         <div class="admin-date-preset-row">
           <button type="button" class="admin-date-preset-btn" data-orders-preset="all">All Dates</button>
