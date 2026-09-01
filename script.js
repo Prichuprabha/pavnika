@@ -640,7 +640,9 @@ function initCollectionsPage() {
       if (state.series !== 'all') parts.push(seriesTitleCase(state.series));
       if (state.shade !== 'all') parts.push(state.shade);
       if (state.query.trim()) parts.push('\u201C' + state.query.trim() + '\u201D');
-      if (state.priceMin !== null || state.priceMax !== null) parts.push('price range');
+      var priceIsFullRange = (typeof dataMin === 'undefined') ||
+        (state.priceMin === dataMin && state.priceMax === dataMax);
+      if (!priceIsFullRange) parts.push('price range');
       noteEl.textContent = parts.length ? 'Filtered by: ' + parts.join(' \u00B7 ') : '';
     }
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
@@ -1241,6 +1243,10 @@ function buildLightbox() {
             '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
           '</div>' +
           '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
+          '<div class="related-sarees-block" id="related-sarees-block" style="display:none;">' +
+            '<p class="related-sarees-title">You May Also Like</p>' +
+            '<div class="related-sarees-scroll" id="related-sarees-scroll"></div>' +
+          '</div>' +
           '<div class="care-accordion">' +
             '<button type="button" class="care-accordion-toggle" id="care-accordion-toggle" aria-expanded="false">' +
               '<span>Saree Care &amp; Storage</span>' +
@@ -1330,7 +1336,23 @@ function buildLightbox() {
     return sentence + '.';
   }
 
-  window.openLightbox = function (product) {
+  function getRelatedProducts(product) {
+  var all = (window.PRODUCTS || []).filter(function (p) { return p.id !== product.id && !p.sold; });
+
+  var sameSeries = all.filter(function (p) { return p.series === product.series; });
+  if (sameSeries.length >= 4) return sameSeries.slice(0, 6);
+
+  // Not enough in the same series — fill the rest with items in a
+  // similar price range, closest price first, without duplicating
+  // anything already picked from the same series.
+  var pickedIds = sameSeries.map(function (p) { return p.id; });
+  var remaining = all.filter(function (p) { return pickedIds.indexOf(p.id) === -1; })
+    .sort(function (a, b) { return Math.abs(a.price - product.price) - Math.abs(b.price - product.price); });
+
+  return sameSeries.concat(remaining).slice(0, 6);
+}
+
+window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
     document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
@@ -1355,6 +1377,32 @@ function buildLightbox() {
     var addCartBtn = document.getElementById('lightbox-add-cart');
     var buyNowBtn = document.getElementById('lightbox-buy-now');
     var actionsWrap = document.getElementById('lightbox-cart-actions');
+
+    var relatedBlock = document.getElementById('related-sarees-block');
+    var relatedScroll = document.getElementById('related-sarees-scroll');
+    if (relatedBlock && relatedScroll) {
+      var related = getRelatedProducts(product);
+      if (related.length) {
+        relatedBlock.style.display = 'block';
+        relatedScroll.innerHTML = related.map(function (p) {
+          return (
+            '<div class="related-saree-item" data-id="' + p.id + '">' +
+              '<img src="' + p.image + '" alt="' + (p.material || p.design) + '" loading="lazy">' +
+              '<p class="rs-name">' + (p.material || p.design) + '</p>' +
+              '<p class="rs-price">AED ' + formatAED(p.price) + '</p>' +
+            '</div>'
+          );
+        }).join('');
+        relatedScroll.querySelectorAll('.related-saree-item').forEach(function (el) {
+          el.onclick = function () {
+            var picked = window.PRODUCTS.find(function (p) { return p.id === el.getAttribute('data-id'); });
+            if (picked) window.openLightbox(picked);
+          };
+        });
+      } else {
+        relatedBlock.style.display = 'none';
+      }
+    }
 
     var careToggle = document.getElementById('care-accordion-toggle');
     var carePanel = document.getElementById('care-accordion-panel');
