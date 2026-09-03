@@ -3215,7 +3215,7 @@ function buildTagSheetHtml(items) {
     '.fold-line{position:absolute;top:50%;left:0;right:0;border-top:1px dotted #ddd}' +
     '.panel-outer,.panel-inner{height:1.75in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.12in 0.15in}' +
     '.panel-outer img{width:1.55in;height:auto}' +
-    '.panel-outer .tagline{font-size:9px;color:#B68A69;letter-spacing:1.5px;text-transform:uppercase;margin-top:8px}' +
+    '.panel-outer .tagline{font-size:8px;color:#B68A69;letter-spacing:0.8px;text-transform:uppercase;margin-top:8px;white-space:nowrap}' +
     '.panel-inner svg.barcode{width:1.7in}' +
     '.panel-inner .code-text{font-family:"Courier New",monospace;font-size:13px;font-weight:bold;color:#2B0D1A;letter-spacing:1px;margin-top:2px}' +
     '.panel-inner .series-text{font-size:9px;color:#8a7266;margin-top:6px;text-align:center}' +
