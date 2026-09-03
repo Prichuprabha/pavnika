@@ -161,6 +161,7 @@ function showAdminPanel(token, email) {
   initStatsDashboard(token);
   initOrdersView(token);
   initManualOrderView(token);
+  initSareeTagsView(token);
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -3027,4 +3028,211 @@ function initManualOrderView(token) {
         submitBtn.textContent = 'Create Order & Send Confirmation Email';
       });
   });
+}
+
+// ---------------------------------------------------------------
+// Saree Tags — select items and generate a printable tag sheet.
+// Tags are 2in x 4in, folded in half to 2in x 2in (mountain fold,
+// printed sides outward), 6 per A4 page. See tag design notes: the
+// sheet MUST be printed at 100% scale, since scaling changes the
+// physical size and can make barcodes unreliable to scan.
+// ---------------------------------------------------------------
+function initSareeTagsView(token) {
+  var searchInput = document.getElementById('admin-tags-search');
+  var hideSoldBox = document.getElementById('admin-tags-hide-sold');
+  var listEl = document.getElementById('admin-tags-list');
+  var countEl = document.getElementById('admin-tags-count');
+  var sheetsEl = document.getElementById('admin-tags-sheets');
+  var generateBtn = document.getElementById('admin-tags-generate-btn');
+  var statusMsg = document.getElementById('admin-tags-status-msg');
+
+  var selectedIds = [];
+  var TAGS_PER_SHEET = 6;
+
+  function showStatus(type, msg) {
+    statusMsg.className = 'admin-status-msg admin-status-' + type;
+    statusMsg.textContent = msg;
+  }
+
+  function getVisibleProducts() {
+    var q = searchInput.value.trim().toLowerCase();
+    return (window.PRODUCTS || []).filter(function (p) {
+      if (hideSoldBox.checked && p.sold) return false;
+      if (!q) return true;
+      return (p.id || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.material || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.series || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.design || '').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  function seriesTitle(s) {
+    return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+
+  function renderList() {
+    var products = getVisibleProducts();
+    if (!products.length) {
+      listEl.innerHTML = '<p style="padding:20px; font-size:0.85rem; opacity:0.6;">No sarees match.</p>';
+      return;
+    }
+    listEl.innerHTML = products.map(function (p) {
+      var isSel = selectedIds.indexOf(p.id) !== -1;
+      return (
+        '<div class="admin-tag-row' + (isSel ? ' selected' : '') + '" data-id="' + p.id + '">' +
+          '<input type="checkbox"' + (isSel ? ' checked' : '') + '>' +
+          (p.image ? '<img src="' + p.image + '" alt="">' : '') +
+          '<div>' +
+            '<div class="tag-code">' + p.id + '</div>' +
+            '<div class="tag-meta">' + (p.material || p.design || '') + ' &middot; ' + seriesTitle(p.series) + '</div>' +
+          '</div>' +
+          (p.sold ? '<span class="tag-sold">Sold</span>' : '') +
+        '</div>'
+      );
+    }).join('');
+
+    listEl.querySelectorAll('.admin-tag-row').forEach(function (row) {
+      row.addEventListener('click', function () {
+        var id = row.getAttribute('data-id');
+        var idx = selectedIds.indexOf(id);
+        if (idx === -1) selectedIds.push(id); else selectedIds.splice(idx, 1);
+        renderList();
+        updateCount();
+      });
+    });
+  }
+
+  function updateCount() {
+    countEl.textContent = selectedIds.length + ' selected';
+    if (selectedIds.length) {
+      var sheets = Math.ceil(selectedIds.length / TAGS_PER_SHEET);
+      sheetsEl.textContent = '\u2192 ' + sheets + ' A4 sheet' + (sheets > 1 ? 's' : '') +
+        (selectedIds.length % TAGS_PER_SHEET !== 0 ? ' (last sheet partly empty)' : '');
+    } else {
+      sheetsEl.textContent = '';
+    }
+    generateBtn.disabled = selectedIds.length === 0;
+  }
+
+  searchInput.addEventListener('input', renderList);
+  hideSoldBox.addEventListener('change', renderList);
+
+  document.getElementById('admin-tags-select-all').addEventListener('click', function () {
+    getVisibleProducts().forEach(function (p) {
+      if (selectedIds.indexOf(p.id) === -1) selectedIds.push(p.id);
+    });
+    renderList();
+    updateCount();
+  });
+
+  document.getElementById('admin-tags-clear').addEventListener('click', function () {
+    selectedIds = [];
+    renderList();
+    updateCount();
+  });
+
+  generateBtn.addEventListener('click', function () {
+    if (!selectedIds.length) return;
+    if (typeof JsBarcode === 'undefined') {
+      showStatus('error', 'Barcode library did not load — please refresh the page and try again.');
+      return;
+    }
+    var items = selectedIds.map(function (id) {
+      return (window.PRODUCTS || []).find(function (p) { return p.id === id; });
+    }).filter(Boolean);
+
+    var win = window.open('', '_blank');
+    if (!win) {
+      showStatus('error', 'Could not open the print window — please allow pop-ups for this site and try again.');
+      return;
+    }
+    win.document.write(buildTagSheetHtml(items));
+    win.document.close();
+    showStatus('success', 'Print sheet opened in a new tab for ' + items.length + ' tag' + (items.length > 1 ? 's' : '') + '.');
+  });
+
+  renderList();
+  updateCount();
+}
+
+// Builds the standalone printable tag sheet. Barcodes are rendered
+// inside the new window itself (JsBarcode is loaded there too), since
+// SVG generated in this document can't be reliably transplanted.
+// The logo is referenced by URL rather than inlined as base64 — the
+// sheet opens from this same site, so the path resolves, and it keeps
+// admin.js from carrying a 110KB embedded image.
+function buildTagSheetHtml(items) {
+  var phoneIcon = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  var igIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>';
+
+  function seriesTitle(s) {
+    return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Chunk into pages of 6 so each A4 sheet breaks cleanly
+  var pages = [];
+  for (var i = 0; i < items.length; i += 6) pages.push(items.slice(i, i + 6));
+
+  var pagesHtml = pages.map(function (pageItems, pageIdx) {
+    var tags = pageItems.map(function (item, idx) {
+      var globalIdx = pageIdx * 6 + idx;
+      return (
+        '<div class="tag">' +
+          '<div class="panel-outer">' +
+            '<img src="assets/maroonlogo.png" alt="Pavnika by Saranya">' +
+            '<p class="tagline">Elegance that Defines You</p>' +
+          '</div>' +
+          '<div class="fold-line"></div>' +
+          '<div class="panel-inner">' +
+            '<svg class="barcode" id="bc-' + globalIdx + '"></svg>' +
+            '<p class="code-text">' + esc(item.id) + '</p>' +
+            '<p class="series-text">' + esc(seriesTitle(item.series)) + '</p>' +
+            '<div class="contact-footer">' +
+              '<span class="phone-line">' + phoneIcon + ' +971 52 66 30307</span>' +
+              '<span class="contact-divider">|</span>' +
+              '<span class="ig-line">' + igIcon + ' pavnika_by_saranya</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+    return '<div class="sheet">' + tags + '</div>';
+  }).join('');
+
+  var barcodeData = items.map(function (it) { return it.id; });
+
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pavnika Saree Tags</title>' +
+    '<style>' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:sans-serif;background:#d8d0c5;padding:20px}' +
+    '.screen-note{max-width:8.27in;margin:0 auto 20px;background:#fff;border-left:4px solid #B68A69;padding:14px 18px;font-size:13px;line-height:1.6;color:#3B2528}' +
+    '.print-btn{margin-top:10px;background:#3C1223;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}' +
+    '.sheet{width:8.27in;height:11.69in;background:#fff;margin:0 auto 20px;padding:0.4in;display:grid;grid-template-columns:repeat(3,2in);grid-template-rows:repeat(2,4in);justify-content:center;align-content:start;box-shadow:0 10px 40px rgba(0,0,0,0.2)}' +
+    '.tag{width:2in;height:4in;display:flex;flex-direction:column;position:relative;outline:1px dashed #ccc;outline-offset:-1px}' +
+    '.fold-line{position:absolute;top:50%;left:0;right:0;border-top:1px dotted #ddd}' +
+    '.panel-outer,.panel-inner{height:2in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.18in 0.15in}' +
+    '.panel-outer img{width:1.55in;height:auto}' +
+    '.panel-outer .tagline{font-size:9px;color:#B68A69;letter-spacing:1.5px;text-transform:uppercase;margin-top:8px}' +
+    '.panel-inner svg.barcode{width:1.7in}' +
+    '.panel-inner .code-text{font-family:"Courier New",monospace;font-size:13px;font-weight:bold;color:#2B0D1A;letter-spacing:1px;margin-top:2px}' +
+    '.panel-inner .series-text{font-size:9px;color:#8a7266;margin-top:6px;text-align:center}' +
+    '.contact-footer{font-size:5.6px;color:#B68A69;margin-top:10px;display:flex;align-items:center;gap:3px;flex-wrap:nowrap;white-space:nowrap;justify-content:center}' +
+    '.contact-divider{opacity:0.5}' +
+    '.ig-line,.phone-line{display:inline-flex;align-items:center;gap:3px}' +
+    '@media print{@page{size:A4;margin:0}body{background:#fff;padding:0}.screen-note{display:none}.sheet{box-shadow:none;margin:0;page-break-after:always}.sheet:last-child{page-break-after:auto}}' +
+    '</style></head><body>' +
+    '<div class="screen-note"><b>Print instructions for the shop:</b><br>' +
+    'Paper: 250&ndash;300 GSM white cardstock &middot; A4 &middot; <b>Laser print</b> (not inkjet) &middot; Optional matte lamination<br>' +
+    'Print at <b>100% scale / "Actual size"</b> &mdash; do <b>not</b> use "Fit to page", or the tags will come out the wrong size and the barcodes may not scan reliably.<br>' +
+    'Cut along the light dashed lines, then fold each tag in half along the dotted centre line (printed sides face outward).<br>' +
+    '<button class="print-btn" onclick="window.print()">Print / Save as PDF</button></div>' +
+    pagesHtml +
+    '<script src="jsbarcode.min.js"><\/script>' +
+    '<script>var CODES=' + JSON.stringify(barcodeData) + ';' +
+    'CODES.forEach(function(code,i){try{JsBarcode("#bc-"+i,code,{format:"CODE128",width:1.6,height:40,displayValue:false,margin:0});}catch(e){' +
+    'var el=document.getElementById("bc-"+i);if(el)el.outerHTML=\'<div style="font-size:10px;color:#B8142A;">Barcode failed: \'+code+\'</div>\';}});<\/script>' +
+    '</body></html>';
 }
