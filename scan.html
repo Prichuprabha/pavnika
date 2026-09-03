@@ -6,6 +6,13 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Saree Lookup — Pavnika by Saranya</title>
 <link rel="icon" href="assets/maroonlogo.png">
+<link rel="manifest" href="scan-manifest.json">
+<meta name="theme-color" content="#3C1223">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Saree Lookup">
+<link rel="apple-touch-icon" href="assets/scan-icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -80,7 +87,7 @@
   .res-code { font-family: monospace; font-size: 0.78rem; color: #8a7266; letter-spacing: 0.5px; }
   .res-name { font-size: 1.05rem; font-weight: 600; color: var(--green-deep); margin: 2px 0; }
   .res-series { font-size: 0.82rem; color: #8a7266; text-transform: capitalize; }
-  .res-price { font-family: var(--display); font-size: 1.5rem; font-weight: 600; color: var(--green-deep); margin-top: 6px; }
+  .res-price { font-family: var(--body); font-size: 1.6rem; font-weight: 600; letter-spacing: -0.5px; color: var(--green-deep); margin-top: 6px; }
   .badge {
     display: inline-block; font-size: 0.72rem; font-weight: 600;
     padding: 3px 11px; border-radius: 6px; margin-top: 6px;
@@ -111,6 +118,12 @@
 <div class="wrap">
 
   <div class="topbar"><img src="assets/maroonlogo.png" alt="Pavnika by Saranya"></div>
+
+  <div id="install-banner" style="display:none; background:var(--ivory-deep); border:1px solid var(--gold); border-radius:10px; padding:11px 13px; margin-bottom:12px; align-items:center; gap:10px;">
+    <div style="flex:1; font-size:0.82rem; line-height:1.4;">Install this as an app for quicker access.</div>
+    <button type="button" id="install-btn" style="flex-shrink:0; background:var(--green-deep); color:#fff; border:none; border-radius:7px; padding:8px 14px; font-family:var(--body); font-size:0.8rem; font-weight:600; cursor:pointer;">Install</button>
+    <button type="button" id="install-dismiss" aria-label="Dismiss" style="flex-shrink:0; background:none; border:none; color:#8a7266; font-size:1.1rem; cursor:pointer; padding:0 2px;">&times;</button>
+  </div>
 
   <div class="card">
     <h2>Saree lookup</h2>
@@ -335,6 +348,58 @@
   });
 
   renderHistory();
+
+  // ---- Install as an app ----
+  // Chrome/Edge/Android fire beforeinstallprompt, which lets us show
+  // our own button. iOS Safari doesn't support it at all, so those
+  // users get instructions for the Share > Add to Home Screen route.
+  var deferredPrompt = null;
+  var banner = document.getElementById('install-banner');
+  var installBtn = document.getElementById('install-btn');
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!isStandalone() && localStorage.getItem('pavnika_install_dismissed') !== '1') {
+      banner.style.display = 'flex';
+    }
+  });
+
+  installBtn.addEventListener('click', function () {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function () {
+      deferredPrompt = null;
+      banner.style.display = 'none';
+    });
+  });
+
+  document.getElementById('install-dismiss').addEventListener('click', function () {
+    banner.style.display = 'none';
+    try { localStorage.setItem('pavnika_install_dismissed', '1'); } catch (e) {}
+  });
+
+  // iOS: no install API, so show the manual steps instead.
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS && !isStandalone() && localStorage.getItem('pavnika_install_dismissed') !== '1') {
+    banner.querySelector('div').textContent = 'To install: tap Share, then "Add to Home Screen".';
+    installBtn.style.display = 'none';
+    banner.style.display = 'flex';
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('scan-sw.js').catch(function (e) {
+        // Not fatal — the page works fine without it, it just can't be
+        // installed or used offline.
+        console.warn('Service worker registration failed:', e);
+      });
+    });
+  }
 })();
 </script>
 </body>
