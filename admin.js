@@ -3032,8 +3032,8 @@ function initManualOrderView(token) {
 
 // ---------------------------------------------------------------
 // Saree Tags — select items and generate a printable tag sheet.
-// Tags are 2in x 4in, folded in half to 2in x 2in (mountain fold,
-// printed sides outward), 6 per A4 page. See tag design notes: the
+// Tags are 2in x 3.5in, folded in half to 2in x 1.75in (mountain
+// fold, printed sides outward), 9 per A4 page. See tag design notes: the
 // sheet MUST be printed at 100% scale, since scaling changes the
 // physical size and can make barcodes unreliable to scan.
 // ---------------------------------------------------------------
@@ -3047,7 +3047,7 @@ function initSareeTagsView(token) {
   var statusMsg = document.getElementById('admin-tags-status-msg');
 
   var selectedIds = [];
-  var TAGS_PER_SHEET = 6;
+  var TAGS_PER_SHEET = 9;
 
   function showStatus(type, msg) {
     statusMsg.className = 'admin-status-msg admin-status-' + type;
@@ -3174,11 +3174,11 @@ function buildTagSheetHtml(items) {
 
   // Chunk into pages of 6 so each A4 sheet breaks cleanly
   var pages = [];
-  for (var i = 0; i < items.length; i += 6) pages.push(items.slice(i, i + 6));
+  for (var i = 0; i < items.length; i += 9) pages.push(items.slice(i, i + 9));
 
   var pagesHtml = pages.map(function (pageItems, pageIdx) {
     var tags = pageItems.map(function (item, idx) {
-      var globalIdx = pageIdx * 6 + idx;
+      var globalIdx = pageIdx * 9 + idx;
       return (
         '<div class="tag">' +
           '<div class="panel-outer">' +
@@ -3210,10 +3210,10 @@ function buildTagSheetHtml(items) {
     'body{font-family:sans-serif;background:#d8d0c5;padding:20px}' +
     '.screen-note{max-width:8.27in;margin:0 auto 20px;background:#fff;border-left:4px solid #B68A69;padding:14px 18px;font-size:13px;line-height:1.6;color:#3B2528}' +
     '.print-btn{margin-top:10px;background:#3C1223;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}' +
-    '.sheet{width:8.27in;height:11.69in;background:#fff;margin:0 auto 20px;padding:0.4in;display:grid;grid-template-columns:repeat(3,2in);grid-template-rows:repeat(2,4in);justify-content:center;align-content:start;box-shadow:0 10px 40px rgba(0,0,0,0.2)}' +
-    '.tag{width:2in;height:4in;display:flex;flex-direction:column;position:relative;outline:1px dashed #ccc;outline-offset:-1px}' +
+    '.sheet{width:8.27in;height:11.69in;background:#fff;margin:0 auto 20px;padding:0.4in;display:grid;grid-template-columns:repeat(3,2in);grid-template-rows:repeat(3,3.5in);justify-content:center;align-content:start;box-shadow:0 10px 40px rgba(0,0,0,0.2)}' +
+    '.tag{width:2in;height:3.5in;display:flex;flex-direction:column;position:relative;outline:1px dashed #ccc;outline-offset:-1px}' +
     '.fold-line{position:absolute;top:50%;left:0;right:0;border-top:1px dotted #ddd}' +
-    '.panel-outer,.panel-inner{height:2in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.18in 0.15in}' +
+    '.panel-outer,.panel-inner{height:1.75in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.12in 0.15in}' +
     '.panel-outer img{width:1.55in;height:auto}' +
     '.panel-outer .tagline{font-size:9px;color:#B68A69;letter-spacing:1.5px;text-transform:uppercase;margin-top:8px}' +
     '.panel-inner svg.barcode{width:1.7in}' +
