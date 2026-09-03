@@ -16,29 +16,31 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: var(--body); background: var(--ivory); color: var(--ink);
-    min-height: 100vh; padding: 16px; -webkit-text-size-adjust: 100%;
+    min-height: 100vh; padding: 12px; -webkit-text-size-adjust: 100%;
   }
   .wrap { max-width: 460px; margin: 0 auto; }
 
-  .topbar { display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+  .topbar { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
   .topbar img { height: 34px; }
 
   .card {
     background: #fff; border-radius: 12px; border: 1px solid var(--stone);
-    padding: 16px; margin-bottom: 14px;
+    padding: 14px; margin-bottom: 12px;
   }
   .card h2 {
     font-family: var(--display); font-size: 1.25rem; font-weight: 600;
-    color: var(--green-deep); margin-bottom: 12px;
+    color: var(--green-deep); margin-bottom: 10px;
   }
 
+  /* Collapsed while idle so the logo, controls and result all fit in
+     one mobile view; expands only while the camera is actually on. */
   #video-wrap {
-    position: relative; width: 100%; aspect-ratio: 4/3; background: var(--ivory-deep);
-    border-radius: 8px; overflow: hidden; margin-bottom: 12px;
+    position: relative; width: 100%; height: 0; background: var(--ivory-deep);
+    border-radius: 8px; overflow: hidden; margin-bottom: 0;
     display: flex; align-items: center; justify-content: center;
   }
+  #video-wrap.scanning { height: 170px; margin-bottom: 10px; }
   #video-wrap video { width: 100%; height: 100%; object-fit: cover; }
-  #video-placeholder { text-align: center; color: #8a7266; font-size: 0.85rem; padding: 20px; }
   #scan-line {
     position: absolute; left: 12%; right: 12%; height: 2px; background: #B8142A;
     top: 50%; display: none; box-shadow: 0 0 8px rgba(184,20,42,0.6);
@@ -46,22 +48,22 @@
   #video-wrap.scanning #scan-line { display: block; }
 
   .btn {
-    display: block; width: 100%; padding: 13px; border: none; border-radius: 8px;
+    display: block; width: 100%; padding: 11px; border: none; border-radius: 8px;
     font-family: var(--body); font-size: 0.9rem; font-weight: 600; cursor: pointer;
   }
   .btn-primary { background: var(--green-deep); color: #fff; }
   .btn-outline { background: transparent; border: 1.5px solid var(--green-deep); color: var(--green-deep); }
 
-  .divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
   .divider span { font-size: 0.78rem; color: #a08b7f; }
   .divider .line { flex: 1; height: 1px; background: var(--stone); }
 
   .manual-row { display: flex; gap: 8px; }
   .manual-row input {
-    flex: 1; padding: 12px; border: 1px solid var(--stone); border-radius: 8px;
+    flex: 1; padding: 10px 12px; border: 1px solid var(--stone); border-radius: 8px;
     font-family: var(--body); font-size: 1rem; text-transform: uppercase; background: var(--ivory);
   }
-  .manual-row button { width: auto; padding: 12px 20px; flex-shrink: 0; }
+  .manual-row button { width: auto; padding: 10px 18px; flex-shrink: 0; }
 
   .msg { font-size: 0.85rem; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; display: none; }
   .msg.error { display: block; background: #FBEAEA; color: #791f1f; }
@@ -69,16 +71,16 @@
 
   /* ---- Result card ---- */
   #result { display: none; }
-  .res-head { display: flex; gap: 14px; margin-bottom: 14px; }
+  .res-head { display: flex; gap: 12px; margin-bottom: 12px; }
   .res-head img {
-    width: 92px; height: 122px; object-fit: cover; border-radius: 8px;
+    width: 78px; height: 100px; object-fit: cover; border-radius: 8px;
     flex-shrink: 0; background: var(--ivory-deep);
   }
   .res-info { flex: 1; min-width: 0; }
   .res-code { font-family: monospace; font-size: 0.78rem; color: #8a7266; letter-spacing: 0.5px; }
   .res-name { font-size: 1.05rem; font-weight: 600; color: var(--green-deep); margin: 2px 0; }
   .res-series { font-size: 0.82rem; color: #8a7266; text-transform: capitalize; }
-  .res-price { font-family: var(--display); font-size: 1.7rem; font-weight: 600; color: var(--green-deep); margin-top: 6px; }
+  .res-price { font-family: var(--display); font-size: 1.5rem; font-weight: 600; color: var(--green-deep); margin-top: 6px; }
   .badge {
     display: inline-block; font-size: 0.72rem; font-weight: 600;
     padding: 3px 11px; border-radius: 6px; margin-top: 6px;
@@ -86,8 +88,8 @@
   .badge.available { background: #EAF3DE; color: #3B6D11; }
   .badge.sold { background: #FBEAEA; color: #B8142A; }
 
-  .res-details { border-top: 1px solid var(--stone); padding-top: 12px; }
-  .res-details .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.85rem; }
+  .res-details { border-top: 1px solid var(--stone); padding-top: 10px; }
+  .res-details .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.82rem; }
   .res-details .row .label { color: #8a7266; }
   .res-details .row .val { text-align: right; font-weight: 500; }
 
@@ -115,7 +117,6 @@
     <p class="msg" id="msg"></p>
 
     <div id="video-wrap">
-      <div id="video-placeholder">Tap &ldquo;Start camera&rdquo; and hold the tag&rsquo;s barcode steady in frame</div>
       <video id="video" playsinline style="display:none;"></video>
       <div id="scan-line"></div>
     </div>
@@ -159,7 +160,6 @@
   var msgEl = document.getElementById('msg');
   var videoEl = document.getElementById('video');
   var videoWrap = document.getElementById('video-wrap');
-  var placeholder = document.getElementById('video-placeholder');
   var cameraBtn = document.getElementById('camera-btn');
   var manualInput = document.getElementById('manual-input');
   var resultEl = document.getElementById('result');
@@ -283,7 +283,6 @@
     scanning = false;
     if (codeReader) { try { codeReader.reset(); } catch (e) {} }
     videoEl.style.display = 'none';
-    placeholder.style.display = 'block';
     videoWrap.classList.remove('scanning');
     cameraBtn.textContent = 'Start camera';
   }
@@ -303,7 +302,6 @@
     scanning = true;
     cameraBtn.textContent = 'Stop camera';
     videoEl.style.display = 'block';
-    placeholder.style.display = 'none';
     videoWrap.classList.add('scanning');
     showMsg('info', 'Hold the barcode steady and well-lit. If it will not read, type the code instead.');
 
@@ -326,8 +324,7 @@
       scanning = false;
       cameraBtn.textContent = 'Start camera';
       videoEl.style.display = 'none';
-      placeholder.style.display = 'block';
-      videoWrap.classList.remove('scanning');
+        videoWrap.classList.remove('scanning');
       var name = e && e.name ? e.name : '';
       if (name === 'NotAllowedError') {
         showMsg('error', 'Camera permission was denied. Allow camera access in your browser settings, or type the code below.');
