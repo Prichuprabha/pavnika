@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Saree Lookup — Pavnika by Saranya</title>
+<link rel="icon" href="assets/maroonlogo.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ivory: #FCF5ED; --ivory-deep: #F8ECE2; --green: #3C1223; --green-deep: #2B0D1A;
+    --gold: #B68A69; --gold-light: #F6DFD5; --ink: #3B2528; --stone: #DED0C7;
+    --display: 'Cormorant Garamond', serif; --body: 'Jost', sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--body); background: var(--ivory); color: var(--ink);
+    min-height: 100vh; padding: 16px; -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; }
+
+  .topbar { display: flex; align-items: center; justify-content: center; margin-bottom: 18px; }
+  .topbar img { height: 34px; }
+
+  .card {
+    background: #fff; border-radius: 12px; border: 1px solid var(--stone);
+    padding: 16px; margin-bottom: 14px;
+  }
+  .card h2 {
+    font-family: var(--display); font-size: 1.25rem; font-weight: 600;
+    color: var(--green-deep); margin-bottom: 12px;
+  }
+
+  #video-wrap {
+    position: relative; width: 100%; aspect-ratio: 4/3; background: var(--ivory-deep);
+    border-radius: 8px; overflow: hidden; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+  #video-placeholder { text-align: center; color: #8a7266; font-size: 0.85rem; padding: 20px; }
+  #scan-line {
+    position: absolute; left: 12%; right: 12%; height: 2px; background: #B8142A;
+    top: 50%; display: none; box-shadow: 0 0 8px rgba(184,20,42,0.6);
+  }
+  #video-wrap.scanning #scan-line { display: block; }
+
+  .btn {
+    display: block; width: 100%; padding: 13px; border: none; border-radius: 8px;
+    font-family: var(--body); font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-deep); color: #fff; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--green-deep); color: var(--green-deep); }
+
+  .divider { display: flex; align-items: center; gap: 10px; margin: 14px 0; }
+  .divider span { font-size: 0.78rem; color: #a08b7f; }
+  .divider .line { flex: 1; height: 1px; background: var(--stone); }
+
+  .manual-row { display: flex; gap: 8px; }
+  .manual-row input {
+    flex: 1; padding: 12px; border: 1px solid var(--stone); border-radius: 8px;
+    font-family: var(--body); font-size: 1rem; text-transform: uppercase; background: var(--ivory);
+  }
+  .manual-row button { width: auto; padding: 12px 20px; flex-shrink: 0; }
+
+  .msg { font-size: 0.85rem; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; display: none; }
+  .msg.error { display: block; background: #FBEAEA; color: #791f1f; }
+  .msg.info { display: block; background: var(--ivory-deep); color: var(--ink); }
+
+  /* ---- Result card ---- */
+  #result { display: none; }
+  .res-head { display: flex; gap: 14px; margin-bottom: 14px; }
+  .res-head img {
+    width: 92px; height: 122px; object-fit: cover; border-radius: 8px;
+    flex-shrink: 0; background: var(--ivory-deep);
+  }
+  .res-info { flex: 1; min-width: 0; }
+  .res-code { font-family: monospace; font-size: 0.78rem; color: #8a7266; letter-spacing: 0.5px; }
+  .res-name { font-size: 1.05rem; font-weight: 600; color: var(--green-deep); margin: 2px 0; }
+  .res-series { font-size: 0.82rem; color: #8a7266; text-transform: capitalize; }
+  .res-price { font-family: var(--display); font-size: 1.7rem; font-weight: 600; color: var(--green-deep); margin-top: 6px; }
+  .badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    padding: 3px 11px; border-radius: 6px; margin-top: 6px;
+  }
+  .badge.available { background: #EAF3DE; color: #3B6D11; }
+  .badge.sold { background: #FBEAEA; color: #B8142A; }
+
+  .res-details { border-top: 1px solid var(--stone); padding-top: 12px; }
+  .res-details .row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.85rem; }
+  .res-details .row .label { color: #8a7266; }
+  .res-details .row .val { text-align: right; font-weight: 500; }
+
+  /* ---- History ---- */
+  #history-card { display: none; }
+  .hist-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0;
+    border-bottom: 1px solid var(--stone); cursor: pointer; font-size: 0.85rem;
+  }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-item img { width: 30px; height: 38px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: var(--ivory-deep); }
+  .hist-item .h-code { font-family: monospace; font-weight: 600; }
+  .hist-item .h-name { color: #8a7266; font-size: 0.78rem; }
+  .hist-item .h-price { margin-left: auto; font-weight: 600; flex-shrink: 0; }
+  #hist-clear { background: none; border: none; color: #8a7266; font-size: 0.76rem; text-decoration: underline; cursor: pointer; font-family: var(--body); margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar"><img src="assets/maroonlogo.png" alt="Pavnika by Saranya"></div>
+
+  <div class="card">
+    <h2>Saree lookup</h2>
+    <p class="msg" id="msg"></p>
+
+    <div id="video-wrap">
+      <div id="video-placeholder">Tap &ldquo;Start camera&rdquo; and hold the tag&rsquo;s barcode steady in frame</div>
+      <video id="video" playsinline style="display:none;"></video>
+      <div id="scan-line"></div>
+    </div>
+
+    <button type="button" class="btn btn-primary" id="camera-btn">Start camera</button>
+
+    <div class="divider"><div class="line"></div><span>or enter the code</span><div class="line"></div></div>
+
+    <div class="manual-row">
+      <input type="text" id="manual-input" placeholder="e.g. PP002" autocomplete="off" autocapitalize="characters" enterkeyhint="search">
+      <button type="button" class="btn btn-outline" id="manual-btn">Find</button>
+    </div>
+  </div>
+
+  <div class="card" id="result">
+    <div class="res-head">
+      <img id="res-img" src="" alt="">
+      <div class="res-info">
+        <p class="res-code" id="res-code"></p>
+        <p class="res-name" id="res-name"></p>
+        <p class="res-series" id="res-series"></p>
+        <p class="res-price" id="res-price"></p>
+        <span class="badge" id="res-badge"></span>
+      </div>
+    </div>
+    <div class="res-details" id="res-details"></div>
+  </div>
+
+  <div class="card" id="history-card">
+    <h2>Recent lookups</h2>
+    <div id="history-list"></div>
+    <button type="button" id="hist-clear">Clear history</button>
+  </div>
+
+</div>
+
+<script src="zxing.min.js"></script>
+<script src="products-data.js"></script>
+<script>
+(function () {
+  var msgEl = document.getElementById('msg');
+  var videoEl = document.getElementById('video');
+  var videoWrap = document.getElementById('video-wrap');
+  var placeholder = document.getElementById('video-placeholder');
+  var cameraBtn = document.getElementById('camera-btn');
+  var manualInput = document.getElementById('manual-input');
+  var resultEl = document.getElementById('result');
+  var historyCard = document.getElementById('history-card');
+  var historyList = document.getElementById('history-list');
+
+  var HISTORY_KEY = 'pavnika_scan_history';
+  var MAX_HISTORY = 8;
+  var codeReader = null;
+  var scanning = false;
+
+  function showMsg(type, text) {
+    msgEl.className = 'msg ' + type;
+    msgEl.textContent = text;
+  }
+  function clearMsg() { msgEl.className = 'msg'; msgEl.textContent = ''; }
+
+  function titleCase(s) {
+    return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+  function formatAED(n) {
+    return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function findProduct(code) {
+    var clean = String(code || '').trim().toUpperCase();
+    if (!clean) return null;
+    return (window.PRODUCTS || []).filter(function (p) {
+      return String(p.id).toUpperCase() === clean;
+    })[0] || null;
+  }
+
+  function showProduct(p) {
+    document.getElementById('res-code').textContent = p.id;
+    document.getElementById('res-name').textContent = p.material || p.design || 'Saree';
+    document.getElementById('res-series').textContent = titleCase(p.series);
+    document.getElementById('res-price').textContent = 'AED ' + formatAED(p.price);
+
+    var badge = document.getElementById('res-badge');
+    badge.className = 'badge ' + (p.sold ? 'sold' : 'available');
+    badge.textContent = p.sold ? 'Sold' : 'Available';
+
+    var img = document.getElementById('res-img');
+    if (p.image) { img.src = p.image; img.style.display = 'block'; }
+    else { img.style.display = 'none'; }
+
+    var fields = [
+      ['Type', p.type], ['Design', p.design], ['Colour', p.sareeType],
+      ['Pattern', p.pattern], ['Shade', p.shade], ['Category', p.category]
+    ].filter(function (f) { return f[1]; });
+
+    document.getElementById('res-details').innerHTML = fields.map(function (f) {
+      return '<div class="row"><span class="label">' + f[0] + '</span><span class="val">' + f[1] + '</span></div>';
+    }).join('');
+
+    resultEl.style.display = 'block';
+    clearMsg();
+    addToHistory(p);
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function lookup(code) {
+    var p = findProduct(code);
+    if (!p) {
+      resultEl.style.display = 'none';
+      showMsg('error', 'No saree found with code "' + String(code).trim().toUpperCase() + '". Check the code and try again.');
+      return false;
+    }
+    showProduct(p);
+    return true;
+  }
+
+  // ---- History (localStorage, so it survives a page refresh) ----
+  function getHistory() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveHistory(arr) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+  function addToHistory(p) {
+    var hist = getHistory().filter(function (h) { return h.id !== p.id; });
+    hist.unshift({ id: p.id, name: p.material || p.design || 'Saree', price: p.price, image: p.image || '' });
+    if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
+    saveHistory(hist);
+    renderHistory();
+  }
+  function renderHistory() {
+    var hist = getHistory();
+    if (!hist.length) { historyCard.style.display = 'none'; return; }
+    historyCard.style.display = 'block';
+    historyList.innerHTML = hist.map(function (h) {
+      return '<div class="hist-item" data-id="' + h.id + '">' +
+        (h.image ? '<img src="' + h.image + '" alt="">' : '') +
+        '<div><div class="h-code">' + h.id + '</div><div class="h-name">' + h.name + '</div></div>' +
+        '<div class="h-price">AED ' + formatAED(h.price) + '</div>' +
+      '</div>';
+    }).join('');
+    historyList.querySelectorAll('.hist-item').forEach(function (el) {
+      el.addEventListener('click', function () { lookup(el.getAttribute('data-id')); });
+    });
+  }
+  document.getElementById('hist-clear').addEventListener('click', function () {
+    saveHistory([]);
+    renderHistory();
+  });
+
+  // ---- Manual entry ----
+  document.getElementById('manual-btn').addEventListener('click', function () {
+    lookup(manualInput.value);
+  });
+  manualInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); lookup(manualInput.value); }
+  });
+
+  // ---- Camera scanning ----
+  function stopCamera() {
+    scanning = false;
+    if (codeReader) { try { codeReader.reset(); } catch (e) {} }
+    videoEl.style.display = 'none';
+    placeholder.style.display = 'block';
+    videoWrap.classList.remove('scanning');
+    cameraBtn.textContent = 'Start camera';
+  }
+
+  cameraBtn.addEventListener('click', function () {
+    if (scanning) { stopCamera(); clearMsg(); return; }
+
+    if (typeof ZXing === 'undefined') {
+      showMsg('error', 'Scanner library did not load. Use the code box below instead.');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showMsg('error', 'This browser cannot use the camera. Use the code box below instead.');
+      return;
+    }
+
+    scanning = true;
+    cameraBtn.textContent = 'Stop camera';
+    videoEl.style.display = 'block';
+    placeholder.style.display = 'none';
+    videoWrap.classList.add('scanning');
+    showMsg('info', 'Hold the barcode steady and well-lit. If it will not read, type the code instead.');
+
+    codeReader = new ZXing.BrowserMultiFormatReader();
+    codeReader.decodeFromConstraints(
+      { video: { facingMode: 'environment' } },
+      videoEl,
+      function (result, err) {
+        if (result) {
+          var text = result.getText ? result.getText() : result.text;
+          if (text && lookup(text)) {
+            stopCamera();
+            if (navigator.vibrate) navigator.vibrate(60);
+          }
+        }
+        // NotFoundException fires constantly between frames — that's
+        // normal while searching, so it isn't surfaced to the user.
+      }
+    ).catch(function (e) {
+      scanning = false;
+      cameraBtn.textContent = 'Start camera';
+      videoEl.style.display = 'none';
+      placeholder.style.display = 'block';
+      videoWrap.classList.remove('scanning');
+      var name = e && e.name ? e.name : '';
+      if (name === 'NotAllowedError') {
+        showMsg('error', 'Camera permission was denied. Allow camera access in your browser settings, or type the code below.');
+      } else {
+        showMsg('error', 'Could not start the camera. Type the code below instead.');
+      }
+    });
+  });
+
+  renderHistory();
+})();
+</script>
+</body>
+</html>
