@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+(function () {
+  function getCookie(name) {
+    var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return m ? m[2] : null;
+  }
+  // Normalize away any .html extension before comparing — the site can
+  // serve pages at either /collections.html or /collections (no
+  // extension), and this needs to correctly recognize both forms.
+  var gatedPages = ['checkout', 'payment', 'order-success', 'account'];
+  var currentPage = (window.location.pathname.split('/').pop() || 'home').toLowerCase().replace(/\.html$/, '');
+  var isGated = gatedPages.indexOf(currentPage) !== -1;
+  var verified = !!getCookie('pavnika_verified');
+
+  // Cart/wishlist now show unconditionally, for every visitor — this
+  // just avoids the icons flashing in late, or the header shifting,
+  // while script.js is still loading and catching up.
+  document.documentElement.classList.add('show-cart-wishlist');
+  // On a gated page while unverified, hide the whole body until the
+  // real overlay (built once script.js loads) is ready to take over —
+  // this is what actually prevents the "page flashes, then gets
+  // covered by the overlay" effect, the same way the old full-page
+  // redirect never showed a flash, since it also ran this early.
+  if (isGated && !verified) {
+    var s = document.createElement('style');
+    s.id = 'gate-pending-style';
+    s.textContent = 'body{visibility:hidden !important;}';
+    document.head.appendChild(s);
+  }
+})();
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — Pavnika by Saranya</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="View your Pavnika by Saranya purchases, receipts and gift card balance.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://storage.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="site-header">
+  <div class="nav-row">
+    <a href="home.html" class="brand">
+      <img class="brand-lockup" src="assets/maroonlogo.png" alt="Pavnika by Saranya">
+    </a>
+    <div class="nav-controls">
+      <button type="button" class="nav-icon-btn" id="nav-search-btn" aria-label="Search sarees">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="nav-account">
+        <button type="button" class="nav-icon-btn" id="nav-account-btn" aria-label="Account">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+        </button>
+        <div class="account-dropdown" id="account-dropdown">
+          <p class="account-label">Signed in as</p>
+          <p class="account-email" id="account-email">&nbsp;</p>
+          <div class="account-divider"></div>
+          <button type="button" class="account-logout" id="account-logout">Logout</button>
+          <button type="button" class="account-unlock" id="account-unlock" style="display:none;">Get Full Access</button>
+        </div>
+      </div>
+      <button type="button" class="nav-icon-btn nav-wishlist-btn" id="nav-wishlist-btn" aria-label="Wishlist">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0 5.4 5.4 0 0 0 0 7.65l8.42 8.42 8.42-8.42a5.4 5.4 0 0 0 0-7.65z"/></svg>
+        <span class="nav-wishlist-badge" id="nav-wishlist-badge" style="display:none;">0</span>
+      </button>
+      <button type="button" class="nav-icon-btn nav-cart-btn" id="nav-cart-btn" aria-label="Cart">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="nav-cart-badge" id="nav-cart-badge" style="display:none;">0</span>
+      </button>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">&#9776;</button>
+    </div>
+    <nav class="main-nav">
+      <a href="home.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="collections.html" class="active">Collections</a>
+      <a href="contact.html">Contact</a>
+      <a href="contact.html" class="nav-cta">Book Appointment</a>
+    </nav>
+  </div>
+</header>
+<main class="account-wrap">
+
+  <div id="account-loading" class="acct-loading">Loading your account…</div>
+
+  <div id="account-content" style="display:none;">
+
+    <section class="acct-ident">
+      <p class="acct-ident-label">Signed in as</p>
+      <p class="acct-ident-email" id="acct-email"></p>
+    </section>
+
+    <section class="acct-card acct-gift" id="acct-gift-card" style="display:none;">
+      <p class="acct-gift-label">Gift card balance</p>
+      <p class="acct-gift-amount" id="acct-gift-balance">AED 0.00</p>
+      <div class="acct-gift-history" id="acct-gift-history"></div>
+    </section>
+
+    <section class="acct-card acct-orders">
+      <div class="acct-tabs">
+        <button type="button" class="acct-tab active" data-channel="online">Online (<span id="acct-count-online">0</span>)</button>
+        <button type="button" class="acct-tab" data-channel="shop">In store (<span id="acct-count-shop">0</span>)</button>
+      </div>
+      <div id="acct-list-online"></div>
+      <div id="acct-list-shop" style="display:none;"></div>
+    </section>
+
+    <section class="acct-card acct-total">
+      <div>
+        <p class="acct-total-label">Total spent with us</p>
+        <p class="acct-total-sub" id="acct-total-sub"></p>
+      </div>
+      <p class="acct-total-amount" id="acct-total-amount">AED 0.00</p>
+    </section>
+
+  </div>
+
+  <!-- Receipt view, shown in place of the account content -->
+  <div id="receipt-view" style="display:none;">
+    <button type="button" class="acct-back" id="receipt-back">&larr; Back to my orders</button>
+
+    <div class="receipt-paper" id="receipt-paper">
+      <div class="rc-head">
+        <p class="rc-shop">Pavnika by Saranya</p>
+        <p class="rc-sub">Dubai, UAE &middot; +971 52 66 30307</p>
+        <p class="rc-sub">Receipt</p>
+      </div>
+
+      <div class="rc-meta" id="rc-meta"></div>
+      <div class="rc-items" id="rc-items"></div>
+      <div class="rc-totals" id="rc-totals"></div>
+      <div class="rc-payment" id="rc-payment"></div>
+
+      <p class="rc-footer">Thank you for shopping with us</p>
+    </div>
+
+    <div class="acct-receipt-actions">
+      <button type="button" class="btn btn-primary" id="receipt-download">Download PDF</button>
+      <button type="button" class="btn btn-outline" id="receipt-email">Email it to me</button>
+    </div>
+    <p class="acct-msg" id="receipt-msg"></p>
+  </div>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">
+          <img class="footer-lockup" src="assets/footerlogoV2.jpg" alt="Pavnika by Saranya">
+        </div>
+        <p class="brand-tagline footer-tagline">Elegance that Defines You</p>
+        <p>Authentic Kancheepuram silk sarees, curated for Dubai and the UAE. Sourced directly from weaving families in Tamil Nadu.</p>
+      </div>
+      <div>
+        <h4>Explore</h4>
+        <ul>
+          <li><a href="home.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="collections.html">Collections</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Help</h4>
+        <ul>
+          <li><a href="faq.html">FAQ</a></li>
+          <li><a href="payment.html">Payment Methods</a></li>
+          <li><a href="shipping.html">Shipping &amp; Delivery</a></li>
+          <li><a href="returns.html">Returns &amp; Exchange</a></li>
+          <li><a href="terms.html">Terms &amp; Conditions</a></li>
+          <li><a href="privacy.html">Privacy &amp; Cookies</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Reach Us</h4>
+        <p>Dubai based online boutique<br>By appointment</p>
+        <div class="footer-social">
+          <a href="https://wa.me/971526630307" target="_blank" rel="noopener" aria-label="Chat with Pavnika by Saranya on WhatsApp">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21h.01c5.46 0 9.9-4.45 9.9-9.91 0-2.65-1.03-5.14-2.9-7.01A9.82 9.82 0 0 0 12.04 2zm5.8 14.16c-.24.68-1.4 1.3-1.93 1.36-.5.06-1.03.28-3.46-.72-2.91-1.2-4.78-4.14-4.93-4.33-.14-.2-1.18-1.57-1.18-3 0-1.42.75-2.12 1.01-2.41.27-.29.58-.36.78-.36.19 0 .39 0 .55.01.18.01.42-.07.66.5.24.58.83 1.99.9 2.14.07.14.12.31.02.5-.1.19-.15.31-.3.48-.14.17-.3.37-.43.5-.14.14-.3.29-.13.58.17.29.75 1.24 1.62 2.01 1.11.99 2.05 1.29 2.34 1.43.29.14.46.12.63-.07.17-.19.72-.84.92-1.13.19-.29.38-.24.64-.14.26.1 1.66.78 1.94.92.29.15.48.22.55.34.07.13.07.72-.17 1.4z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/pavnika_by_saranya?igsh=MWpseTBjODVucHA1cQ==" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on Instagram">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          </a>
+          <a href="https://youtube.com/@pavnikabysaranya?si=lLIEQ6G0UG-YI7QO" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on YouTube">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"/></svg>
+          </a>
+          <a href="https://m.facebook.com/profile.php?id=61579090843467" target="_blank" rel="noopener" aria-label="Pavnika by Saranya on Facebook">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer-bottom">
+      <span>&copy; 2026 Pavnika by Saranya.</span>
+      <span>Webpage Crafted with care by P3R.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="products-data.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

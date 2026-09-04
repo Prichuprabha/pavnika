@@ -84,6 +84,15 @@ document.addEventListener('DOMContentLoaded', function () {
   } else {
     initOrderSuccessPage();
   }
+  if (document.getElementById('account-content')) {
+    // The account page is entirely personal data, so it always needs a
+    // verified session — same gate the checkout uses.
+    if (!gateGetCookie('pavnika_verified')) {
+      showGateOverlay('generic', function () { if (window.initAccountPage) window.initAccountPage(); });
+    } else if (window.initAccountPage) {
+      window.initAccountPage();
+    }
+  }
   var paymentContent = document.getElementById('payment-content');
   if (paymentContent) {
     if (gateGetCookie('pavnika_verified')) {
@@ -4320,3 +4329,312 @@ function initPinnedHero() {
   // header height changed after first paint.
   window.addEventListener('load', layout);
 }
+/* ---------- Customer account page ---------- */
+(function () {
+  if (!document.getElementById('account-content')) return;
+
+  var accountData = null;
+  var currentReceipt = null; // { source, id }
+
+  function money(n) {
+    return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function shortDate(d) {
+    return new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function longDate(d) {
+    return new Date(d).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  }
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function parseItems(raw) {
+    if (Array.isArray(raw)) return raw;
+    try { return JSON.parse(raw || '[]'); } catch (e) { return []; }
+  }
+  function itemImage(items) {
+    for (var i = 0; i < items.length; i++) {
+      var p = (window.PRODUCTS || []).filter(function (x) { return x.id === items[i].id; })[0];
+      if (p && p.image) return p.image;
+      if (items[i].image) return items[i].image;
+    }
+    return '';
+  }
+  function itemsSummary(items) {
+    if (!items.length) return 'No items on record';
+    var first = items[0];
+    var name = first.name || first.material || first.id || 'Item';
+    var extra = items.length > 1 ? ' + ' + (items.length - 1) + ' more' : '';
+    var qty = Number(first.qty) || 1;
+    return name + (qty > 1 ? ' \u00d7 ' + qty : '') + extra;
+  }
+
+  function statusBadge(status) {
+    var s = String(status || '').toLowerCase();
+    var label = s.replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+    var cls = 'warn';
+    if (['delivered', 'delivered_direct_pay', 'paid'].indexOf(s) !== -1) cls = 'good';
+    if (['cancelled', 'refunded', 'refunded_giftcard', 'payment_error'].indexOf(s) !== -1) cls = 'bad';
+    if (s === 'delivered_direct_pay') label = 'Delivered';
+    if (s === 'refunded_giftcard') label = 'Refunded to gift card';
+    if (s === 'cod_pending') { label = 'Cash on delivery'; cls = 'warn'; }
+    return '<span class="acct-badge ' + cls + '">' + esc(label) + '</span>';
+  }
+
+  // ---- Rendering ----
+  function renderGiftCard(data) {
+    var card = document.getElementById('acct-gift-card');
+    // Only show the block at all if there's a balance or any history —
+    // an empty "AED 0.00" panel is noise for most customers.
+    if (!data.giftCardBalance && !(data.giftHistory || []).length) {
+      card.style.display = 'none';
+      return;
+    }
+    card.style.display = 'block';
+    document.getElementById('acct-gift-balance').textContent = 'AED ' + money(data.giftCardBalance);
+
+    var histEl = document.getElementById('acct-gift-history');
+    var hist = data.giftHistory || [];
+    if (!hist.length) { histEl.innerHTML = ''; return; }
+
+    histEl.innerHTML = '<p class="gh-title">History</p>' + hist.map(function (h) {
+      var sign = h.type === 'credit' ? '+ ' : '\u2212 ';
+      return '<div class="gh-row">' +
+        '<div><p class="gh-label">' + esc(h.label) + (h.reference ? ' \u00b7 ' + esc(h.reference) : '') + '</p>' +
+        '<p class="gh-date">' + shortDate(h.date) + '</p></div>' +
+        '<span class="gh-amt ' + h.type + '">' + sign + money(h.amount) + '</span>' +
+      '</div>';
+    }).join('');
+  }
+
+  function renderOrders(data) {
+    document.getElementById('acct-count-online').textContent = data.onlineOrders.length;
+    document.getElementById('acct-count-shop').textContent = data.shopSales.length;
+
+    var onlineEl = document.getElementById('acct-list-online');
+    onlineEl.innerHTML = data.onlineOrders.length
+      ? data.onlineOrders.map(function (o) {
+          var items = parseItems(o.items);
+          var img = itemImage(items);
+          return '<div class="acct-order" data-source="online" data-id="' + esc(o.id) + '">' +
+            (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '') +
+            '<div class="ao-mid">' +
+              '<p class="ao-ref">' + esc(o.order_number || o.id) + '</p>' +
+              '<p class="ao-items">' + esc(itemsSummary(items)) + '</p>' +
+              '<p class="ao-date">' + shortDate(o.created_at) + '</p>' +
+            '</div>' +
+            '<div class="ao-right"><p class="ao-total">AED ' + money(o.total) + '</p>' + statusBadge(o.status) + '</div>' +
+          '</div>';
+        }).join('')
+      : '<p class="acct-empty">No online orders yet.</p>';
+
+    var shopEl = document.getElementById('acct-list-shop');
+    shopEl.innerHTML = data.shopSales.length
+      ? data.shopSales.map(function (s) {
+          var items = parseItems(s.items);
+          var img = itemImage(items);
+          return '<div class="acct-order" data-source="shop" data-id="' + esc(s.id) + '">' +
+            (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '') +
+            '<div class="ao-mid">' +
+              '<p class="ao-ref">' + esc(s.bill_number) + '</p>' +
+              '<p class="ao-items">' + esc(itemsSummary(items)) + '</p>' +
+              '<p class="ao-date">' + shortDate(s.created_at) + '</p>' +
+            '</div>' +
+            '<div class="ao-right"><p class="ao-total">AED ' + money(s.total) + '</p>' +
+              '<span class="acct-badge good">In store</span></div>' +
+          '</div>';
+        }).join('')
+      : '<p class="acct-empty">No in-store purchases on record for this email.</p>';
+
+    document.querySelectorAll('.acct-order').forEach(function (row) {
+      row.addEventListener('click', function () {
+        showReceipt(row.getAttribute('data-source'), row.getAttribute('data-id'));
+      });
+    });
+  }
+
+  function render(data) {
+    accountData = data;
+    document.getElementById('acct-email').textContent = data.email;
+    renderGiftCard(data);
+    renderOrders(data);
+    document.getElementById('acct-total-amount').textContent = 'AED ' + money(data.totalSpent);
+    document.getElementById('acct-total-sub').textContent =
+      data.orderCount + (data.orderCount === 1 ? ' order' : ' orders');
+
+    document.getElementById('account-loading').style.display = 'none';
+    document.getElementById('account-content').style.display = 'block';
+  }
+
+  // ---- Receipt ----
+  function showReceipt(source, id) {
+    var rec = null;
+    if (source === 'online') {
+      var o = accountData.onlineOrders.filter(function (x) { return String(x.id) === String(id); })[0];
+      if (!o) return;
+      rec = {
+        reference: o.order_number || o.id,
+        date: o.created_at,
+        items: parseItems(o.items),
+        subtotal: o.subtotal != null ? o.subtotal : o.total,
+        discount: o.discount_amount || 0,
+        promo: o.promo_code || '',
+        total: o.total,
+        payments: o.payment_method ? [{ label: o.payment_method, amount: o.total }] : []
+      };
+    } else {
+      var s = accountData.shopSales.filter(function (x) { return String(x.id) === String(id); })[0];
+      if (!s) return;
+      var breakdown = s.payment_breakdown;
+      if (typeof breakdown === 'string') {
+        try { breakdown = JSON.parse(breakdown); } catch (e) { breakdown = null; }
+      }
+      var payments = Array.isArray(breakdown) && breakdown.length
+        ? breakdown.map(function (p) {
+            return {
+              label: String(p.method || '').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); }),
+              amount: p.amount
+            };
+          })
+        : (s.payment_method ? [{ label: s.payment_method, amount: s.total }] : []);
+      rec = {
+        reference: s.bill_number,
+        date: s.created_at,
+        items: parseItems(s.items),
+        subtotal: s.subtotal != null ? s.subtotal : s.total,
+        discount: s.discount_amount || 0,
+        promo: '',
+        total: s.total,
+        payments: payments
+      };
+    }
+
+    currentReceipt = { source: source, id: id };
+
+    document.getElementById('rc-meta').innerHTML =
+      '<div class="rc-row"><span>Reference</span><span>' + esc(rec.reference) + '</span></div>' +
+      '<div class="rc-row"><span>Date</span><span>' + longDate(rec.date) + '</span></div>' +
+      '<div class="rc-row"><span>Customer</span><span>' + esc(accountData.name || accountData.email) + '</span></div>';
+
+    document.getElementById('rc-items').innerHTML = rec.items.length
+      ? rec.items.map(function (it) {
+          var qty = Number(it.qty) || 1;
+          var price = Number(it.price) || 0;
+          return '<div class="rc-item">' +
+            '<div><span>' + esc((it.id ? it.id + ' \u2014 ' : '') + (it.name || it.material || 'Item')) + '</span>' +
+            (qty > 1 ? '<p class="rc-item-sub">' + qty + ' \u00d7 ' + money(price) + '</p>' : '') + '</div>' +
+            '<span>' + money(price * qty) + '</span>' +
+          '</div>';
+        }).join('')
+      : '<p class="rc-item-sub">No items on record.</p>';
+
+    var totalsHtml = '<div class="rc-row"><span>Subtotal</span><span>' + money(rec.subtotal) + '</span></div>';
+    if (Number(rec.discount) > 0) {
+      totalsHtml += '<div class="rc-row"><span>Discount' + (rec.promo ? ' (' + esc(rec.promo) + ')' : '') +
+        '</span><span>\u2212 ' + money(rec.discount) + '</span></div>';
+    }
+    totalsHtml += '<div class="rc-grand"><span>Total</span><span>AED ' + money(rec.total) + '</span></div>';
+    document.getElementById('rc-totals').innerHTML = totalsHtml;
+
+    var payEl = document.getElementById('rc-payment');
+    payEl.innerHTML = rec.payments.length
+      ? '<p class="rc-pay-label">Paid by</p>' + rec.payments.map(function (p) {
+          return '<div class="rc-row"><span>' + esc(p.label) + '</span><span>' + money(p.amount) + '</span></div>';
+        }).join('')
+      : '';
+    payEl.style.display = rec.payments.length ? 'block' : 'none';
+
+    document.getElementById('receipt-msg').textContent = '';
+    document.getElementById('receipt-msg').className = 'acct-msg';
+    document.getElementById('account-content').style.display = 'none';
+    document.getElementById('receipt-view').style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.getElementById('receipt-back').addEventListener('click', function () {
+    document.getElementById('receipt-view').style.display = 'none';
+    document.getElementById('account-content').style.display = 'block';
+    currentReceipt = null;
+  });
+
+  // Download uses the browser's own print-to-PDF rather than bundling a
+  // PDF library — it's instant, adds no page weight, and on phones the
+  // share sheet offers "Save as PDF" or sending it on directly.
+  document.getElementById('receipt-download').addEventListener('click', function () {
+    window.print();
+  });
+
+  document.getElementById('receipt-email').addEventListener('click', function () {
+    if (!currentReceipt) return;
+    var btn = document.getElementById('receipt-email');
+    var msg = document.getElementById('receipt-msg');
+    btn.disabled = true;
+    btn.textContent = 'Sending…';
+    msg.className = 'acct-msg';
+    msg.textContent = '';
+
+    fetch('/.netlify/functions/account-email-receipt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        visitorToken: gateGetCookie('pavnika_verified'),
+        source: currentReceipt.source,
+        id: currentReceipt.id
+      })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (res) {
+        btn.disabled = false;
+        btn.textContent = 'Email it to me';
+        if (!res.ok) {
+          msg.className = 'acct-msg error';
+          msg.textContent = res.data.error || 'Could not send the receipt.';
+          return;
+        }
+        msg.className = 'acct-msg success';
+        msg.textContent = 'Sent to ' + accountData.email;
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Email it to me';
+        msg.className = 'acct-msg error';
+        msg.textContent = 'Network error — please try again.';
+      });
+  });
+
+  // ---- Tabs ----
+  document.querySelectorAll('.acct-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      var channel = tab.getAttribute('data-channel');
+      document.querySelectorAll('.acct-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      document.getElementById('acct-list-online').style.display = channel === 'online' ? 'block' : 'none';
+      document.getElementById('acct-list-shop').style.display = channel === 'shop' ? 'block' : 'none';
+    });
+  });
+
+  // ---- Load ----
+  window.initAccountPage = function () {
+    var token = gateGetCookie('pavnika_verified');
+    fetch('/.netlify/functions/account-get-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorToken: token })
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+      .then(function (res) {
+        if (!res.ok) {
+          document.getElementById('account-loading').textContent =
+            res.data.error || 'Could not load your account.';
+          return;
+        }
+        render(res.data);
+      })
+      .catch(function () {
+        document.getElementById('account-loading').textContent =
+          'Could not reach the server. Please check your connection and try again.';
+      });
+  };
+})();

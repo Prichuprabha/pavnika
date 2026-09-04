@@ -4666,3 +4666,124 @@ a.home-video-tile-link {
     display: none;
   }
 }
+/* ---------- Customer account page ---------- */
+.account-wrap {
+  max-width: 620px;
+  margin: 0 auto;
+  padding: 28px var(--contact-inset) 60px;
+}
+.acct-loading { text-align: center; padding: 60px 20px; color: var(--ink); opacity: 0.6; font-size: 0.9rem; }
+.acct-msg { font-size: 0.85rem; margin-top: 10px; text-align: center; min-height: 1.2em; }
+.acct-msg.error { color: #B8142A; }
+.acct-msg.success { color: #3B6D11; }
+
+.acct-ident { margin-bottom: 14px; }
+.acct-ident-label { font-size: 0.78rem; color: var(--ink); opacity: 0.6; margin: 0; }
+.acct-ident-email { font-size: 1rem; font-weight: 500; color: var(--green-deep); margin: 2px 0 0; word-break: break-all; }
+
+.acct-card {
+  background: #fff;
+  border: 1px solid var(--stone);
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+/* Gift card block */
+.acct-gift { background: var(--ivory-deep); border-color: var(--gold); padding: 18px; }
+.acct-gift-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.65; margin: 0; }
+.acct-gift-amount { font-family: var(--body); font-size: 1.9rem; font-weight: 600; color: var(--green-deep); margin: 4px 0 0; letter-spacing: -0.5px; }
+.acct-gift-history { margin-top: 14px; border-top: 1px solid var(--stone); padding-top: 12px; }
+.acct-gift-history .gh-title { font-size: 0.75rem; color: var(--ink); opacity: 0.6; margin: 0 0 6px; }
+.gh-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 7px 0; border-top: 1px solid rgba(222,208,199,0.6); }
+.gh-row:first-of-type { border-top: none; }
+.gh-row .gh-label { font-size: 0.85rem; margin: 0; }
+.gh-row .gh-date { font-size: 0.75rem; opacity: 0.55; margin: 0; }
+.gh-row .gh-amt { font-size: 0.9rem; font-weight: 600; white-space: nowrap; }
+.gh-amt.credit { color: #3B6D11; }
+.gh-amt.debit { color: #B8142A; }
+
+/* Orders */
+.acct-tabs { display: flex; border-bottom: 1px solid var(--stone); }
+.acct-tab {
+  flex: 1; padding: 13px 8px; background: none; border: none; cursor: pointer;
+  font-family: var(--body); font-size: 0.85rem; color: var(--ink); opacity: 0.6;
+  border-bottom: 2px solid transparent;
+}
+.acct-tab.active { opacity: 1; font-weight: 600; color: var(--green-deep); border-bottom-color: var(--gold); }
+
+.acct-order {
+  display: flex; gap: 12px; padding: 14px 16px;
+  border-bottom: 1px solid var(--stone); cursor: pointer; align-items: flex-start;
+}
+.acct-order:last-child { border-bottom: none; }
+.acct-order:hover { background: var(--ivory); }
+.acct-order img { width: 54px; height: 70px; object-fit: cover; border-radius: 5px; flex-shrink: 0; background: var(--ivory-deep); }
+.acct-order .ao-mid { flex: 1; min-width: 0; }
+.acct-order .ao-ref { font-family: monospace; font-size: 0.72rem; opacity: 0.6; margin: 0; }
+.acct-order .ao-items { font-size: 0.88rem; font-weight: 500; margin: 2px 0; color: var(--green-deep); }
+.acct-order .ao-date { font-size: 0.75rem; opacity: 0.55; margin: 0; }
+.acct-order .ao-right { text-align: right; flex-shrink: 0; }
+.acct-order .ao-total { font-size: 0.95rem; font-weight: 600; margin: 0; color: var(--green-deep); }
+.acct-badge { display: inline-block; font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 5px; margin-top: 4px; }
+.acct-badge.good { background: #EAF3DE; color: #3B6D11; }
+.acct-badge.warn { background: #FAEEDA; color: #854F0B; }
+.acct-badge.bad { background: #FBEAEA; color: #B8142A; }
+.acct-empty { padding: 26px 16px; text-align: center; font-size: 0.85rem; opacity: 0.6; }
+
+/* Total */
+.acct-total { display: flex; justify-content: space-between; align-items: center; padding: 16px 18px; }
+.acct-total-label { font-size: 0.82rem; opacity: 0.7; margin: 0; }
+.acct-total-sub { font-size: 0.75rem; opacity: 0.5; margin: 2px 0 0; }
+.acct-total-amount { font-family: var(--body); font-size: 1.3rem; font-weight: 600; color: var(--green-deep); margin: 0; }
+
+/* Receipt */
+.acct-back {
+  background: none; border: none; cursor: pointer; font-family: var(--body);
+  font-size: 0.85rem; color: var(--ink); opacity: 0.7; padding: 0 0 14px;
+}
+.receipt-paper {
+  background: #fff; border: 1px solid var(--stone); border-radius: 12px;
+  padding: 22px 20px; color: var(--ink);
+}
+.rc-head { text-align: center; padding-bottom: 14px; border-bottom: 1px dashed var(--stone); }
+.rc-shop { font-family: var(--display); font-size: 1.25rem; font-weight: 600; color: var(--green-deep); margin: 0; }
+.rc-sub { font-size: 0.78rem; opacity: 0.65; margin: 3px 0 0; }
+.rc-meta { padding: 12px 0; border-bottom: 1px dashed var(--stone); font-size: 0.84rem; }
+.rc-meta .rc-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+.rc-meta .rc-row span:first-child { opacity: 0.6; }
+.rc-items { padding: 12px 0; border-bottom: 1px dashed var(--stone); }
+.rc-item { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 0.85rem; }
+.rc-item .rc-item-sub { font-size: 0.76rem; opacity: 0.55; margin: 0; }
+.rc-totals { padding: 12px 0; font-size: 0.85rem; }
+.rc-totals .rc-row { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+.rc-totals .rc-row span:first-child { opacity: 0.6; }
+.rc-totals .rc-grand {
+  display: flex; justify-content: space-between; gap: 12px;
+  margin-top: 8px; padding-top: 9px; border-top: 1px solid var(--stone);
+  font-size: 1.05rem; font-weight: 600; color: var(--green-deep);
+}
+.rc-payment { border-top: 1px dashed var(--stone); padding-top: 12px; font-size: 0.84rem; }
+.rc-payment .rc-pay-label { font-size: 0.74rem; opacity: 0.6; margin: 0 0 5px; }
+.rc-payment .rc-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+.rc-footer { text-align: center; font-size: 0.78rem; opacity: 0.6; margin: 16px 0 0; }
+.acct-receipt-actions { display: flex; gap: 10px; margin-top: 14px; }
+.acct-receipt-actions .btn { width: auto; flex: 1; margin-top: 0; }
+
+@media (max-width: 520px) {
+  .acct-order img { width: 46px; height: 60px; }
+  .acct-receipt-actions { flex-direction: column; }
+}
+
+/* Print only the receipt itself — "Download PDF" uses the browser's
+   own print-to-PDF, so everything else on the page must be hidden or
+   the saved file would include the site header, nav and footer. */
+@media print {
+  body * { visibility: hidden !important; }
+  #receipt-paper, #receipt-paper * { visibility: visible !important; }
+  #receipt-paper {
+    position: absolute; left: 0; top: 0; width: 100%;
+    border: none !important; border-radius: 0 !important; padding: 0 !important;
+  }
+  .acct-back, .acct-receipt-actions, .acct-msg { display: none !important; }
+  @page { margin: 14mm; }
+}
