@@ -2543,6 +2543,11 @@ function refreshAccountMenuDisplay() {
   // depending on which state the visitor is in.
   if (logoutBtn) logoutBtn.style.display = decodedEmail ? '' : 'none';
   if (unlockBtn) unlockBtn.style.display = decodedEmail ? 'none' : '';
+  // My Account is personal order history, so it's only meaningful once
+  // verified — showing it to a guest would just lead to a sign-in
+  // prompt with nothing behind it.
+  var accountLink = document.getElementById('account-my-account');
+  if (accountLink) accountLink.style.display = decodedEmail ? 'block' : 'none';
 }
 
 function initAccountMenu() {
