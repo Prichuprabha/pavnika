@@ -79,7 +79,17 @@ exports.handler = async function (event) {
   try {
     const sha = await getFileSha();
     const cleanBanners = body.banners.map(function (b) {
-      return { image: b.image, mobileImage: String(b.mobileImage || '').trim(), link: b.link || 'collections.html', hideText: !!b.hideText };
+      return {
+        image: b.image,
+        mobileImage: String(b.mobileImage || '').trim(),
+        link: b.link || 'collections.html',
+        hideText: !!b.hideText,
+        // Per-slot copy. Kept as empty strings rather than omitted, so
+        // the shape of every slot stays consistent; the front end
+        // treats blank as "use the default wording".
+        eyebrow: String(b.eyebrow || '').trim(),
+        heading: String(b.heading || '').trim()
+      };
     });
     const newContent = JSON.stringify(cleanBanners, null, 2) + '\n';
     const result = await putFile(newContent, sha, 'Admin: update banners');
