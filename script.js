@@ -2455,6 +2455,14 @@ function initHeroBannerCarousel() {
       clickLink.className = 'hero-banner-click';
       clickLink.setAttribute('aria-label', 'Open this banner\'s collection');
       var pinnedEl = document.getElementById('hero-banner-pinned');
+      // The wording in home.html is the fallback for any slot that
+      // hasn't had custom copy entered in admin, so existing banners
+      // keep working unchanged.
+      var eyebrowEl = document.querySelector('.hero-copy .eyebrow');
+      var headingEl = document.querySelector('.hero-copy h1');
+      var defaultEyebrow = eyebrowEl ? eyebrowEl.textContent : '';
+      var defaultHeading = headingEl ? headingEl.textContent : '';
+
       function syncClickHref(i) {
         clickLink.href = (banners[i] && banners[i].link) || DEFAULT_LINK;
         // Per-banner "hide text" mode (admin checkbox): fade the text +
@@ -2462,6 +2470,10 @@ function initHeroBannerCarousel() {
         // click layer cover the WHOLE banner instead of the right half.
         var hide = !!(banners[i] && banners[i].hideText);
         if (pinnedEl) pinnedEl.classList.toggle('text-hidden', hide);
+
+        var slot = banners[i] || {};
+        if (eyebrowEl) eyebrowEl.textContent = slot.eyebrow || defaultEyebrow;
+        if (headingEl) headingEl.textContent = slot.heading || defaultHeading;
       }
       syncClickHref(0);
       wrap.appendChild(clickLink);

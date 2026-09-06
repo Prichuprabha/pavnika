@@ -1155,8 +1155,16 @@ function initBannersEditor(token) {
   var SLOT_COUNT = 5;
   var banners = [];
 
+  // Values go into value="..." attributes, so a stray quote or angle
+  // bracket in the copy would otherwise break the field markup.
+  function escAttr(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   function emptySlot() {
-    return { image: '', mobileImage: '', link: 'collections.html', hideText: false };
+    return { image: '', mobileImage: '', link: 'collections.html', hideText: false, eyebrow: '', heading: '' };
   }
 
   function normalizeSlots(list) {
@@ -1165,7 +1173,12 @@ function initBannersEditor(token) {
         image: (b && b.image) || '',
         mobileImage: (b && b.mobileImage) || '',
         link: (b && b.link) || 'collections.html',
-        hideText: !!(b && b.hideText)
+        hideText: !!(b && b.hideText),
+        // Per-slot banner copy. Blank means "use the default wording
+        // already in home.html", so existing banners are unaffected
+        // until someone actually types something here.
+        eyebrow: (b && b.eyebrow) || '',
+        heading: (b && b.heading) || ''
       };
     });
     while (out.length < SLOT_COUNT) out.push(emptySlot());
@@ -1197,6 +1210,8 @@ function initBannersEditor(token) {
         '<div class="admin-field"><label>Image file (desktop, wide)</label><input type="text" value="' + b.image + '" data-role="image" placeholder="Empty — this slot is skipped"></div>' +
         '<div class="admin-field"><label>Mobile image (portrait, optional)</label><input type="text" value="' + (b.mobileImage || '') + '" data-role="mobileImage" placeholder="Empty = reuse desktop image"></div>' +
         '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
+        '<div class="admin-field"><label>Small text above heading</label><input type="text" value="' + escAttr(b.eyebrow) + '" data-role="eyebrow" placeholder="Kancheepuram \u2014 to Dubai"></div>' +
+        '<div class="admin-field"><label>Heading</label><input type="text" value="' + escAttr(b.heading) + '" data-role="heading" placeholder="Silk woven by hand, carried across the sea for you."></div>' +
         '<div class="admin-field admin-field-check"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;">' +
           '<input type="checkbox" data-role="hideText"' + (b.hideText ? ' checked' : '') + ' style="width:auto;"> Hide text &amp; buttons (full image clickable)</label></div>' +
         '<div class="admin-banner-controls">' +
@@ -1215,7 +1230,9 @@ function initBannersEditor(token) {
         image: row.querySelector('[data-role="image"]').value.trim(),
         mobileImage: row.querySelector('[data-role="mobileImage"]').value.trim(),
         link: row.querySelector('[data-role="link"]').value.trim() || 'collections.html',
-        hideText: row.querySelector('[data-role="hideText"]').checked
+        hideText: row.querySelector('[data-role="hideText"]').checked,
+        eyebrow: row.querySelector('[data-role="eyebrow"]').value.trim(),
+        heading: row.querySelector('[data-role="heading"]').value.trim()
       };
     });
   }
