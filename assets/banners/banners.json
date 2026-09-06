@@ -3,30 +3,40 @@
     "image": "banner-v2-1.jpg",
     "mobileImage": "banner-v2-1-mobile.jpg",
     "link": "collections.html",
-    "hideText": false
+    "hideText": false,
+    "eyebrow": "AUTHENTIC KANCHIPURAM SILK",
+    "heading": "Hand-selected in Kancheepuram. Curated for Dubai."
   },
   {
     "image": "banner-v2-2.jpg",
     "mobileImage": "banner-v2-2-mobile.jpg",
     "link": "collections.html",
-    "hideText": false
+    "hideText": false,
+    "eyebrow": "",
+    "heading": ""
   },
   {
     "image": "banner-v2-4.jpg",
     "mobileImage": "banner-v2-4-mobile.jpg",
     "link": "collections.html",
-    "hideText": false
+    "hideText": false,
+    "eyebrow": "",
+    "heading": ""
   },
   {
     "image": "banner-v2-3.jpg",
     "mobileImage": "banner-v2-3-mobile.jpg",
     "link": "collections.html",
-    "hideText": false
+    "hideText": false,
+    "eyebrow": "",
+    "heading": ""
   },
   {
     "image": "",
     "mobileImage": "",
     "link": "collections.html",
-    "hideText": false
+    "hideText": false,
+    "eyebrow": "",
+    "heading": ""
   }
 ]
