@@ -2458,12 +2458,19 @@ function initHeroBannerCarousel() {
       // The wording in home.html is the fallback for any slot that
       // hasn't had custom copy entered in admin, so existing banners
       // keep working unchanged.
+      var copyEl = document.querySelector('.hero-copy');
       var eyebrowEl = document.querySelector('.hero-copy .eyebrow');
       var headingEl = document.querySelector('.hero-copy h1');
       var defaultEyebrow = eyebrowEl ? eyebrowEl.textContent : '';
       var defaultHeading = headingEl ? headingEl.textContent : '';
+      var copySwapTimer = null;
 
-      function syncClickHref(i) {
+      function applyCopy(slot) {
+        if (eyebrowEl) eyebrowEl.textContent = slot.eyebrow || defaultEyebrow;
+        if (headingEl) headingEl.textContent = slot.heading || defaultHeading;
+      }
+
+      function syncClickHref(i, animate) {
         clickLink.href = (banners[i] && banners[i].link) || DEFAULT_LINK;
         // Per-banner "hide text" mode (admin checkbox): fade the text +
         // buttons out with the same 1s ease the slides use, and let the
@@ -2472,8 +2479,26 @@ function initHeroBannerCarousel() {
         if (pinnedEl) pinnedEl.classList.toggle('text-hidden', hide);
 
         var slot = banners[i] || {};
-        if (eyebrowEl) eyebrowEl.textContent = slot.eyebrow || defaultEyebrow;
-        if (headingEl) headingEl.textContent = slot.heading || defaultHeading;
+        var nextEyebrow = slot.eyebrow || defaultEyebrow;
+        var nextHeading = slot.heading || defaultHeading;
+        var unchanged = eyebrowEl && headingEl &&
+          eyebrowEl.textContent === nextEyebrow &&
+          headingEl.textContent === nextHeading;
+
+        // No animation on first paint, and none when consecutive slides
+        // share the same wording — fading identical text out and back in
+        // would just look like a flicker.
+        if (!animate || !copyEl || unchanged) {
+          applyCopy(slot);
+          return;
+        }
+
+        clearTimeout(copySwapTimer); // a fast click-through shouldn't leave it stuck faded out
+        copyEl.classList.add('copy-swapping');
+        copySwapTimer = setTimeout(function () {
+          applyCopy(slot);
+          copyEl.classList.remove('copy-swapping');
+        }, 450); // matches the CSS fade duration, so the swap lands while invisible
       }
       syncClickHref(0);
       wrap.appendChild(clickLink);
@@ -2493,7 +2518,7 @@ function initHeroBannerCarousel() {
           idx = (newIdx + slides.length) % slides.length;
           slides[idx].classList.add('is-active');
           dots[idx].classList.add('is-active');
-          syncClickHref(idx);
+          syncClickHref(idx, true);
         }
 
         function scheduleNext() {
