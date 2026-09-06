@@ -490,7 +490,7 @@ function initSareeEditor(token) {
 
   /* ----- CSV download ----- */
   var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sold',
-    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material', 'Shade'];
+    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material', 'Shade', 'Occasions'];
 
   function csvEscape(val) {
     val = val === undefined || val === null ? '' : String(val);
@@ -508,7 +508,8 @@ function initSareeEditor(token) {
         p.id, p.series, p.category, p.type, p.sareeType, p.pattern, p.design, p.price,
         p.sold ? 'TRUE' : 'FALSE',
         images[0] || '', images[1] || '', images[2] || '', images[3] || '', images[4] || '', images[5] || '', images[6] || '',
-        '', p.material || '', p.shade || 'Others'
+        '', p.material || '', p.shade || 'Others',
+        (p.occasions || []).join('|')
       ].map(csvEscape);
       rows.push(row.join(','));
     });
@@ -563,6 +564,36 @@ function initSareeEditor(token) {
     });
   }
 
+  // The five occasions a saree can be tagged with. A saree may have
+  // several, stored in one pipe-separated CSV column so adding a sixth
+  // occasion later needs no new column.
+  var VALID_OCCASIONS = ['Bridal', 'Wedding Guest', 'Festive', 'Reception', 'Everyday'];
+
+  // Deliberately forgiving: accepts | ; or , as separators and ignores
+  // case and stray spaces, so "bridal ; festive" works as well as
+  // "Bridal|Festive". Anything it genuinely can't match is returned in
+  // `unknown` rather than dropped, so a typo surfaces in the upload
+  // preview instead of silently removing a saree from a category.
+  function parseOccasions(raw) {
+    var valid = [];
+    var unknown = [];
+    String(raw || '')
+      .split(/[|;,]/)
+      .map(function (s) { return s.trim(); })
+      .filter(function (s) { return s.length; })
+      .forEach(function (token) {
+        var match = VALID_OCCASIONS.filter(function (o) {
+          return o.toLowerCase() === token.toLowerCase();
+        })[0];
+        if (match) {
+          if (valid.indexOf(match) === -1) valid.push(match);
+        } else {
+          unknown.push(token);
+        }
+      });
+    return { valid: valid, unknown: unknown };
+  }
+
   function csvRowToProduct(row) {
     var images = [];
     for (var i = 1; i <= 7; i++) {
@@ -570,6 +601,7 @@ function initSareeEditor(token) {
       if (url) images.push(url);
     }
     var soldRaw = (row['Sold'] || '').toLowerCase();
+    var occ = parseOccasions(row['Occasions']);
     return {
       id: (row['Unique ID'] || '').trim().toUpperCase(),
       series: row['Series'] || '',
@@ -582,6 +614,8 @@ function initSareeEditor(token) {
       shade: row['Shade'] || 'Others',
       price: parseInt(row['Cost AED'], 10) || 0,
       sold: soldRaw === 'true' || soldRaw === '1' || soldRaw === 'yes',
+      occasions: occ.valid,
+      _unknownOccasions: occ.unknown,
       images: images,
       image: images[0] || ''
     };
@@ -618,6 +652,11 @@ function initSareeEditor(token) {
         for (var i = 0; i < fields.length; i++) {
           if ((a[fields[i]] || '') !== (b[fields[i]] || '')) return false;
         }
+        // Occasions must be compared too, or tagging an existing saree
+        // would look like "no change" and be skipped on upload.
+        var occA = (a.occasions || []).slice().sort().join('|');
+        var occB = (b.occasions || []).slice().sort().join('|');
+        if (occA !== occB) return false;
         var imgA = a.images || [];
         var imgB = b.images || [];
         if (imgA.length !== imgB.length) return false;
@@ -627,9 +666,15 @@ function initSareeEditor(token) {
         return true;
       }
 
+      var occasionProblems = [];
+
       rows.forEach(function (row) {
         var product = csvRowToProduct(row);
         if (!product.id) { invalidRows.push(row); return; }
+        if (product._unknownOccasions && product._unknownOccasions.length) {
+          occasionProblems.push(product.id + ': "' + product._unknownOccasions.join('", "') + '"');
+        }
+        delete product._unknownOccasions;
         var existing = existingById[product.id];
         if (existing) {
           if (!productsEqual(existing, product)) {
@@ -640,6 +685,20 @@ function initSareeEditor(token) {
           newRows.push(product);
         }
       });
+
+      if (occasionProblems.length) {
+        // Surfaced loudly rather than silently ignored — an unrecognised
+        // occasion means that saree simply won't appear in the category,
+        // which is very hard to notice later.
+        var shown = occasionProblems.slice(0, 8).join('<br>');
+        var more = occasionProblems.length > 8
+          ? '<br>…and ' + (occasionProblems.length - 8) + ' more'
+          : '';
+        showStatus('error',
+          '<strong>' + occasionProblems.length + ' row(s) have unrecognised occasions.</strong> ' +
+          'These tags will be ignored. Valid values are: ' + VALID_OCCASIONS.join(', ') + '.<br>' +
+          shown + more);
+      }
 
       if (invalidRows.length) {
         showStatus('error', invalidRows.length + ' row(s) are missing a Unique ID and were skipped. Please fix and re-upload if needed.');
