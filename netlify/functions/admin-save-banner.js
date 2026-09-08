@@ -79,6 +79,11 @@ exports.handler = async function (event) {
   try {
     const sha = await getFileSha();
     const cleanBanners = body.banners.map(function (b) {
+      // Clamp the duration: a zero or absurd value would either spin the
+      // carousel uncontrollably or park it on one slide forever. Blank
+      // stays blank so the front end can apply its own default.
+      var secs = Number(b.seconds);
+      var cleanSeconds = (secs > 0) ? Math.min(Math.max(Math.round(secs), 1), 60) : '';
       return {
         image: b.image,
         mobileImage: String(b.mobileImage || '').trim(),
@@ -88,7 +93,9 @@ exports.handler = async function (event) {
         // the shape of every slot stays consistent; the front end
         // treats blank as "use the default wording".
         eyebrow: String(b.eyebrow || '').trim(),
-        heading: String(b.heading || '').trim()
+        heading: String(b.heading || '').trim(),
+        description: String(b.description || '').trim(),
+        seconds: cleanSeconds
       };
     });
     const newContent = JSON.stringify(cleanBanners, null, 2) + '\n';
