@@ -95,11 +95,11 @@ document.addEventListener('DOMContentLoaded', function () {
   }
   var paymentContent = document.getElementById('payment-content');
   if (paymentContent) {
-    if (gateGetCookie('pavnika_verified')) {
-      paymentContent.style.display = 'block';
-    } else {
-      showGateOverlay('generic', function () { paymentContent.style.display = 'block'; });
-    }
+    // Public: this page only describes which payment methods are
+    // accepted. It carries no personal or order data, and it's what a
+    // hesitant shopper checks before buying — gating it put a barrier
+    // in front of reassurance and kept it out of search results.
+    paymentContent.style.display = 'block';
   }
 
   initLoginPage();
