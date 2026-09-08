@@ -1157,6 +1157,13 @@ function initBannersEditor(token) {
 
   // Values go into value="..." attributes, so a stray quote or angle
   // bracket in the copy would otherwise break the field markup.
+  // Textarea content sits between tags, not in an attribute, so it
+  // needs the angle brackets escaped but not the quotes.
+  function escHtml(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
   function escAttr(s) {
     return String(s == null ? '' : s)
       .replace(/&/g, '&amp;').replace(/"/g, '&quot;')
@@ -1164,7 +1171,7 @@ function initBannersEditor(token) {
   }
 
   function emptySlot() {
-    return { image: '', mobileImage: '', link: 'collections.html', hideText: false, eyebrow: '', heading: '' };
+    return { image: '', mobileImage: '', link: 'collections.html', hideText: false, eyebrow: '', heading: '', description: '', seconds: 5 };
   }
 
   function normalizeSlots(list) {
@@ -1178,7 +1185,13 @@ function initBannersEditor(token) {
         // already in home.html", so existing banners are unaffected
         // until someone actually types something here.
         eyebrow: (b && b.eyebrow) || '',
-        heading: (b && b.heading) || ''
+        heading: (b && b.heading) || '',
+        // Third line of copy — already hidden on phones by the site's
+        // own CSS, so it's labelled desktop-only in the form.
+        description: (b && b.description) || '',
+        // How long this slot stays on screen. Falls back to the old
+        // fixed behaviour (3s for the first, 5s after) when unset.
+        seconds: Number(b && b.seconds) > 0 ? Number(b.seconds) : ''
       };
     });
     while (out.length < SLOT_COUNT) out.push(emptySlot());
@@ -1212,6 +1225,15 @@ function initBannersEditor(token) {
         '<div class="admin-field"><label>Link</label><input type="text" value="' + (b.link || '') + '" data-role="link"></div>' +
         '<div class="admin-field"><label>Small text above heading</label><input type="text" value="' + escAttr(b.eyebrow) + '" data-role="eyebrow" placeholder="Kancheepuram \u2014 to Dubai"></div>' +
         '<div class="admin-field"><label>Heading</label><input type="text" value="' + escAttr(b.heading) + '" data-role="heading" placeholder="Silk woven by hand, carried across the sea for you."></div>' +
+        '<div class="admin-field"><label>Description <span style="background:#FAEEDA; color:#854F0B; font-size:0.6rem; font-weight:700; padding:2px 7px; border-radius:4px; letter-spacing:0.04em;">DESKTOP ONLY</span></label>' +
+          '<textarea rows="3" data-role="description" placeholder="Pavnika by Saranya is a Dubai-based boutique bringing genuine Kanjivaram silk sarees to the UAE\u2026">' + escHtml(b.description) + '</textarea>' +
+          '<p style="font-size:0.68rem; opacity:0.55; margin:4px 0 0;">Hidden on phones \u2014 the banner is too short to fit it there.</p></div>' +
+        '<div class="admin-field"><label>Show for</label>' +
+          '<div style="display:flex; align-items:center; gap:8px;">' +
+            '<input type="number" min="1" max="60" step="1" value="' + (b.seconds || '') + '" data-role="seconds" placeholder="5" style="width:80px;">' +
+            '<span style="font-size:0.8rem; opacity:0.7;">seconds</span>' +
+          '</div>' +
+          '<p style="font-size:0.68rem; opacity:0.55; margin:4px 0 0;">Leave blank for the default (3s on the first slot, 5s after).</p></div>' +
         '<div class="admin-field admin-field-check"><label style="display:flex; align-items:center; gap:8px; cursor:pointer;">' +
           '<input type="checkbox" data-role="hideText"' + (b.hideText ? ' checked' : '') + ' style="width:auto;"> Hide text &amp; buttons (full image clickable)</label></div>' +
         '<div class="admin-banner-controls">' +
@@ -1232,7 +1254,9 @@ function initBannersEditor(token) {
         link: row.querySelector('[data-role="link"]').value.trim() || 'collections.html',
         hideText: row.querySelector('[data-role="hideText"]').checked,
         eyebrow: row.querySelector('[data-role="eyebrow"]').value.trim(),
-        heading: row.querySelector('[data-role="heading"]').value.trim()
+        heading: row.querySelector('[data-role="heading"]').value.trim(),
+        description: row.querySelector('[data-role="description"]').value.trim(),
+        seconds: Number(row.querySelector('[data-role="seconds"]').value) || ''
       };
     });
   }

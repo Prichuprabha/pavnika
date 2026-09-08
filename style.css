@@ -843,9 +843,11 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
    from the same element would make them fight. Each half is 450ms so
    the out-and-in cycle lands close to the 1s image crossfade. */
 .hero-copy .eyebrow,
-.hero-copy h1 { transition: opacity 0.45s ease; }
+.hero-copy h1,
+.hero-copy .lede { transition: opacity 0.45s ease; }
 .hero-copy.copy-swapping .eyebrow,
-.hero-copy.copy-swapping h1 { opacity: 0; }
+.hero-copy.copy-swapping h1,
+.hero-copy.copy-swapping .lede { opacity: 0; }
 
 /* Desktop-only clickable area over the right side of the banner (the
    image area beyond the text column) linking to the active slide's

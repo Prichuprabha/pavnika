@@ -456,6 +456,33 @@ function initTouchRevealTiles() {
   wire('.category-tile');
 }
 
+/* ---------- Daily shuffle ---------- */
+// Seeded pseudo-random generator (mulberry32). Deterministic: the same
+// seed always yields the same sequence, which is what lets every
+// visitor share one order per day without storing anything.
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    var t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function shuffleForToday(list) {
+  var d = new Date();
+  // Local date, not UTC — the shuffle should turn over at midnight for
+  // the shop's own day, not at an arbitrary hour.
+  var seed = d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  var rand = mulberry32(seed);
+  var a = list.slice();          // never reorder the caller's array
+  for (var i = a.length - 1; i > 0; i--) {
+    var j = Math.floor(rand() * (i + 1));
+    var t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+
 function initCollectionsPage() {
   var grid = document.getElementById('product-grid');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
@@ -622,7 +649,14 @@ function initCollectionsPage() {
     updatePageSize();
     var filtered = getFiltered();
 
-    if (state.sort === 'price-asc') {
+    if (state.sort === 'default') {
+      // Default order is shuffled once per day, seeded from the date, so
+      // returning visitors see a fresh arrangement without the catalogue
+      // reordering mid-browse. Everyone gets the same order on the same
+      // day, and pagination stays stable because the seed doesn't change
+      // until midnight.
+      filtered = shuffleForToday(filtered);
+    } else if (state.sort === 'price-asc') {
       filtered = filtered.slice().sort(function (a, b) { return (Number(a.price) || 0) - (Number(b.price) || 0); });
     } else if (state.sort === 'price-desc') {
       filtered = filtered.slice().sort(function (a, b) { return (Number(b.price) || 0) - (Number(a.price) || 0); });
@@ -2461,13 +2495,16 @@ function initHeroBannerCarousel() {
       var copyEl = document.querySelector('.hero-copy');
       var eyebrowEl = document.querySelector('.hero-copy .eyebrow');
       var headingEl = document.querySelector('.hero-copy h1');
+      var ledeEl = document.querySelector('.hero-copy .lede');
       var defaultEyebrow = eyebrowEl ? eyebrowEl.textContent : '';
       var defaultHeading = headingEl ? headingEl.textContent : '';
+      var defaultLede = ledeEl ? ledeEl.textContent : '';
       var copySwapTimer = null;
 
       function applyCopy(slot) {
         if (eyebrowEl) eyebrowEl.textContent = slot.eyebrow || defaultEyebrow;
         if (headingEl) headingEl.textContent = slot.heading || defaultHeading;
+        if (ledeEl) ledeEl.textContent = slot.description || defaultLede;
       }
 
       function syncClickHref(i, animate) {
@@ -2481,9 +2518,11 @@ function initHeroBannerCarousel() {
         var slot = banners[i] || {};
         var nextEyebrow = slot.eyebrow || defaultEyebrow;
         var nextHeading = slot.heading || defaultHeading;
+        var nextLede = slot.description || defaultLede;
         var unchanged = eyebrowEl && headingEl &&
           eyebrowEl.textContent === nextEyebrow &&
-          headingEl.textContent === nextHeading;
+          headingEl.textContent === nextHeading &&
+          (!ledeEl || ledeEl.textContent === nextLede);
 
         // No animation on first paint, and none when consecutive slides
         // share the same wording — fading identical text out and back in
@@ -2509,8 +2548,13 @@ function initHeroBannerCarousel() {
         var idx = 0;
         var timer = null;
 
-        // First banner shows for 3s, every banner after that for 5s.
-        function durationFor(i) { return i === 0 ? 3000 : 5000; }
+        // Each slot can set its own duration in admin. Blank falls back
+        // to the original behaviour: 3s on the first banner, 5s after.
+        function durationFor(i) {
+          var secs = Number(banners[i] && banners[i].seconds);
+          if (secs > 0) return Math.min(Math.max(secs, 1), 60) * 1000;
+          return i === 0 ? 3000 : 5000;
+        }
 
         function showSlide(newIdx) {
           slides[idx].classList.remove('is-active');
