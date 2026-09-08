@@ -167,12 +167,37 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
       </tr>`;
   }).join('');
 
+  // Payment status shown on the invoice. This has to stay honest: a
+  // Cash-on-Delivery order genuinely hasn't been paid yet, so stamping
+  // it PAID would misstate the transaction. Anything settled up front
+  // (bank transfer, cash, card, manually-confirmed Nomod) is paid.
+  var unpaidStatuses = ['cod_pending'];
+  var unpaidMethods = ['cod', 'cash on delivery'];
+  var methodKey = String(paymentMethodLabel || '').trim().toLowerCase();
+  var isPaid = unpaidStatuses.indexOf(order.status) === -1 &&
+               unpaidMethods.indexOf(methodKey) === -1;
+
+  var paymentStatusHtml = isPaid
+    ? `<div style="background:#EAF3DE; border-radius:6px; padding:11px 16px; margin:0 0 14px;">
+         <p style="margin:0; font-size:13px; font-weight:700; color:#3B6D11; letter-spacing:0.04em;">
+           PAID${paymentMethodLabel ? ' &middot; ' + paymentMethodLabel : ''} &middot; ${formatOrderDate(order.created_at)}
+         </p>
+         <p style="margin:2px 0 0; font-size:11px; color:#3B6D11;" dir="rtl">مدفوعة</p>
+       </div>`
+    : `<div style="background:#FBEAEA; border-radius:6px; padding:11px 16px; margin:0 0 14px;">
+         <p style="margin:0; font-size:13px; font-weight:700; color:#B8142A; letter-spacing:0.04em;">
+           PAYMENT DUE ON DELIVERY
+         </p>
+         <p style="margin:2px 0 0; font-size:11px; color:#B8142A;" dir="rtl">الدفع عند الاستلام</p>
+       </div>`;
+
   var html = `
     <div style="font-family:sans-serif; max-width:560px; margin:0 auto; background:#FCF5ED;">
       <div style="background:#3C1223; padding:28px 24px; text-align:center; border-radius:6px 6px 0 0;">
         <img src="https://pavnika.ae/assets/email-logo.png" alt="Pavnika by Saranya" width="94" height="90" style="display:block; margin:0 auto 12px;">
         <p style="font-family:Georgia,serif; font-size:20px; color:#FCF5ED; margin:0 0 4px;">Thank you for your purchase!</p>
         <p style="font-family:Georgia,serif; font-size:15px; color:#FCF5ED; margin:0 0 8px;" dir="rtl">شكراً لشرائك!</p>
+        <p style="font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#B68A69; margin:0 0 8px;">Invoice</p>
         <p style="font-size:11.5px; color:#F6DFD5; margin:0;">Our team will be in touch shortly to arrange shipment.</p>
         <p style="font-size:11px; color:#F6DFD5; margin:2px 0 0;" dir="rtl">سيتواصل معك فريقنا قريباً لترتيب الشحن.</p>
       </div>
@@ -180,7 +205,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
 
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
         <tr>
-          <td style="font-size:13px; color:#8a6f63;">Order No. / رقم الطلب<br><strong style="color:#3B2528;">${order.order_number || order.nomod_checkout_id}</strong></td>
+          <td style="font-size:13px; color:#8a6f63;">Invoice No. / رقم الفاتورة<br><strong style="color:#3B2528;">${order.order_number || order.nomod_checkout_id}</strong></td>
           <td align="right" style="font-size:13px; color:#8a6f63;">Date / التاريخ<br><strong style="color:#3B2528;">${formatOrderDate(order.created_at)}</strong></td>
         </tr>
       </table>
@@ -234,6 +259,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
           </tr>` : ''}
         </table>
       </div>
+      ${paymentStatusHtml}
       ${paymentMethodLabel ? `
       <div style="border:1px solid #DED0C7; border-radius:6px; padding:10px 14px; margin:14px 0;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -248,7 +274,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
 
       <div style="border-top:1px solid #DED0C7; padding-top:14px; margin-top:6px;">
         <p style="font-size:11px; color:#a08b7f; line-height:1.7; margin:0 0 4px;">
-          This document serves as your purchase receipt. For our Returns &amp; Exchange Policy, visit
+          ${isPaid ? 'This invoice serves as your proof of purchase and payment.' : 'This invoice is payable on delivery.'} For our Returns &amp; Exchange Policy, visit
           <a href="https://pavnika.ae/returns.html" style="color:#B68A69;">pavnika.ae/returns.html</a>.
           For any concern about this order, contact support@pavnika.ae or WhatsApp +971 52 66 30307.
         </p>
@@ -275,7 +301,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
       reply_to: 'support@pavnika.ae',
       to: toRecipients,
       bcc: bccRecipients,
-      subject: `Order #${order.order_number || order.nomod_checkout_id} — AED ${formatAED(order.total)} — Payment confirmed`,
+      subject: `Invoice ${order.order_number || order.nomod_checkout_id} — AED ${formatAED(order.total)} — ${isPaid ? 'Payment confirmed' : 'Payment due on delivery'}`,
       html: html
     })
   });
