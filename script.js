@@ -4202,8 +4202,11 @@ function initDraggableMarquee(container, track, options) {
   container.addEventListener('mouseenter', function () { isHovering = true; });
   container.addEventListener('mouseleave', function () {
     isHovering = false;
-    isDragging = false;
-    track.style.cursor = 'grab';
+    // Finish the drag properly rather than just clearing the flag — a
+    // quick flick often carries the cursor off the marquee before the
+    // button is released, and dropping the drag here would throw away
+    // the momentum that gesture earned.
+    if (isDragging) dragEnd();
   });
 
   function dragStart(clientX) {
@@ -4228,6 +4231,12 @@ function initDraggableMarquee(container, track, options) {
     }
   }
   function dragEnd() {
+    // Both marquees attach their own window-level mouseup, so this runs
+    // on every release anywhere on the page — including releases that
+    // belong to the *other* carousel. Without this guard, finishing a
+    // drag on one marquee also pushed this one's auto-scroll pause
+    // forward, so they appeared to stop together.
+    if (!isDragging) return;
     isDragging = false;
     track.style.cursor = 'grab';
 
