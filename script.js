@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Dim mode here — the page the click came from (Home, Collections,
   // wherever "Proceed to Checkout" was clicked) is safe to show dimmed
   // behind the overlay, since Collections is public now and there's no
-  // pricing secret left to protect. Landing directly on one of these 3
+  // pricing secret left to protect. Landing directly on one of these
   // pages fresh (a bookmark, typed URL) still falls back to generic
   // mode — that's each page's own internal gating check, unaffected by
   // this listener.
@@ -40,18 +40,16 @@ document.addEventListener('DOMContentLoaded', function () {
     var link = e.target.closest('a[href]');
     if (!link) return;
     var href = link.getAttribute('href');
-    if (!href || !/^(https?:\/\/[^/]+)?\/?(checkout|payment|order-success)(\.html)?(\?|$)/i.test(href)) return;
+    if (!href || !/^(https?:\/\/[^/]+)?\/?(checkout|order-success)(\.html)?(\?|$)/i.test(href)) return;
     if (gateGetCookie('pavnika_verified')) return;
     e.preventDefault();
     showGateOverlay('dim', function () { window.location.href = href; });
   });
 
-  // Checkout, Payment, and Order-success are the only pages that stay
-  // gated now — this still matters for the overlay/back-button logic
+  // Checkout and Order-success are the only pages that stay gated now — this still matters for the overlay/back-button logic
   // below, even though it no longer controls cart/wishlist visibility.
   var isGatedPage = !!(
     document.getElementById('checkout-content') ||
-    document.getElementById('payment-content') ||
     document.getElementById('order-loading')
   );
   // Cart/wishlist now show for everyone, everywhere — guests add items
@@ -1908,7 +1906,6 @@ function wireGateOverlayEvents() {
     // enough — no reload needed.
     var onGatedPage = !!(
       document.getElementById('checkout-content') ||
-      document.getElementById('payment-content') ||
       document.getElementById('order-loading')
     );
     if (onGatedPage) window.location.href = 'home.html';
@@ -2123,7 +2120,6 @@ function showGateOverlay(mode, onSuccess, bodyText, dismissible) {
 
   var onGatedPage = !!(
     document.getElementById('checkout-content') ||
-    document.getElementById('payment-content') ||
     document.getElementById('order-loading')
   );
   var backBtn = document.getElementById('gate-overlay-back-btn');
