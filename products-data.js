@@ -1166,7 +1166,7 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pWlbikzb5iBPkvs1kuOX.jpg"
     ],
     "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg",
-    "salePrice": 315
+    "salePrice": null
   },
   {
     "id": "VW013",
