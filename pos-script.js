@@ -1303,6 +1303,106 @@ function filterCustomerList(query) {
     return c.name.toLowerCase().indexOf(q) !== -1 || c.phone.indexOf(q) !== -1;
   });
   renderCustomerList(filtered);
+  checkOnlineMatches(q);
+}
+
+// Separate from the instant local filter above — this one genuinely
+// needs the server, since online orders aren't cached client-side.
+// Debounced and gated on length so it doesn't fire on every keystroke
+// or on a 1-2 character query that would match almost everyone.
+var onlineMatchTimer = null;
+var onlineMatchSeq = 0;
+function checkOnlineMatches(query) {
+  clearTimeout(onlineMatchTimer);
+  var onlineEl = document.getElementById('pos-cust-online-matches');
+  if (!onlineEl) return;
+  if (!query || query.length < 3) { onlineEl.innerHTML = ''; onlineEl.style.display = 'none'; return; }
+
+  var seq = ++onlineMatchSeq; // guards against an old, slow response landing after a newer one
+  onlineMatchTimer = setTimeout(function () {
+    fetch('/.netlify/functions/pos-search-customers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ posToken: getPosToken(), query: query })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (seq !== onlineMatchSeq) return; // a newer search superseded this one
+        renderOnlineMatches(data.onlineMatches || []);
+      })
+      .catch(function (e) { console.error('online match check failed:', e); });
+  }, 400);
+}
+
+function renderOnlineMatches(matches) {
+  var onlineEl = document.getElementById('pos-cust-online-matches');
+  if (!matches.length) { onlineEl.innerHTML = ''; onlineEl.style.display = 'none'; return; }
+
+  onlineEl.style.display = 'block';
+  onlineEl.innerHTML =
+    '<p class="pos-online-match-label">Found from online orders — not yet a shop customer</p>' +
+    matches.map(function (m, i) {
+      var ordersHtml = m.orders.map(function (o) {
+        return '<div class="pos-online-order-row">' +
+          '<span>' + o.orderNumber + '</span>' +
+          '<span>' + new Date(o.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '</span>' +
+          '<span>AED ' + formatAED(o.total) + '</span>' +
+        '</div>';
+      }).join('');
+      return '<div class="pos-online-match-card" data-online-idx="' + i + '">' +
+        '<div class="pos-online-match-head">' +
+          '<span class="name">' + m.name + '</span>' +
+          '<span class="count">' + m.orderCount + ' order' + (m.orderCount > 1 ? 's' : '') + ' &middot; AED ' + formatAED(m.totalSpent) + ' total</span>' +
+        '</div>' +
+        '<div class="pos-online-order-list">' + ordersHtml + '</div>' +
+        '<button type="button" class="btn btn-outline pos-online-use-btn" data-online-idx="' + i + '">Use these details</button>' +
+      '</div>';
+    }).join('');
+
+  onlineEl.querySelectorAll('.pos-online-use-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      applyOnlineMatch(matches[Number(btn.getAttribute('data-online-idx'))]);
+    });
+  });
+}
+
+// Pre-fills the customer form from an online order. This is deliberately
+// NOT selectCustomer() — there's no existing pos_customers row yet, so
+// posState.selectedCustomer stays null and completing the sale creates
+// a brand-new customer record, same as typing these details in fresh.
+function applyOnlineMatch(match) {
+  posState.selectedCustomer = null;
+  document.querySelectorAll('.cust-list-item').forEach(function (el) { el.classList.remove('selected'); });
+
+  document.getElementById('pos-cust-name').value = match.name || '';
+  document.getElementById('pos-cust-code').value = '+' + (match.phoneCode || '971');
+  document.getElementById('pos-cust-phone').value = match.phoneNumber || '';
+  document.getElementById('pos-cust-email').value = match.email || '';
+  document.getElementById('pos-cust-address').value = match.address || '';
+  document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-v') === match.emirate);
+  });
+
+  // Highlight whatever the online order didn't have, so staff notice to
+  // ask the customer rather than proceeding with silent gaps.
+  var toCheck = [
+    ['pos-cust-email', match.email],
+    ['pos-cust-address', match.address],
+  ];
+  toCheck.forEach(function (pair) {
+    document.getElementById(pair[0]).classList.toggle('field-needs-review', !pair[1]);
+  });
+  var emirateChosen = document.querySelectorAll('#pos-cust-emirate .seg-btn.active').length > 0;
+  document.getElementById('pos-cust-emirate').classList.toggle('field-needs-review', !emirateChosen);
+
+  document.getElementById('pos-cust-online-matches').innerHTML = '';
+  document.getElementById('pos-cust-online-matches').style.display = 'none';
+  document.getElementById('pos-cust-search').value = match.name || '';
+
+  ['pos-cust-summary-purchases', 'pos-cust-summary-spent', 'pos-cust-summary-visit', 'pos-cust-summary-points', 'pos-cust-summary-giftcard'].forEach(function (id) {
+    document.getElementById(id).textContent = 'New to shop';
+  });
+  refreshStepLocks();
 }
 
 function loadCustomerSummary(customerId) {
@@ -1358,6 +1458,11 @@ function selectCustomer(customer) {
   document.querySelectorAll('#pos-cust-emirate .seg-btn').forEach(function (btn) {
     btn.classList.toggle('active', btn.getAttribute('data-v') === customer.emirate);
   });
+  ['pos-cust-email', 'pos-cust-address', 'pos-cust-emirate'].forEach(function (id) {
+    document.getElementById(id).classList.remove('field-needs-review');
+  });
+  var onlineEl = document.getElementById('pos-cust-online-matches');
+  if (onlineEl) { onlineEl.innerHTML = ''; onlineEl.style.display = 'none'; }
   loadCustomerSummary(customer.id);
   refreshStepLocks();
 }
@@ -1371,6 +1476,11 @@ function clearCustomerForm() {
   document.getElementById('pos-cust-email').value = '';
   document.getElementById('pos-cust-address').value = '';
   document.getElementById('pos-cust-error').textContent = '';
+  ['pos-cust-email', 'pos-cust-address', 'pos-cust-emirate'].forEach(function (id) {
+    document.getElementById(id).classList.remove('field-needs-review');
+  });
+  var onlineEl = document.getElementById('pos-cust-online-matches');
+  if (onlineEl) { onlineEl.innerHTML = ''; onlineEl.style.display = 'none'; }
   document.getElementById('pos-cust-summary-purchases').textContent = 'N/A';
   document.getElementById('pos-cust-summary-spent').textContent = 'N/A';
   document.getElementById('pos-cust-summary-visit').textContent = 'N/A';

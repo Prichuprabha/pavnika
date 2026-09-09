@@ -358,3 +358,35 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-settings-card svg { color: var(--green-deep); margin-bottom: 10px; }
 .pos-settings-card h3 { font-family: var(--display); font-size: 1.2rem; color: var(--green-deep); margin: 0 0 6px; text-transform: none; letter-spacing: normal; }
 .pos-settings-card p { font-size: 0.82rem; color: #8a7266; margin: 0; line-height: 1.5; }
+
+/* ---------- Online order matches (customer search) ---------- */
+#pos-cust-online-matches { margin-top: 10px; }
+.pos-online-match-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--gold); font-weight: 600; margin: 0 0 8px;
+}
+.pos-online-match-card {
+  background: var(--ivory-deep); border: 1px solid var(--gold);
+  border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+}
+.pos-online-match-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+.pos-online-match-head .name { font-weight: 600; font-size: 0.88rem; color: var(--green-deep); }
+.pos-online-match-head .count { font-size: 0.74rem; opacity: 0.65; white-space: nowrap; }
+.pos-online-order-list { margin-bottom: 8px; }
+.pos-online-order-row {
+  display: flex; justify-content: space-between; gap: 8px;
+  font-size: 0.74rem; opacity: 0.7; padding: 2px 0;
+}
+.pos-online-use-btn { width: 100%; margin-top: 0; padding: 7px; font-size: 0.78rem; }
+
+/* A field pre-filled from an online order but left empty there — staff
+   should ask the customer and fill it in before completing the sale.
+   Applied to both plain inputs/textareas and the emirate button group. */
+.field-needs-review {
+  border: 1.5px solid #C89A2E !important;
+  background: #FFF9EC !important;
+  box-shadow: 0 0 0 2px rgba(200,154,46,0.15);
+}
+#pos-cust-emirate.field-needs-review {
+  border-radius: 8px; padding: 4px; box-shadow: 0 0 0 2px rgba(200,154,46,0.15);
+}
