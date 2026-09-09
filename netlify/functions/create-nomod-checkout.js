@@ -10,6 +10,8 @@
 //   is the real source of truth for whether payment succeeded, not
 //   anything returned directly to the browser here.
 
+const { fetchProductsFromGitHub } = require('./_order-shared');
+
 const NOMOD_API_KEY = process.env.NOMOD_API_KEY;
 const NOMOD_BASE = 'https://api.nomod.com/v1';
 const SITE_URL = 'https://pavnika.ae';
@@ -86,8 +88,36 @@ exports.handler = async function (event) {
   var subtotalCents = 0;
   var totalDiscountCents = 0;
 
+  // The browser sends item IDs; the price actually charged is looked up
+  // here from the live catalogue, never trusted from the request body.
+  // Without this, a saree's sale price silently wasn't applied to what
+  // Nomod actually charged — and, more seriously, nothing stopped a
+  // tampered request (e.g. via browser dev tools) from checking out at
+  // any price at all. An item ID that no longer exists is rejected
+  // outright rather than falling back to a client-supplied price, since
+  // that fallback would just reopen the same gap this fix closes.
+  var catalogById = {};
+  try {
+    var catalog = await fetchProductsFromGitHub();
+    catalog.products.forEach(function (p) { catalogById[p.id] = p; });
+  } catch (e) {
+    console.error('create-nomod-checkout: could not load product catalogue:', e);
+    return { statusCode: 500, body: JSON.stringify({ error: 'Could not verify prices right now. Please try again.' }) };
+  }
+
+  var missingIds = items.filter(function (it) { return !catalogById[it.id]; }).map(function (it) { return it.id; });
+  if (missingIds.length) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Some items are no longer available: ' + missingIds.join(', ') }) };
+  }
+
+  function effectivePrice(p) {
+    var hasValidSale = p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+    return hasValidSale ? p.salePrice : p.price;
+  }
+
   const nomodItems = items.map(function (it) {
-    var priceCents = toCents(it.price);
+    var catalogItem = catalogById[it.id];
+    var priceCents = toCents(effectivePrice(catalogItem));
     var itemDiscountCents = Math.round(priceCents * discountPercent / 100);
 
     subtotalCents += priceCents;

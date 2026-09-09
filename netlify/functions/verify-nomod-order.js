@@ -99,6 +99,18 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
 
   // Rebuild item details from the catalogue so the receipt email and
   // admin panel show full descriptions, not just IDs.
+  //
+  // Uses the effective (sale, if valid) price, not the raw catalogue
+  // price — this order was actually charged at the sale price via
+  // create-nomod-checkout.js's own server-side lookup, so the stored
+  // record has to match what was genuinely paid. Storing the original
+  // price here would leave every receipt and admin view showing a
+  // line-item total that doesn't add up to what the customer paid.
+  function effectivePrice(p) {
+    var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+    return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
+  }
+
   var items = [];
   try {
     const products = (await fetchProductsFromGitHub()).products;
@@ -107,7 +119,7 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
       return {
         id: id,
         name: ((p.series || '') + ' ' + id).trim(),
-        price: p.price || 0,
+        price: effectivePrice(p),
         series: p.series,
         type: p.type,
         sareeType: p.sareeType,
