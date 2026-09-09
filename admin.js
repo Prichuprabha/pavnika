@@ -868,6 +868,10 @@ function initSareeEditor(token) {
       document.getElementById('admin-bulk-mode').querySelectorAll('button').forEach(function (b) {
         b.classList.toggle('active', b === btn);
       });
+      var valueInput = document.getElementById('admin-bulk-value');
+      valueInput.style.display = bulkMode === 'remove' ? 'none' : '';
+      var applyBtn = document.getElementById('admin-bulk-apply-btn');
+      applyBtn.textContent = bulkMode === 'remove' ? 'Remove offer' : 'Apply';
     });
   });
 
@@ -879,13 +883,20 @@ function initSareeEditor(token) {
 
   document.getElementById('admin-bulk-apply-btn').addEventListener('click', function () {
     var raw = Number(document.getElementById('admin-bulk-value').value);
-    if (!raw || raw <= 0) { showStatus('error', 'Enter a value greater than zero.'); return; }
+    if (bulkMode !== 'remove' && (!raw || raw <= 0)) {
+      showStatus('error', 'Enter a value greater than zero.');
+      return;
+    }
 
     var allProducts = (window.PRODUCTS || []).slice();
     var skipped = [];
 
     var updated = allProducts.map(function (p) {
       if (bulkSelectedIds.indexOf(p.id) === -1) return p;
+
+      if (bulkMode === 'remove') {
+        return Object.assign({}, p, { salePrice: null });
+      }
 
       var newSale;
       if (bulkMode === 'pct') {
@@ -923,7 +934,8 @@ function initSareeEditor(token) {
         bulkSelectedIds = [];
         renderTable();
         updateBulkBar();
-        var msg = 'Applied a new sale price to ' + appliedCount + ' saree' + (appliedCount === 1 ? '' : 's') + '.';
+        var verb = bulkMode === 'remove' ? 'Removed the offer from ' : 'Applied a new sale price to ';
+        var msg = verb + appliedCount + ' saree' + (appliedCount === 1 ? '' : 's') + '.';
         if (skipped.length) {
           msg += ' Skipped ' + skipped.length + ' (' + skipped.join(', ') + ') — the discount would have resulted in an invalid price.';
         }

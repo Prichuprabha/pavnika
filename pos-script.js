@@ -1016,6 +1016,15 @@ function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// The price a customer actually pays right now — a valid sale price if
+// one is set, otherwise the regular price. Scanning a saree at the till
+// should charge this, not the pre-discount price, and this same rule
+// is already used identically on the website and in the admin panel.
+function effectivePrice(p) {
+  var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+  return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
+}
+
 function itemDisplayName(item) {
   return (item.series ? item.series + ' \u2014 ' : '') + (item.type || item.material || '');
 }
@@ -1042,7 +1051,7 @@ function populateItemFields(match) {
   document.getElementById('pos-item-material').value = match.material || '\u2014';
   document.getElementById('pos-item-colour').value = match.shade || '\u2014';
   document.getElementById('pos-item-design').value = match.design || match.pattern || '\u2014';
-  document.getElementById('pos-item-price').value = formatAED(match.price);
+  document.getElementById('pos-item-price').value = formatAED(effectivePrice(match));
   document.getElementById('pos-item-stock').value = match.sold ? 'Out of Stock' : 'Available';
 
   var boxEl = document.getElementById('pos-preview-box');
@@ -1114,7 +1123,7 @@ function renderBrowseGrid(categoryFilter) {
   el.innerHTML = filtered.map(function (p) {
     var imgTag = p.image ? '<img src="' + p.image + '">' : '<div style="height:90px;background:var(--ivory-deep);"></div>';
     return '<div class="pos-browse-tile' + (p.sold ? ' pt-sold' : '') + '" data-browse-id="' + p.id + '">' + imgTag +
-      '<div class="pt-code">' + p.id + '</div><div class="pt-price">AED ' + formatAED(p.price) + (p.sold ? ' \u2014 Sold' : '') + '</div></div>';
+      '<div class="pt-code">' + p.id + '</div><div class="pt-price">AED ' + formatAED(effectivePrice(p)) + (p.sold ? ' \u2014 Sold' : '') + '</div></div>';
   }).join('');
   el.querySelectorAll('[data-browse-id]').forEach(function (tile) {
     tile.addEventListener('click', function () {
@@ -1172,7 +1181,7 @@ function showSuggestions(query) {
     var imgTag = m.image ? '<img src="' + m.image + '">' : '<div style="width:36px;height:46px;border-radius:5px;background:var(--ivory-deep);flex-shrink:0;"></div>';
     return '<div class="pos-suggest-item' + (m.sold ? ' si-sold' : '') + '" data-id="' + m.id + '">' + imgTag +
       '<div class="si-info"><div class="si-name">' + m.id + ' \u2014 ' + itemDisplayName(m) + '</div>' +
-      '<div class="si-sub">AED ' + formatAED(m.price) + (m.sold ? ' \u2014 Sold' : '') + '</div></div></div>';
+      '<div class="si-sub">AED ' + formatAED(effectivePrice(m)) + (m.sold ? ' \u2014 Sold' : '') + '</div></div></div>';
   }).join('');
   list.classList.add('open');
 
@@ -1201,7 +1210,7 @@ function addToCart() {
     existing.qty += posState.currentQty;
     existing.dupeWarning = true; // added as a separate action a second time — likely an accidental re-scan
   } else {
-    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: item.price, qty: posState.currentQty, image: item.image || '', dupeWarning: false, sold: !!item.sold });
+    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: effectivePrice(item), qty: posState.currentQty, image: item.image || '', dupeWarning: false, sold: !!item.sold });
   }
   renderCart();
   refreshStepLocks();

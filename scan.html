@@ -197,6 +197,15 @@
     return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  // Same rule used identically on the website, in the till, and in
+  // admin: a valid sale price if one is set, otherwise the regular
+  // price. Staff scanning a saree should see what it actually sells
+  // for right now, not its pre-discount price.
+  function effectivePrice(p) {
+    var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+    return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
+  }
+
   function findProduct(code) {
     var clean = String(code || '').trim().toUpperCase();
     if (!clean) return null;
@@ -209,7 +218,14 @@
     document.getElementById('res-code').textContent = p.id;
     document.getElementById('res-name').textContent = p.material || p.design || 'Saree';
     document.getElementById('res-series').textContent = titleCase(p.series);
-    document.getElementById('res-price').textContent = 'AED ' + formatAED(p.price);
+
+    var onSale = p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+    var priceEl = document.getElementById('res-price');
+    if (onSale) {
+      priceEl.innerHTML = '<span style="text-decoration:line-through; opacity:0.5; font-size:0.8em; margin-right:6px;">AED ' + formatAED(p.price) + '</span>AED ' + formatAED(p.salePrice);
+    } else {
+      priceEl.textContent = 'AED ' + formatAED(p.price);
+    }
 
     var badge = document.getElementById('res-badge');
     badge.className = 'badge ' + (p.sold ? 'sold' : 'available');
@@ -258,7 +274,7 @@
   }
   function addToHistory(p) {
     var hist = getHistory().filter(function (h) { return h.id !== p.id; });
-    hist.unshift({ id: p.id, name: p.material || p.design || 'Saree', price: p.price, image: p.image || '' });
+    hist.unshift({ id: p.id, name: p.material || p.design || 'Saree', price: effectivePrice(p), image: p.image || '' });
     if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
     saveHistory(hist);
     renderHistory();
