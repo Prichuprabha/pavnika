@@ -2432,6 +2432,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   color: var(--gold-light);
   margin: 16px 0 14px;
 }
+.lightbox-price-was {
+  font-size: 0.9rem;
+  color: var(--ivory);
+  opacity: 0.5;
+  text-decoration: line-through;
+  margin-right: 8px;
+}
 .lightbox-cart-actions {
   display: flex;
   gap: 8px;

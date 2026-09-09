@@ -1,5 +1,16 @@
 var ADMIN_TOKEN_KEY = 'pavnika_admin_token';
 
+// The price a customer actually pays for this saree right now — a
+// valid sale price if one is set, otherwise the regular price. Used
+// anywhere a saree's price is shown or auto-filled in admin, so a
+// discounted saree doesn't get quietly priced at its old amount in the
+// manual order picker or anywhere else.
+function effectivePrice(p) {
+  var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+  return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
+}
+
+
 // Used only to build the "View on GitHub" link on the Stats page.
 // Update these if your GitHub username or repo name ever changes.
 var GITHUB_OWNER = 'Prichuprabha';
@@ -3063,7 +3074,7 @@ function initManualOrderView(token) {
   function refreshSareeList() {
     var available = (window.PRODUCTS || []).filter(function (p) { return !p.sold; });
     sareeList.innerHTML = available.map(function (p) {
-      var label = (p.material || p.design) + ' — ' + p.id + ' — AED ' + Number(p.price || 0).toFixed(2);
+      var label = (p.material || p.design) + ' — ' + p.id + ' — AED ' + effectivePrice(p).toFixed(2);
       return '<option value="' + label.replace(/"/g, '&quot;') + '">';
     }).join('');
   }
@@ -3178,7 +3189,7 @@ function initManualOrderView(token) {
       pickedItems.push({
         id: product.id,
         name: product.material || product.design,
-        price: Number(product.price) || 0,
+        price: effectivePrice(product),
         qty: qty,
         series: product.series,
         type: product.type,

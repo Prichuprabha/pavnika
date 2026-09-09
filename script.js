@@ -331,6 +331,16 @@ function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// The single source of truth for "what does this saree actually cost
+// right now" — a valid sale price if one is set, otherwise the regular
+// price. Every place that shows or totals a price should go through
+// this rather than reading p.price directly, or a saree on offer would
+// display or charge its old price in that one spot.
+function effectivePrice(p) {
+  var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+  return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
+}
+
 function seriesTitleCase(s) {
   return String(s).toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
 }
@@ -571,7 +581,7 @@ function initCollectionsPage() {
       var okQuery = !q || SEARCH_FIELDS.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
       });
-      var price = Number(p.price) || 0;
+      var price = effectivePrice(p);
       var okMinPrice = state.priceMin === null || price >= state.priceMin;
       var okMaxPrice = state.priceMax === null || price <= state.priceMax;
       return okCat && okSeries && okShade && okSold && okQuery && okMinPrice && okMaxPrice;
@@ -664,9 +674,9 @@ function initCollectionsPage() {
       // until midnight.
       filtered = shuffleForToday(filtered);
     } else if (state.sort === 'price-asc') {
-      filtered = filtered.slice().sort(function (a, b) { return (Number(a.price) || 0) - (Number(b.price) || 0); });
+      filtered = filtered.slice().sort(function (a, b) { return effectivePrice(a) - effectivePrice(b); });
     } else if (state.sort === 'price-desc') {
-      filtered = filtered.slice().sort(function (a, b) { return (Number(b.price) || 0) - (Number(a.price) || 0); });
+      filtered = filtered.slice().sort(function (a, b) { return effectivePrice(b) - effectivePrice(a); });
     } else if (state.sort === 'newest') {
       // No "date added" field exists — "newest" is approximated as
       // reverse catalogue order, so whatever was appended last in
@@ -796,7 +806,7 @@ function initCollectionsPage() {
   var updatePriceUI = function () {};
 
   if (priceMinInput && priceMaxInput && window.PRODUCTS && window.PRODUCTS.length) {
-    var allPrices = window.PRODUCTS.map(function (p) { return Number(p.price) || 0; });
+    var allPrices = window.PRODUCTS.map(function (p) { return effectivePrice(p); });
     var dataMin = Math.floor(Math.min.apply(null, allPrices) / 50) * 50;
     var dataMax = Math.ceil(Math.max.apply(null, allPrices) / 50) * 50;
 
@@ -1259,6 +1269,7 @@ function buildLightbox() {
           '<div class="lightbox-tags" id="lightbox-tags"></div>' +
           '<p class="lightbox-description" id="lightbox-description"></p>' +
           '<div class="lightbox-price-row">' +
+            '<span class="lightbox-price-was" id="lightbox-price-was" style="display:none;"></span>' +
             '<p class="lightbox-price" id="lightbox-price"></p>' +
             '<span class="lightbox-heart-wrap">' +
               '<span class="lightbox-heart-tooltip" id="lightbox-heart-tooltip">Add to Wishlist</span>' +
@@ -1397,7 +1408,7 @@ function buildLightbox() {
   // anything already picked from the same series.
   var pickedIds = sameSeries.map(function (p) { return p.id; });
   var remaining = all.filter(function (p) { return pickedIds.indexOf(p.id) === -1; })
-    .sort(function (a, b) { return Math.abs(a.price - product.price) - Math.abs(b.price - product.price); });
+    .sort(function (a, b) { return Math.abs(effectivePrice(a) - effectivePrice(product)) - Math.abs(effectivePrice(b) - effectivePrice(product)); });
 
   return sameSeries.concat(remaining).slice(0, 6);
 }
@@ -1422,7 +1433,15 @@ window.openLightbox = function (product) {
     }).join('');
 
     document.getElementById('lightbox-description').textContent = buildDescription(product);
-    document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(product.price);
+    var lbOnSale = effectivePrice(product) < Number(product.price);
+    var lbWasEl = document.getElementById('lightbox-price-was');
+    document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(effectivePrice(product));
+    if (lbOnSale) {
+      lbWasEl.textContent = 'AED ' + formatAED(product.price);
+      lbWasEl.style.display = 'inline';
+    } else {
+      lbWasEl.style.display = 'none';
+    }
 
     var addCartBtn = document.getElementById('lightbox-add-cart');
     var buyNowBtn = document.getElementById('lightbox-buy-now');
@@ -1439,7 +1458,7 @@ window.openLightbox = function (product) {
             '<div class="related-saree-item" data-id="' + p.id + '">' +
               '<img src="' + p.image + '" alt="' + (p.material || p.design) + '" loading="lazy">' +
               '<p class="rs-name">' + (p.material || p.design) + '</p>' +
-              '<p class="rs-price">AED ' + formatAED(p.price) + '</p>' +
+              '<p class="rs-price">AED ' + formatAED(effectivePrice(p)) + '</p>' +
             '</div>'
           );
         }).join('');
@@ -3239,7 +3258,7 @@ function renderWishlistDrawer() {
         '</button>' +
         '<div class="wl-info">' +
           '<span class="wl-name">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
-          '<span class="wl-price">AED ' + formatAED(p.price) + '</span>' +
+          '<span class="wl-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
           addCartBtn +
         '</div>' +
       '</div>'
@@ -3371,7 +3390,7 @@ function renderCartDrawer() {
   }
 
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
-  var subtotal = products.reduce(function (sum, p) { return sum + (Number(p.price) || 0); }, 0);
+  var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
 
   itemsWrap.innerHTML = products.map(function (p) {
     return (
@@ -3382,7 +3401,7 @@ function renderCartDrawer() {
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
           '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
         '</div>' +
-        '<span class="item-price">AED ' + formatAED(p.price) + '</span>' +
+        '<span class="item-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
       '</div>'
     );
   }).join('') +
@@ -3475,7 +3494,7 @@ function initCartDrawer() {
     if (!ids.length) return;
     var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
     var lines = products.map(function (p) { return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design); });
-    var total = products.reduce(function (sum, p) { return sum + (Number(p.price) || 0); }, 0);
+    var total = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees from my cart:\n' + lines.join('\n');
     msg += '\n\nTotal: AED ' + formatAED(total);
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
@@ -3508,7 +3527,7 @@ function initCheckoutPage() {
   emptyEl.style.display = 'none';
   contentEl.style.display = 'block';
 
-  var subtotal = products.reduce(function (sum, p) { return sum + (Number(p.price) || 0); }, 0);
+  var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
 
   itemsEl.innerHTML = products.map(function (p) {
     return (
@@ -3521,7 +3540,7 @@ function initCheckoutPage() {
           '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
           '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
         '</div>' +
-        '<span class="item-price">AED ' + formatAED(p.price) + '</span>' +
+        '<span class="item-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
       '</div>'
     );
   }).join('');
@@ -3925,7 +3944,7 @@ function initCheckoutPage() {
           return {
             id: p.id,
             name: p.design + ' — ' + p.id,
-            price: p.price,
+            price: effectivePrice(p),
             series: p.series,
             type: p.type,
             sareeType: p.sareeType,
@@ -3978,7 +3997,7 @@ function initCheckoutPage() {
   // message above can still offer a working WhatsApp link inline.
   function buildOrderWhatsAppUrl() {
     var lines = products.map(function (p) {
-      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design) + ' — AED ' + formatAED(p.price);
+      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design) + ' — AED ' + formatAED(effectivePrice(p));
     });
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n');
     if (appliedCode) {
