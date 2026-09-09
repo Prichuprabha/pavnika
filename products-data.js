@@ -2217,7 +2217,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Semi Kanchipuram",
     "shade": "White / Off-white",
-    "price": 365,
+    "price": 325,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LX6V68P1rJ8hFIsHTYgZ.jpg",
