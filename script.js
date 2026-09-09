@@ -344,18 +344,27 @@ function whatsappLink(product) {
 function productCardHTML(p) {
   var soldClass = p.sold ? ' is-sold' : '';
   var soldRibbon = p.sold ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
+  var onSale = p.salePrice && p.salePrice < p.price && !p.sold;
+  var saleBadge = onSale ? '<span class="sale-badge">Sale</span>' : '';
+  var pricingHtml = onSale
+    ? '<span class="p-price-row">' +
+        '<span class="p-price-was">AED ' + formatAED(p.price) + '</span>' +
+        '<span class="p-price-now">AED ' + formatAED(p.salePrice) + '</span>' +
+      '</span>'
+    : '<span class="p-price">AED ' + formatAED(p.price) + '</span>';
   return (
     '<div class="product-card" data-category="' + p.category + '" data-series="' + p.series + '" data-id="' + p.id + '">' +
       '<div class="product-photo' + soldClass + '">' +
         '<span class="series-badge">' + seriesTitleCase(p.series) + '</span>' +
         '<span class="id-badge">' + p.id + '</span>' +
+        saleBadge +
         '<img src="' + p.image + '" alt="' + (p.material || p.design) + ' — ' + seriesTitleCase(p.series) + ' saree" loading="lazy" decoding="async">' +
         soldRibbon +
       '</div>' +
       '<div class="product-info">' +
         '<span class="p-design">' + (p.material || p.design) + '</span>' +
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
-        '<span class="p-price">AED ' + formatAED(p.price) + '</span>' +
+        pricingHtml +
         '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
       '</div>' +
     '</div>'

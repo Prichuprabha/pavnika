@@ -293,6 +293,35 @@ function initSareeEditor(token) {
     return code.toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
+  // A sale price only counts as a real offer if it's a positive number
+  // genuinely below the regular price — otherwise it's silently
+  // dropped, so a stray value can't accidentally show a "discount"
+  // that's zero, negative, or actually higher than the normal price.
+  function parseSalePriceInput() {
+    var regular = parseInt(document.getElementById('admin-f-price').value, 10) || 0;
+    var raw = document.getElementById('admin-f-sale-price').value;
+    if (raw === '') return null;
+    var sale = parseInt(raw, 10);
+    if (!sale || sale <= 0 || sale >= regular) return null;
+    return sale;
+  }
+
+  function updateSalePreview() {
+    var previewEl = document.getElementById('admin-sale-preview');
+    var regular = parseInt(document.getElementById('admin-f-price').value, 10) || 0;
+    var sale = parseSalePriceInput();
+    if (!sale) {
+      previewEl.style.display = 'none';
+      return;
+    }
+    var pct = Math.round((1 - sale / regular) * 100);
+    previewEl.style.display = 'block';
+    previewEl.innerHTML = 'Customers will see <strong>AED ' + regular + '</strong> struck through, ' +
+      '<strong>AED ' + sale + '</strong> highlighted — ' + pct + '% off';
+  }
+  document.getElementById('admin-f-price').addEventListener('input', updateSalePreview);
+  document.getElementById('admin-f-sale-price').addEventListener('input', updateSalePreview);
+
   Object.keys(SERIES_CODES).forEach(function (series) {
     var opt = document.createElement('option');
     opt.value = series;
@@ -325,19 +354,39 @@ function initSareeEditor(token) {
     paginationEl.innerHTML = buttons.join('');
   }
 
+  var bulkSelectedIds = [];
+
+  function priceHtml(p) {
+    if (p.salePrice) {
+      var pct = Math.round((1 - p.salePrice / p.price) * 100);
+      return '<div class="admin-price-row">' +
+        '<span class="admin-price-was">AED ' + Number(p.price).toFixed(2) + '</span>' +
+        '<span class="admin-price-now">AED ' + Number(p.salePrice).toFixed(2) + '</span>' +
+        '<span class="admin-price-pct">' + pct + '% off</span>' +
+      '</div>';
+    }
+    return '<div style="color:var(--gold); font-weight:700; margin-bottom:4px;">AED ' + Number(p.price || 0).toFixed(2) + '</div>';
+  }
+
   function renderTable() {
     var filtered = getFilteredProducts();
     var start = (currentPage - 1) * PAGE_SIZE;
     var pageItems = filtered.slice(start, start + PAGE_SIZE);
 
     rowsEl.innerHTML = pageItems.map(function (p) {
+      var checked = bulkSelectedIds.indexOf(p.id) !== -1;
+      // Sold-out sarees can't be bulk-discounted — there's no one left
+      // to sell them to at the new price, so the checkbox is omitted
+      // entirely rather than shown disabled.
+      var checkbox = p.sold ? '' : '<input type="checkbox" class="admin-bulk-check" data-id="' + p.id + '"' + (checked ? ' checked' : '') + '>';
       return (
-        '<div class="admin-saree-card' + (p.sold ? ' is-sold' : '') + '">' +
+        '<div class="admin-saree-card' + (p.sold ? ' is-sold' : '') + (checked ? ' bulk-selected' : '') + '">' +
+          checkbox +
           '<img src="' + (p.image || '') + '" alt="' + p.id + '">' +
           '<div class="admin-saree-card-info">' +
             '<div class="admin-saree-card-id">' + p.id + '</div>' +
             '<div class="admin-saree-card-series">' + p.design + ' — ' + seriesTitle(p.series) + '</div>' +
-            '<div style="color:var(--gold); font-weight:700; margin-bottom:4px;">AED ' + Number(p.price || 0).toFixed(2) + '</div>' +
+            priceHtml(p) +
             (p.sold ? '<span class="admin-sold-badge">Sold out</span>' : '<span class="admin-avail-badge">Available</span>') +
             '<div class="admin-saree-card-actions">' +
               '<span class="admin-edit-link" data-id="' + p.id + '">Edit</span>' +
@@ -347,6 +396,17 @@ function initSareeEditor(token) {
         '</div>'
       );
     }).join('');
+
+    rowsEl.querySelectorAll('.admin-bulk-check').forEach(function (box) {
+      box.addEventListener('change', function () {
+        var id = box.getAttribute('data-id');
+        var idx = bulkSelectedIds.indexOf(id);
+        if (box.checked && idx === -1) bulkSelectedIds.push(id);
+        else if (!box.checked && idx !== -1) bulkSelectedIds.splice(idx, 1);
+        box.closest('.admin-saree-card').classList.toggle('bulk-selected', box.checked);
+        updateBulkBar();
+      });
+    });
 
     renderPagination(filtered.length);
   }
@@ -439,6 +499,7 @@ function initSareeEditor(token) {
     isAddMode = true;
     formTitle.textContent = 'Add New Saree';
     form.reset();
+    document.getElementById('admin-sale-preview').style.display = 'none';
     idField.readOnly = false;
     idWrap.classList.remove('readonly');
     idWarning.style.display = 'none';
@@ -478,6 +539,8 @@ function initSareeEditor(token) {
     refreshMaterialOptions(product.material || '');
     document.getElementById('admin-f-shade').value = product.shade || 'Others';
     document.getElementById('admin-f-price').value = product.price || '';
+    document.getElementById('admin-f-sale-price').value = product.salePrice || '';
+    updateSalePreview();
     document.getElementById('admin-f-sold').checked = !!product.sold;
     imagesList.innerHTML = '';
     (product.images && product.images.length ? product.images : ['']).forEach(function (src) { addImageRow(src); });
@@ -489,7 +552,7 @@ function initSareeEditor(token) {
   document.getElementById('admin-add-image-btn').addEventListener('click', function () { addImageRow(''); });
 
   /* ----- CSV download ----- */
-  var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sold',
+  var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sale Price AED', 'Sold',
     'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material', 'Shade', 'Occasions'];
 
   function csvEscape(val) {
@@ -506,6 +569,7 @@ function initSareeEditor(token) {
       var images = p.images || [];
       var row = [
         p.id, p.series, p.category, p.type, p.sareeType, p.pattern, p.design, p.price,
+        p.salePrice || '',
         p.sold ? 'TRUE' : 'FALSE',
         images[0] || '', images[1] || '', images[2] || '', images[3] || '', images[4] || '', images[5] || '', images[6] || '',
         '', p.material || '', p.shade || 'Others',
@@ -602,6 +666,9 @@ function initSareeEditor(token) {
     }
     var soldRaw = (row['Sold'] || '').toLowerCase();
     var occ = parseOccasions(row['Occasions']);
+    var price = parseInt(row['Cost AED'], 10) || 0;
+    var salePriceRaw = parseInt(row['Sale Price AED'], 10);
+    var salePrice = (salePriceRaw > 0 && salePriceRaw < price) ? salePriceRaw : null;
     return {
       id: (row['Unique ID'] || '').trim().toUpperCase(),
       series: row['Series'] || '',
@@ -612,7 +679,8 @@ function initSareeEditor(token) {
       design: row['Design'] || '',
       material: row['Material'] || '',
       shade: row['Shade'] || 'Others',
-      price: parseInt(row['Cost AED'], 10) || 0,
+      price: price,
+      salePrice: salePrice,
       sold: soldRaw === 'true' || soldRaw === '1' || soldRaw === 'yes',
       occasions: occ.valid,
       _unknownOccasions: occ.unknown,
@@ -648,7 +716,7 @@ function initSareeEditor(token) {
       var invalidRows = [];
 
       function productsEqual(a, b) {
-        var fields = ['series', 'category', 'type', 'sareeType', 'pattern', 'design', 'price', 'sold'];
+        var fields = ['series', 'category', 'type', 'sareeType', 'pattern', 'design', 'price', 'sold', 'salePrice'];
         for (var i = 0; i < fields.length; i++) {
           if ((a[fields[i]] || '') !== (b[fields[i]] || '')) return false;
         }
@@ -770,6 +838,93 @@ function initSareeEditor(token) {
       });
   });
 
+  // ---------- Bulk discount ----------
+  var bulkBar = document.getElementById('admin-bulk-bar');
+  var bulkMode = 'pct';
+
+  function updateBulkBar() {
+    if (!bulkSelectedIds.length) {
+      bulkBar.style.display = 'none';
+      return;
+    }
+    bulkBar.style.display = 'flex';
+    document.getElementById('admin-bulk-count').textContent = bulkSelectedIds.length + ' selected';
+  }
+
+  document.getElementById('admin-bulk-mode').querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      bulkMode = btn.getAttribute('data-mode');
+      document.getElementById('admin-bulk-mode').querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('active', b === btn);
+      });
+    });
+  });
+
+  document.getElementById('admin-bulk-clear-btn').addEventListener('click', function () {
+    bulkSelectedIds = [];
+    renderTable();
+    updateBulkBar();
+  });
+
+  document.getElementById('admin-bulk-apply-btn').addEventListener('click', function () {
+    var raw = Number(document.getElementById('admin-bulk-value').value);
+    if (!raw || raw <= 0) { showStatus('error', 'Enter a value greater than zero.'); return; }
+
+    var allProducts = (window.PRODUCTS || []).slice();
+    var skipped = [];
+
+    var updated = allProducts.map(function (p) {
+      if (bulkSelectedIds.indexOf(p.id) === -1) return p;
+
+      var newSale;
+      if (bulkMode === 'pct') {
+        if (raw >= 100) { skipped.push(p.id); return p; }
+        newSale = Math.round(p.price * (1 - raw / 100));
+      } else if (bulkMode === 'flat') {
+        newSale = Math.round(p.price - raw);
+      } else {
+        newSale = Math.round(raw);
+      }
+
+      // Same validity rule as the individual editor: a discount that
+      // would land at or above the regular price, or at/below zero,
+      // isn't a real offer — skip that saree rather than save a broken
+      // one, and tell the user which ones were skipped.
+      if (newSale <= 0 || newSale >= p.price) { skipped.push(p.id); return p; }
+
+      return Object.assign({}, p, { salePrice: newSale });
+    });
+
+    var applyBtn = document.getElementById('admin-bulk-apply-btn');
+    applyBtn.disabled = true;
+    applyBtn.textContent = 'Applying...';
+
+    fetch('/.netlify/functions/admin-bulk-save-products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, products: updated })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', result.data.error || 'Bulk discount failed to save.'); return; }
+        window.PRODUCTS = updated;
+        var appliedCount = bulkSelectedIds.length - skipped.length;
+        bulkSelectedIds = [];
+        renderTable();
+        updateBulkBar();
+        var msg = 'Applied a new sale price to ' + appliedCount + ' saree' + (appliedCount === 1 ? '' : 's') + '.';
+        if (skipped.length) {
+          msg += ' Skipped ' + skipped.length + ' (' + skipped.join(', ') + ') — the discount would have resulted in an invalid price.';
+        }
+        showStatus(skipped.length ? 'error' : 'success', msg);
+      })
+      .catch(function () { showStatus('error', 'Network error — bulk discount was not saved.'); })
+      .finally(function () {
+        applyBtn.disabled = false;
+        applyBtn.textContent = 'Apply';
+      });
+  });
+
   rowsEl.addEventListener('click', function (e) {
     var editLink = e.target.closest('.admin-edit-link');
     if (editLink) {
@@ -857,6 +1012,7 @@ function initSareeEditor(token) {
       pattern: document.getElementById('admin-f-pattern').value.trim(),
       design: document.getElementById('admin-f-design').value.trim(),
       price: parseInt(document.getElementById('admin-f-price').value, 10) || 0,
+      salePrice: parseSalePriceInput(),
       sold: document.getElementById('admin-f-sold').checked,
       images: images,
       image: images[0] || ''
