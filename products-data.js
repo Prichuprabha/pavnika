@@ -787,14 +787,15 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Semi Kanchipuram",
     "shade": "Orange / Brown",
-    "price": 283,
+    "price": 240,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DpCisJc3WaLNUG3GS0tg.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kQgffYfFFmJBmo3BMM5w.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
+    "salePrice": null
   },
   {
     "id": "SA008",
