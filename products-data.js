@@ -2192,7 +2192,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Soft Silk",
     "shade": "Orange / Brown",
-    "price": 370,
+    "price": 359,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg",
@@ -2202,7 +2202,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/F0cCREq1l7xn37oPZ5Uz.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UT69gYPmcjF3MZU9x4K1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg",
+    "salePrice": null
   },
   {
     "id": "BB007",
