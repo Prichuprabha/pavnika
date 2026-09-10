@@ -1106,14 +1106,15 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Organza",
     "shade": "Others",
-    "price": 206,
+    "price": 199,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kkZ3FtGbGqduAH0V6mp3.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ktIZL77ok6YDQEAPXvHw.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
+    "salePrice": null
   },
   {
     "id": "FV006",
