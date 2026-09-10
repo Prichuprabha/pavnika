@@ -1086,14 +1086,15 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Satin",
     "shade": "Maroon / Red",
-    "price": 196,
+    "price": 164,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQ1EdQq3RRrPz4ninQgU.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XI08IFMS2gIXxJUdVlC2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
+    "salePrice": null
   },
   {
     "id": "FV005",
