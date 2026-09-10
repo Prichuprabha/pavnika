@@ -1086,7 +1086,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Satin",
     "shade": "Maroon / Red",
-    "price": 164,
+    "price": 150,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
