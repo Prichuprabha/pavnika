@@ -1126,14 +1126,15 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Organza",
     "shade": "Purple / Violet",
-    "price": 201,
+    "price": 199,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qAvXVzxL3Bq3sIQJIgaj.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AXejsAqELdsKsafdTzQD.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
+    "salePrice": null
   },
   {
     "id": "FV007",
