@@ -1565,7 +1565,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Soft Silk",
     "shade": "Orange / Brown",
-    "price": 375,
+    "price": 349,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
@@ -1576,7 +1576,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p9Hdso7bYA6RYbQK8lMl.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Fag5PVKsFrBrKjSiLgMu.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
+    "salePrice": null
   },
   {
     "id": "SA015",
