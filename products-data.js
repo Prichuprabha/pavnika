@@ -1146,14 +1146,15 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Organza",
     "shade": "Green",
-    "price": 201,
+    "price": 199,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9iJ5ey19WRZRtaavkgGv.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GeeBVxSM0LbmLf2n6VX3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
+    "salePrice": null
   },
   {
     "id": "SA010",
