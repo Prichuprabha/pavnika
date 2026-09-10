@@ -923,7 +923,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Semi Kanchipuram",
     "shade": "Yellow / Gold",
-    "price": 401,
+    "price": 340,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
@@ -932,7 +932,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9N7eMLtcQ5oFiFdf4s5F.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/78REAxmmXPsOsQhUyiSo.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
+    "salePrice": null
   },
   {
     "id": "GG004",
