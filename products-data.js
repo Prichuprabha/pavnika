@@ -1166,7 +1166,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Pure Kanchipuram",
     "shade": "Black",
-    "price": 713,
+    "price": 665,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
@@ -1174,7 +1174,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mvsy7iSgaqwe1ieNHOA8.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VjmYmkXi66rjw7CMRSie.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
+    "salePrice": null
   },
   {
     "id": "SA011",
