@@ -3443,6 +3443,7 @@ function initSareeTagsView(token) {
 function buildTagSheetHtml(items) {
   var phoneIcon = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
   var igIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>';
+  var siteIcon = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
 
   function seriesTitle(s) {
     return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
@@ -3466,13 +3467,16 @@ function buildTagSheetHtml(items) {
           '</div>' +
           '<div class="fold-line"></div>' +
           '<div class="panel-inner">' +
+            '<p class="series-text">' + esc(seriesTitle(item.series)) + '</p>' +
             '<svg class="barcode" id="bc-' + globalIdx + '"></svg>' +
             '<p class="code-text">' + esc(item.id) + '</p>' +
-            '<p class="series-text">' + esc(seriesTitle(item.series)) + '</p>' +
             '<div class="contact-footer">' +
               '<span class="phone-line">' + phoneIcon + ' +971 52 66 30307</span>' +
               '<span class="contact-divider">|</span>' +
               '<span class="ig-line">' + igIcon + ' pavnika_by_saranya</span>' +
+            '</div>' +
+            '<div class="contact-footer site-footer">' +
+              '<span class="site-line">' + siteIcon + ' www.pavnika.com</span>' +
             '</div>' +
           '</div>' +
         '</div>'
@@ -3492,15 +3496,18 @@ function buildTagSheetHtml(items) {
     '.sheet{width:8.27in;height:11.69in;background:#fff;margin:0 auto 20px;padding:0.4in;display:grid;grid-template-columns:repeat(3,2in);grid-template-rows:repeat(3,3.5in);justify-content:center;align-content:start;box-shadow:0 10px 40px rgba(0,0,0,0.2)}' +
     '.tag{width:2in;height:3.5in;display:flex;flex-direction:column;position:relative;outline:1px dashed #ccc;outline-offset:-1px}' +
     '.fold-line{position:absolute;top:50%;left:0;right:0;border-top:1px dotted #ddd}' +
-    '.panel-outer,.panel-inner{height:1.75in;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0.12in 0.15in}' +
+    '.panel-outer,.panel-inner{height:1.75in;display:flex;flex-direction:column;align-items:center;padding:0.12in 0.15in}' +
+    '.panel-outer{justify-content:center}' +
+    '.panel-inner{justify-content:flex-start;padding-top:0.22in}' +
     '.panel-outer img{width:1.55in;height:auto}' +
     '.panel-outer .tagline{font-size:8px;color:#B68A69;letter-spacing:0.8px;text-transform:uppercase;margin-top:8px;white-space:nowrap}' +
-    '.panel-inner svg.barcode{width:1.7in}' +
+    '.panel-inner svg.barcode{width:1.7in;margin-top:4px}' +
     '.panel-inner .code-text{font-family:"Courier New",monospace;font-size:13px;font-weight:bold;color:#2B0D1A;letter-spacing:1px;margin-top:2px}' +
-    '.panel-inner .series-text{font-size:9px;color:#8a7266;margin-top:6px;text-align:center}' +
-    '.contact-footer{font-size:5.6px;color:#B68A69;margin-top:10px;display:flex;align-items:center;gap:3px;flex-wrap:nowrap;white-space:nowrap;justify-content:center}' +
+    '.panel-inner .series-text{font-size:9px;color:#8a7266;margin:0 0 2px;text-align:center;font-weight:600}' +
+    '.contact-footer{font-size:5.6px;color:#B68A69;margin-top:6px;display:flex;align-items:center;gap:3px;flex-wrap:nowrap;white-space:nowrap;justify-content:center}' +
+    '.contact-footer.site-footer{margin-top:3px}' +
     '.contact-divider{opacity:0.5}' +
-    '.ig-line,.phone-line{display:inline-flex;align-items:center;gap:3px}' +
+    '.ig-line,.phone-line,.site-line{display:inline-flex;align-items:center;gap:3px}' +
     '@media print{@page{size:A4;margin:0}body{background:#fff;padding:0}.screen-note{display:none}.sheet{box-shadow:none;margin:0;page-break-after:always}.sheet:last-child{page-break-after:auto}}' +
     '</style></head><body>' +
     '<div class="screen-note"><b>Print instructions for the shop:</b><br>' +
