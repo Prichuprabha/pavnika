@@ -138,7 +138,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Pure Kanchipuram",
     "shade": "Yellow / Gold",
-    "price": 846,
+    "price": 865,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
@@ -147,7 +147,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aifsckEShe9tYnVeIBuJ.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N2yNbbs8Inz0sjTx3VIr.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
+    "salePrice": null
   },
   {
     "id": "PP004",
