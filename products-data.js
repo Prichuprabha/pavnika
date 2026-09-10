@@ -1721,7 +1721,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Semi Kanchipuram",
     "shade": "Green",
-    "price": 232,
+    "price": 225,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
@@ -1729,7 +1729,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZQkqSqqLclJmd8D1gRF.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AZXF0sGaHesMRITldW4G.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
+    "salePrice": null
   },
   {
     "id": "VW030",
