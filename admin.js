@@ -10,6 +10,34 @@ function effectivePrice(p) {
   return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
 }
 
+// Builds the pre-filled WhatsApp follow-up for an order stuck in
+// 'pending' (checkout started, payment never completed) — not shown
+// for 'cod_pending', which is an intentional cash-on-delivery order,
+// not an abandoned payment. Caps the item list at 3 with a "+N more"
+// summary so the message stays short for larger carts.
+function buildPendingFollowUpMessage(order, items) {
+  var firstName = (order.customer_name || '').trim().split(' ')[0] || 'there';
+  var shown = items.slice(0, 3);
+  var extra = items.length - shown.length;
+
+  var lines = shown.map(function (it) {
+    var qty = it.qty && it.qty > 1 ? ' \u00d7 ' + it.qty : '';
+    var price = Number(it.price || 0).toFixed(2);
+    return '\u2014 ' + (it.name || it.id || 'Item') + qty + ' (AED ' + price + ')';
+  });
+  if (extra > 0) lines.push('\u2014 +' + extra + ' more');
+
+  return 'Hi ' + firstName + ', greetings from Pavnika.\n\n' +
+    'Just checking in \u2014 looks like something interrupted your order earlier. Everything okay on your end?\n\n' +
+    lines.join('\n') + '\n\n' +
+    'These are still saved for you. Let us know if you\u2019d like a hand with anything, or if you had a question we can help with.';
+}
+
+function buildWhatsAppUrl(phone, message) {
+  var digits = String(phone || '').replace(/[^\d]/g, '');
+  return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message);
+}
+
 
 // Used only to build the "View on GitHub" link on the Stats page.
 // Update these if your GitHub username or repo name ever changes.
@@ -2857,10 +2885,22 @@ function initOrdersView(token) {
         '<h4>Shipping Address' + (order.billing_address === order.shipping_address ? ' (same as billing)' : '') + '</h4>' + addressBlock(order.shipping_address) +
         '<h4>Update Status</h4>' +
         buildStatusSelect(order);
+
+      if (order.status === 'pending' && order.customer_phone) {
+        html += '<button type="button" class="btn btn-outline" id="admin-pending-followup-btn" style="width:100%; margin-top:10px;">Send WhatsApp Follow-up</button>';
+      }
     }
 
     drawerBody.innerHTML = html;
     drawerOverlay.classList.add('is-open');
+
+    var followUpBtn = document.getElementById('admin-pending-followup-btn');
+    if (followUpBtn) {
+      followUpBtn.addEventListener('click', function () {
+        var message = buildPendingFollowUpMessage(order, items);
+        window.open(buildWhatsAppUrl(order.customer_phone, message), '_blank', 'noopener');
+      });
+    }
 
     currentDrawerShopOrder = isShop ? order : null;
     if (isShop) {
