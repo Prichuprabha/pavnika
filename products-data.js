@@ -2137,7 +2137,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/k1hx15W8pKQsHZ9Yu28c.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tQAfAA7A6L2e1D1sOd5m.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vqZdBFqKkGb0Z1jUrqxa.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vqZdBFqKkGb0Z1jUrqxa.jpg",
+    "salePrice": null
   },
   {
     "id": "SO005",
