@@ -1902,7 +1902,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Semi Kanchipuram",
     "shade": "Maroon / Red",
-    "price": 339,
+    "price": 330,
     "sold": true,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
@@ -1911,7 +1911,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WYwbnCZzkib16Y7JOE3V.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J3Gpf4k7pV4u7EO1Ro6T.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
+    "salePrice": null
   },
   {
     "id": "BB002",
