@@ -968,7 +968,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Semi Kanchipuram",
     "shade": "Pink",
-    "price": 385,
+    "price": 285,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
@@ -977,7 +977,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DUqu6ikG8P0url6RVAH2.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FpxdQz9lHgk0Xb2KN67j.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
+    "salePrice": null
   },
   {
     "id": "VW012",
