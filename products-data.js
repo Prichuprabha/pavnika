@@ -1878,7 +1878,7 @@ window.PRODUCTS = [
     "design": "Modern",
     "material": "Banarasi",
     "shade": "Purple / Violet",
-    "price": 369,
+    "price": 325,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
@@ -1889,7 +1889,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7L9XTKIkUoUF26Cwc3yo.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zvPnRQ0WLDzXTD6kEFnK.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
+    "salePrice": null
   },
   {
     "id": "BB001",
