@@ -97,7 +97,14 @@
           </div>
         </div>
         <div class="panel saree-preview">
-          <h3 id="pos-preview-heading">Browse Sarees</h3>
+          <div class="pos-browse-head-row">
+            <h3 id="pos-preview-heading">Browse Sarees</h3>
+            <div class="pos-sold-toggle">
+              <span>Sold out:</span>
+              <label><input type="radio" name="pos-sold-visibility" value="hide" checked> Hide</label>
+              <label><input type="radio" name="pos-sold-visibility" value="show"> Show</label>
+            </div>
+          </div>
           <div class="pos-browse-cats" id="pos-browse-cats"></div>
 
           <!-- Default view: visual grid to browse/select without typing a code -->

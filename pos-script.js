@@ -23,6 +23,10 @@ var posState = {
   amountReceived: 0,
   printedOrSent: false,  // tracks whether Print or Send was used before Complete Sale
   transactionSalesPerson: null, // set only if changed mid-transaction; falls back to the logged-in user's name
+  // Only affects the visual Browse Sarees grid — search suggestions and
+  // barcode scan results still surface sold items regardless, since
+  // staff typing/scanning a specific code already know what they want.
+  hideSoldInBrowse: true,
   couponCode: null,
   couponDiscountPercent: 0,
   giftCardRedeemed: 0,
@@ -1118,8 +1122,12 @@ function renderBrowseCats() {
 function renderBrowseGrid(categoryFilter) {
   var products = window.PRODUCTS || [];
   var filtered = (!categoryFilter || categoryFilter === 'All') ? products : products.filter(function (p) { return p.category === categoryFilter; });
+  if (posState.hideSoldInBrowse) filtered = filtered.filter(function (p) { return !p.sold; });
   var el = document.getElementById('pos-browse-grid');
-  if (!filtered.length) { el.innerHTML = '<p class="pos-empty-note">No items in this category.</p>'; return; }
+  if (!filtered.length) {
+    el.innerHTML = '<p class="pos-empty-note">' + (posState.hideSoldInBrowse ? 'No in-stock items in this category.' : 'No items in this category.') + '</p>';
+    return;
+  }
   el.innerHTML = filtered.map(function (p) {
     var imgTag = p.image ? '<img src="' + p.image + '">' : '<div style="height:90px;background:var(--ivory-deep);"></div>';
     return '<div class="pos-browse-tile' + (p.sold ? ' pt-sold' : '') + '" data-browse-id="' + p.id + '">' + imgTag +
@@ -2500,6 +2508,13 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-back-to-browse-btn').addEventListener('click', clearItemFields);
   renderBrowseCats();
   renderBrowseGrid('All');
+  document.querySelectorAll('input[name="pos-sold-visibility"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      posState.hideSoldInBrowse = (radio.value === 'hide');
+      var activeCat = document.querySelector('.pos-browse-cat-btn.active');
+      renderBrowseGrid(activeCat ? activeCat.getAttribute('data-cat') : 'All');
+    });
+  });
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
     showStep(2);
