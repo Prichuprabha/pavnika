@@ -7,7 +7,7 @@
 // Bump CACHE_NAME whenever scan.html, the product data, or the
 // scanner library changes — otherwise phones keep serving the old
 // cached copy, exactly the stale-cache problem seen with admin.js.
-const CACHE_NAME = 'pavnika-scan-v2';
+const CACHE_NAME = 'pavnika-scan-v3';
 
 const ASSETS = [
   '/scan.html',

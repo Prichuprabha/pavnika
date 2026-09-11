@@ -184,6 +184,38 @@
   var codeReader = null;
   var scanning = false;
 
+  // Success beep, synthesized rather than loaded from a file — keeps
+  // this working offline and avoids bundling an audio asset. Mobile
+  // browsers block sound until the person has interacted with the
+  // page at least once; the "Start camera" tap satisfies that, so the
+  // AudioContext is created there rather than lazily on first beep.
+  var audioCtx = null;
+  function ensureAudioContext() {
+    if (audioCtx) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) { try { audioCtx = new AC(); } catch (e) {} }
+  }
+  function playBeep() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    // A quick two-tone rise reads as a clear, positive "found it" cue —
+    // closer to a real scanner than a single flat tone.
+    [[880, 0], [1320, 0.09]].forEach(function (pair) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = pair[0];
+      var startAt = audioCtx.currentTime + pair[1];
+      gain.gain.setValueAtTime(0.001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.25, startAt + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.09);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(startAt);
+      osc.stop(startAt + 0.1);
+    });
+  }
+
   function showMsg(type, text) {
     msgEl.className = 'msg ' + type;
     msgEl.textContent = text;
@@ -317,6 +349,7 @@
   }
 
   cameraBtn.addEventListener('click', function () {
+    ensureAudioContext();
     if (scanning) { stopCamera(); clearMsg(); return; }
 
     if (typeof ZXing === 'undefined') {
@@ -343,6 +376,7 @@
           var text = result.getText ? result.getText() : result.text;
           if (text && lookup(text)) {
             stopCamera();
+            playBeep();
             if (navigator.vibrate) navigator.vibrate(60);
           }
         }
