@@ -2508,12 +2508,10 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-back-to-browse-btn').addEventListener('click', clearItemFields);
   renderBrowseCats();
   renderBrowseGrid('All');
-  document.querySelectorAll('input[name="pos-sold-visibility"]').forEach(function (radio) {
-    radio.addEventListener('change', function () {
-      posState.hideSoldInBrowse = (radio.value === 'hide');
-      var activeCat = document.querySelector('.pos-browse-cat-btn.active');
-      renderBrowseGrid(activeCat ? activeCat.getAttribute('data-cat') : 'All');
-    });
+  document.getElementById('pos-sold-visibility-toggle').addEventListener('change', function (e) {
+    posState.hideSoldInBrowse = !e.target.checked; // checked = "Show sold" is on
+    var activeCat = document.querySelector('.pos-browse-cat-btn.active');
+    renderBrowseGrid(activeCat ? activeCat.getAttribute('data-cat') : 'All');
   });
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }
