@@ -1880,18 +1880,6 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   color: var(--gold);
   font-size: 0.98rem;
 }
-.product-info .p-enquire {
-  margin-top: 10px;
-  align-self: flex-start;
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-weight: 600;
-  color: var(--green);
-  border-bottom: 1px solid var(--gold);
-  padding-bottom: 2px;
-}
-.product-info .p-enquire:hover { color: var(--gold); }
 
 .no-results {
   text-align: center;

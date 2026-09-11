@@ -345,12 +345,6 @@ function seriesTitleCase(s) {
   return String(s).toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
 }
 
-function whatsappLink(product) {
-  var msg = 'Hi Pavnika by Saranya, I am interested in the ' + seriesTitleCase(product.series) +
-    ' saree (' + product.id + ') — ' + (product.material || product.design) + '. Is it available?';
-  return 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
-}
-
 function productCardHTML(p) {
   var soldClass = p.sold ? ' is-sold' : '';
   var soldRibbon = p.sold ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
@@ -375,7 +369,6 @@ function productCardHTML(p) {
         '<span class="p-design">' + (p.material || p.design) + '</span>' +
         '<span class="p-meta">' + p.type + (p.pattern ? ' · ' + p.pattern : '') + '</span>' +
         pricingHtml +
-        '<a class="p-enquire" href="' + whatsappLink(p) + '" target="_blank" rel="noopener">Enquire on WhatsApp &rarr;</a>' +
       '</div>' +
     '</div>'
   );
@@ -941,10 +934,8 @@ function initCollectionsPage() {
     if (openProduct) window.openLightbox(openProduct);
   }
 
-  // Open the lightbox when a saree card is clicked, but not when the
-  // WhatsApp enquiry link itself is clicked.
+  // Open the lightbox when a saree card is clicked.
   grid.addEventListener('click', function (e) {
-    if (e.target.closest('.p-enquire')) return;
     var card = e.target.closest('.product-card');
     if (!card) return;
     var id = card.getAttribute('data-id');
