@@ -13,8 +13,10 @@ body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-si
    problems there — this uses a plain solid background instead. */
 .pos-login-screen { height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--green-deep); position: relative; overflow: hidden; }
 
-/* Same 3-image cycling background as the main site's login page —
-   identical CSS, just ported into this separate stylesheet. */
+/* POS-specific background photos — its own 2-image crossfade, deliberately
+   NOT sharing files with the main site's customer-facing login page (see
+   style.css's .login-bg-layer-1/2/3), so updating one never touches the
+   other. */
 .login-bg-layer {
   position: absolute;
   inset: 0;
@@ -25,12 +27,10 @@ body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-si
   animation-iteration-count: infinite;
   animation-timing-function: linear;
 }
-.login-bg-layer-1 { background-image: url("assets/login-bg-1.jpg"); animation-name: loginBgLayer1; }
-.login-bg-layer-2 { background-image: url("assets/login-bg-2.jpg"); animation-name: loginBgLayer2; }
-.login-bg-layer-3 { background-image: url("assets/login-bg-3.jpg"); animation-name: loginBgLayer3; }
-@keyframes loginBgLayer1 { 0% { opacity: 1; } 30% { opacity: 1; } 33.33% { opacity: 0; } 96.66% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes loginBgLayer2 { 0% { opacity: 0; } 30% { opacity: 0; } 33.33% { opacity: 1; } 63.33% { opacity: 1; } 66.66% { opacity: 0; } 100% { opacity: 0; } }
-@keyframes loginBgLayer3 { 0% { opacity: 0; } 63.33% { opacity: 0; } 66.66% { opacity: 1; } 96.66% { opacity: 1; } 100% { opacity: 0; } }
+.login-bg-layer-1 { background-image: url("assets/pos-login-bg-1.jpg"); animation-name: loginBgLayer1; }
+.login-bg-layer-2 { background-image: url("assets/pos-login-bg-2.jpg"); animation-name: loginBgLayer2; }
+@keyframes loginBgLayer1 { 0% { opacity: 1; } 47% { opacity: 1; } 50% { opacity: 0; } 97% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes loginBgLayer2 { 0% { opacity: 0; } 47% { opacity: 0; } 50% { opacity: 1; } 97% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) {
   .login-bg-layer { animation: none; opacity: 0; }
   .login-bg-layer-1 { opacity: 1; }

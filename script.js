@@ -4671,23 +4671,16 @@ function initOccasionShowcase() {
 
   grid.querySelectorAll('.occ-tile').forEach(function (tile) {
     var occasion = tile.getAttribute('data-occasion');
-    var countEl = tile.querySelector('.occ-count');
-    if (!occasion || !countEl) return;
+    if (!occasion) return;
 
     var count = window.PRODUCTS.filter(function (p) {
       return p.occasions && p.occasions.indexOf(occasion) !== -1 && !p.sold;
     }).length;
 
-    if (count > 0) {
-      countEl.textContent = count + (count === 1 ? ' saree available' : ' sarees available');
-      countEl.classList.remove('soon-label');
-      tile.classList.remove('soon');
-    } else {
-      // No sarees tagged with this occasion yet — say so plainly rather
-      // than showing a dead-looking "0 available", and drop the link
-      // since there's nothing to filter through to.
-      countEl.textContent = 'Coming soon';
-      countEl.classList.add('soon-label');
+    if (count === 0) {
+      // No sarees tagged with this occasion yet — flag it visibly rather
+      // than linking through to an empty filtered grid, and drop the
+      // link since there's nothing to filter through to.
       tile.classList.add('soon');
       tile.removeAttribute('href');
       var badge = document.createElement('span');

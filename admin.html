@@ -472,6 +472,9 @@
   .admin-image-row button { flex-shrink: 0; background: none; border: 1px solid var(--stone); border-radius: 3px; cursor: pointer; padding: 6px 10px; font-size: 0.75rem; }
   .admin-checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
   .admin-checkbox-row label { font-size: 0.8rem; }
+  .admin-occasion-checks { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 0 2px; }
+  .admin-occasion-checks label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 400; opacity: 1; cursor: pointer; }
+  .admin-occasion-checks input { width: auto; }
 
   .admin-status-msg { padding: 12px 16px; border-radius: 4px; font-size: 0.82rem; margin-bottom: 20px; display: none; }
   .admin-status-msg.success { background: #eaf3de; color: #27500a; display: block; }
@@ -842,6 +845,17 @@
         <div class="admin-checkbox-row">
           <input type="checkbox" id="admin-f-sold">
           <label for="admin-f-sold">Sold out</label>
+        </div>
+
+        <div class="admin-field" style="margin-bottom:16px;">
+          <label>Occasions</label>
+          <div class="admin-occasion-checks" id="admin-f-occasions">
+            <label><input type="checkbox" value="Bridal"> Bridal</label>
+            <label><input type="checkbox" value="Wedding Guest"> Wedding Guest</label>
+            <label><input type="checkbox" value="Festive"> Festive</label>
+            <label><input type="checkbox" value="Reception"> Reception</label>
+            <label><input type="checkbox" value="Everyday"> Everyday</label>
+          </div>
         </div>
 
         <label style="font-size:0.7rem; color:var(--ink); opacity:0.7; display:block; margin-bottom:6px;">Image URLs</label>

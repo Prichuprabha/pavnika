@@ -581,6 +581,10 @@ function initSareeEditor(token) {
     document.getElementById('admin-f-sale-price').value = product.salePrice || '';
     updateSalePreview();
     document.getElementById('admin-f-sold').checked = !!product.sold;
+    var savedOccasions = product.occasions || [];
+    document.querySelectorAll('#admin-f-occasions input').forEach(function (cb) {
+      cb.checked = savedOccasions.indexOf(cb.value) !== -1;
+    });
     imagesList.innerHTML = '';
     (product.images && product.images.length ? product.images : ['']).forEach(function (src) { addImageRow(src); });
     showSareeDrawer();
@@ -1065,6 +1069,7 @@ function initSareeEditor(token) {
       price: parseInt(document.getElementById('admin-f-price').value, 10) || 0,
       salePrice: parseSalePriceInput(),
       sold: document.getElementById('admin-f-sold').checked,
+      occasions: Array.from(document.querySelectorAll('#admin-f-occasions input:checked')).map(function (cb) { return cb.value; }),
       images: images,
       image: images[0] || ''
     };

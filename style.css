@@ -4228,14 +4228,6 @@ header.site-header.header-dark.is-scrolled {
 }
 .occ-tile:hover .occ-photo { border-color: var(--gold); }
 .occ-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
-/* The artwork already carries the occasion name and its tagline, so no
-   heading is overlaid — only the availability line, set beneath the image. */
-.occ-caption { text-align: center; padding: 9px 4px 0; }
-.occ-count { font-size: 0.78rem; color: var(--ink); opacity: 0.62; margin: 0; letter-spacing: 0.03em; }
-.occ-count.soon-label {
-  color: var(--gold); opacity: 0.95; font-weight: 600;
-  text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.68rem;
-}
 .occ-tile.soon .occ-photo { opacity: 0.9; }
 .occ-soon-badge {
   position: absolute; top: 9px; left: 9px; z-index: 3;
@@ -4262,7 +4254,6 @@ header.site-header.header-dark.is-scrolled {
   }
   .occ-grid::-webkit-scrollbar { display: none; height: 0; }
   .occ-tile { flex: 0 0 172px; scroll-snap-align: start; }
-  .occ-count { font-size: 0.72rem; }
 }
 
 /* Follow the Drape — burgundy band, copy left / videos right */
