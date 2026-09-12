@@ -4622,7 +4622,7 @@ header.site-header.header-dark.is-scrolled {
     font-weight: 600;
   }
 
-  .active-filters-row { margin-bottom: 12px; }
+  .active-filters-row { display: block; margin-bottom: 12px; }
   .active-filters-head {
     display: flex;
     align-items: center;
@@ -4737,6 +4737,41 @@ header.site-header.header-dark.is-scrolled {
      Shade swatches, Price slider) shouldn't keep their sidebar scroll cap
      or bottom border — the sheet itself scrolls and has its own edge. */
   .qf-sheet-body .filter-bar-vertical { max-height: none; border-bottom: none; }
+  .qf-price-bands {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 10px;
+  }
+  .qf-price-band {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 2px;
+    border: none;
+    background: none;
+    text-align: left;
+    font-family: var(--body);
+    font-size: 0.86rem;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .qf-price-band::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 1.5px solid var(--stone);
+    box-sizing: border-box;
+  }
+  .qf-price-band.active { color: var(--green-deep); font-weight: 600; }
+  .qf-price-band.active::before {
+    border-color: var(--green);
+    background: var(--green);
+    box-shadow: inset 0 0 0 3px var(--ivory);
+  }
+
   .qf-sheet-body .apply-filters-btn,
   .qf-apply-btn {
     display: block;

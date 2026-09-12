@@ -938,6 +938,54 @@ function initCollectionsPage() {
     qfSheetTitle.textContent = cfg.label;
     qfSheetBody.appendChild(node);
 
+    // The Price sheet also gets a row of quick preset ranges under the
+    // slider (matching the reference design) — tapping one just moves the
+    // *real* slider inputs and fires their existing 'input' listener, so
+    // there's still only one source of truth for the price filter.
+    if (target === 'price' && priceMinInput && priceMaxInput) {
+      var rangeLo = Number(priceMinInput.min);
+      var rangeHi = Number(priceMinInput.max);
+      var step = Math.max(50, Math.round((rangeHi - rangeLo) / 4 / 50) * 50);
+      var bands = [
+        [rangeLo, rangeLo + step],
+        [rangeLo + step, rangeLo + 2 * step],
+        [rangeLo + 2 * step, rangeLo + 3 * step],
+        [rangeLo + 3 * step, null] // null = open-ended "X+" band
+      ];
+
+      var bandsWrap = document.createElement('div');
+      bandsWrap.className = 'qf-price-bands';
+
+      function paintBandActive() {
+        var curLo = Number(priceMinInput.value);
+        var curHi = Number(priceMaxInput.value);
+        bandsWrap.querySelectorAll('.qf-price-band').forEach(function (el, i) {
+          var b = bands[i];
+          var isActive = curLo === b[0] && (b[1] === null ? curHi === rangeHi : curHi === b[1]);
+          el.classList.toggle('active', isActive);
+        });
+      }
+
+      bands.forEach(function (b) {
+        var opt = document.createElement('button');
+        opt.type = 'button';
+        opt.className = 'qf-price-band';
+        opt.textContent = b[1] === null
+          ? ('AED ' + b[0].toLocaleString() + '+')
+          : ('AED ' + b[0].toLocaleString() + ' \u2013 AED ' + b[1].toLocaleString());
+        opt.addEventListener('click', function () {
+          priceMinInput.value = b[0];
+          priceMaxInput.value = b[1] === null ? rangeHi : b[1];
+          priceMaxInput.dispatchEvent(new Event('input', { bubbles: true }));
+          paintBandActive();
+        });
+        bandsWrap.appendChild(opt);
+      });
+
+      qfSheetBody.appendChild(bandsWrap);
+      paintBandActive();
+    }
+
     var applyBtn = document.createElement('button');
     applyBtn.type = 'button';
     applyBtn.className = 'btn btn-primary apply-filters-btn qf-apply-btn';
