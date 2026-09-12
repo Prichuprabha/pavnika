@@ -2329,7 +2329,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Semi Kanchipuram",
     "shade": "White / Off-white",
-    "price": 325,
+    "price": 345,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg",
@@ -2340,7 +2340,8 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHop2nJ15DwdG3fs9D5x.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hVmf3gIUsQLG3qmQpl6f.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg",
+    "salePrice": null
   },
   {
     "id": "FV013",
