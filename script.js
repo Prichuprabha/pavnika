@@ -102,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   initLoginPage();
   initReviewsMarquee();
+  initOccasionShowcase();
   initCuratedShowcase();
   initFaqAccordion();
   buildLightbox();
@@ -525,7 +526,7 @@ function initCollectionsPage() {
 
   var DEFAULT_PAGE_SIZE = 16;
   var PAGE_SIZE = DEFAULT_PAGE_SIZE;
-  var state = { category: 'all', series: 'all', shade: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
+  var state = { category: 'all', series: 'all', shade: 'all', occasion: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
 
   // No filter applied = the plain "browse everything" view (default
   // category/series/shade, no search text, no price range, default
@@ -543,7 +544,7 @@ function initCollectionsPage() {
     var priceIsFullRange = (typeof dataMin === 'undefined') ||
       (state.priceMin === dataMin && state.priceMax === dataMax);
     return state.category === 'all' && state.series === 'all' && state.shade === 'all' &&
-      !state.showSold && !state.query.trim() && priceIsFullRange;
+      state.occasion === 'all' && !state.showSold && !state.query.trim() && priceIsFullRange;
   }
 
   // Measures how many saree cards actually fit per row right now (the
@@ -585,6 +586,7 @@ function initCollectionsPage() {
   var categoryGroup = document.getElementById('category-filter');
   var seriesGroup = document.getElementById('series-filter');
   var shadeGroup = document.getElementById('shade-filter');
+  var occasionGroup = document.getElementById('occasion-filter');
   var searchInput = document.getElementById('collections-search-input');
   var SEARCH_FIELDS = ['id', 'material', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
 
@@ -596,6 +598,7 @@ function initCollectionsPage() {
       var okCat = state.category === 'all' || p.material === state.category;
       var okSeries = state.series === 'all' || p.series === state.series;
       var okShade = state.shade === 'all' || p.shade === state.shade;
+      var okOccasion = state.occasion === 'all' || (p.occasions && p.occasions.indexOf(state.occasion) !== -1);
       var okSold = state.showSold || !p.sold;
       var okQuery = !q || SEARCH_FIELDS.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
@@ -603,7 +606,7 @@ function initCollectionsPage() {
       var price = effectivePrice(p);
       var okMinPrice = state.priceMin === null || price >= state.priceMin;
       var okMaxPrice = state.priceMax === null || price <= state.priceMax;
-      return okCat && okSeries && okShade && okSold && okQuery && okMinPrice && okMaxPrice;
+      return okCat && okSeries && okShade && okOccasion && okSold && okQuery && okMinPrice && okMaxPrice;
     });
   }
 
@@ -766,6 +769,7 @@ function initCollectionsPage() {
         (target === 'category' && state.category !== 'all') ||
         (target === 'series' && state.series !== 'all') ||
         (target === 'shade' && state.shade !== 'all') ||
+        (target === 'occasion' && state.occasion !== 'all') ||
         (target === 'price' && !fullRange);
       chip.classList.toggle('has-value', hasValue);
     });
@@ -773,6 +777,12 @@ function initCollectionsPage() {
     if (!activeFiltersRow || !activeFiltersTagsEl) return;
 
     var tags = [];
+    if (state.occasion !== 'all') {
+      tags.push({ label: state.occasion, reset: function () {
+        state.occasion = 'all';
+        setActiveButton(occasionGroup, 'all');
+      }});
+    }
     if (state.category !== 'all') {
       tags.push({ label: state.category, reset: function () {
         state.category = 'all';
@@ -824,6 +834,17 @@ function initCollectionsPage() {
         state.page = 1;
         render();
       });
+    });
+  }
+
+  if (occasionGroup) {
+    occasionGroup.addEventListener('click', function (e) {
+      var btn = e.target.closest('.filter-btn');
+      if (!btn || btn.disabled) return;
+      state.occasion = btn.getAttribute('data-value');
+      setActiveButton(occasionGroup, state.occasion);
+      state.page = 1;
+      render();
     });
   }
 
@@ -917,6 +938,7 @@ function initCollectionsPage() {
   var qfMoved = null; // { node, parent, nextSibling } — where to put it back
 
   var QF_TARGETS = {
+    occasion: { id: 'occasion-filter', label: 'Occasion' },
     price: { id: 'price-range-slider', label: 'Price Range' },
     category: { id: 'category-filter', label: 'Material' },
     shade: { id: 'shade-filter', label: 'Shade' },
@@ -1094,6 +1116,8 @@ function initCollectionsPage() {
       state.category = 'all';
       state.series = 'all';
       state.shade = 'all';
+      state.occasion = 'all';
+      if (occasionGroup) setActiveButton(occasionGroup, 'all');
       if (shadeGroup) shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-value') === 'all');
       });
@@ -1135,8 +1159,14 @@ function initCollectionsPage() {
   var params = new URLSearchParams(window.location.search);
   var catParam = params.get('category');
   var seriesParam = params.get('series');
+  var occasionParam = params.get('occasion');
   var queryParam = params.get('q');
   var openParam = params.get('open');
+
+  if (occasionParam && occasionGroup && occasionGroup.querySelector('.filter-btn[data-value="' + occasionParam.replace(/"/g, '') + '"]')) {
+    state.occasion = occasionParam;
+    setActiveButton(occasionGroup, occasionParam);
+  }
 
   if (catParam && categoryGroup && categoryGroup.querySelector('.filter-btn[data-value="' + catParam.replace(/"/g, '') + '"]')) {
     state.category = catParam;
@@ -4635,6 +4665,39 @@ function initDraggableMarquee(container, track, options) {
    page load. Clicking one goes to Collections with that saree's detail
    popup open, but the grid behind it stays fully unfiltered (the whole
    catalogue) — it's just the entry point, not a narrowed view. */
+function initOccasionShowcase() {
+  var grid = document.getElementById('occasion-showcase');
+  if (!grid || typeof window.PRODUCTS === 'undefined') return;
+
+  grid.querySelectorAll('.occ-tile').forEach(function (tile) {
+    var occasion = tile.getAttribute('data-occasion');
+    var countEl = tile.querySelector('.occ-count');
+    if (!occasion || !countEl) return;
+
+    var count = window.PRODUCTS.filter(function (p) {
+      return p.occasions && p.occasions.indexOf(occasion) !== -1 && !p.sold;
+    }).length;
+
+    if (count > 0) {
+      countEl.textContent = count + (count === 1 ? ' saree available' : ' sarees available');
+      countEl.classList.remove('soon-label');
+      tile.classList.remove('soon');
+    } else {
+      // No sarees tagged with this occasion yet — say so plainly rather
+      // than showing a dead-looking "0 available", and drop the link
+      // since there's nothing to filter through to.
+      countEl.textContent = 'Coming soon';
+      countEl.classList.add('soon-label');
+      tile.classList.add('soon');
+      tile.removeAttribute('href');
+      var badge = document.createElement('span');
+      badge.className = 'occ-soon-badge';
+      badge.textContent = 'Coming soon';
+      tile.querySelector('.occ-photo').appendChild(badge);
+    }
+  });
+}
+
 function initCuratedShowcase() {
   var grid = document.getElementById('curated-showcase');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
