@@ -4713,12 +4713,21 @@ a.home-video-tile-link {
    internal content individually. */
 @media (max-width: 880px) {
   body:has(.lightbox-overlay.is-visible) .mobile-bottom-bar,
-  body:has(.cart-drawer-overlay.is-open) .mobile-bottom-bar,
   body:has(.appt-overlay.is-open) .mobile-bottom-bar,
   body:has(#search-panel.is-open) .mobile-bottom-bar,
   body:has(.collections-sidebar.is-open) .mobile-bottom-bar {
     display: none;
   }
+  /* The cart drawer keeps the bottom bar visible instead (see the
+     .cart-drawer / .cart-drawer-overlay rules below) — both are
+     shortened to stop above the bar, so the bar stays reachable and
+     the drawer's own Checkout buttons never end up hidden behind it. */
+  .cart-drawer-overlay { bottom: 62px; }
+  .cart-drawer { bottom: 62px; }
+  /* Keeps the bar clickable right up to the seam, regardless of the
+     drawer's own z-index (251) — belt-and-braces against any
+     sub-pixel overlap at the boundary between the two. */
+  .mobile-bottom-bar { z-index: 252; }
 }
 /* ---------- Customer account page ---------- */
 .account-wrap {
