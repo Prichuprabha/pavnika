@@ -491,6 +491,7 @@ function initTouchRevealTiles() {
 
   wire('.curated-tile');
   wire('.category-tile');
+  wire('.occ-tile');
 }
 
 /* ---------- Daily shuffle ---------- */
@@ -4687,6 +4688,15 @@ function initOccasionShowcase() {
       badge.className = 'occ-soon-badge';
       badge.textContent = 'Coming soon';
       tile.querySelector('.occ-photo').appendChild(badge);
+    } else {
+      // Bake the occasion name into its own hover/tap cue, e.g.
+      // "Shop Bridal" — read from data-occasion so there's one source
+      // of truth per tile rather than a hardcoded label per occasion.
+      var ctaText = tile.querySelector('.cta-text');
+      if (ctaText) {
+        ctaText.innerHTML = 'Shop ' + occasion +
+          ' <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+      }
     }
   });
 }

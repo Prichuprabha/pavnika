@@ -4227,8 +4227,47 @@ header.site-header.header-dark.is-scrolled {
   border: 2px solid var(--stone); transition: border-color 0.25s ease;
 }
 .occ-tile:hover .occ-photo { border-color: var(--gold); }
-.occ-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.occ-photo img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform; backface-visibility: hidden;
+}
+.occ-tile:hover .occ-photo img,
+.occ-tile.is-revealed .occ-photo img { transform: scale(1.08); }
+
+/* Hover/reveal cue — same language as .curated-tile elsewhere on this
+   page: image zooms in, a dark gradient rises from the bottom, and a
+   "Shop <Occasion>" cue (baked in per-tile by initOccasionShowcase(),
+   not hardcoded) slides up. On mobile, hover doesn't exist, so
+   initTouchRevealTiles() toggles .is-revealed on first tap instead —
+   see script.js, same mechanism the Curated tiles already use. */
+.occ-tile-gradient {
+  position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(to top, rgba(43, 13, 26, 0.82) 0%, rgba(43, 13, 26, 0.25) 40%, rgba(43, 13, 26, 0) 66%);
+  opacity: 0; transition: opacity 0.5s ease;
+}
+.occ-tile:hover .occ-tile-gradient,
+.occ-tile.is-revealed .occ-tile-gradient { opacity: 1; }
+.occ-tile-cta {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 14px 16px; text-align: center;
+  transform: translateY(20px); opacity: 0;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+}
+.occ-tile:hover .occ-tile-cta,
+.occ-tile.is-revealed .occ-tile-cta { transform: translateY(0); opacity: 1; }
+.occ-tile-cta span {
+  display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-light);
+  border-bottom: 1px solid rgba(246, 223, 213, 0.55); padding-bottom: 3px;
+}
+.occ-tile-cta span svg { width: 13px; height: 13px; transition: transform 0.3s ease; vertical-align: -2px; }
+.occ-tile:hover .occ-tile-cta span svg,
+.occ-tile.is-revealed .occ-tile-cta span svg { transform: translateX(4px); }
 .occ-tile.soon .occ-photo { opacity: 0.9; }
+.occ-tile.soon .occ-tile-cta { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .occ-photo img, .occ-tile-gradient, .occ-tile-cta, .occ-tile-cta span svg { transition: none; }
+}
 .occ-soon-badge {
   position: absolute; top: 9px; left: 9px; z-index: 3;
   background: var(--green-deep); color: var(--ivory);
