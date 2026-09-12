@@ -3130,6 +3130,12 @@ function cartRemoveItem(id) {
 }
 
 function openCartDrawer() {
+  // Mutually exclusive with the wishlist — opening one replaces the
+  // other rather than stacking both, which just left whichever was
+  // opened first invisible underneath until the second was closed.
+  var wishlistOverlay = document.getElementById('wishlist-drawer-overlay');
+  if (wishlistOverlay && wishlistOverlay.classList.contains('is-open')) closeWishlistDrawer();
+
   var overlay = document.getElementById('cart-drawer-overlay');
   if (overlay) overlay.classList.add('is-open');
   updateBodyScrollLock();
@@ -3185,6 +3191,11 @@ function wishlistRemoveItem(id) {
 }
 
 function openWishlistDrawer() {
+  // Mutually exclusive with the cart — see the matching comment in
+  // openCartDrawer.
+  var cartOverlay = document.getElementById('cart-drawer-overlay');
+  if (cartOverlay && cartOverlay.classList.contains('is-open')) closeCartDrawer();
+
   var overlay = document.getElementById('wishlist-drawer-overlay');
   renderWishlistDrawer(); // always reflect current cart state the moment it's actually opened, not whatever it happened to show last time it rendered
   if (overlay) overlay.classList.add('is-open');
