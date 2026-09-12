@@ -331,6 +331,31 @@ function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Every full-screen overlay (cart, wishlist, lightbox, search, filters,
+// the appointment popup, and the verification gate) independently set
+// document.body.style.overflow on open/close. That was safe as long as
+// only one could ever be open at once — true everywhere except the
+// cart, since it's the only overlay that keeps the bottom nav bar
+// reachable while it's open. That let someone open the wishlist on top
+// of an already-open cart; closing the wishlist then cleared the shared
+// lock entirely, even though the cart was still open underneath.
+//
+// Call this after every open/close instead of setting overflow
+// directly — it checks whether *any* recognized overlay is still open
+// and locks or unlocks accordingly, so closing one nested overlay can
+// never undo the lock a still-open one depends on.
+function updateBodyScrollLock() {
+  var anyOpen =
+    !!document.querySelector('.collections-sidebar.is-open') ||
+    !!document.querySelector('.appt-overlay.is-open') ||
+    !!document.querySelector('.lightbox-overlay.is-visible') ||
+    !!document.querySelector('#gate-overlay-root.is-open') ||
+    !!document.querySelector('#search-panel.is-open') ||
+    !!document.querySelector('#cart-drawer-overlay.is-open') ||
+    !!document.querySelector('#wishlist-drawer-overlay.is-open');
+  document.body.style.overflow = anyOpen ? 'hidden' : '';
+}
+
 // The single source of truth for "what does this saree actually cost
 // right now" — a valid sale price if one is set, otherwise the regular
 // price. Every place that shows or totals a price should go through
@@ -771,12 +796,12 @@ function initCollectionsPage() {
   if (mobileFiltersBtn && sidebarEl) {
     mobileFiltersBtn.addEventListener('click', function () {
       sidebarEl.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
+      updateBodyScrollLock();
     });
   }
   function closeMobileFilters() {
     if (sidebarEl) sidebarEl.classList.remove('is-open');
-    document.body.style.overflow = '';
+    updateBodyScrollLock();
   }
   if (closeFiltersBtn) closeFiltersBtn.addEventListener('click', closeMobileFilters);
   if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', closeMobileFilters);
@@ -1094,12 +1119,12 @@ function initAppointmentPopup(wireNetlifyForm) {
   function openPopup() {
     buildPopup();
     overlay.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+    updateBodyScrollLock();
   }
   function closePopup() {
     if (!overlay) return;
     overlay.classList.remove('is-open');
-    document.body.style.overflow = '';
+    updateBodyScrollLock();
   }
 
   ctas.forEach(function (cta) {
@@ -1558,7 +1583,6 @@ window.openLightbox = function (product) {
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
-    document.body.style.overflow = 'hidden';
     // Mobile Chrome specifically: when the address bar collapses mid-
     // scroll, the usable viewport briefly grows before the fixed
     // overlay's own background catches up to covering it, exposing
@@ -1569,11 +1593,12 @@ window.openLightbox = function (product) {
     // prevent.
     document.body.style.background = 'rgb(43, 13, 26)';
     overlay.classList.add('is-visible');
+    updateBodyScrollLock();
   };
 
   function closeLightbox() {
     overlay.classList.remove('is-visible');
-    document.body.style.overflow = '';
+    updateBodyScrollLock();
     document.body.style.background = '';
   }
 
@@ -2169,13 +2194,13 @@ function showGateOverlay(mode, onSuccess, bodyText, dismissible) {
   // background was showing as a flat tint instead of the cycling photos.
   void root.offsetWidth;
   root.classList.add('is-open');
-  document.body.style.overflow = 'hidden';
+  updateBodyScrollLock();
 }
 
 function hideGateOverlay() {
   var root = document.getElementById('gate-overlay-root');
   if (root) root.classList.remove('is-open');
-  document.body.style.overflow = '';
+  updateBodyScrollLock();
   // Undo the early inline script's pre-emptive hiding (if it was
   // applied) — safe to call even when it wasn't, this just no-ops.
   var pendingStyle = document.getElementById('gate-pending-style');
@@ -2727,13 +2752,13 @@ function initSearchPanel() {
     var top = header ? header.getBoundingClientRect().bottom : 0;
     panel.style.top = top + 'px';
     panel.classList.add('is-open');
-    document.body.style.overflow = 'hidden';
+    updateBodyScrollLock();
     setTimeout(function () { input.focus(); }, 50);
   }
 
   function closePanel() {
     panel.classList.remove('is-open');
-    document.body.style.overflow = '';
+    updateBodyScrollLock();
     input.value = '';
     resultsWrap.innerHTML = '';
     emptyMsg.style.display = 'none';
@@ -3107,7 +3132,7 @@ function cartRemoveItem(id) {
 function openCartDrawer() {
   var overlay = document.getElementById('cart-drawer-overlay');
   if (overlay) overlay.classList.add('is-open');
-  document.body.style.overflow = 'hidden';
+  updateBodyScrollLock();
 
   // Catches changes made from another device since this page loaded —
   // opens instantly from whatever's already cached, then quietly
@@ -3119,7 +3144,7 @@ function openCartDrawer() {
 function closeCartDrawer() {
   var overlay = document.getElementById('cart-drawer-overlay');
   if (overlay) overlay.classList.remove('is-open');
-  document.body.style.overflow = '';
+  updateBodyScrollLock();
 }
 
 // ---------- Wishlist ----------
@@ -3163,7 +3188,7 @@ function openWishlistDrawer() {
   var overlay = document.getElementById('wishlist-drawer-overlay');
   renderWishlistDrawer(); // always reflect current cart state the moment it's actually opened, not whatever it happened to show last time it rendered
   if (overlay) overlay.classList.add('is-open');
-  document.body.style.overflow = 'hidden';
+  updateBodyScrollLock();
 
   // Same reasoning as openCartDrawer — catches changes made from
   // another device since this page loaded.
@@ -3174,7 +3199,7 @@ function openWishlistDrawer() {
 function closeWishlistDrawer() {
   var overlay = document.getElementById('wishlist-drawer-overlay');
   if (overlay) overlay.classList.remove('is-open');
-  document.body.style.overflow = '';
+  updateBodyScrollLock();
 }
 
 function initWishlistDrawer() {
@@ -3343,10 +3368,14 @@ function initMobileBottomBar() {
 
   if (showCartWishlist) {
     document.getElementById('bb-wishlist-btn').addEventListener('click', function () {
-      openWishlistDrawer();
+      var overlay = document.getElementById('wishlist-drawer-overlay');
+      if (overlay && overlay.classList.contains('is-open')) closeWishlistDrawer();
+      else openWishlistDrawer();
     });
     document.getElementById('bb-bag-btn').addEventListener('click', function () {
-      openCartDrawer();
+      var overlay = document.getElementById('cart-drawer-overlay');
+      if (overlay && overlay.classList.contains('is-open')) closeCartDrawer();
+      else openCartDrawer();
     });
     renderCartDrawer(); // sync the Cart badge to the current cart immediately
     renderWishlistDrawer(); // sync the Wishlist badge to the current wishlist immediately

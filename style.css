@@ -4718,16 +4718,24 @@ a.home-video-tile-link {
   body:has(.collections-sidebar.is-open) .mobile-bottom-bar {
     display: none;
   }
-  /* The cart drawer keeps the bottom bar visible instead (see the
-     .cart-drawer / .cart-drawer-overlay rules below) — both are
-     shortened to stop above the bar, so the bar stays reachable and
-     the drawer's own Checkout buttons never end up hidden behind it. */
+  /* Cart and wishlist both keep the bottom bar visible (unlike the
+     four overlays above) — both are shortened to stop above the bar,
+     so it stays reachable and neither drawer's own bottom content
+     (Checkout buttons, wishlist's Add to Cart buttons) ends up hidden
+     behind it, however they're combined (either open, or both stacked
+     together). */
   .cart-drawer-overlay { bottom: 62px; }
   .cart-drawer { bottom: 62px; }
-  /* Keeps the bar clickable right up to the seam, regardless of the
-     drawer's own z-index (251) — belt-and-braces against any
-     sub-pixel overlap at the boundary between the two. */
-  .mobile-bottom-bar { z-index: 252; }
+  .wishlist-drawer-overlay { bottom: 62px; }
+  .wishlist-drawer { bottom: 62px; }
+  /* Scoped to only when cart or wishlist is actually open — keeps the
+     bar clickable above both drawers' own z-index (251), without
+     affecting the other four overlays, which still hide the bar via
+     display:none and have no need for this. */
+  body:has(#cart-drawer-overlay.is-open) .mobile-bottom-bar,
+  body:has(#wishlist-drawer-overlay.is-open) .mobile-bottom-bar {
+    z-index: 252;
+  }
 }
 /* ---------- Customer account page ---------- */
 .account-wrap {
