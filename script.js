@@ -1242,6 +1242,12 @@ document.addEventListener('click', function (e) {
 function buildLightbox() {
   if (document.querySelector('.lightbox-overlay')) return;
 
+  // Tracks whether THIS lightbox session has pushed a history entry.
+  // Only true while a lightbox is genuinely open — lets closeLightbox()
+  // and the popstate listener below coordinate without either of them
+  // guessing at browser history state.
+  var lightboxHistoryActive = false;
+
   var overlay = document.createElement('div');
   overlay.className = 'lightbox-overlay';
   overlay.innerHTML =
@@ -1594,13 +1600,45 @@ window.openLightbox = function (product) {
     document.body.style.background = 'rgb(43, 13, 26)';
     overlay.classList.add('is-visible');
     updateBodyScrollLock();
+    if (!lightboxHistoryActive) {
+      // Doesn't navigate anywhere or change the visible URL — just adds
+      // an invisible checkpoint the phone's back gesture can land on,
+      // so it closes the lightbox instead of leaving the page.
+      history.pushState({ pavnikaLightbox: true }, '', location.href);
+      lightboxHistoryActive = true;
+    }
   };
 
   function closeLightbox() {
     overlay.classList.remove('is-visible');
     updateBodyScrollLock();
     document.body.style.background = '';
+    if (lightboxHistoryActive) {
+      // Cancels out the entry pushed on open, so browser history ends
+      // up exactly where it would have been if the lightbox had never
+      // touched it — otherwise a later genuine back-press would just
+      // silently consume this leftover entry instead of actually
+      // leaving the page. Set false first: history.back() fires
+      // popstate asynchronously, and the listener below checks this
+      // same flag to know the close already happened here.
+      lightboxHistoryActive = false;
+      history.back();
+    }
   }
+
+  // The phone's back button/edge-swipe (and desktop's back button,
+  // which fires the same event) closes the lightbox instead of
+  // leaving the page, if it's the thing that's currently open.
+  window.addEventListener('popstate', function () {
+    if (lightboxHistoryActive && overlay.classList.contains('is-visible')) {
+      lightboxHistoryActive = false;
+      overlay.classList.remove('is-visible');
+      updateBodyScrollLock();
+      document.body.style.background = '';
+      // No history.back() here — the back navigation already happened
+      // natively; this just catches up the lightbox's own visible state.
+    }
+  });
 
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
   document.getElementById('lightbox-close-mobile').addEventListener('click', closeLightbox);
