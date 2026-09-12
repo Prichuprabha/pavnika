@@ -708,7 +708,18 @@ function initCollectionsPage() {
     var pageItems = filtered.slice(start, start + PAGE_SIZE);
 
     grid.innerHTML = pageItems.map(productCardHTML).join('');
-    if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees');
+    if (countEl) {
+      // Hide the live count entirely in the default "browsing everything"
+      // state — it only earns its place once a filter has actually
+      // narrowed things down, same definition of "no filter" used
+      // elsewhere on this page.
+      if (isUnfiltered()) {
+        countEl.style.display = 'none';
+      } else {
+        countEl.style.display = '';
+        countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees');
+      }
+    }
 
     // Active-filter indicator: without it, arriving from header search
     // gives no visual clue that the grid is already narrowed down.
