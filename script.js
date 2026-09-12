@@ -929,23 +929,6 @@ function initCollectionsPage() {
   function qfOpenSheet(target) {
     if (!qfSheetOverlay || !qfSheetTitle || !qfSheetBody) return;
 
-    if (target === 'occasion') {
-      qfRestoreMovedNode();
-      qfSheetTitle.textContent = 'Occasion';
-      qfSheetBody.innerHTML = '<p class="qf-coming-soon">' +
-        'Occasion filtering isn\u2019t ready yet \u2014 we\u2019ll turn this on once each saree has its occasions tagged.' +
-        '</p>';
-      var gotItBtn = document.createElement('button');
-      gotItBtn.type = 'button';
-      gotItBtn.className = 'btn btn-primary apply-filters-btn qf-apply-btn';
-      gotItBtn.textContent = 'Got it';
-      gotItBtn.addEventListener('click', qfCloseSheet);
-      qfSheetBody.appendChild(gotItBtn);
-      qfSheetOverlay.classList.add('is-open');
-      updateBodyScrollLock();
-      return;
-    }
-
     var cfg = QF_TARGETS[target];
     var node = cfg && document.getElementById(cfg.id);
     if (!cfg || !node) return;
