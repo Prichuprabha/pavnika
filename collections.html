@@ -124,7 +124,7 @@
 
         <div class="sidebar-filter-group">
           <h4>Price Range</h4>
-          <div class="price-range-slider">
+          <div class="price-range-slider" id="price-range-slider">
             <div class="price-range-track">
               <div class="price-range-fill" id="price-track-fill"></div>
             </div>
@@ -186,6 +186,14 @@
           </div>
         </div>
 
+        <div class="sidebar-filter-group sidebar-sold-toggle-group">
+          <label class="toggle-switch">
+            <input type="checkbox" id="hide-sold-toggle">
+            <span class="track"></span>
+            <span class="toggle-label">Show sold out</span>
+          </label>
+        </div>
+
         <div class="sidebar-ad-slot" id="sidebar-ad-slot" style="display:none;">
           <!-- rotating promo media, managed from the admin panel (assets/ads/) -->
         </div>
@@ -210,16 +218,40 @@
 
         <div class="filter-toolbar">
           <span class="active-filter-note" id="active-filter-note"></span>
-          <label class="toggle-switch">
-            <input type="checkbox" id="hide-sold-toggle">
-            <span class="track"></span>
-            <span class="toggle-label">Show sold out</span>
-          </label>
         </div>
+
+        <div class="quick-filter-chips" id="quick-filter-chips">
+          <button type="button" class="qf-chip" data-target="occasion">Occasion</button>
+          <button type="button" class="qf-chip" data-target="price">Price</button>
+          <button type="button" class="qf-chip" data-target="category">Material</button>
+          <button type="button" class="qf-chip" data-target="shade">Shade</button>
+          <button type="button" class="qf-chip" data-target="series">Series</button>
+        </div>
+
+        <div class="active-filters-row" id="active-filters-row" style="display:none;">
+          <div class="active-filters-head">
+            <span>Active Filters</span>
+            <button type="button" id="qf-clear-all">Clear all</button>
+          </div>
+          <div class="active-filters-tags" id="active-filters-tags"></div>
+        </div>
+
+        <p class="live-count" id="results-count"></p>
 
         <div class="product-grid" id="product-grid"></div>
         <p class="no-results" id="no-results" style="display:none;">No sarees match this filter yet — try another material or series.</p>
         <div class="pagination" id="pagination"></div>
+      </div>
+
+      <div class="qf-sheet-overlay" id="qf-sheet-overlay">
+        <div class="qf-sheet">
+          <div class="qf-sheet-grabber"></div>
+          <div class="qf-sheet-head">
+            <h3 id="qf-sheet-title"></h3>
+            <button type="button" id="qf-sheet-close" aria-label="Close">&times;</button>
+          </div>
+          <div class="qf-sheet-body" id="qf-sheet-body"></div>
+        </div>
       </div>
 
     </div>

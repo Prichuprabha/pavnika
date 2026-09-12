@@ -352,7 +352,8 @@ function updateBodyScrollLock() {
     !!document.querySelector('#gate-overlay-root.is-open') ||
     !!document.querySelector('#search-panel.is-open') ||
     !!document.querySelector('#cart-drawer-overlay.is-open') ||
-    !!document.querySelector('#wishlist-drawer-overlay.is-open');
+    !!document.querySelector('#wishlist-drawer-overlay.is-open') ||
+    !!document.querySelector('#qf-sheet-overlay.is-open');
   document.body.style.overflow = anyOpen ? 'hidden' : '';
 }
 
@@ -707,7 +708,7 @@ function initCollectionsPage() {
     var pageItems = filtered.slice(start, start + PAGE_SIZE);
 
     grid.innerHTML = pageItems.map(productCardHTML).join('');
-    if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees') + ' found';
+    if (countEl) countEl.textContent = filtered.length + (filtered.length === 1 ? ' saree' : ' sarees');
 
     // Active-filter indicator: without it, arriving from header search
     // gives no visual clue that the grid is already narrowed down.
@@ -725,8 +726,94 @@ function initCollectionsPage() {
     }
     noResults.style.display = filtered.length === 0 ? 'block' : 'none';
     renderPagination(filtered.length);
+    updateQuickFilterUI();
     initHoverCycle(grid);
     if (window.__revealElements) window.__revealElements(grid, '.product-card');
+  }
+
+  // Mobile quick-filter chips + active-filter tags row. Reads the same
+  // `state` object everything else reads — no separate/duplicated filter
+  // state to drift out of sync. Chips light up and tags appear whenever
+  // the underlying filter differs from its default, regardless of
+  // whether that change came from a chip's bottom sheet or the full
+  // sidebar (they're the same DOM controls either way — see qfOpenSheet).
+  var quickFilterChips = document.querySelectorAll('.qf-chip');
+  var activeFiltersRow = document.getElementById('active-filters-row');
+  var activeFiltersTagsEl = document.getElementById('active-filters-tags');
+
+  function priceIsFullRange() {
+    return (typeof dataMin === 'undefined') || (state.priceMin === dataMin && state.priceMax === dataMax);
+  }
+
+  function updateQuickFilterUI() {
+    if (!quickFilterChips.length) return;
+
+    var fullRange = priceIsFullRange();
+    quickFilterChips.forEach(function (chip) {
+      var target = chip.getAttribute('data-target');
+      var hasValue =
+        (target === 'category' && state.category !== 'all') ||
+        (target === 'series' && state.series !== 'all') ||
+        (target === 'shade' && state.shade !== 'all') ||
+        (target === 'price' && !fullRange);
+      chip.classList.toggle('has-value', hasValue);
+    });
+
+    if (!activeFiltersRow || !activeFiltersTagsEl) return;
+
+    var tags = [];
+    if (state.category !== 'all') {
+      tags.push({ label: state.category, reset: function () {
+        state.category = 'all';
+        setActiveButton(categoryGroup, 'all');
+      }});
+    }
+    if (state.series !== 'all') {
+      tags.push({ label: seriesTitleCase(state.series), reset: function () {
+        state.series = 'all';
+        setActiveButton(seriesGroup, 'all');
+      }});
+    }
+    if (state.shade !== 'all') {
+      tags.push({ label: state.shade, reset: function () {
+        state.shade = 'all';
+        if (shadeGroup) shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
+          b.classList.toggle('active', b.getAttribute('data-value') === 'all');
+        });
+      }});
+    }
+    if (!fullRange) {
+      tags.push({ label: 'AED ' + state.priceMin.toLocaleString() + ' \u2013 AED ' + state.priceMax.toLocaleString(), reset: function () {
+        if (priceMinInput && priceMaxInput) {
+          priceMinInput.value = priceMinInput.min;
+          priceMaxInput.value = priceMaxInput.max;
+          state.priceMin = Number(priceMinInput.min);
+          state.priceMax = Number(priceMaxInput.max);
+          updatePriceUI();
+        }
+      }});
+    }
+
+    if (!tags.length) {
+      activeFiltersRow.style.display = 'none';
+      activeFiltersTagsEl.innerHTML = '';
+      return;
+    }
+
+    activeFiltersRow.style.display = '';
+    activeFiltersTagsEl.innerHTML = tags.map(function (t, i) {
+      return '<span class="active-filter-tag" data-tag-index="' + i + '">' + t.label +
+        ' <button type="button" aria-label="Remove filter">&times;</button></span>';
+    }).join('');
+    activeFiltersTagsEl.querySelectorAll('.active-filter-tag').forEach(function (tagEl, i) {
+      var removeBtn = tagEl.querySelector('button');
+      if (!removeBtn) return;
+      removeBtn.addEventListener('click', function () {
+        tags[i].reset();
+        state.page = 1;
+        render();
+      });
+    });
   }
 
   if (categoryGroup) {
@@ -805,6 +892,94 @@ function initCollectionsPage() {
   }
   if (closeFiltersBtn) closeFiltersBtn.addEventListener('click', closeMobileFilters);
   if (applyFiltersBtn) applyFiltersBtn.addEventListener('click', closeMobileFilters);
+
+  // Mobile quick-filter chip bottom sheets. Rather than duplicating the
+  // Material/Series/Shade lists or the price slider into separate
+  // markup, each sheet borrows the *actual* sidebar control node for as
+  // long as it's open, then hands it back to the sidebar untouched —
+  // one set of buttons, one set of event listeners, no risk of the two
+  // UIs drifting apart.
+  var qfSheetOverlay = document.getElementById('qf-sheet-overlay');
+  var qfSheetTitle = document.getElementById('qf-sheet-title');
+  var qfSheetBody = document.getElementById('qf-sheet-body');
+  var qfSheetClose = document.getElementById('qf-sheet-close');
+  var qfMoved = null; // { node, parent, nextSibling } — where to put it back
+
+  var QF_TARGETS = {
+    price: { id: 'price-range-slider', label: 'Price Range' },
+    category: { id: 'category-filter', label: 'Material' },
+    shade: { id: 'shade-filter', label: 'Shade' },
+    series: { id: 'series-filter', label: 'Series' }
+  };
+
+  function qfRestoreMovedNode() {
+    if (qfMoved) {
+      qfMoved.parent.insertBefore(qfMoved.node, qfMoved.nextSibling);
+      qfMoved = null;
+    }
+    if (qfSheetBody) qfSheetBody.innerHTML = '';
+  }
+
+  function qfCloseSheet() {
+    qfRestoreMovedNode();
+    if (qfSheetOverlay) qfSheetOverlay.classList.remove('is-open');
+    updateBodyScrollLock();
+  }
+
+  function qfOpenSheet(target) {
+    if (!qfSheetOverlay || !qfSheetTitle || !qfSheetBody) return;
+
+    if (target === 'occasion') {
+      qfRestoreMovedNode();
+      qfSheetTitle.textContent = 'Occasion';
+      qfSheetBody.innerHTML = '<p class="qf-coming-soon">' +
+        'Occasion filtering isn\u2019t ready yet \u2014 we\u2019ll turn this on once each saree has its occasions tagged.' +
+        '</p>';
+      var gotItBtn = document.createElement('button');
+      gotItBtn.type = 'button';
+      gotItBtn.className = 'btn btn-primary apply-filters-btn qf-apply-btn';
+      gotItBtn.textContent = 'Got it';
+      gotItBtn.addEventListener('click', qfCloseSheet);
+      qfSheetBody.appendChild(gotItBtn);
+      qfSheetOverlay.classList.add('is-open');
+      updateBodyScrollLock();
+      return;
+    }
+
+    var cfg = QF_TARGETS[target];
+    var node = cfg && document.getElementById(cfg.id);
+    if (!cfg || !node) return;
+
+    qfRestoreMovedNode();
+    qfMoved = { node: node, parent: node.parentNode, nextSibling: node.nextSibling };
+    qfSheetTitle.textContent = cfg.label;
+    qfSheetBody.appendChild(node);
+
+    var applyBtn = document.createElement('button');
+    applyBtn.type = 'button';
+    applyBtn.className = 'btn btn-primary apply-filters-btn qf-apply-btn';
+    applyBtn.textContent = 'Apply ' + cfg.label;
+    applyBtn.addEventListener('click', qfCloseSheet);
+    qfSheetBody.appendChild(applyBtn);
+
+    qfSheetOverlay.classList.add('is-open');
+    updateBodyScrollLock();
+  }
+
+  quickFilterChips.forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      qfOpenSheet(chip.getAttribute('data-target'));
+    });
+  });
+  if (qfSheetClose) qfSheetClose.addEventListener('click', qfCloseSheet);
+  if (qfSheetOverlay) qfSheetOverlay.addEventListener('click', function (e) {
+    if (e.target === qfSheetOverlay) qfCloseSheet();
+  });
+  var qfClearAllBtn = document.getElementById('qf-clear-all');
+  if (qfClearAllBtn) qfClearAllBtn.addEventListener('click', function () {
+    var clearBtn = document.getElementById('clear-all-filters');
+    if (clearBtn) clearBtn.click();
+  });
 
   if (searchInput) {
     searchInput.addEventListener('input', function () {

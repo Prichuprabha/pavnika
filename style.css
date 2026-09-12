@@ -4582,6 +4582,158 @@ header.site-header.header-dark.is-scrolled {
   .collections-sidebar.is-open { transform: translateX(0); }
 }
 
+/* ---------- Collections: mobile quick-filter chips, active tags, live count, bottom sheet ---------- */
+.sidebar-sold-toggle-group { padding-top: 4px; border-bottom: none; }
+
+.quick-filter-chips,
+.active-filters-row,
+.live-count { display: none; }
+
+@media (max-width: 900px) {
+  .filter-toolbar { display: none; }
+
+  .quick-filter-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: 12px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .quick-filter-chips::-webkit-scrollbar { display: none; }
+  .qf-chip {
+    flex-shrink: 0;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--stone);
+    background: var(--ivory);
+    font-family: var(--body);
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .qf-chip.has-value {
+    background: var(--green);
+    border-color: var(--green);
+    color: var(--ivory);
+    font-weight: 600;
+  }
+
+  .active-filters-row { margin-bottom: 12px; }
+  .active-filters-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .active-filters-head span {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--green-deep);
+    font-weight: 600;
+  }
+  #qf-clear-all {
+    background: none;
+    border: none;
+    color: var(--gold);
+    font-family: var(--body);
+    font-size: 0.76rem;
+    cursor: pointer;
+    padding: 0;
+  }
+  .active-filters-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .active-filter-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: var(--gold-light);
+    color: var(--green-deep);
+    font-size: 0.76rem;
+    font-weight: 500;
+  }
+  .active-filter-tag button {
+    background: none;
+    border: none;
+    color: var(--green-deep);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .live-count { display: block; font-size: 0.78rem; color: var(--ink); opacity: 0.7; margin: 0 0 10px; }
+
+  .qf-sheet-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(43, 13, 26, 0.35);
+    z-index: 221;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .qf-sheet-overlay.is-open { display: flex; }
+  .qf-sheet {
+    width: 100%;
+    max-height: 82vh;
+    background: var(--ivory);
+    border-radius: 18px 18px 0 0;
+    padding: 14px 20px 24px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .qf-sheet-grabber {
+    width: 36px;
+    height: 4px;
+    border-radius: 999px;
+    background: var(--stone);
+    margin: 0 auto 14px;
+  }
+  .qf-sheet-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .qf-sheet-head h3 {
+    font-family: var(--display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--green-deep);
+  }
+  #qf-sheet-close {
+    background: none;
+    border: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--green-deep);
+    cursor: pointer;
+  }
+  /* Inside the sheet, the moved-in filter groups (Material/Series lists,
+     Shade swatches, Price slider) shouldn't keep their sidebar scroll cap
+     or bottom border — the sheet itself scrolls and has its own edge. */
+  .qf-sheet-body .filter-bar-vertical { max-height: none; border-bottom: none; }
+  .qf-sheet-body .apply-filters-btn,
+  .qf-apply-btn {
+    display: block;
+    width: 100%;
+    text-align: center;
+    margin-top: 18px;
+  }
+  .qf-coming-soon {
+    font-size: 0.88rem;
+    color: var(--ink);
+    line-height: 1.5;
+    margin: 4px 0 4px;
+  }
+}
+
 /* ---------- Homepage: 4-video showcase grid ---------- */
 .home-video-grid {
   display: grid;
@@ -4715,7 +4867,8 @@ a.home-video-tile-link {
   body:has(.lightbox-overlay.is-visible) .mobile-bottom-bar,
   body:has(.appt-overlay.is-open) .mobile-bottom-bar,
   body:has(#search-panel.is-open) .mobile-bottom-bar,
-  body:has(.collections-sidebar.is-open) .mobile-bottom-bar {
+  body:has(.collections-sidebar.is-open) .mobile-bottom-bar,
+  body:has(#qf-sheet-overlay.is-open) .mobile-bottom-bar {
     display: none;
   }
   /* Cart and wishlist both keep the bottom bar visible (unlike the
