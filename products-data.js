@@ -2836,7 +2836,7 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VFYq9JjX1cZxqD4Ta39S.jpg"
     ],
     "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
-    "material": "Banarasi",
+    "material": "Semi Kanchipuram",
     "shade": "Others",
     "salePrice": null,
     "occasions": [
