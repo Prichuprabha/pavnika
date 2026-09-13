@@ -2837,7 +2837,7 @@ window.PRODUCTS = [
     ],
     "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
     "material": "Semi Kanchipuram",
-    "shade": "Others",
+    "shade": "Green",
     "salePrice": null,
     "occasions": [
       "Wedding Guest",
