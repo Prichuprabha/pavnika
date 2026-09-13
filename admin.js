@@ -61,8 +61,8 @@ var SERIES_CODES = {
 document.addEventListener('DOMContentLoaded', function () {
   var existingToken = localStorage.getItem(ADMIN_TOKEN_KEY);
   if (existingToken && !isTokenExpired(existingToken)) {
-    var email = decodeTokenEmail(existingToken);
-    showAdminPanel(existingToken, email);
+    var displayName = decodeAdminTokenDisplayName(existingToken);
+    showAdminPanel(existingToken, displayName);
   } else {
     if (existingToken) localStorage.removeItem(ADMIN_TOKEN_KEY); // stale — don't leave it sitting around
     initAdminLogin();
@@ -83,11 +83,11 @@ function isTokenExpired(token) {
   }
 }
 
-function decodeTokenEmail(token) {
+function decodeAdminTokenDisplayName(token) {
   try {
     var payloadB64 = token.split('.')[0];
     var payload = JSON.parse(atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/')));
-    return payload.email;
+    return payload.displayName || payload.username || 'Admin';
   } catch (e) {
     return 'Admin';
   }
@@ -96,98 +96,59 @@ function decodeTokenEmail(token) {
 /* ---------- Login ---------- */
 function initAdminLogin() {
   var sendBtn = document.getElementById('admin-send-btn');
-  var verifyBtn = document.getElementById('admin-verify-btn');
-  var email = '';
 
-  function showStepCode() {
-    document.getElementById('admin-step-details').style.display = 'none';
-    document.getElementById('admin-step-code').style.display = 'block';
-    document.getElementById('admin-gate-code').focus();
-  }
-
-  sendBtn.addEventListener('click', function () {
-    var emailInput = document.getElementById('admin-gate-email').value.trim();
+  function attemptLogin() {
+    var username = document.getElementById('admin-gate-username').value.trim();
+    var password = document.getElementById('admin-gate-password').value;
     var errorEl = document.getElementById('admin-error-1');
     errorEl.textContent = '';
 
-    if (!emailInput || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailInput)) {
-      errorEl.textContent = 'Please enter a valid email address.';
+    if (!username || !password) {
+      errorEl.textContent = 'Please enter both a username and password.';
       return;
     }
 
     sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending...';
+    sendBtn.textContent = 'Signing in...';
 
-    fetch('/.netlify/functions/send-otp', {
+    fetch('/.netlify/functions/admin-login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: emailInput })
+      body: JSON.stringify({ username: username, password: password })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
-        if (!result.ok) {
-          errorEl.textContent = result.data.error || 'Something went wrong.';
+        if (!result.ok || !result.data.token) {
+          errorEl.textContent = result.data.error || 'Invalid username or password.';
           return;
         }
-        email = emailInput;
-        showStepCode();
+        localStorage.setItem(ADMIN_TOKEN_KEY, result.data.token);
+        showAdminPanel(result.data.token, result.data.displayName || result.data.username);
       })
       .catch(function () { errorEl.textContent = 'Network error. Please try again.'; })
       .finally(function () {
         sendBtn.disabled = false;
-        sendBtn.textContent = 'Send Verification Code';
+        sendBtn.textContent = 'Sign In';
       });
-  });
+  }
 
-  verifyBtn.addEventListener('click', function () {
-    var code = document.getElementById('admin-gate-code').value.trim();
-    var errorEl = document.getElementById('admin-error-2');
-    errorEl.textContent = '';
-
-    if (!code || code.length !== 4) {
-      errorEl.textContent = 'Please enter the 4-digit code.';
-      return;
-    }
-
-    verifyBtn.disabled = true;
-    verifyBtn.textContent = 'Verifying...';
-
-    fetch('/.netlify/functions/verify-otp', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, code: code })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) {
-          errorEl.textContent = result.data.error || 'Incorrect code.';
-          return;
-        }
-        if (!result.data.adminToken) {
-          errorEl.textContent = 'This email is not authorized for admin access.';
-          return;
-        }
-        localStorage.setItem(ADMIN_TOKEN_KEY, result.data.adminToken);
-        showAdminPanel(result.data.adminToken, email);
-      })
-      .catch(function () { errorEl.textContent = 'Network error. Please try again.'; })
-      .finally(function () {
-        verifyBtn.disabled = false;
-        verifyBtn.textContent = 'Verify & Enter';
-      });
+  sendBtn.addEventListener('click', attemptLogin);
+  ['admin-gate-username', 'admin-gate-password'].forEach(function (id) {
+    document.getElementById(id).addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') attemptLogin();
+    });
   });
 }
 
-function showAdminPanel(token, email) {
+function showAdminPanel(token, displayName) {
   document.body.classList.remove('login-page');
   document.getElementById('admin-login-bg').style.display = 'none';
   document.getElementById('admin-login-wrap').style.display = 'none';
   document.getElementById('admin-shell').style.display = 'flex';
-  document.getElementById('admin-email-display').textContent = email || 'Admin';
+  document.getElementById('admin-email-display').textContent = displayName || 'Admin';
   var avatarCircle = document.getElementById('admin-avatar-circle');
   if (avatarCircle) {
-    var localPart = (email || 'Admin').split('@')[0];
-    var initials = localPart.replace(/[^a-zA-Z]/g, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
+    var initials = String(displayName || 'Admin').replace(/[^a-zA-Z]/g, ' ').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w[0].toUpperCase(); }).join('');
     avatarCircle.textContent = initials || 'A';
   }
   initSareeEditor(token);
@@ -197,6 +158,7 @@ function showAdminPanel(token, email) {
   initVideosEditor(token);
   initPromoCodesEditor(token);
   initPosUsersEditor(token);
+  initAdminUsersEditor(token);
   initStatsDashboard(token);
   initOrdersView(token);
   initManualOrderView(token);
@@ -2391,6 +2353,95 @@ function initPosUsersEditor(token) {
         btn.disabled = false;
         btn.textContent = 'Create User';
         showStatus('error', 'Network error creating user.');
+      });
+  });
+
+  loadUsers();
+}
+
+/* ---------- Admin Users (access to this panel itself) ---------- */
+function initAdminUsersEditor(token) {
+  var statusMsg = document.getElementById('admin-admin-users-status-msg');
+  function showStatus(type, msg) {
+    statusMsg.textContent = msg;
+    statusMsg.className = 'admin-status-msg ' + type;
+    setTimeout(function () { statusMsg.textContent = ''; }, 4000);
+  }
+
+  function renderUsers(users) {
+    var rowsEl = document.getElementById('admin-admin-users-rows');
+    if (!users.length) {
+      rowsEl.innerHTML = '<tr><td colspan="4" style="opacity:0.6;">No admin users yet.</td></tr>';
+      return;
+    }
+    rowsEl.innerHTML = users.map(function (u) {
+      var created = new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      return '<tr><td>' + u.username + '</td><td>' + u.display_name + '</td><td>' + created + '</td>' +
+        '<td><button type="button" class="admin-btn-secondary" data-delete-admin-user="' + u.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
+    }).join('');
+
+    rowsEl.querySelectorAll('[data-delete-admin-user]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var username = btn.closest('tr').querySelector('td').textContent;
+        if (!confirm('Delete admin user "' + username + '"? They will no longer be able to sign in to this panel.')) return;
+        fetch('/.netlify/functions/admin-delete-admin-user', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, id: btn.getAttribute('data-delete-admin-user') })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showStatus('error', result.data.error || 'Could not delete admin user.'); return; }
+            showStatus('success', 'Admin user deleted.');
+            loadUsers();
+          })
+          .catch(function () { showStatus('error', 'Network error deleting admin user.'); });
+      });
+    });
+  }
+
+  function loadUsers() {
+    fetch('/.netlify/functions/admin-list-admin-users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) { renderUsers(data.users || []); })
+      .catch(function () { showStatus('error', 'Could not load admin users.'); });
+  }
+
+  document.getElementById('admin-au-create-btn').addEventListener('click', function () {
+    var username = document.getElementById('admin-au-username').value.trim();
+    var password = document.getElementById('admin-au-password').value;
+    var displayName = document.getElementById('admin-au-display-name').value.trim();
+
+    if (!username || !password) { showStatus('error', 'Username and password are required.'); return; }
+
+    var btn = document.getElementById('admin-au-create-btn');
+    btn.disabled = true;
+    btn.textContent = 'Creating...';
+
+    fetch('/.netlify/functions/admin-create-admin-user', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, username: username, password: password, displayName: displayName })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        btn.disabled = false;
+        btn.textContent = 'Create Admin';
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not create admin user.'); return; }
+        showStatus('success', 'Admin user created.');
+        document.getElementById('admin-au-username').value = '';
+        document.getElementById('admin-au-password').value = '';
+        document.getElementById('admin-au-display-name').value = '';
+        loadUsers();
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = 'Create Admin';
+        showStatus('error', 'Network error creating admin user.');
       });
   });
 

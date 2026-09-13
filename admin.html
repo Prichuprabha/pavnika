@@ -548,17 +548,11 @@
     <img src="assets/logo.png" alt="Pavnika by Saranya" class="gate-logo">
     <div id="admin-step-details">
       <h2>Admin Sign In</h2>
-      <p>This area is restricted. Enter the admin email to continue.</p>
-      <div class="field"><label>Email</label><input type="email" id="admin-gate-email" autocomplete="email"></div>
-      <button type="button" id="admin-send-btn" class="btn btn-primary">Send Verification Code</button>
+      <p>This area is restricted. Enter your admin username and password.</p>
+      <div class="field"><label>Username</label><input type="text" id="admin-gate-username" autocomplete="username"></div>
+      <div class="field"><label>Password</label><input type="password" id="admin-gate-password" autocomplete="current-password"></div>
+      <button type="button" id="admin-send-btn" class="btn btn-primary">Sign In</button>
       <p class="gate-error" id="admin-error-1"></p>
-    </div>
-    <div id="admin-step-code" style="display:none;">
-      <h2>Enter Verification Code</h2>
-      <p>We sent a 4-digit code to your email — it expires in 10 minutes.</p>
-      <input type="text" id="admin-gate-code" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code">
-      <button type="button" id="admin-verify-btn" class="btn btn-primary">Verify &amp; Enter</button>
-      <p class="gate-error" id="admin-error-2"></p>
     </div>
   </div>
 </div>
@@ -582,7 +576,8 @@
     <div class="admin-nav-item" data-view="banners"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></span>Banners</div>
     <div class="admin-nav-item" data-view="promos"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg></span>Promo Codes</div>
     <div class="admin-nav-item" data-view="saree-tags"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24H4a1 1 0 0 0-1 1v5.59a2 2 0 0 0 .59 1.41l9.58 9.59a2 2 0 0 0 2.82 0l5.6-5.6a2 2 0 0 0 0-2.82z"/><circle cx="7.5" cy="7.5" r="1.5"/><line x1="9" y1="14" x2="14" y2="9"/></svg></span>Saree Tags</div>
-    <div class="admin-nav-item" data-view="pos-users"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>POS Users</div>
+    <div class="admin-nav-item" data-view="pos-users"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></span>POS/Admin</div>
+    <div class="admin-nav-item" data-view="admin-users"><span class="admin-nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/><path d="M4 21c1.5-4 5-6 8-6s6.5 2 8 6"/></svg></span>Admin Users</div>
     <div class="admin-sidebar-footer">
       <p>Signed in as</p>
       <p class="admin-email" id="admin-email-display">&nbsp;</p>
@@ -1023,7 +1018,7 @@
     </div>
 
     <div class="admin-view" id="admin-view-pos-users" style="display:none;">
-      <div class="admin-heading"><h1>POS Users</h1></div>
+      <div class="admin-heading"><h1>POS/Admin</h1></div>
       <p class="admin-status-msg" id="admin-pos-users-status-msg"></p>
 
       <div class="admin-form-card">
@@ -1052,6 +1047,37 @@
       <table class="admin-table">
         <thead><tr><th>Username</th><th>Display Name</th><th>Created</th><th>Admin</th><th></th></tr></thead>
         <tbody id="admin-pos-users-rows"></tbody>
+      </table>
+    </div>
+
+    <div class="admin-view" id="admin-view-admin-users" style="display:none;">
+      <div class="admin-heading"><h1>Admin Users</h1></div>
+      <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin:-8px 0 20px;">Accounts that can sign in to this admin panel. This is separate from POS/Admin above — a POS user's "Admin access" only grants extra permissions inside the point-of-sale app, not access to this panel.</p>
+      <p class="admin-status-msg" id="admin-admin-users-status-msg"></p>
+
+      <div class="admin-form-card">
+        <h3>Create New Admin User</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div class="admin-field" style="max-width:200px;">
+            <label>Username</label>
+            <input type="text" id="admin-au-username" placeholder="e.g. saranya">
+          </div>
+          <div class="admin-field" style="max-width:200px;">
+            <label>Password</label>
+            <input type="password" id="admin-au-password" placeholder="Min. 6 characters">
+          </div>
+          <div class="admin-field" style="max-width:200px;">
+            <label>Display Name</label>
+            <input type="text" id="admin-au-display-name" placeholder="Shown in the panel">
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" id="admin-au-create-btn" style="margin-top:14px;">Create Admin</button>
+      </div>
+
+      <h3 class="admin-stats-subheading">Existing admin users</h3>
+      <table class="admin-table">
+        <thead><tr><th>Username</th><th>Display Name</th><th>Created</th><th></th></tr></thead>
+        <tbody id="admin-admin-users-rows"></tbody>
       </table>
     </div>
 
