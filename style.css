@@ -3805,6 +3805,15 @@ body.login-page {
   box-shadow: 0 0 0 2px var(--ivory), 0 0 0 3.5px var(--gold);
 }
 .swatch-btn.active .swatch-label { color: var(--green); font-weight: 700; }
+.swatch-btn.is-unavailable,
+.swatch-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+.swatch-btn.is-unavailable .swatch-circle,
+.swatch-btn:disabled .swatch-circle {
+  filter: grayscale(60%);
+}
 .swatch-all {
   background: conic-gradient(#8C1C2A, #C24A42, #B68A69, #3C6B35, #2E5FA3, #6B3FA0, #171313, #eee, #8C1C2A);
 }
@@ -4773,9 +4782,9 @@ header.site-header.header-dark.is-scrolled {
 @media (max-width: 900px) {
   .filters-box {
     display: block;
-    border: 1px solid var(--stone);
+    border: 1px solid #EFE6DC;
     border-radius: 12px;
-    background: var(--ivory);
+    background: #FFFDFB;
     margin-bottom: 14px;
     overflow: hidden;
   }

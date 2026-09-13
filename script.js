@@ -632,25 +632,49 @@ function initCollectionsPage() {
   // Disables/fades out filter buttons that would produce zero results given
   // the other filter's current selection. Works for any series or category
   // value found in the data — new ones added later need no code changes.
+  //
+  // Whether at least one saree matches `value` for the given filter group,
+  // combined with every OTHER currently active filter (the group being
+  // evaluated is excluded from its own constraint, so each of its own
+  // candidate values gets tested fairly rather than only ever matching
+  // whatever's already selected). Covers Material, Series, Shade, and
+  // Occasion together — not just a single pair — plus the current price
+  // range and "Hide sold out" state, since either can just as easily make
+  // a combination impossible.
+  function isFilterValueAvailable(groupKey, value) {
+    if (value === 'all') return true;
+    return window.PRODUCTS.some(function (p) {
+      if (state.hideSold && p.sold) return false;
+      var price = effectivePrice(p);
+      if (state.priceMin !== null && price < state.priceMin) return false;
+      if (state.priceMax !== null && price > state.priceMax) return false;
+      if (groupKey !== 'category' && state.category !== 'all' && p.material !== state.category) return false;
+      if (groupKey !== 'series' && state.series !== 'all' && p.series !== state.series) return false;
+      if (groupKey !== 'shade' && state.shade !== 'all' && p.shade !== state.shade) return false;
+      if (groupKey !== 'occasion' && state.occasion !== 'all' && (!p.occasions || p.occasions.indexOf(state.occasion) === -1)) return false;
+
+      if (groupKey === 'category') return p.material === value;
+      if (groupKey === 'series') return p.series === value;
+      if (groupKey === 'shade') return p.shade === value;
+      if (groupKey === 'occasion') return !!p.occasions && p.occasions.indexOf(value) !== -1;
+      return true;
+    });
+  }
+
   function updateFilterAvailability() {
-    if (seriesGroup) {
-      var availableSeries = seriesAvailableFor(state.category);
-      seriesGroup.querySelectorAll('.filter-btn').forEach(function (btn) {
+    function applyToGroup(groupEl, groupKey, btnSelector) {
+      if (!groupEl) return;
+      groupEl.querySelectorAll(btnSelector).forEach(function (btn) {
         var val = btn.getAttribute('data-value');
-        var ok = val === 'all' || !!availableSeries[val];
+        var ok = isFilterValueAvailable(groupKey, val);
         btn.disabled = !ok;
         btn.classList.toggle('is-unavailable', !ok);
       });
     }
-    if (categoryGroup) {
-      var availableCategories = categoriesAvailableFor(state.series);
-      categoryGroup.querySelectorAll('.filter-btn').forEach(function (btn) {
-        var val = btn.getAttribute('data-value');
-        var ok = val === 'all' || !!availableCategories[val];
-        btn.disabled = !ok;
-        btn.classList.toggle('is-unavailable', !ok);
-      });
-    }
+    applyToGroup(categoryGroup, 'category', '.filter-btn');
+    applyToGroup(seriesGroup, 'series', '.filter-btn');
+    applyToGroup(shadeGroup, 'shade', '.swatch-btn');
+    applyToGroup(occasionGroup, 'occasion', '.filter-btn');
   }
 
   function setActiveButton(groupEl, value) {
@@ -875,7 +899,7 @@ function initCollectionsPage() {
   if (shadeGroup) {
     shadeGroup.addEventListener('click', function (e) {
       var btn = e.target.closest('.swatch-btn');
-      if (!btn) return;
+      if (!btn || btn.disabled) return;
       state.shade = btn.getAttribute('data-value');
       shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
         b.classList.toggle('active', b === btn);
