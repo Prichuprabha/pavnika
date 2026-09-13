@@ -2815,5 +2815,25 @@ window.PRODUCTS = [
       "Wedding Guest",
       "Festive"
     ]
+  },
+  {
+    "id": "BB006",
+    "series": "BRIDAL BLISS",
+    "category": "Mid Range",
+    "type": "Semi Silk",
+    "sareeType": "Dark Green Semi Silk Brocade",
+    "pattern": "Leaves",
+    "design": "Traditional",
+    "price": 340,
+    "sold": false,
+    "images": [
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7MXrquSit6nlsdpPeOLb.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NOctHaNAKwXHJUI89X6d.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kslRbA03Bm3R90q5Syoi.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BRZFZokKkIIxaveTzGzB.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3piHMHQ6ay9lRd98GVgl.jpg"
+    ],
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg"
   }
 ];
