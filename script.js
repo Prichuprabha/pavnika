@@ -527,7 +527,7 @@ function initCollectionsPage() {
 
   var DEFAULT_PAGE_SIZE = 16;
   var PAGE_SIZE = DEFAULT_PAGE_SIZE;
-  var state = { category: 'all', series: 'all', shade: 'all', occasion: 'all', showSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
+  var state = { category: 'all', series: 'all', shade: 'all', occasion: 'all', hideSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
 
   // No filter applied = the plain "browse everything" view (default
   // category/series/shade, no search text, no price range, default
@@ -545,7 +545,7 @@ function initCollectionsPage() {
     var priceIsFullRange = (typeof dataMin === 'undefined') ||
       (state.priceMin === dataMin && state.priceMax === dataMax);
     return state.category === 'all' && state.series === 'all' && state.shade === 'all' &&
-      state.occasion === 'all' && !state.showSold && !state.query.trim() && priceIsFullRange;
+      state.occasion === 'all' && !state.hideSold && !state.query.trim() && priceIsFullRange;
   }
 
   // Measures how many saree cards actually fit per row right now (the
@@ -600,7 +600,7 @@ function initCollectionsPage() {
       var okSeries = state.series === 'all' || p.series === state.series;
       var okShade = state.shade === 'all' || p.shade === state.shade;
       var okOccasion = state.occasion === 'all' || (p.occasions && p.occasions.indexOf(state.occasion) !== -1);
-      var okSold = state.showSold || !p.sold;
+      var okSold = !state.hideSold || !p.sold;
       var okQuery = !q || SEARCH_FIELDS.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
       });
@@ -903,7 +903,7 @@ function initCollectionsPage() {
 
   if (hideSoldToggle) {
     hideSoldToggle.addEventListener('change', function () {
-      state.showSold = hideSoldToggle.checked;
+      state.hideSold = hideSoldToggle.checked;
       state.page = 1;
       render();
     });
@@ -1122,7 +1122,7 @@ function initCollectionsPage() {
       if (shadeGroup) shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
         b.classList.toggle('active', b.getAttribute('data-value') === 'all');
       });
-      state.showSold = false;
+      state.hideSold = false;
       state.query = '';
       state.sort = 'default';
       state.page = 1;
