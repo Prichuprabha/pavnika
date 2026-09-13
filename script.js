@@ -761,6 +761,7 @@ function initCollectionsPage() {
   }
 
   function updateQuickFilterUI() {
+    if (hideSoldToggleMobile) hideSoldToggleMobile.classList.toggle('checked', state.hideSold);
     if (!quickFilterChips.length) return;
 
     var fullRange = priceIsFullRange();
@@ -906,6 +907,55 @@ function initCollectionsPage() {
       state.hideSold = hideSoldToggle.checked;
       state.page = 1;
       render();
+    });
+  }
+
+  // Mobile toolbar's "Hide sold out" button — mirrors the real checkbox
+  // above rather than keeping its own separate state, so there's still
+  // only one source of truth regardless of which control the person used.
+  var hideSoldToggleMobile = document.getElementById('hide-sold-toggle-mobile');
+  if (hideSoldToggleMobile && hideSoldToggle) {
+    hideSoldToggleMobile.addEventListener('click', function () {
+      hideSoldToggle.checked = !hideSoldToggle.checked;
+      hideSoldToggle.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  }
+
+  // Boxed, collapsible "Filters" section (wraps the quick-filter chips +
+  // active tags on mobile). Starts open — this only ever toggles a CSS
+  // class, no filter state changes.
+  var filtersBox = document.getElementById('filters-box');
+  var filtersBoxHead = document.getElementById('filters-box-head');
+  if (filtersBox && filtersBoxHead) {
+    filtersBoxHead.addEventListener('click', function () {
+      filtersBox.classList.toggle('collapsed');
+    });
+  }
+
+  // Mobile search: expands over "Hide sold out" + Sort on focus so
+  // there's room to type, and collapses back on Cancel, Escape, or a tap
+  // outside the toolbar row.
+  var searchRow = document.getElementById('collections-search-row');
+  var searchCancelBtn = document.getElementById('search-cancel-btn');
+  if (searchRow && searchInput) {
+    searchInput.addEventListener('focus', function () {
+      searchRow.classList.add('search-active');
+    });
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { searchInput.blur(); searchRow.classList.remove('search-active'); }
+    });
+    if (searchCancelBtn) {
+      searchCancelBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.blur();
+        searchRow.classList.remove('search-active');
+      });
+    }
+    document.addEventListener('click', function (e) {
+      if (searchRow.classList.contains('search-active') && !searchRow.contains(e.target)) {
+        searchRow.classList.remove('search-active');
+      }
     });
   }
 

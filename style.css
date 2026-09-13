@@ -4616,9 +4616,9 @@ header.site-header.header-dark.is-scrolled {
   margin-top: 10px;
 }
 
-.collections-search-row { display: flex; gap: 10px; margin-bottom: 16px; }
+.collections-search-row { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; position: relative; }
 .collections-search-row .search-input {
-  flex: 1;
+  width: 100%;
   padding: 9px 18px;
   font-size: 0.86rem;
 }
@@ -4637,24 +4637,15 @@ header.site-header.header-dark.is-scrolled {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231B241E' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
   background-repeat: no-repeat;
   background-position: right 14px center;
-}
-
-/* ---------- Collections: mobile filter drawer ---------- */
-.mobile-filters-btn {
-  display: none;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 16px;
-  border: 1px solid var(--green);
-  border-radius: 999px;
-  background: var(--ivory);
-  color: var(--green);
-  font-family: var(--body);
-  font-size: 0.82rem;
-  font-weight: 600;
-  cursor: pointer;
   flex-shrink: 0;
 }
+.search-wrap-mobile { flex: 1; min-width: 0; }
+
+/* ---------- Collections: mobile filter drawer (retired trigger — the
+   drawer markup/Apply/Close buttons stay in the DOM for now since
+   .collections-sidebar is still the persistent desktop filter panel,
+   but nothing on mobile opens it anymore now that Hide Sold Out and the
+   quick-filter chips/sheets cover everything it used to be needed for) ---------- */
 .apply-filters-btn { display: none; width: 100%; text-align: center; margin-top: 20px; }
 
 .close-filters-btn {
@@ -4668,7 +4659,6 @@ header.site-header.header-dark.is-scrolled {
 }
 
 @media (max-width: 900px) {
-  .mobile-filters-btn { display: inline-flex; }
   .apply-filters-btn { display: block; }
   .close-filters-btn { display: block; }
 
@@ -4686,6 +4676,122 @@ header.site-header.header-dark.is-scrolled {
     transition: transform 0.3s ease;
   }
   .collections-sidebar.is-open { transform: translateX(0); }
+}
+
+/* ---------- Collections: mobile toolbar — Hide Sold Out replaces the old
+   Filters button, and the search field expands over it + Sort on focus ---------- */
+.hide-sold-toggle-mobile,
+.search-cancel-btn { display: none; }
+
+@media (max-width: 900px) {
+  .hide-sold-toggle-mobile {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 9px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--stone);
+    background: var(--ivory);
+    font-family: var(--body);
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 200px;
+    opacity: 1;
+    transition: max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease,
+      padding 0.38s cubic-bezier(0.4, 0, 0.2, 1), margin 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+      border-width 0.28s ease;
+  }
+  .hide-sold-toggle-mobile svg { flex-shrink: 0; }
+  .hide-sold-toggle-mobile.checked { background: var(--green); border-color: var(--green); color: var(--ivory); }
+
+  #sort-select {
+    max-width: 140px;
+    opacity: 1;
+    transition: max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease,
+      padding 0.38s cubic-bezier(0.4, 0, 0.2, 1), margin 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+      border-width 0.28s ease;
+  }
+
+  .search-cancel-btn {
+    display: block;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--green-deep);
+    font-family: var(--body);
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 9px 2px;
+    max-width: 0;
+    opacity: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.08s, opacity 0.25s ease 0.08s;
+  }
+
+  /* Search-expanded state: Hide Sold Out + Sort collapse to nothing as
+     one clean motion (no text reflow — max-width takes the whole pill to
+     0 while it fades), Cancel fades in right after on a slight delay so
+     the whole gesture reads as one continuous motion. */
+  .collections-search-row.search-active .hide-sold-toggle-mobile,
+  .collections-search-row.search-active #sort-select {
+    max-width: 0;
+    opacity: 0;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0;
+    border-width: 0;
+    pointer-events: none;
+  }
+  .collections-search-row.search-active .search-cancel-btn { max-width: 70px; opacity: 1; }
+  .collections-search-row.search-active .search-input { border-color: var(--gold); }
+}
+
+/* ---------- Collections: boxed, collapsible "Filters" section (wraps
+   the quick-filter chips + active tags), mobile only — starts open. ---------- */
+.filters-box { display: none; }
+
+@media (max-width: 900px) {
+  .filters-box {
+    display: block;
+    border: 1px solid var(--stone);
+    border-radius: 12px;
+    background: var(--ivory);
+    margin-bottom: 14px;
+    overflow: hidden;
+  }
+  .filters-box-head {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 11px 14px;
+    border: none;
+    background: none;
+    font-family: var(--body);
+    font-size: 0.74rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--green-deep);
+    cursor: pointer;
+  }
+  .filters-box-chev { margin-left: auto; transition: transform 0.25s ease; flex-shrink: 0; }
+  .filters-box.collapsed .filters-box-chev { transform: rotate(-90deg); }
+  .filters-box-body { padding: 0 14px 12px; }
+  .filters-box.collapsed .filters-box-body { display: none; }
+
+  /* The chip row/active tags now live inside .filters-box, so their own
+     standalone spacing (meant for sitting directly in the page) is no
+     longer needed — the box itself provides the border/padding. */
+  .filters-box .quick-filter-chips { margin-bottom: 0; padding-bottom: 2px; }
+  .filters-box .active-filters-row { margin-bottom: 0; margin-top: 10px; }
 }
 
 /* ---------- Collections: mobile quick-filter chips, active tags, live count, bottom sheet ---------- */

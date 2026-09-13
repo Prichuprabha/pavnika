@@ -42,7 +42,7 @@
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=201">
+<link rel="stylesheet" href="style.css?v=202">
 </head>
 <body>
 <header class="site-header">
@@ -214,38 +214,50 @@
       </aside>
 
       <div class="collections-main">
-        <div class="collections-search-row">
-          <button type="button" id="mobile-filters-btn" class="mobile-filters-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
-            Filters
+        <div class="collections-search-row" id="collections-search-row">
+          <button type="button" id="hide-sold-toggle-mobile" class="hide-sold-toggle-mobile">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a21.6 21.6 0 0 1 5.06-6.06M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a21.7 21.7 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            Hide sold out
           </button>
-          <input type="text" id="collections-search-input" class="search-input" placeholder="Search within these results by design, colour, pattern..." autocomplete="off">
+          <div class="search-wrap-mobile" id="search-wrap-mobile">
+            <input type="text" id="collections-search-input" class="search-input" placeholder="Search within these results by design, colour, pattern..." autocomplete="off">
+          </div>
           <select id="sort-select">
             <option value="default">Sort: Discover</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>
             <option value="newest">Newest First</option>
           </select>
+          <button type="button" class="search-cancel-btn" id="search-cancel-btn">Cancel</button>
         </div>
 
         <div class="filter-toolbar">
           <span class="active-filter-note" id="active-filter-note"></span>
         </div>
 
-        <div class="quick-filter-chips" id="quick-filter-chips">
-          <button type="button" class="qf-chip" data-target="occasion">Occasion</button>
-          <button type="button" class="qf-chip" data-target="price">Price</button>
-          <button type="button" class="qf-chip" data-target="category">Material</button>
-          <button type="button" class="qf-chip" data-target="shade">Shade</button>
-          <button type="button" class="qf-chip" data-target="series">Series</button>
-        </div>
+        <div class="filters-box" id="filters-box">
+          <button type="button" class="filters-box-head" id="filters-box-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="11" y1="18" x2="13" y2="18"/></svg>
+            Filters
+            <svg class="filters-box-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="filters-box-body" id="filters-box-body">
+            <div class="quick-filter-chips" id="quick-filter-chips">
+              <button type="button" class="qf-chip" data-target="occasion">Occasion</button>
+              <button type="button" class="qf-chip" data-target="price">Price</button>
+              <button type="button" class="qf-chip" data-target="category">Material</button>
+              <button type="button" class="qf-chip" data-target="shade">Shade</button>
+              <button type="button" class="qf-chip" data-target="series">Series</button>
+            </div>
 
-        <div class="active-filters-row" id="active-filters-row" style="display:none;">
-          <div class="active-filters-head">
-            <span>Active Filters</span>
-            <button type="button" id="qf-clear-all">Clear all</button>
+            <div class="active-filters-row" id="active-filters-row" style="display:none;">
+              <div class="active-filters-head">
+                <span>Active Filters</span>
+                <button type="button" id="qf-clear-all">Clear all</button>
+              </div>
+              <div class="active-filters-tags" id="active-filters-tags"></div>
+            </div>
           </div>
-          <div class="active-filters-tags" id="active-filters-tags"></div>
         </div>
 
         <p class="live-count" id="results-count"></p>
@@ -346,6 +358,6 @@
 </footer>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=201"></script>
+<script src="script.js?v=202"></script>
 </body>
 </html>
