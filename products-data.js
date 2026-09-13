@@ -2832,8 +2832,16 @@ window.PRODUCTS = [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NOctHaNAKwXHJUI89X6d.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kslRbA03Bm3R90q5Syoi.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BRZFZokKkIIxaveTzGzB.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3piHMHQ6ay9lRd98GVgl.jpg"
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3piHMHQ6ay9lRd98GVgl.jpg",
+      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VFYq9JjX1cZxqD4Ta39S.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg"
+    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
+    "material": "Banarasi",
+    "shade": "Others",
+    "salePrice": null,
+    "occasions": [
+      "Wedding Guest",
+      "Reception"
+    ]
   }
 ];
