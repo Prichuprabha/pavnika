@@ -1,13 +1,13 @@
 // netlify/functions/_admin-auth.js
 //
 // Shared helper: issues and verifies short-lived signed tokens proving a
-// request genuinely came from a session that completed OTP verification
-// as the admin email. Prevents anyone from forging admin write requests
-// just by knowing/guessing the admin email address.
+// request came from someone who successfully logged in with a real
+// admin_users username/password (see admin-login.js). Every write-facing
+// admin-*.js function checks verifyAdminToken(token) before doing
+// anything — same pattern as _pos-auth.js's POS session tokens.
 
 const crypto = require('crypto');
 
-const ADMIN_EMAIL = 'pavnikabysaranya@gmail.com';
 const TOKEN_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours — a working day
 
 function getSecret() {
@@ -16,8 +16,13 @@ function getSecret() {
   return secret;
 }
 
-function signAdminToken(email) {
-  var payload = JSON.stringify({ email: email, exp: Date.now() + TOKEN_TTL_MS });
+function signAdminToken(userId, username, displayName) {
+  var payload = JSON.stringify({
+    userId: userId,
+    username: username,
+    displayName: displayName,
+    exp: Date.now() + TOKEN_TTL_MS
+  });
   var payloadB64 = Buffer.from(payload).toString('base64url');
   var sig = crypto.createHmac('sha256', getSecret()).update(payloadB64).digest('base64url');
   return payloadB64 + '.' + sig;
@@ -42,10 +47,8 @@ function verifyAdminToken(token) {
     return null;
   }
 
-  if (!payload.email || payload.email !== ADMIN_EMAIL) return null;
-  if (!payload.exp || Date.now() > payload.exp) return null;
-
+  if (!payload.userId || !payload.exp || Date.now() > payload.exp) return null;
   return payload;
 }
 
-module.exports = { ADMIN_EMAIL: ADMIN_EMAIL, signAdminToken: signAdminToken, verifyAdminToken: verifyAdminToken };
+module.exports = { signAdminToken: signAdminToken, verifyAdminToken: verifyAdminToken };

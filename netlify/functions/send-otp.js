@@ -3,15 +3,14 @@
 // POST { email }
 // - If this email is already verified in Supabase, responds immediately
 //   with { alreadyVerified: true } and sends no email.
-// - Exception: the admin email always gets a fresh code, even if
-//   previously verified — admin sessions must be re-proven each time,
-//   never skipped, since a skipped check would let anyone who simply
-//   knows the admin email obtain an admin session.
 // - Otherwise generates a 4-digit code, stores it (with a 10-minute
 //   expiry) in Supabase, and emails it via Resend.
 // - Rate limited to 5 sends per email per rolling hour.
+//
+// Customer/visitor account verification only — admin login moved to a
+// separate username/password flow (see admin-login.js) and no longer
+// touches this endpoint at all.
 
-const { ADMIN_EMAIL } = require('./_admin-auth');
 const { signVisitorToken } = require('./_visitor-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -74,18 +73,15 @@ exports.handler = async function (event) {
     const existing = existingRows[0];
 
     // Already verified before — no need to send a code at all.
-    if (existing && existing.verified && email !== ADMIN_EMAIL) {
+    if (existing && existing.verified) {
       var response = { alreadyVerified: true };
       try { response.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
       return { statusCode: 200, body: JSON.stringify(response) };
     }
 
-    // Rate limiting — not applied to the admin email, since every admin
-    // login already requires a fresh code (never skipped), and admin
-    // needs to log in frequently during normal use/testing.
     const now = Date.now();
     let sendCount = 1;
-    if (email !== ADMIN_EMAIL && existing && existing.last_sent_at) {
+    if (existing && existing.last_sent_at) {
       const lastSent = new Date(existing.last_sent_at).getTime();
       if (now - lastSent < RATE_LIMIT_WINDOW_MS) {
         if ((existing.send_count || 0) >= RATE_LIMIT_MAX) {

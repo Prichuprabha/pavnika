@@ -4,10 +4,11 @@
 // - Checks the code against Supabase.
 // - If it matches and hasn't expired, marks the visitor as verified
 //   and returns { verified: true }.
-// - If the verifying email is the admin email, also returns a signed
-//   adminToken the admin panel uses to authenticate write requests.
+//
+// Customer/visitor account verification only — admin login moved to a
+// separate username/password flow (see admin-login.js) and no longer
+// touches this endpoint at all.
 
-const { ADMIN_EMAIL, signAdminToken } = require('./_admin-auth');
 const { signVisitorToken } = require('./_visitor-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -81,7 +82,6 @@ exports.handler = async function (event, context) {
     if (record.verified) {
       var alreadyResponse = { verified: true };
       try { alreadyResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
-      if (email === ADMIN_EMAIL) alreadyResponse.adminToken = signAdminToken(email);
       return { statusCode: 200, body: JSON.stringify(alreadyResponse) };
     }
 
@@ -109,7 +109,6 @@ exports.handler = async function (event, context) {
 
     var freshResponse = { verified: true };
     try { freshResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
-    if (email === ADMIN_EMAIL) freshResponse.adminToken = signAdminToken(email);
     return { statusCode: 200, body: JSON.stringify(freshResponse) };
   } catch (err) {
     console.error(err);
