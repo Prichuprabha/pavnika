@@ -4490,6 +4490,14 @@ header.site-header.header-dark.is-scrolled {
   .collections-layout { grid-template-columns: 1fr; }
 }
 
+/* Grid items default to min-width: auto, which lets a wide-content child
+   (the chip row's nowrap buttons) force this whole column wider than its
+   1fr track — the internal overflow-x: auto on .quick-filter-chips never
+   even gets a chance to kick in, because .collections-main itself grows
+   past the viewport first. min-width: 0 makes it respect the track width
+   and actually contain that overflow internally, as intended. */
+.collections-main { min-width: 0; }
+
 .collections-sidebar {
 }
 .sidebar-heading-row {
@@ -4729,10 +4737,15 @@ header.site-header.header-dark.is-scrolled {
     cursor: pointer;
     padding: 9px 2px;
     max-width: 0;
+    margin-left: -10px; /* cancels the row's flex `gap` before this item
+                            while it's invisible/zero-width, so it can't
+                            shift Sort's right edge out of alignment with
+                            the Filters box below it */
     opacity: 0;
     overflow: hidden;
     white-space: nowrap;
-    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.08s, opacity 0.25s ease 0.08s;
+    transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.08s, opacity 0.25s ease 0.08s,
+      margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1) 0.08s;
   }
 
   /* Search-expanded state: Hide Sold Out + Sort collapse to nothing as
@@ -4749,7 +4762,7 @@ header.site-header.header-dark.is-scrolled {
     border-width: 0;
     pointer-events: none;
   }
-  .collections-search-row.search-active .search-cancel-btn { max-width: 70px; opacity: 1; }
+  .collections-search-row.search-active .search-cancel-btn { max-width: 70px; opacity: 1; margin-left: 0; }
   .collections-search-row.search-active .search-input { border-color: var(--gold); }
 }
 

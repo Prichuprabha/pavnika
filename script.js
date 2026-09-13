@@ -537,7 +537,7 @@ function initCollectionsPage() {
   // with a filtered (often much smaller, unpredictable) result count,
   // stretching or shrinking the page size to chase a "full row" isn't
   // worth the inconsistency it'd introduce.
-  function isUnfiltered() {
+  function isUnfiltered(ignoreHideSold) {
     // priceMin/priceMax are never actually null — the slider pre-fills
     // to the full catalogue's min/max on load (see dataMin/dataMax
     // below), so "no price filter" means the slider is still sitting
@@ -545,7 +545,7 @@ function initCollectionsPage() {
     var priceIsFullRange = (typeof dataMin === 'undefined') ||
       (state.priceMin === dataMin && state.priceMax === dataMax);
     return state.category === 'all' && state.series === 'all' && state.shade === 'all' &&
-      state.occasion === 'all' && !state.hideSold && !state.query.trim() && priceIsFullRange;
+      state.occasion === 'all' && (ignoreHideSold || !state.hideSold) && !state.query.trim() && priceIsFullRange;
   }
 
   // Measures how many saree cards actually fit per row right now (the
@@ -715,9 +715,11 @@ function initCollectionsPage() {
     if (countEl) {
       // Hide the live count entirely in the default "browsing everything"
       // state — it only earns its place once a filter has actually
-      // narrowed things down, same definition of "no filter" used
-      // elsewhere on this page.
-      if (isUnfiltered()) {
+      // narrowed things down. "Hide sold out" on its own doesn't count
+      // as narrowing for this purpose (per explicit request) — the count
+      // only appears once a real filter (category/series/shade/occasion/
+      // search/price) is active, whether or not sold-out is also hidden.
+      if (isUnfiltered(true)) {
         countEl.style.display = 'none';
       } else {
         countEl.style.display = '';
