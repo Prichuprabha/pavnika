@@ -2827,7 +2827,7 @@ window.PRODUCTS = [
     "sareeType": "Dark Green Semi Silk Brocade",
     "pattern": "Leaves",
     "design": "Traditional",
-    "price": 340,
+    "price": 295,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
@@ -2843,8 +2843,8 @@ window.PRODUCTS = [
     "shade": "Green",
     "salePrice": null,
     "occasions": [
-      "Wedding Guest",
-      "Reception"
+      "Bridal",
+      "Wedding Guest"
     ]
   }
 ];
