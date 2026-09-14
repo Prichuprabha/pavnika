@@ -369,7 +369,22 @@
 
     codeReader = new ZXing.BrowserMultiFormatReader();
     codeReader.decodeFromConstraints(
-      { video: { facingMode: 'environment' } },
+      {
+        video: {
+          facingMode: 'environment',
+          // Bare facingMode alone lets the browser pick its own default
+          // resolution/focus behaviour — fine on a flagship camera's ISP,
+          // but on mid-range hardware that can mean a low-res stream and
+          // a focus that doesn't keep re-adjusting up close, both of
+          // which make a barcode's fine lines come out too soft to
+          // decode. Asking for these explicitly costs nothing on devices
+          // that don't support them (unsupported `advanced` entries are
+          // just ignored, not an error) but noticeably helps on ones that do.
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          advanced: [{ focusMode: 'continuous' }]
+        }
+      },
       videoEl,
       function (result, err) {
         if (result) {
