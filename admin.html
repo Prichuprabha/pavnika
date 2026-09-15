@@ -114,11 +114,15 @@
   }
 
   .admin-pending-card {
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
     background: #F8ECE2; border: 1px solid #B68A69; border-radius: 6px;
     padding: 10px 14px; margin-bottom: 8px; font-size: 0.82rem;
   }
-  .admin-pending-card .elapsed { font-weight: 600; color: var(--gold); }
+  /* The label (order # + customer name) is the one that should wrap/
+     shrink when it runs long — the elapsed time next to it must never
+     be squeezed into wrapping too. */
+  .admin-pending-card > span:first-child { flex: 1; min-width: 0; }
+  .admin-pending-card .elapsed { font-weight: 600; color: var(--gold); white-space: nowrap; flex-shrink: 0; }
 
   .admin-toggle-label { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; cursor: pointer; }
   .admin-toggle-switch { position: relative; display: inline-block; width: 36px; height: 20px; flex-shrink: 0; }
@@ -317,8 +321,14 @@
   }
   .admin-stats-subheading { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; font-weight: 600; }
 
-  .admin-rank-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--ivory-deep); font-size: 0.82rem; }
+  .admin-rank-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--ivory-deep); font-size: 0.82rem; }
   .admin-rank-row:last-child { border-bottom: none; }
+  /* Same fix as .admin-pending-card, generalized structurally (first
+     child = label, last child = value) so it covers every list that
+     reuses this row style — Recent Orders, Top Sarees, Recent Logins —
+     without needing to touch each one's markup individually. */
+  .admin-rank-row > span:first-child { flex: 1; min-width: 0; }
+  .admin-rank-row > span:last-child { white-space: nowrap; flex-shrink: 0; }
   .admin-rank-row .rank-value { font-weight: 600; color: var(--green-deep); font-size: 0.78rem; }
 
   .admin-bar-row { margin-bottom: 12px; }
