@@ -2330,7 +2330,7 @@ window.PRODUCTS = [
     "design": "Traditional",
     "material": "Pure Kanchipuram",
     "shade": "Maroon / Red",
-    "price": 964,
+    "price": 940,
     "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AYIeDHgHw9G0Q2qQ08SA.jpg",
@@ -2344,7 +2344,8 @@ window.PRODUCTS = [
     "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AYIeDHgHw9G0Q2qQ08SA.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": null
   },
   {
     "id": "FV009",
