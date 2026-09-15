@@ -33,6 +33,25 @@ function buildPendingFollowUpMessage(order, items) {
     'These are still saved for you. Let us know if you\u2019d like a hand with anything, or if you had a question we can help with.';
 }
 
+// Plain-text version of the same address JSON addressBlock() renders as
+// HTML — used inside WhatsApp message text, which can't carry markup.
+function formatAddressPlain(addrJson) {
+  var addr;
+  try { addr = JSON.parse(addrJson || '{}'); } catch (e) { addr = {}; }
+  return [addr.building, addr.street, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(', ');
+}
+
+function buildDispatchConfirmationMessage(order) {
+  var firstName = (order.customer_name || '').trim().split(' ')[0] || 'there';
+  var address = formatAddressPlain(order.shipping_address || order.billing_address);
+
+  return 'Hi ' + firstName + ', this is the Pavnika dispatch team \u2014 thank you so much for your order!\n\n' +
+    'Before we dispatch, we\u2019d like to confirm your delivery address:\n' + (address || 'Not provided') + '\n\n' +
+    'Could you please reply to confirm this is correct?\n\n' +
+    'If possible, it would also help a lot if you could share your Google Maps pin/location for an easier delivery.\n\n' +
+    'Thank you again for shopping with Pavnika by Saranya!';
+}
+
 function buildWhatsAppUrl(phone, message) {
   var digits = String(phone || '').replace(/[^\d]/g, '');
   return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message);
@@ -2527,6 +2546,14 @@ function initOrdersView(token) {
     }
   }
 
+  // The "Awaiting dispatch" elapsed times ("2h 14m ago") were only ever
+  // computed once, at whatever moment renderSummary() last ran — leaving
+  // this tab open just let them sit there frozen instead of ticking
+  // forward, since nothing was re-rendering them on their own. This just
+  // re-runs the cheap, already-in-memory summary render every minute so
+  // they stay live without needing a manual refresh or refetch.
+  setInterval(renderSummary, 60000);
+
   var ordersPresetFromTime = null; // set when a rolling-window preset (24h/7d/30d) is active, overriding the manual date inputs
   var currentDrawerShopOrder = null; // the shop order currently open in the detail drawer, for the Delete button
 
@@ -2945,6 +2972,16 @@ function initOrdersView(token) {
       if (order.status === 'pending' && order.customer_phone) {
         html += '<button type="button" class="btn btn-outline" id="admin-pending-followup-btn" style="width:100%; margin-top:10px;">Send WhatsApp Follow-up</button>';
       }
+
+      // Only while an order is still awaiting dispatch — Paid, or Cash
+      // on Delivery still pending — does confirming the delivery
+      // address make sense. Once it's shipped/delivered/cancelled,
+      // there's nothing left to confirm before dispatch.
+      if ((order.status === 'paid' || order.status === 'cod_pending') && order.customer_phone) {
+        html += '<h4 style="margin-top:20px;">Dispatch</h4>' +
+          '<button type="button" class="btn" id="admin-dispatch-confirm-btn" style="width:100%; background:#25D366; color:#fff;">Send WhatsApp confirmation</button>' +
+          '<p style="font-size:0.72rem; opacity:0.6; margin:6px 0 0;">Confirms delivery address, asks for a Google Maps pin, thanks the customer, signed from the Pavnika dispatch team.</p>';
+      }
     }
 
     drawerBody.innerHTML = html;
@@ -2954,6 +2991,14 @@ function initOrdersView(token) {
     if (followUpBtn) {
       followUpBtn.addEventListener('click', function () {
         var message = buildPendingFollowUpMessage(order, items);
+        window.open(buildWhatsAppUrl(order.customer_phone, message), '_blank', 'noopener');
+      });
+    }
+
+    var dispatchConfirmBtn = document.getElementById('admin-dispatch-confirm-btn');
+    if (dispatchConfirmBtn) {
+      dispatchConfirmBtn.addEventListener('click', function () {
+        var message = buildDispatchConfirmationMessage(order);
         window.open(buildWhatsAppUrl(order.customer_phone, message), '_blank', 'noopener');
       });
     }
