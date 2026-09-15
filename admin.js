@@ -45,9 +45,10 @@ function buildDispatchConfirmationMessage(order) {
   var firstName = (order.customer_name || '').trim().split(' ')[0] || 'there';
   var address = formatAddressPlain(order.shipping_address || order.billing_address);
 
+  // Wrapped in single asterisks — WhatsApp's own bold syntax, not a
+  // typo — so the address stands out once the message is actually sent.
   return 'Hi ' + firstName + ', this is the Pavnika dispatch team \u2014 thank you so much for your order!\n\n' +
-    'Before we dispatch, we\u2019d like to confirm your delivery address:\n' + (address || 'Not provided') + '\n\n' +
-    'Could you please reply to confirm this is correct?\n\n' +
+    'Before we dispatch, we\u2019d like to confirm your delivery address:\n*' + (address || 'Not provided') + '*\n\n' +
     'If possible, it would also help a lot if you could share your Google Maps pin/location for an easier delivery.\n\n' +
     'Thank you again for shopping with Pavnika by Saranya!';
 }
