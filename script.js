@@ -332,6 +332,20 @@ function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Generates the "Pav_Instal_XXXXXX" reference appended to installment
+// WhatsApp requests. 6 uppercase base36 characters (0-9, A-Z) gives
+// 36^6 (~2.18 billion) distinct values — about 69 years' worth of
+// seconds — so counting from a fixed reference point (28 Aug 2025,
+// rather than the 1970 Unix epoch, which would only leave headroom
+// until 2039) makes every code decode back to one exact second with no
+// repeats until the year 2094, unlike a 6-digit decimal code which
+// would cycle every ~11.5 days.
+var INSTALLMENT_REF_EPOCH_MS = Date.UTC(2025, 7, 28, 0, 0, 0); // 28 Aug 2025 00:00:00 UTC
+function installmentRequestRef() {
+  var secondsSinceRef = Math.floor((Date.now() - INSTALLMENT_REF_EPOCH_MS) / 1000);
+  return secondsSinceRef.toString(36).toUpperCase().padStart(6, '0');
+}
+
 // Every full-screen overlay (cart, wishlist, lightbox, search, filters,
 // the appointment popup, and the verification gate) independently set
 // document.body.style.overflow on open/close. That was safe as long as
@@ -3961,6 +3975,7 @@ function initCartDrawer() {
     msg += '\n\nCart total: AED ' + formatAED(total);
     msg += '\n\nTotal for installment (incl. processing charges): *AED ' + formatAED(installmentTotal) + '*';
     msg += '\n\nCould you please send me a payment link to proceed?';
+    msg += '\n\nRequest Ref: Pav_Instal_' + installmentRequestRef();
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
 
