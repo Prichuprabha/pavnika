@@ -3914,8 +3914,19 @@ function initCartDrawer() {
       '<div class="cart-drawer-items" id="cart-drawer-items-wrap"></div>' +
       '<div class="cart-drawer-footer" id="cart-drawer-footer" style="display:none;">' +
         '<a href="checkout.html" class="btn btn-primary" id="cart-proceed-btn" style="display:block; text-align:center; margin-bottom:10px;">Proceed to Checkout</a>' +
-        '<button type="button" class="btn btn-ghost" id="cart-checkout-btn" style="width:100%;">Checkout via WhatsApp</button>' +
-        '<p>Proceed to Checkout for a full order review, or checkout directly via WhatsApp.</p>' +
+        '<button type="button" class="installment-btn" id="cart-installment-btn">' +
+          '<span class="wa-icon">' +
+            '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.7-.9-2-1-.3-.1-.5-.1-.7.1s-.8 1-.9 1.2c-.2.2-.3.2-.6.1-.3-.1-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.4 0-.5-.1-.1-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4s-1 1-1 2.4 1 2.8 1.2 3c.1.2 2.1 3.2 5 4.4.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.7-.7 2-1.4.2-.7.2-1.2.1-1.4-.1-.1-.3-.2-.6-.3z"/><path d="M12 2C6.5 2 2 6.5 2 12c0 1.8.5 3.6 1.4 5.1L2 22l5.1-1.3c1.5.8 3.2 1.3 4.9 1.3 5.5 0 10-4.5 10-10S17.5 2 12 2zm0 18.3c-1.6 0-3.1-.4-4.5-1.2l-.3-.2-3.3.9.9-3.2-.2-.3c-.9-1.4-1.3-3-1.3-4.6 0-4.6 3.8-8.4 8.4-8.4s8.4 3.8 8.4 8.4-3.8 8.4-8.1 8.4z"/></svg>' +
+          '</span>' +
+          '<span class="btn-text">' +
+            '<span class="line1">Want to pay in installments?</span>' +
+            '<span class="line2">Message us</span>' +
+          '</span>' +
+          '<span class="btn-arrow">' +
+            '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>' +
+          '</span>' +
+        '</button>' +
+        '<p>Proceed to Checkout to pay in full, or message us if you\u2019d like to pay in installments.</p>' +
       '</div>' +
     '</div>';
   document.body.appendChild(overlay);
@@ -3933,14 +3944,23 @@ function initCartDrawer() {
     if (removeBtn) cartRemoveItem(removeBtn.getAttribute('data-id'));
   });
 
-  document.getElementById('cart-checkout-btn').addEventListener('click', function () {
+  document.getElementById('cart-installment-btn').addEventListener('click', function () {
     var ids = cartGetItems();
     if (!ids.length) return;
     var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
     var lines = products.map(function (p) { return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design); });
     var total = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
-    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees from my cart:\n' + lines.join('\n');
-    msg += '\n\nTotal: AED ' + formatAED(total);
+    // Tabby/Tamara's own merchant fee (6.75%) plus a flat AED 1 is
+    // folded into this total rather than charged at the normal
+    // checkout price — Nomod has no way to apply this only when
+    // installments are chosen, so it's covered here instead. The
+    // formula itself is never shown to the customer, only the two
+    // final totals.
+    var installmentTotal = total * 1.0675 + 1;
+    var msg = 'Hi Pavnika by Saranya, I\u2019d like to pay in installments (Tabby/Tamara) for the following sarees from my cart:\n' + lines.join('\n');
+    msg += '\n\nCart total: AED ' + formatAED(total);
+    msg += '\n\nTotal for installment (incl. processing charges): *AED ' + formatAED(installmentTotal) + '*';
+    msg += '\n\nCould you please send me a payment link to proceed?';
     window.open('https://wa.me/971526630307?text=' + encodeURIComponent(msg), '_blank', 'noopener');
   });
 
