@@ -948,14 +948,41 @@ function initCollectionsPage() {
   }
 
   // Boxed, collapsible "Filters" section (wraps the quick-filter chips +
-  // active tags on mobile). Starts open — this only ever toggles a CSS
-  // class, no filter state changes.
+  // active tags on mobile). Starts collapsed by default — only ever
+  // toggles a CSS class, no filter state changes. See the URL-param
+  // handling further down: it's forced open instead when arriving with
+  // a filter already applied (e.g. from a home page occasion tile), so
+  // the active tag isn't hidden behind a collapsed heading.
   var filtersBox = document.getElementById('filters-box');
   var filtersBoxHead = document.getElementById('filters-box-head');
   if (filtersBox && filtersBoxHead) {
     filtersBoxHead.addEventListener('click', function () {
       filtersBox.classList.toggle('collapsed');
     });
+  }
+
+  // Scroll hint: shows a small circled arrow at the right edge of the
+  // chip row whenever it has more content scrolled off-screen than fits
+  // in view, so the row's overflow-x:auto isn't the only (easy-to-miss)
+  // clue that Series/etc. exist past the edge.
+  var chipScrollWrap = document.querySelector('.chip-scroll-wrap');
+  var chipScrollHint = document.getElementById('chip-scroll-hint');
+  if (chipScrollWrap && chipScrollHint && quickFilterChips.length) {
+    var chipRowEl = document.getElementById('quick-filter-chips');
+    var updateChipScrollHint = function () {
+      var atEnd = chipRowEl.scrollLeft + chipRowEl.clientWidth >= chipRowEl.scrollWidth - 4;
+      var overflowing = chipRowEl.scrollWidth > chipRowEl.clientWidth + 4;
+      chipScrollHint.classList.toggle('hidden', atEnd || !overflowing);
+    };
+    chipRowEl.addEventListener('scroll', updateChipScrollHint);
+    window.addEventListener('resize', updateChipScrollHint);
+    // Re-check whenever the box actually becomes visible/expands —
+    // scrollWidth reads as 0 while display:none, so a check made only
+    // once at page load (while still collapsed) would be wrong.
+    filtersBoxHead.addEventListener('click', function () {
+      setTimeout(updateChipScrollHint, 0);
+    });
+    setTimeout(updateChipScrollHint, 0);
   }
 
   // Mobile search: expands over "Hide sold out" + Sort on focus so
@@ -1262,6 +1289,14 @@ function initCollectionsPage() {
   if (queryParam && searchInput) {
     state.query = queryParam;
     searchInput.value = queryParam;
+  }
+
+  // Arriving with a filter already applied (e.g. a home page occasion
+  // tile) should show that immediately, not hide it behind a collapsed
+  // "Filters" heading — a normal visit with nothing pre-applied still
+  // starts collapsed as usual.
+  if (filtersBox && (state.occasion !== 'all' || state.category !== 'all' || state.series !== 'all' || queryParam)) {
+    filtersBox.classList.remove('collapsed');
   }
 
   render();

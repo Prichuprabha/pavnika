@@ -4813,6 +4813,30 @@ header.site-header.header-dark.is-scrolled {
      standalone spacing (meant for sitting directly in the page) is no
      longer needed — the box itself provides the border/padding. */
   .filters-box .quick-filter-chips { margin-bottom: 0; padding-bottom: 2px; }
+
+  /* Scroll hint: a small circled arrow at the right edge whenever the
+     chip row has more chips scrolled off-screen than fit in view — the
+     row's own overflow-x:auto has no visual cue otherwise, so it was
+     easy to miss that Series/etc. existed past the edge. */
+  .chip-scroll-wrap { position: relative; }
+  .chip-scroll-hint {
+    position: absolute; right: -2px; top: 0; bottom: 2px; width: 40px;
+    display: flex; align-items: center; justify-content: flex-end;
+    background: linear-gradient(to right, rgba(255,253,251,0), rgba(255,253,251,0.94) 55%);
+    pointer-events: none; transition: opacity 0.2s ease;
+  }
+  .chip-scroll-hint-circle {
+    width: 24px; height: 24px; border-radius: 50%; background: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 6px rgba(43,13,26,0.25);
+    animation: chipScrollNudge 1.6s ease-in-out infinite;
+  }
+  .chip-scroll-hint-circle svg { color: var(--ivory); }
+  .chip-scroll-hint.hidden { opacity: 0; }
+  @keyframes chipScrollNudge { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(3px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .chip-scroll-hint-circle { animation: none; }
+  }
   .filters-box .active-filters-row { margin-bottom: 0; margin-top: 10px; }
 }
 

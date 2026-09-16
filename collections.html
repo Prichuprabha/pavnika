@@ -42,7 +42,7 @@
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=205">
+<link rel="stylesheet" href="style.css?v=206">
 </head>
 <body>
 <header class="site-header">
@@ -242,12 +242,19 @@
             <svg class="filters-box-chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
           </button>
           <div class="filters-box-body" id="filters-box-body">
-            <div class="quick-filter-chips" id="quick-filter-chips">
-              <button type="button" class="qf-chip" data-target="occasion">Occasion</button>
-              <button type="button" class="qf-chip" data-target="price">Price</button>
-              <button type="button" class="qf-chip" data-target="category">Material</button>
-              <button type="button" class="qf-chip" data-target="shade">Shade</button>
-              <button type="button" class="qf-chip" data-target="series">Series</button>
+            <div class="chip-scroll-wrap">
+              <div class="quick-filter-chips" id="quick-filter-chips">
+                <button type="button" class="qf-chip" data-target="occasion">Occasion</button>
+                <button type="button" class="qf-chip" data-target="price">Price</button>
+                <button type="button" class="qf-chip" data-target="category">Material</button>
+                <button type="button" class="qf-chip" data-target="shade">Shade</button>
+                <button type="button" class="qf-chip" data-target="series">Series</button>
+              </div>
+              <div class="chip-scroll-hint" id="chip-scroll-hint">
+                <div class="chip-scroll-hint-circle">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 6 15 12 9 18"/></svg>
+                </div>
+              </div>
             </div>
 
             <div class="active-filters-row" id="active-filters-row" style="display:none;">
@@ -358,6 +365,6 @@
 </footer>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=205"></script>
+<script src="script.js?v=206"></script>
 </body>
 </html>
