@@ -4956,6 +4956,15 @@ function initPinnedHero() {
     }).join('');
   }
 
+  function timeLeftToExpire(createdAt) {
+    var cutoff = new Date(createdAt).getTime() + 24 * 60 * 60 * 1000;
+    var remaining = cutoff - Date.now();
+    if (remaining <= 0) return 'any moment now';
+    var h = Math.floor(remaining / (60 * 60 * 1000));
+    var m = Math.floor((remaining % (60 * 60 * 1000)) / (60 * 1000));
+    return h + 'h ' + m + 'm';
+  }
+
   function renderOrders(data) {
     document.getElementById('acct-count-online').textContent = data.onlineOrders.length;
     document.getElementById('acct-count-shop').textContent = data.shopSales.length;
@@ -4965,12 +4974,23 @@ function initPinnedHero() {
       ? data.onlineOrders.map(function (o) {
           var items = parseItems(o.items);
           var img = itemImage(items);
-          return '<div class="acct-order" data-source="online" data-id="' + esc(o.id) + '">' +
+          // A truly "pending" order hasn't been paid yet — there's
+          // nothing to receipt, and it's also the one status subject to
+          // cleanup-pending-orders.js's 24-hour window, so it gets a
+          // countdown instead of being clickable. Cash on Delivery
+          // orders are real, permanent orders and never get this
+          // treatment, even though payment is also still outstanding.
+          var isPending = o.status === 'pending';
+          var countdown = isPending
+            ? '<p class="ao-countdown">Reserved for you \u2014 complete payment within ' + timeLeftToExpire(o.created_at) + ' to keep this order</p>'
+            : '';
+          return '<div class="acct-order' + (isPending ? ' pending' : '') + '" data-source="online" data-id="' + esc(o.id) + '"' + (isPending ? ' data-pending="1"' : '') + '>' +
             (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '') +
             '<div class="ao-mid">' +
               '<p class="ao-ref">' + esc(o.order_number || o.id) + '</p>' +
               '<p class="ao-items">' + esc(itemsSummary(items)) + '</p>' +
               '<p class="ao-date">' + shortDate(o.created_at) + '</p>' +
+              countdown +
             '</div>' +
             '<div class="ao-right"><p class="ao-total">AED ' + money(o.total) + '</p>' + statusBadge(o.status) + '</div>' +
           '</div>';
@@ -4996,10 +5016,21 @@ function initPinnedHero() {
       : '<p class="acct-empty">No in-store purchases on record for this email.</p>';
 
     document.querySelectorAll('.acct-order').forEach(function (row) {
+      if (row.getAttribute('data-pending') === '1') return; // nothing to show a receipt for yet
       row.addEventListener('click', function () {
         showReceipt(row.getAttribute('data-source'), row.getAttribute('data-id'));
       });
     });
+
+    // Keep the countdown honest without needing a manual refresh —
+    // cheap since it only touches already-in-memory order data, same
+    // pattern as the admin panel's "Awaiting dispatch" auto-refresh.
+    if (!renderOrders._intervalStarted) {
+      renderOrders._intervalStarted = true;
+      setInterval(function () {
+        if (accountData) renderOrders(accountData);
+      }, 60000);
+    }
   }
 
   function render(data) {
@@ -5016,6 +5047,10 @@ function initPinnedHero() {
   }
 
   // ---- Receipt ----
+  function paymentModeLabel(status) {
+    return /cod/i.test(String(status || '')) ? 'Cash on Delivery' : 'Card (Nomod)';
+  }
+
   function showReceipt(source, id) {
     var rec = null;
     if (source === 'online') {
@@ -5029,6 +5064,8 @@ function initPinnedHero() {
         discount: o.discount_amount || 0,
         promo: o.promo_code || '',
         total: o.total,
+        status: o.status,
+        mode: paymentModeLabel(o.status),
         payments: o.payment_method ? [{ label: o.payment_method, amount: o.total }] : []
       };
     } else {
@@ -5054,6 +5091,11 @@ function initPinnedHero() {
         discount: s.discount_amount || 0,
         promo: '',
         total: s.total,
+        // In-store sales are always completed at the point of sale —
+        // "mode" here would just duplicate the "Paid by" breakdown
+        // already shown below, so it's left out for this source only.
+        status: 'paid',
+        mode: null,
         payments: payments
       };
     }
@@ -5064,6 +5106,10 @@ function initPinnedHero() {
       '<div class="rc-row"><span>Reference</span><span>' + esc(rec.reference) + '</span></div>' +
       '<div class="rc-row"><span>Date</span><span>' + longDate(rec.date) + '</span></div>' +
       '<div class="rc-row"><span>Customer</span><span>' + esc(accountData.name || accountData.email) + '</span></div>';
+
+    document.getElementById('rc-payment-status').innerHTML =
+      '<div class="rc-row"><span>Payment Status</span><span>' + statusBadge(rec.status) + '</span></div>' +
+      (rec.mode ? '<div class="rc-row"><span>Payment Mode</span><span>' + esc(rec.mode) + '</span></div>' : '');
 
     document.getElementById('rc-items').innerHTML = rec.items.length
       ? rec.items.map(function (it) {
@@ -5092,6 +5138,22 @@ function initPinnedHero() {
         }).join('')
       : '';
     payEl.style.display = rec.payments.length ? 'block' : 'none';
+
+    // Real, scannable CODE128 barcode — same library already used for
+    // the printable saree tags — encoding this receipt's own reference
+    // number, so a receipt can be looked up again with a scan instead
+    // of typing it in (see the admin Orders barcode-scan button).
+    document.getElementById('rc-barcode-text').textContent = rec.reference;
+    if (typeof JsBarcode !== 'undefined') {
+      try {
+        JsBarcode('#rc-barcode-svg', String(rec.reference), {
+          format: 'CODE128', width: 1.6, height: 40, displayValue: false, margin: 0
+        });
+      } catch (e) {
+        console.error('Could not render receipt barcode:', e);
+        document.getElementById('rc-barcode').style.display = 'none';
+      }
+    }
 
     document.getElementById('receipt-msg').textContent = '';
     document.getElementById('receipt-msg').className = 'acct-msg';

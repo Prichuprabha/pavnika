@@ -42,7 +42,7 @@
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=204">
+<link rel="stylesheet" href="style.css?v=205">
 </head>
 <body>
 <header class="site-header">
@@ -93,8 +93,13 @@
   <div id="account-content" style="display:none;">
 
     <section class="acct-ident">
-      <p class="acct-ident-label">Signed in as</p>
-      <p class="acct-ident-email" id="acct-email"></p>
+      <div class="acct-ident-icon" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>
+      </div>
+      <div>
+        <p class="acct-ident-label">Signed in as</p>
+        <p class="acct-ident-email" id="acct-email"></p>
+      </div>
     </section>
 
     <section class="acct-card acct-gift" id="acct-gift-card" style="display:none;">
@@ -134,9 +139,15 @@
       </div>
 
       <div class="rc-meta" id="rc-meta"></div>
+      <div class="rc-payment-status" id="rc-payment-status"></div>
       <div class="rc-items" id="rc-items"></div>
       <div class="rc-totals" id="rc-totals"></div>
       <div class="rc-payment" id="rc-payment"></div>
+
+      <div class="rc-barcode" id="rc-barcode">
+        <svg id="rc-barcode-svg"></svg>
+        <p class="rc-barcode-text" id="rc-barcode-text"></p>
+      </div>
 
       <p class="rc-footer">Thank you for shopping with us</p>
     </div>
@@ -208,6 +219,7 @@
 </footer>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=204"></script>
+<script src="jsbarcode.min.js"></script>
+<script src="script.js?v=205"></script>
 </body>
 </html>

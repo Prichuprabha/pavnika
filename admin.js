@@ -2476,6 +2476,68 @@ function initOrdersView(token) {
   var statusFilter = document.getElementById('admin-orders-status-filter');
   var searchInput = document.getElementById('admin-orders-search');
 
+  // Barcode scanner: scans a printed/on-screen receipt barcode (see
+  // rc-barcode in account.html) and drops the decoded reference straight
+  // into this same search box, reusing whatever filtering it already
+  // does — no separate lookup logic to keep in sync.
+  (function initOrdersBarcodeScanner() {
+    var scanBtn = document.getElementById('admin-orders-scan-btn');
+    var overlay = document.getElementById('admin-scan-overlay');
+    var videoEl = document.getElementById('admin-scan-video');
+    var errorEl = document.getElementById('admin-scan-error');
+    var closeBtn = document.getElementById('admin-scan-close');
+    if (!scanBtn || !overlay || !videoEl) return;
+
+    var codeReader = null;
+
+    function stopScanning() {
+      if (codeReader) {
+        try { codeReader.reset(); } catch (e) { /* already stopped */ }
+        codeReader = null;
+      }
+      overlay.style.display = 'none';
+    }
+
+    function startScanning() {
+      if (typeof ZXing === 'undefined') {
+        errorEl.textContent = 'Barcode scanning isn\u2019t available in this browser.';
+        errorEl.style.display = 'block';
+        overlay.style.display = 'flex';
+        return;
+      }
+      errorEl.style.display = 'none';
+      overlay.style.display = 'flex';
+
+      codeReader = new ZXing.BrowserMultiFormatReader();
+      codeReader.decodeFromConstraints(
+        {
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            advanced: [{ focusMode: 'continuous' }]
+          }
+        },
+        videoEl,
+        function (result) {
+          if (!result) return; // NotFoundException fires constantly between frames — normal, not an error
+          var text = result.getText ? result.getText() : result.text;
+          if (!text) return;
+          stopScanning();
+          searchInput.value = text;
+          searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+          if (navigator.vibrate) navigator.vibrate(60);
+        }
+      ).catch(function () {
+        errorEl.textContent = 'Could not access the camera. Check camera permissions and try again.';
+        errorEl.style.display = 'block';
+      });
+    }
+
+    scanBtn.addEventListener('click', startScanning);
+    closeBtn.addEventListener('click', stopScanning);
+  })();
+
   var allOrders = [];
   var allShopOrders = [];
   var activeChannel = 'online';
