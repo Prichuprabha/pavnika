@@ -967,6 +967,7 @@ function initCollectionsPage() {
   // clue that Series/etc. exist past the edge.
   var chipScrollWrap = document.querySelector('.chip-scroll-wrap');
   var chipScrollHint = document.getElementById('chip-scroll-hint');
+  var chipScrollHintBtn = document.getElementById('chip-scroll-hint-btn');
   if (chipScrollWrap && chipScrollHint && quickFilterChips.length) {
     var chipRowEl = document.getElementById('quick-filter-chips');
     var updateChipScrollHint = function () {
@@ -983,6 +984,21 @@ function initCollectionsPage() {
       setTimeout(updateChipScrollHint, 0);
     });
     setTimeout(updateChipScrollHint, 0);
+
+    // The hint is a real button, not just a passive decoration — tapping
+    // it actually scrolls the row, rather than (as reported) silently
+    // passing the tap through to whichever chip happens to sit underneath.
+    if (chipScrollHintBtn) {
+      chipScrollHintBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var amount = chipRowEl.clientWidth * 0.6;
+        if (typeof chipRowEl.scrollBy === 'function') {
+          chipRowEl.scrollBy({ left: amount, behavior: 'smooth' });
+        } else {
+          chipRowEl.scrollLeft += amount;
+        }
+      });
+    }
   }
 
   // Mobile search: expands over "Hide sold out" + Sort on focus so

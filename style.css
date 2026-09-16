@@ -4830,6 +4830,13 @@ header.site-header.header-dark.is-scrolled {
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 2px 6px rgba(43,13,26,0.25);
     animation: chipScrollNudge 1.6s ease-in-out infinite;
+    /* The fade wrapper is pointer-events:none so it never blocks taps on
+       the chip underneath it, but the circle itself is a real button —
+       re-enable pointer events just for it, and give it a large enough
+       tap target that it doesn't just re-trigger the chip behind it. */
+    pointer-events: auto;
+    border: none;
+    cursor: pointer;
   }
   .chip-scroll-hint-circle svg { color: var(--ivory); }
   .chip-scroll-hint.hidden { opacity: 0; }
