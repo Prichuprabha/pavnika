@@ -5033,7 +5033,9 @@ function initPinnedHero() {
           // treatment, even though payment is also still outstanding.
           var isPending = o.status === 'pending';
           var countdown = isPending
-            ? '<p class="ao-countdown">Reserved for you \u2014 complete payment within ' + timeLeftToExpire(o.created_at) + ' to keep this order</p>'
+            ? '<p class="ao-countdown">Reserved for you \u2014 complete payment within ' + timeLeftToExpire(o.created_at) + ' to keep this order</p>' +
+              '<button type="button" class="continue-payment-btn" data-order-id="' + esc(o.id) + '">Continue Payment</button>' +
+              '<p class="acct-msg" data-order-error="' + esc(o.id) + '"></p>'
             : '';
           return '<div class="acct-order' + (isPending ? ' pending' : '') + '" data-source="online" data-id="' + esc(o.id) + '"' + (isPending ? ' data-pending="1"' : '') + '>' +
             (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '') +
@@ -5070,6 +5072,49 @@ function initPinnedHero() {
       if (row.getAttribute('data-pending') === '1') return; // nothing to show a receipt for yet
       row.addEventListener('click', function () {
         showReceipt(row.getAttribute('data-source'), row.getAttribute('data-id'));
+      });
+    });
+
+    // "Continue Payment": the original Nomod session has almost
+    // certainly expired by now, so this asks the server to create a
+    // fresh one for the same order (re-verifying price/availability)
+    // rather than trying to relink to a dead session.
+    document.querySelectorAll('.continue-payment-btn').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation(); // the row itself has no click handler for pending orders, but keep this defensive
+        var orderId = btn.getAttribute('data-order-id');
+        var errorEl = document.querySelector('[data-order-error="' + orderId + '"]');
+        if (errorEl) { errorEl.textContent = ''; errorEl.className = 'acct-msg'; }
+        btn.disabled = true;
+        var originalText = btn.textContent;
+        btn.textContent = 'Preparing payment\u2026';
+
+        fetch('/.netlify/functions/resume-nomod-checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorToken: gateGetCookie('pavnika_verified'), orderId: orderId })
+        })
+          .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
+          .then(function (result) {
+            if (!result.ok || !result.data.checkoutUrl) {
+              btn.disabled = false;
+              btn.textContent = originalText;
+              if (errorEl) {
+                errorEl.textContent = result.data.error || 'Could not continue this order right now. Please try again.';
+                errorEl.className = 'acct-msg error';
+              }
+              return;
+            }
+            window.location.href = result.data.checkoutUrl;
+          })
+          .catch(function () {
+            btn.disabled = false;
+            btn.textContent = originalText;
+            if (errorEl) {
+              errorEl.textContent = 'Network error. Please check your connection and try again.';
+              errorEl.className = 'acct-msg error';
+            }
+          });
       });
     });
 
