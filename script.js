@@ -4714,6 +4714,11 @@ function initDraggableMarquee(container, track, options) {
   var dragStartX = 0;
   var dragStartOffset = 0;
   var dragDistance = 0;
+  var dragStartFired = false;
+  // Same 6px threshold already used further down to tell a genuine drag
+  // apart from an ordinary tap/click — reused here so onDragStart fires
+  // under the exact same definition of "this is actually a drag."
+  var CLICK_VS_DRAG_THRESHOLD = 6;
 
   // Momentum/inertia after releasing a drag — this is what makes it
   // feel like native touch scrolling instead of stopping dead the
@@ -4779,19 +4784,28 @@ function initDraggableMarquee(container, track, options) {
     dragStartX = clientX;
     dragStartOffset = offset;
     dragDistance = 0;
+    dragStartFired = false;
     recentSamples = [{ x: clientX, t: performance.now() }];
     track.style.cursor = 'grabbing';
-    // Starting to actually drag/scroll the row is one of the two ways a
-    // revealed "Explore more" tile used to get stuck showing (the other
-    // was tapping away entirely — see initTouchRevealTiles' own
-    // document-level listener for that half of the fix).
-    if (options.onDragStart) options.onDragStart();
   }
   function dragMove(clientX) {
     if (!isDragging) return;
     var delta = clientX - dragStartX;
     dragDistance = Math.abs(delta);
     offset = dragStartOffset + delta;
+
+    // onDragStart only fires once real movement is confirmed, not on
+    // the initial mousedown/touchstart itself — mobile browsers also
+    // fire a synthetic mousedown for an ordinary tap (as part of the
+    // touch-to-mouse event emulation sequence), so firing this
+    // immediately meant every single tap — not just genuine drags —
+    // was clearing a tile's just-revealed "Explore more" state a
+    // moment before its own click handler could see it, which is what
+    // made a tile impossible to ever get past "reveal" to "navigate."
+    if (!dragStartFired && dragDistance > CLICK_VS_DRAG_THRESHOLD) {
+      dragStartFired = true;
+      if (options.onDragStart) options.onDragStart();
+    }
 
     var now = performance.now();
     recentSamples.push({ x: clientX, t: now });
