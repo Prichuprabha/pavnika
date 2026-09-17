@@ -486,10 +486,10 @@ function initHoverCycle(grid) {
 //     page scroll or a marquee drag — the tile itself is small, so
 //     there's nothing to "read" that a scroll would interrupt.
 //   - Reviews: a longer window (2x, 4.4s) that does NOT end on a page
-//     scroll, since someone reading a long review may need to scroll
-//     the page up or down to see all of it. It still ends on dragging
-//     the reviews row itself (genuinely moving on to browse other
-//     reviews) or tapping away entirely.
+//     scroll, and does NOT end on dragging the reviews row itself
+//     either — someone reading a long review may need to move the row
+//     (not just the page) to see the rest of it. Only its own timer, a
+//     manual "Show less" tap, or tapping away entirely closes it.
 var TILE_AUTO_REVERT_MS = 2200;
 var REVIEW_AUTO_REVERT_MS = TILE_AUTO_REVERT_MS * 2;
 var activeTileRevertTimer = null;
@@ -570,10 +570,9 @@ function initTouchRevealTiles() {
   //      that's a deliberate action either way.
   //   2. A genuine page scroll — previously nothing handled this at
   //      all. Deliberately tiles-only: a long review may need the page
-  //      scrolled up or down to actually read it, so scrolling must NOT
-  //      collapse it (only its own timer or dragging the reviews row
-  //      does — see scheduleReviewAutoRevert and the reviews marquee's
-  //      onDragStart).
+  //      (or its own row) moved to actually read it, so neither a page
+  //      scroll nor dragging the reviews row collapses it — only its
+  //      own auto-revert timer or an explicit "Show less" tap does.
   if (!initTouchRevealTiles._globalDismissWired) {
     initTouchRevealTiles._globalDismissWired = true;
     document.addEventListener('click', function (e) {
@@ -2992,8 +2991,14 @@ function initReviewsMarquee() {
         }
       });
 
+      // No onDragStart here (unlike the tile marquees): an expanded
+      // review should only ever close via its own auto-revert timer or
+      // an explicit "Show less" tap — dragging the reviews row itself
+      // no longer collapses it either, matching the page-scroll
+      // behavior above for the same reason (reading a review may mean
+      // moving the row, not just the page, to see the rest of it).
       var marqueeEl = document.querySelector('.reviews-marquee');
-      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true, onDragStart: dismissReviewExpansion });
+      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true });
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }

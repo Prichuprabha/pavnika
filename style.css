@@ -1965,10 +1965,16 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   overflow: hidden;
   transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
-.category-tile:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 16px 32px -18px rgba(43, 13, 26, 0.35);
-  border-color: var(--gold);
+/* :hover gated to real hover-capable pointers only — see the .occ-tile
+   comment above for why: an ungated :hover here is what let a tapped
+   tile on mobile get stuck "revealed" indefinitely, immune to the
+   .is-revealed timer/scroll-dismiss logic entirely. */
+@media (hover: hover) {
+  .category-tile:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px -18px rgba(43, 13, 26, 0.35);
+    border-color: var(--gold);
+  }
 }
 .category-tile-media {
   aspect-ratio: 4 / 5;
@@ -2001,9 +2007,11 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   transition: opacity 0.3s ease;
   z-index: 2;
 }
-.category-tile:hover .tile-hover-overlay,
 .category-tile:focus-visible .tile-hover-overlay,
 .category-tile.is-revealed .tile-hover-overlay { opacity: 1; }
+@media (hover: hover) {
+  .category-tile:hover .tile-hover-overlay { opacity: 1; }
+}
 .tile-explore-more {
   display: inline-flex;
   align-items: center;
@@ -2019,8 +2027,10 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   color: var(--ivory);
   transition: background 0.2s ease;
 }
-.category-tile:hover .tile-explore-more,
 .category-tile.is-revealed .tile-explore-more { background: var(--gold); }
+@media (hover: hover) {
+  .category-tile:hover .tile-explore-more { background: var(--gold); }
+}
 .tile-hover-overlay p {
   font-family: var(--display);
   font-style: italic;
@@ -3597,7 +3607,12 @@ body.login-page {
   border: 2px solid var(--stone);
   transition: border-color 0.25s ease;
 }
-.curated-tile:hover { border-color: var(--gold); }
+/* :hover gated to real hover-capable pointers only — see the .occ-tile
+   comment (above, in the Shop by Occasion section) for why an ungated
+   :hover here is what let a tapped tile get stuck open on mobile. */
+@media (hover: hover) {
+  .curated-tile:hover { border-color: var(--gold); }
+}
 .curated-tile-media .id-badge {
   position: absolute;
   top: 10px; right: 10px;
@@ -3623,7 +3638,9 @@ body.login-page {
   will-change: transform;
   backface-visibility: hidden;
 }
-.curated-tile:hover .curated-tile-media img { transform: scale(1.06); }
+@media (hover: hover) {
+  .curated-tile:hover .curated-tile-media img { transform: scale(1.06); }
+}
 
 .curated-tile-gradient {
   position: absolute;
@@ -3645,8 +3662,10 @@ body.login-page {
   transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
-.curated-tile:hover .curated-tile-text,
 .curated-tile.is-revealed .curated-tile-text { transform: translateY(0); }
+@media (hover: hover) {
+  .curated-tile:hover .curated-tile-text { transform: translateY(0); }
+}
 .curated-series {
   display: block;
   font-size: 0.65rem;
@@ -3684,11 +3703,15 @@ body.login-page {
   opacity: 0;
   transition: opacity 0.5s ease 0.16s;
 }
-.curated-tile:hover .curated-hover-detail,
-.curated-tile:hover .curated-explore,
 .curated-tile.is-revealed .curated-hover-detail,
 .curated-tile.is-revealed .curated-explore {
   opacity: 1;
+}
+@media (hover: hover) {
+  .curated-tile:hover .curated-hover-detail,
+  .curated-tile:hover .curated-explore {
+    opacity: 1;
+  }
 }
 .curated-tile:focus-visible .curated-hover-detail,
 .curated-tile:focus-visible .curated-explore {
@@ -4257,14 +4280,25 @@ header.site-header.header-dark.is-scrolled {
   border-radius: 4px; overflow: hidden; background: var(--stone);
   border: 2px solid var(--stone); transition: border-color 0.25s ease;
 }
-.occ-tile:hover .occ-photo { border-color: var(--gold); }
 .occ-photo img {
   width: 100%; height: 100%; object-fit: cover; display: block;
   transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform; backface-visibility: hidden;
 }
-.occ-tile:hover .occ-photo img,
 .occ-tile.is-revealed .occ-photo img { transform: scale(1.08); }
+/* Plain :hover is gated to devices that actually have a hover pointer.
+   Without this, tapping a tile on iOS/Android Safari/Chrome triggers a
+   REAL CSS :hover state that has no corresponding mouseleave/touchend
+   to clear it — it gets stuck showing until the user taps some other
+   hoverable element entirely. That's a browser-level state, invisible
+   to and uncontrollable by the .is-revealed class/timer/scroll-dismiss
+   logic below, which is why a stuck-open tile survived its own 2.2s
+   auto-revert timer, a marquee drag, and a full page scroll: none of
+   that JS ever had any effect on the actual thing holding it open. */
+@media (hover: hover) {
+  .occ-tile:hover .occ-photo { border-color: var(--gold); }
+  .occ-tile:hover .occ-photo img { transform: scale(1.08); }
+}
 
 /* Hover/reveal cue — same language as .curated-tile elsewhere on this
    page: image zooms in, a dark gradient rises from the bottom, and a
@@ -4277,23 +4311,29 @@ header.site-header.header-dark.is-scrolled {
   background: linear-gradient(to top, rgba(43, 13, 26, 0.82) 0%, rgba(43, 13, 26, 0.25) 40%, rgba(43, 13, 26, 0) 66%);
   opacity: 0; transition: opacity 0.5s ease;
 }
-.occ-tile:hover .occ-tile-gradient,
 .occ-tile.is-revealed .occ-tile-gradient { opacity: 1; }
+@media (hover: hover) {
+  .occ-tile:hover .occ-tile-gradient { opacity: 1; }
+}
 .occ-tile-cta {
   position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 14px 16px; text-align: center;
   transform: translateY(20px); opacity: 0;
   transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
 }
-.occ-tile:hover .occ-tile-cta,
 .occ-tile.is-revealed .occ-tile-cta { transform: translateY(0); opacity: 1; }
+@media (hover: hover) {
+  .occ-tile:hover .occ-tile-cta { transform: translateY(0); opacity: 1; }
+}
 .occ-tile-cta span {
   display: inline-flex; align-items: center; gap: 6px; font-size: 0.72rem; font-weight: 600;
   text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-light);
   border-bottom: 1px solid rgba(246, 223, 213, 0.55); padding-bottom: 3px;
 }
 .occ-tile-cta span svg { width: 13px; height: 13px; transition: transform 0.3s ease; vertical-align: -2px; }
-.occ-tile:hover .occ-tile-cta span svg,
 .occ-tile.is-revealed .occ-tile-cta span svg { transform: translateX(4px); }
+@media (hover: hover) {
+  .occ-tile:hover .occ-tile-cta span svg { transform: translateX(4px); }
+}
 .occ-tile.soon .occ-photo { opacity: 0.9; }
 .occ-tile.soon .occ-tile-cta { display: none; }
 @media (prefers-reduced-motion: reduce) {
