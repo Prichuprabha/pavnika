@@ -482,6 +482,8 @@ function initHoverCycle(grid) {
 function initTouchRevealTiles() {
   if (!window.matchMedia('(hover: none)').matches) return; // desktop: hover works natively
 
+  var ALL_REVEALABLE_SELECTOR = '.curated-tile, .category-tile, .occ-tile';
+
   function wire(selector) {
     document.querySelectorAll(selector).forEach(function (tile) {
       tile.addEventListener('click', function (e) {
@@ -495,7 +497,7 @@ function initTouchRevealTiles() {
           // auto-scroll too — otherwise the tile (and the "Explore
           // more" button just revealed on it) keeps sliding away
           // while someone's trying to tap it.
-          var track = tile.closest('.category-track, .reviews-track');
+          var track = tile.closest('.category-track, .reviews-track, .occ-track');
           if (track) track.__pauseAutoScrollUntil = Date.now() + 3000;
         }
         // else: already revealed — let the tap navigate normally.
@@ -506,6 +508,22 @@ function initTouchRevealTiles() {
   wire('.curated-tile');
   wire('.category-tile');
   wire('.occ-tile');
+
+  // The reveal previously only ever cleared when a DIFFERENT tile in the
+  // same row was tapped — tapping away entirely (anywhere else on the
+  // page) left it stuck showing "Explore more" indefinitely. Wired once
+  // globally, guarded against re-registering on every call (this
+  // function legitimately runs more than once as different sections
+  // finish loading).
+  if (!initTouchRevealTiles._outsideTapWired) {
+    initTouchRevealTiles._outsideTapWired = true;
+    document.addEventListener('click', function (e) {
+      if (e.target.closest(ALL_REVEALABLE_SELECTOR)) return; // handled by wire()'s own listener above
+      document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed').forEach(function (t) {
+        t.classList.remove('is-revealed');
+      });
+    });
+  }
 }
 
 /* ---------- Daily shuffle ---------- */
@@ -2207,7 +2225,14 @@ function initHomeSeriesMarquee() {
   });
 
   var marqueeEl = document.querySelector('.category-marquee');
-  if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.45 });
+  if (marqueeEl) {
+    initDraggableMarquee(marqueeEl, track, {
+      speed: 0.45,
+      onDragStart: function () {
+        document.querySelectorAll('.category-tile.is-revealed').forEach(function (t) { t.classList.remove('is-revealed'); });
+      }
+    });
+  }
 }
 
 /* ---------- Homepage: 4-video showcase grid ----------
@@ -4720,6 +4745,11 @@ function initDraggableMarquee(container, track, options) {
     dragDistance = 0;
     recentSamples = [{ x: clientX, t: performance.now() }];
     track.style.cursor = 'grabbing';
+    // Starting to actually drag/scroll the row is one of the two ways a
+    // revealed "Explore more" tile used to get stuck showing (the other
+    // was tapping away entirely — see initTouchRevealTiles' own
+    // document-level listener for that half of the fix).
+    if (options.onDragStart) options.onDragStart();
   }
   function dragMove(clientX) {
     if (!isDragging) return;
@@ -4861,6 +4891,42 @@ function initOccasionShowcase() {
       }
     }
   });
+
+  initOccasionMobileMarquee(grid);
+}
+
+// Mobile-only auto-scrolling version of the Shop by Occasion tiles,
+// matching Signature Series' marquee — the desktop grid above is
+// hidden on mobile instead (see .occ-marquee in style.css). Clones the
+// already-finalized tiles (CTA text/"Coming soon" already applied by
+// the caller) rather than rebuilding them from scratch, so there's one
+// source of truth for what each tile looks like.
+function initOccasionMobileMarquee(grid) {
+  var mobileTrack = document.getElementById('occ-track');
+  var mobileMarquee = document.getElementById('occ-marquee');
+  if (!mobileTrack || !mobileMarquee) return;
+
+  var tiles = Array.prototype.slice.call(grid.querySelectorAll('.occ-tile'));
+  if (!tiles.length) return;
+
+  // Duplicated once so the marquee can loop seamlessly, same technique
+  // as initHomeSeriesMarquee().
+  var cloneSet = tiles.map(function (t) { return t.cloneNode(true); });
+  var cloneSet2 = tiles.map(function (t) { return t.cloneNode(true); });
+  mobileTrack.innerHTML = '';
+  cloneSet.concat(cloneSet2).forEach(function (clone) { mobileTrack.appendChild(clone); });
+
+  initDraggableMarquee(mobileMarquee, mobileTrack, {
+    speed: 0.35,
+    onDragStart: function () {
+      document.querySelectorAll('#occ-track .occ-tile.is-revealed').forEach(function (t) { t.classList.remove('is-revealed'); });
+    }
+  });
+
+  // The clones are brand-new elements, so they need their own tap-reveal
+  // wiring — safe to call again even though other sections already have
+  // theirs (initTouchRevealTiles() re-queries fresh each time it runs).
+  initTouchRevealTiles();
 }
 
 function initCuratedShowcase() {

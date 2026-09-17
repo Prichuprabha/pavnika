@@ -4309,20 +4309,27 @@ header.site-header.header-dark.is-scrolled {
   .occ-tile { transition: none; }
 }
 
+.occ-marquee { display: none; }
+
 @media (max-width: 900px) {
   /* Matches the About page treatment: soften the decor and drop the left
      one on narrow screens so it doesn't crowd the tiles. */
   .occ-decor { opacity: 0.6; }
   .occ-decor.decor-l { display: none; }
-  /* Occasion tiles scroll sideways rather than shrinking to nothing. */
-  .occ-grid {
-    display: flex; gap: 14px; overflow-x: auto;
-    padding-bottom: 6px; margin: 0 -20px; padding-left: 20px; padding-right: 20px;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none; -ms-overflow-style: none;
+
+  /* The static grid becomes the auto-scrolling marquee below instead of
+     a manually-scrollable row — same treatment as Signature Series. */
+  .occ-grid { display: none; }
+  .occ-marquee {
+    display: block; overflow: hidden; position: relative; touch-action: pan-y;
+    -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
+    mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   }
-  .occ-grid::-webkit-scrollbar { display: none; height: 0; }
-  .occ-tile { flex: 0 0 172px; scroll-snap-align: start; }
+  .occ-track {
+    display: flex; gap: 14px; width: max-content; padding: 4px 20px;
+    cursor: grab; user-select: none; will-change: transform;
+  }
+  .occ-track .occ-tile { flex: 0 0 172px; }
 }
 
 /* Follow the Drape — burgundy band, copy left / videos right */
