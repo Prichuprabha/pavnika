@@ -3161,6 +3161,9 @@ body.login-page {
   user-select: none;
 }
 .review-card.is-expanded { cursor: default; }
+@media (prefers-reduced-motion: reduce) {
+  .review-card .review-quote { transition: none; }
+}
 .review-card .review-stars {
   color: var(--gold-light);
   font-size: 0.95rem;
@@ -3175,14 +3178,12 @@ body.login-page {
   opacity: 0.92;
   line-height: 1.5;
   margin: 0 0 10px;
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
   overflow: hidden;
-}
-.review-card.is-expanded .review-quote {
-  display: block;
-  -webkit-line-clamp: unset;
+  /* max-height itself is set inline per-card by JS (measured from the
+     real collapsed/expanded heights, since -webkit-line-clamp has no
+     way to animate smoothly — this is what makes both expand and
+     collapse ease instead of snapping instantly like before). */
+  transition: max-height 0.35s ease;
 }
 .review-card .review-read-more {
   display: none;
@@ -4326,7 +4327,7 @@ header.site-header.header-dark.is-scrolled {
     mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   }
   .occ-track {
-    display: flex; gap: 14px; width: max-content; padding: 4px 20px;
+    display: flex; gap: 14px; width: max-content; padding: 4px 0;
     cursor: grab; user-select: none; will-change: transform;
   }
   .occ-track .occ-tile { flex: 0 0 172px; }

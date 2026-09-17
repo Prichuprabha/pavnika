@@ -40,7 +40,7 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=210">
+<link rel="stylesheet" href="style.css?v=211">
 </head>
 <body class="home-page">
 <header class="site-header">
@@ -151,14 +151,18 @@
         <div class="occ-photo"><img src="assets/occasions/everyday.jpg" alt="Everyday"><div class="occ-tile-gradient"></div><div class="occ-tile-cta"><span class="cta-text"></span></div></div>
       </a>
     </div>
+  </div>
 
-    <!-- Mobile-only auto-scrolling version of the same 5 tiles above —
-         populated by cloning the (already-finalized: CTA text, coming
-         soon state) desktop tiles, see initOccasionMobileMarquee() in
-         script.js. The static grid above is hidden on mobile instead. -->
-    <div class="occ-marquee" id="occ-marquee">
-      <div class="occ-track" id="occ-track"></div>
-    </div>
+  <!-- Mobile-only auto-scrolling version of the same 5 tiles above —
+       populated by cloning the (already-finalized: CTA text, coming
+       soon state) desktop tiles, see initOccasionMobileMarquee() in
+       script.js. The static grid above is hidden on mobile instead.
+       Deliberately OUTSIDE .container (full-bleed, edge to edge), same
+       structure as Signature Series' own marquee — nesting it inside
+       the padded container was pushing the fade mask inward from the
+       screen edges instead of sitting flush against them. -->
+  <div class="occ-marquee" id="occ-marquee">
+    <div class="occ-track" id="occ-track"></div>
   </div>
 </section>
 
@@ -331,6 +335,6 @@
 </div>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=211"></script>
+<script src="script.js?v=212"></script>
 </body>
 </html>

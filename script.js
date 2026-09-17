@@ -479,6 +479,23 @@ function initHoverCycle(grid) {
    showing the overlay text. This intercepts the FIRST tap to reveal
    it (matching the desktop :hover look via .is-revealed), and lets a
    second tap on the same, already-revealed tile follow the link. */
+// Shared by the tap-reveal tiles (Occasion/Series/Curated) AND the
+// Word of Mouth "Read more" expansion — two independent mechanisms
+// that both needed the same fix: dismiss on a genuine page scroll or
+// on starting to drag a marquee, not just on tapping away.
+function dismissAllRevealsAndExpansions() {
+  document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed').forEach(function (t) {
+    t.classList.remove('is-revealed');
+  });
+  document.querySelectorAll('.review-card.is-expanded').forEach(function (card) {
+    card.classList.remove('is-expanded');
+    var quoteEl = card.querySelector('.review-quote');
+    var btn = card.querySelector('.review-read-more');
+    if (quoteEl && quoteEl.dataset.collapsedHeight) quoteEl.style.maxHeight = quoteEl.dataset.collapsedHeight + 'px';
+    if (btn) btn.textContent = 'Read more';
+  });
+}
+
 function initTouchRevealTiles() {
   if (!window.matchMedia('(hover: none)').matches) return; // desktop: hover works natively
 
@@ -509,20 +526,23 @@ function initTouchRevealTiles() {
   wire('.category-tile');
   wire('.occ-tile');
 
-  // The reveal previously only ever cleared when a DIFFERENT tile in the
-  // same row was tapped — tapping away entirely (anywhere else on the
-  // page) left it stuck showing "Explore more" indefinitely. Wired once
-  // globally, guarded against re-registering on every call (this
-  // function legitimately runs more than once as different sections
-  // finish loading).
-  if (!initTouchRevealTiles._outsideTapWired) {
-    initTouchRevealTiles._outsideTapWired = true;
+  // Two ways this used to get stuck showing "Explore more"/an expanded
+  // review, wired once globally (guarded against re-registering on
+  // every call — this function legitimately runs more than once as
+  // different sections finish loading):
+  //   1. Tapping away entirely (anywhere else on the page).
+  //   2. A genuine page scroll — previously nothing handled this at
+  //      all, since the marquee's own touch-direction-lock correctly
+  //      leaves vertical gestures alone for smooth native scrolling,
+  //      which meant it never saw a "drag" to react to in the first
+  //      place. A real 'scroll' listener catches this directly instead.
+  if (!initTouchRevealTiles._globalDismissWired) {
+    initTouchRevealTiles._globalDismissWired = true;
     document.addEventListener('click', function (e) {
-      if (e.target.closest(ALL_REVEALABLE_SELECTOR)) return; // handled by wire()'s own listener above
-      document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed').forEach(function (t) {
-        t.classList.remove('is-revealed');
-      });
+      if (e.target.closest(ALL_REVEALABLE_SELECTOR) || e.target.closest('.review-read-more')) return; // handled by their own listeners
+      dismissAllRevealsAndExpansions();
     });
+    window.addEventListener('scroll', dismissAllRevealsAndExpansions, { passive: true });
   }
 }
 
@@ -2226,12 +2246,7 @@ function initHomeSeriesMarquee() {
 
   var marqueeEl = document.querySelector('.category-marquee');
   if (marqueeEl) {
-    initDraggableMarquee(marqueeEl, track, {
-      speed: 0.45,
-      onDragStart: function () {
-        document.querySelectorAll('.category-tile.is-revealed').forEach(function (t) { t.classList.remove('is-revealed'); });
-      }
-    });
+    initDraggableMarquee(marqueeEl, track, { speed: 0.45, onDragStart: dismissAllRevealsAndExpansions });
   }
 }
 
@@ -2893,12 +2908,30 @@ function initReviewsMarquee() {
       track.innerHTML = '';
       track.appendChild(frag);
 
-      // 4-line clamp + "read more" toggle for long reviews.
+      // Smooth expand/collapse via a measured max-height transition —
+      // -webkit-line-clamp (the old approach) can't animate at all, so
+      // both expanding and collapsing used to snap instantly.
       track.querySelectorAll('.review-card').forEach(function (card) {
         var quoteEl = card.querySelector('.review-quote');
         if (!quoteEl) return;
-        if (quoteEl.scrollHeight > quoteEl.clientHeight + 2) {
+
+        // Measure the natural 4-line height using a temporary clamp —
+        // only for this one measurement, not the ongoing visual state.
+        quoteEl.style.display = '-webkit-box';
+        quoteEl.style.webkitLineClamp = '4';
+        quoteEl.style.webkitBoxOrient = 'vertical';
+        var collapsedHeight = quoteEl.getBoundingClientRect().height;
+        quoteEl.style.display = 'block';
+        quoteEl.style.webkitLineClamp = '';
+        var fullHeight = quoteEl.scrollHeight;
+        quoteEl.style.display = '';
+        quoteEl.style.webkitLineClamp = '';
+        quoteEl.style.maxHeight = collapsedHeight + 'px';
+
+        if (fullHeight > collapsedHeight + 2) {
           card.classList.add('has-overflow');
+          quoteEl.dataset.collapsedHeight = collapsedHeight;
+          quoteEl.dataset.fullHeight = fullHeight;
           var moreBtn = document.createElement('button');
           moreBtn.type = 'button';
           moreBtn.className = 'review-read-more';
@@ -2906,14 +2939,17 @@ function initReviewsMarquee() {
           moreBtn.addEventListener('click', function (e) {
             e.stopPropagation();
             var expanded = card.classList.toggle('is-expanded');
+            quoteEl.style.maxHeight = (expanded ? fullHeight : collapsedHeight) + 'px';
             moreBtn.textContent = expanded ? 'Show less' : 'Read more';
           });
           quoteEl.insertAdjacentElement('afterend', moreBtn);
+        } else {
+          quoteEl.style.maxHeight = ''; // short enough already — don't constrain it at all
         }
       });
 
       var marqueeEl = document.querySelector('.reviews-marquee');
-      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true });
+      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true, onDragStart: dismissAllRevealsAndExpansions });
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }
@@ -4916,12 +4952,7 @@ function initOccasionMobileMarquee(grid) {
   mobileTrack.innerHTML = '';
   cloneSet.concat(cloneSet2).forEach(function (clone) { mobileTrack.appendChild(clone); });
 
-  initDraggableMarquee(mobileMarquee, mobileTrack, {
-    speed: 0.35,
-    onDragStart: function () {
-      document.querySelectorAll('#occ-track .occ-tile.is-revealed').forEach(function (t) { t.classList.remove('is-revealed'); });
-    }
-  });
+  initDraggableMarquee(mobileMarquee, mobileTrack, { speed: 0.35, onDragStart: dismissAllRevealsAndExpansions });
 
   // The clones are brand-new elements, so they need their own tap-reveal
   // wiring — safe to call again even though other sections already have
