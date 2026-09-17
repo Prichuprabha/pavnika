@@ -480,10 +480,20 @@ function initHoverCycle(grid) {
    it (matching the desktop :hover look via .is-revealed), and lets a
    second tap on the same, already-revealed tile follow the link. */
 // Shared by the tap-reveal tiles (Occasion/Series/Curated) AND the
-// Word of Mouth "Read more" expansion — two independent mechanisms
-// that both needed the same fix: dismiss on a genuine page scroll or
-// on starting to drag a marquee, not just on tapping away.
+// Word of Mouth "Read more" expansion — a revealed/expanded state now
+// lasts at most AUTO_REVERT_MS on its own, and ends immediately the
+// moment any real movement happens (marquee drag/auto-scroll resuming,
+// or the page itself being scrolled) — whichever comes first.
+var AUTO_REVERT_MS = 2200;
+var activeRevertTimer = null;
+
+function scheduleAutoRevert() {
+  if (activeRevertTimer) clearTimeout(activeRevertTimer);
+  activeRevertTimer = setTimeout(dismissAllRevealsAndExpansions, AUTO_REVERT_MS);
+}
+
 function dismissAllRevealsAndExpansions() {
+  if (activeRevertTimer) { clearTimeout(activeRevertTimer); activeRevertTimer = null; }
   document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed').forEach(function (t) {
     t.classList.remove('is-revealed');
   });
@@ -513,9 +523,12 @@ function initTouchRevealTiles() {
           // If this tile lives inside a draggable marquee, pause its
           // auto-scroll too — otherwise the tile (and the "Explore
           // more" button just revealed on it) keeps sliding away
-          // while someone's trying to tap it.
+          // while someone's trying to tap it. Same duration as the
+          // auto-revert timer below, so the marquee naturally starts
+          // moving again right around when the reveal itself expires.
           var track = tile.closest('.category-track, .reviews-track, .occ-track');
-          if (track) track.__pauseAutoScrollUntil = Date.now() + 3000;
+          if (track) track.__pauseAutoScrollUntil = Date.now() + AUTO_REVERT_MS;
+          scheduleAutoRevert();
         }
         // else: already revealed — let the tap navigate normally.
       });
@@ -2941,6 +2954,12 @@ function initReviewsMarquee() {
             var expanded = card.classList.toggle('is-expanded');
             quoteEl.style.maxHeight = (expanded ? fullHeight : collapsedHeight) + 'px';
             moreBtn.textContent = expanded ? 'Show less' : 'Read more';
+            if (expanded) {
+              scheduleAutoRevert();
+            } else if (activeRevertTimer) {
+              clearTimeout(activeRevertTimer); // manually collapsed — no need to auto-revert it later
+              activeRevertTimer = null;
+            }
           });
           quoteEl.insertAdjacentElement('afterend', moreBtn);
         } else {
