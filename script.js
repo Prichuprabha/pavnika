@@ -480,23 +480,39 @@ function initHoverCycle(grid) {
    it (matching the desktop :hover look via .is-revealed), and lets a
    second tap on the same, already-revealed tile follow the link. */
 // Shared by the tap-reveal tiles (Occasion/Series/Curated) AND the
-// Word of Mouth "Read more" expansion — a revealed/expanded state now
-// lasts at most AUTO_REVERT_MS on its own, and ends immediately the
-// moment any real movement happens (marquee drag/auto-scroll resuming,
-// or the page itself being scrolled) — whichever comes first.
-var AUTO_REVERT_MS = 2200;
-var activeRevertTimer = null;
+// Word of Mouth "Read more" expansion. Two independent timers/rules,
+// not one, since they don't behave the same way:
+//   - Tiles: a short reveal (2.2s) that also ends immediately on a
+//     page scroll or a marquee drag — the tile itself is small, so
+//     there's nothing to "read" that a scroll would interrupt.
+//   - Reviews: a longer window (2x, 4.4s) that does NOT end on a page
+//     scroll, since someone reading a long review may need to scroll
+//     the page up or down to see all of it. It still ends on dragging
+//     the reviews row itself (genuinely moving on to browse other
+//     reviews) or tapping away entirely.
+var TILE_AUTO_REVERT_MS = 2200;
+var REVIEW_AUTO_REVERT_MS = TILE_AUTO_REVERT_MS * 2;
+var activeTileRevertTimer = null;
+var activeReviewRevertTimer = null;
 
-function scheduleAutoRevert() {
-  if (activeRevertTimer) clearTimeout(activeRevertTimer);
-  activeRevertTimer = setTimeout(dismissAllRevealsAndExpansions, AUTO_REVERT_MS);
+function scheduleTileAutoRevert() {
+  if (activeTileRevertTimer) clearTimeout(activeTileRevertTimer);
+  activeTileRevertTimer = setTimeout(dismissTileReveals, TILE_AUTO_REVERT_MS);
+}
+function scheduleReviewAutoRevert() {
+  if (activeReviewRevertTimer) clearTimeout(activeReviewRevertTimer);
+  activeReviewRevertTimer = setTimeout(dismissReviewExpansion, REVIEW_AUTO_REVERT_MS);
 }
 
-function dismissAllRevealsAndExpansions() {
-  if (activeRevertTimer) { clearTimeout(activeRevertTimer); activeRevertTimer = null; }
+function dismissTileReveals() {
+  if (activeTileRevertTimer) { clearTimeout(activeTileRevertTimer); activeTileRevertTimer = null; }
   document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed').forEach(function (t) {
     t.classList.remove('is-revealed');
   });
+}
+
+function dismissReviewExpansion() {
+  if (activeReviewRevertTimer) { clearTimeout(activeReviewRevertTimer); activeReviewRevertTimer = null; }
   document.querySelectorAll('.review-card.is-expanded').forEach(function (card) {
     card.classList.remove('is-expanded');
     var quoteEl = card.querySelector('.review-quote');
@@ -504,6 +520,13 @@ function dismissAllRevealsAndExpansions() {
     if (quoteEl && quoteEl.dataset.collapsedHeight) quoteEl.style.maxHeight = quoteEl.dataset.collapsedHeight + 'px';
     if (btn) btn.textContent = 'Read more';
   });
+}
+
+// Kept for the few places that genuinely mean "the user tapped away
+// from everything" (dismiss whatever's open, of either kind).
+function dismissAllRevealsAndExpansions() {
+  dismissTileReveals();
+  dismissReviewExpansion();
 }
 
 function initTouchRevealTiles() {
@@ -527,8 +550,8 @@ function initTouchRevealTiles() {
           // auto-revert timer below, so the marquee naturally starts
           // moving again right around when the reveal itself expires.
           var track = tile.closest('.category-track, .reviews-track, .occ-track');
-          if (track) track.__pauseAutoScrollUntil = Date.now() + AUTO_REVERT_MS;
-          scheduleAutoRevert();
+          if (track) track.__pauseAutoScrollUntil = Date.now() + TILE_AUTO_REVERT_MS;
+          scheduleTileAutoRevert();
         }
         // else: already revealed — let the tap navigate normally.
       });
@@ -539,23 +562,25 @@ function initTouchRevealTiles() {
   wire('.category-tile');
   wire('.occ-tile');
 
-  // Two ways this used to get stuck showing "Explore more"/an expanded
-  // review, wired once globally (guarded against re-registering on
-  // every call — this function legitimately runs more than once as
-  // different sections finish loading):
-  //   1. Tapping away entirely (anywhere else on the page).
+  // Two ways a reveal/expansion used to get stuck showing indefinitely,
+  // wired once globally (guarded against re-registering on every call —
+  // this function legitimately runs more than once as different
+  // sections finish loading):
+  //   1. Tapping away entirely — dismisses both tiles and reviews, since
+  //      that's a deliberate action either way.
   //   2. A genuine page scroll — previously nothing handled this at
-  //      all, since the marquee's own touch-direction-lock correctly
-  //      leaves vertical gestures alone for smooth native scrolling,
-  //      which meant it never saw a "drag" to react to in the first
-  //      place. A real 'scroll' listener catches this directly instead.
+  //      all. Deliberately tiles-only: a long review may need the page
+  //      scrolled up or down to actually read it, so scrolling must NOT
+  //      collapse it (only its own timer or dragging the reviews row
+  //      does — see scheduleReviewAutoRevert and the reviews marquee's
+  //      onDragStart).
   if (!initTouchRevealTiles._globalDismissWired) {
     initTouchRevealTiles._globalDismissWired = true;
     document.addEventListener('click', function (e) {
       if (e.target.closest(ALL_REVEALABLE_SELECTOR) || e.target.closest('.review-read-more')) return; // handled by their own listeners
       dismissAllRevealsAndExpansions();
     });
-    window.addEventListener('scroll', dismissAllRevealsAndExpansions, { passive: true });
+    window.addEventListener('scroll', dismissTileReveals, { passive: true });
   }
 }
 
@@ -2259,7 +2284,7 @@ function initHomeSeriesMarquee() {
 
   var marqueeEl = document.querySelector('.category-marquee');
   if (marqueeEl) {
-    initDraggableMarquee(marqueeEl, track, { speed: 0.45, onDragStart: dismissAllRevealsAndExpansions });
+    initDraggableMarquee(marqueeEl, track, { speed: 0.45, onDragStart: dismissTileReveals });
   }
 }
 
@@ -2955,10 +2980,10 @@ function initReviewsMarquee() {
             quoteEl.style.maxHeight = (expanded ? fullHeight : collapsedHeight) + 'px';
             moreBtn.textContent = expanded ? 'Show less' : 'Read more';
             if (expanded) {
-              scheduleAutoRevert();
-            } else if (activeRevertTimer) {
-              clearTimeout(activeRevertTimer); // manually collapsed — no need to auto-revert it later
-              activeRevertTimer = null;
+              scheduleReviewAutoRevert();
+            } else if (activeReviewRevertTimer) {
+              clearTimeout(activeReviewRevertTimer); // manually collapsed — no need to auto-revert it later
+              activeReviewRevertTimer = null;
             }
           });
           quoteEl.insertAdjacentElement('afterend', moreBtn);
@@ -2968,7 +2993,7 @@ function initReviewsMarquee() {
       });
 
       var marqueeEl = document.querySelector('.reviews-marquee');
-      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true, onDragStart: dismissAllRevealsAndExpansions });
+      if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true, onDragStart: dismissReviewExpansion });
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
 }
@@ -4985,7 +5010,7 @@ function initOccasionMobileMarquee(grid) {
   mobileTrack.innerHTML = '';
   cloneSet.concat(cloneSet2).forEach(function (clone) { mobileTrack.appendChild(clone); });
 
-  initDraggableMarquee(mobileMarquee, mobileTrack, { speed: 0.35, onDragStart: dismissAllRevealsAndExpansions });
+  initDraggableMarquee(mobileMarquee, mobileTrack, { speed: 0.35, onDragStart: dismissTileReveals });
 
   // The clones are brand-new elements, so they need their own tap-reveal
   // wiring — safe to call again even though other sections already have
