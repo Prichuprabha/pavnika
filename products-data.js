@@ -797,7 +797,7 @@ window.PRODUCTS = [
     "material": "Semi Kanchipuram",
     "shade": "Pink",
     "price": 195,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg",
       "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TiQsiXzexFJxrt6mt8jv.jpg",
