@@ -3186,7 +3186,6 @@ function initOrdersView(token) {
 function initManualOrderView(token) {
   var statusMsg = document.getElementById('admin-mo-status-msg');
   var searchInput = document.getElementById('admin-mo-saree-search');
-  var sareeList = document.getElementById('admin-mo-saree-list');
   var qtyInput = document.getElementById('admin-mo-saree-qty');
   var addBtn = document.getElementById('admin-mo-add-saree-btn');
   var pickedWrap = document.getElementById('admin-mo-picked-items');
@@ -3287,14 +3286,62 @@ function initManualOrderView(token) {
   var pickedItems = []; // [{id, name, price, qty}]
   var discountType = 'percent';
 
-  function refreshSareeList() {
-    var available = (window.PRODUCTS || []).filter(function (p) { return !p.sold; });
-    sareeList.innerHTML = available.map(function (p) {
-      var label = (p.material || p.design) + ' — ' + p.id + ' — AED ' + effectivePrice(p).toFixed(2);
-      return '<option value="' + label.replace(/"/g, '&quot;') + '">';
-    }).join('');
+  var sareeResultsEl = document.getElementById('admin-mo-saree-results');
+
+  function sareeResultLabel(p) {
+    return (p.material || p.design) + ' — ' + p.id + ' — AED ' + effectivePrice(p).toFixed(2);
   }
-  refreshSareeList();
+
+  function renderSareeResults(query) {
+    var q = query.trim().toLowerCase();
+    if (!q) {
+      sareeResultsEl.classList.remove('is-open');
+      return;
+    }
+    var available = (window.PRODUCTS || []).filter(function (p) { return !p.sold; });
+    var matches = available.filter(function (p) {
+      return (p.id && String(p.id).toLowerCase().indexOf(q) !== -1) ||
+        (p.material && p.material.toLowerCase().indexOf(q) !== -1) ||
+        (p.design && p.design.toLowerCase().indexOf(q) !== -1);
+    }).slice(0, 20);
+
+    if (!matches.length) {
+      sareeResultsEl.innerHTML = '<div class="admin-mo-saree-result-item" style="cursor:default; opacity:0.6;">No matching sarees found.</div>';
+    } else {
+      sareeResultsEl.innerHTML = matches.map(function (p, i) {
+        var label = sareeResultLabel(p);
+        return '<div class="admin-mo-saree-result-item" data-i="' + i + '">' +
+          (p.image ? '<img src="' + p.image + '" loading="lazy" alt="">' : '') +
+          '<div>' +
+            '<div class="sname">' + (p.material || p.design) + '</div>' +
+            '<div class="smeta">' + p.id + (p.pattern ? ' · ' + p.pattern : '') + '</div>' +
+          '</div>' +
+          '<span class="sprice">AED ' + effectivePrice(p).toFixed(2) + '</span>' +
+        '</div>';
+      }).join('');
+      sareeResultsEl.__matches = matches;
+    }
+    sareeResultsEl.classList.add('is-open');
+  }
+
+  searchInput.addEventListener('input', function () { renderSareeResults(searchInput.value); });
+  searchInput.addEventListener('focus', function () { if (searchInput.value.trim()) renderSareeResults(searchInput.value); });
+
+  sareeResultsEl.addEventListener('click', function (e) {
+    var item = e.target.closest('.admin-mo-saree-result-item');
+    if (!item || !item.hasAttribute('data-i')) return;
+    var p = sareeResultsEl.__matches[Number(item.getAttribute('data-i'))];
+    if (!p) return;
+    searchInput.value = sareeResultLabel(p);
+    sareeResultsEl.classList.remove('is-open');
+    qtyInput.focus();
+  });
+
+  document.addEventListener('click', function (e) {
+    if (!sareeResultsEl.contains(e.target) && e.target !== searchInput) {
+      sareeResultsEl.classList.remove('is-open');
+    }
+  });
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg admin-status-' + type;

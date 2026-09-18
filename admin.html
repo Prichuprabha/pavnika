@@ -267,6 +267,24 @@
   .admin-mo-customer-result-item:hover { background: var(--ivory-deep); }
   .admin-mo-customer-result-item .cname { font-weight: 600; color: var(--green-deep); }
   .admin-mo-customer-result-item .cmeta { font-size: 0.7rem; opacity: 0.65; }
+  .admin-mo-saree-results {
+    display: none; position: absolute; top: 100%; left: 0; right: 0; z-index: 15;
+    background: #fff; border: 1px solid var(--stone); border-radius: 6px; margin-top: 4px;
+    box-shadow: 0 10px 24px -12px rgba(43,13,26,0.3); max-height: 320px; overflow-y: auto;
+  }
+  .admin-mo-saree-results.is-open { display: block; }
+  .admin-mo-saree-result-item {
+    display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer;
+    border-bottom: 1px solid var(--ivory-deep);
+  }
+  .admin-mo-saree-result-item:last-child { border-bottom: none; }
+  .admin-mo-saree-result-item:hover { background: var(--ivory-deep); }
+  .admin-mo-saree-result-item img {
+    width: 38px; height: 50px; object-fit: cover; border-radius: 3px; flex-shrink: 0; background: var(--ivory-deep);
+  }
+  .admin-mo-saree-result-item .sname { font-weight: 600; color: var(--green-deep); font-size: 0.8rem; }
+  .admin-mo-saree-result-item .smeta { font-size: 0.7rem; opacity: 0.65; }
+  .admin-mo-saree-result-item .sprice { font-size: 0.78rem; font-weight: 700; color: var(--gold); white-space: nowrap; margin-left: auto; padding-left: 8px; }
   .admin-mo-qty-stepper { display: flex; align-items: center; gap: 8px; }
   .admin-mo-qty-stepper button {
     width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--stone); background: #fff;
@@ -1152,10 +1170,10 @@
           <div class="admin-form-card">
             <h3>Order Items</h3>
             <div style="display:flex; gap:10px; align-items:flex-end; margin-bottom:10px;">
-              <div class="admin-field" style="flex:1;">
+              <div class="admin-field" style="flex:1; position:relative;">
                 <label>Saree</label>
-                <input type="text" id="admin-mo-saree-search" list="admin-mo-saree-list" placeholder="Search by code or name…">
-                <datalist id="admin-mo-saree-list"></datalist>
+                <input type="text" id="admin-mo-saree-search" placeholder="Search by code or name…" autocomplete="off">
+                <div class="admin-mo-saree-results" id="admin-mo-saree-results"></div>
               </div>
               <div class="admin-field" style="max-width:80px;">
                 <label>Qty</label>
@@ -1396,7 +1414,7 @@
 <script src="jsbarcode.min.js"></script>
 <script src="products-data.js"></script>
 <script src="zxing.min.js"></script>
-<script src="admin.js?v=190"></script>
+<script src="admin.js?v=191"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
