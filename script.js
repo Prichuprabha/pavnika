@@ -4817,15 +4817,27 @@ function initDraggableMarquee(container, track, options) {
   }
   requestAnimationFrame(tick);
 
-  container.addEventListener('mouseenter', function () { isHovering = true; });
-  container.addEventListener('mouseleave', function () {
-    isHovering = false;
-    // Finish the drag properly rather than just clearing the flag — a
-    // quick flick often carries the cursor off the marquee before the
-    // button is released, and dropping the drag here would throw away
-    // the momentum that gesture earned.
-    if (isDragging) dragEnd();
-  });
+  // Hover-to-pause is a desktop-mouse concept only. Mobile browsers
+  // synthesize a 'mouseenter' after a real tap (part of the standard
+  // touch-to-mouse compatibility event sequence), but never follow it
+  // with a 'mouseleave' since there's no cursor to actually leave —
+  // so on a touch device the very first tap anywhere on the marquee
+  // would set isHovering true and it would then stay stuck true
+  // forever, permanently blocking tick()'s auto-scroll from ever
+  // resuming again. Gating this to hover-capable devices leaves
+  // isHovering correctly false (i.e. never pausing for this reason)
+  // on touch, while desktop keeps hovering-to-pause exactly as before.
+  if (window.matchMedia && window.matchMedia('(hover: hover)').matches) {
+    container.addEventListener('mouseenter', function () { isHovering = true; });
+    container.addEventListener('mouseleave', function () {
+      isHovering = false;
+      // Finish the drag properly rather than just clearing the flag — a
+      // quick flick often carries the cursor off the marquee before the
+      // button is released, and dropping the drag here would throw away
+      // the momentum that gesture earned.
+      if (isDragging) dragEnd();
+    });
+  }
 
   function dragStart(clientX) {
     isDragging = true;
