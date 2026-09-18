@@ -1789,6 +1789,20 @@ function buildLightbox() {
             '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
             '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
           '</div>' +
+          '<div class="lightbox-trust-block">' +
+            '<span class="trust-payment-label">Secure payment</span>' +
+            '<div class="trust-payment-badges">' +
+              '<span class="pay-badge pay-visa">VISA</span>' +
+              '<span class="pay-badge pay-apple"><svg width="11" height="11" viewBox="0 0 384 512" aria-hidden="true"><path fill="#fff" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141 0 184.8 0 273.5c0 26.2 4.8 53.3 14.4 81.2 12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-57.7-90-57.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>Pay</span>' +
+              '<span class="pay-badge pay-google"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.52 12.27c0-.85-.08-1.66-.22-2.45H12v4.64h6.47c-.28 1.5-1.13 2.77-2.4 3.62v3h3.88c2.27-2.09 3.57-5.17 3.57-8.81z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.94-2.92l-3.88-3c-1.07.72-2.45 1.15-4.06 1.15-3.12 0-5.77-2.11-6.71-4.94H1.28v3.1C3.26 21.3 7.3 24 12 24z"/><path fill="#FBBC05" d="M5.29 14.29A7.2 7.2 0 0 1 4.91 12c0-.8.14-1.57.38-2.29v-3.1H1.28A11.98 11.98 0 0 0 0 12c0 1.93.46 3.76 1.28 5.39z"/><path fill="#EA4335" d="M12 4.77c1.77 0 3.35.61 4.6 1.8l3.44-3.44C17.94 1.19 15.24 0 12 0 7.3 0 3.26 2.7 1.28 6.61l4.01 3.1C6.23 6.88 8.88 4.77 12 4.77z"/></svg>Pay</span>' +
+              '<span class="pay-badge pay-tabby">tabby</span>' +
+              '<span class="pay-badge pay-tamara">tamara</span>' +
+            '</div>' +
+            '<div class="trust-delivery-row">' +
+              '<svg class="truck-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B68A69" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="6" width="14" height="11"/><path d="M15 10h4l4 4v3h-8z"/><circle cx="6" cy="19.5" r="1.8"/><circle cx="17.5" cy="19.5" r="1.8"/></svg>' +
+              '<span>Free UAE delivery &middot; Within 3 days</span>' +
+            '</div>' +
+          '</div>' +
           '<p class="interest-badge" id="lightbox-interest" style="display:none;"></p>' +
           '<div class="related-sarees-block" id="related-sarees-block" style="display:none;">' +
             '<p class="related-sarees-title">You May Also Like</p>' +

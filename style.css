@@ -2520,6 +2520,39 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   font-size: 0.76rem;
   text-transform: uppercase;
 }
+
+.lightbox-trust-block {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(250, 247, 239, 0.18);
+  text-align: left;
+}
+.trust-payment-label {
+  display: block;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ivory);
+  opacity: 0.6;
+  margin-bottom: 6px;
+}
+.trust-payment-badges { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+.pay-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  height: 20px; padding: 0 8px; border-radius: 4px;
+  font-size: 0.62rem; font-weight: 700; line-height: 1;
+  background: var(--ivory); color: var(--green-deep);
+}
+.pay-visa { color: #1434CB; font-style: italic; letter-spacing: 0.02em; font-family: Georgia, 'Times New Roman', serif; }
+.pay-apple { background: #000; color: #fff; }
+.pay-google { color: #3c4043; }
+.pay-tabby { background: #78D5B2; color: #0B3B33; text-transform: lowercase; font-style: italic; }
+.pay-tamara { background: #F4B99F; color: #6B2E1F; text-transform: lowercase; }
+.trust-delivery-row {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; color: var(--ivory); opacity: 0.9;
+}
+.truck-icon { flex-shrink: 0; }
 .lightbox-side .interest-badge {
   color: var(--gold-light);
   margin: 0 0 12px;
