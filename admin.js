@@ -468,26 +468,10 @@ function initSareeEditor(token) {
 
   function thumbSrc(url) { return previewOverrides[url] || url; }
 
-  // Whenever a photo actually gets added to or removed from GitHub
-  // (see removeSelectedPhotos / uploadSelectedPendingPhotos below), the
-  // live product record is kept in sync in the very same action — this
-  // is specifically what closes the bug where removing a photo but
-  // forgetting to press the form's own Save button left a broken image
-  // live on the site after a reload. Add mode has no live record yet,
-  // so there's nothing to sync until the whole new saree is saved.
-  function autoSaveImagesIfEditing() {
-    if (!editingId) return Promise.resolve();
-    return fetch('/.netlify/functions/admin-save-product', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, action: 'edit', product: { id: editingId, images: currentImages.slice(), image: currentImages[0] || '' } })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) throw new Error(result.data.error || 'Save failed');
-        var idx = (window.PRODUCTS || []).findIndex(function (p) { return p.id === editingId; });
-        if (idx !== -1) window.PRODUCTS[idx] = result.data.product;
-      });
+  function syncProductFromResponse(product) {
+    if (!product) return;
+    var idx = (window.PRODUCTS || []).findIndex(function (p) { return p.id === product.id; });
+    if (idx !== -1) window.PRODUCTS[idx] = product;
   }
 
   function getTargetId() {
@@ -567,32 +551,31 @@ function initSareeEditor(token) {
     if (!filenames.length) return;
     var statusEl = document.getElementById('admin-remove-status');
     removeSelectedBtn.disabled = true;
+    statusEl.textContent = 'Removing ' + filenames.length + ' photo' + (filenames.length === 1 ? '' : 's') + '\u2026';
 
-    var chain = Promise.resolve();
-    filenames.forEach(function (filename, i) {
-      chain = chain.then(function () {
-        statusEl.textContent = 'Removing ' + (i + 1) + ' of ' + filenames.length + '\u2026';
-        return fetch('/.netlify/functions/admin-delete-product-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminToken: token, filename: filename })
-        })
-          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-          .then(function (result) {
-            if (!result.ok) { showStatus('error', 'Could not remove ' + filename + ': ' + (result.data.error || 'unknown error')); return; }
-            currentImages = currentImages.filter(function (u) { return String(u).split('/').pop() !== filename; });
-            delete previewOverrides[filename];
-          })
-          .catch(function () { showStatus('error', 'Network error — ' + filename + ' was not removed.'); });
-      });
-    });
-
-    chain.then(function () {
-      statusEl.textContent = '';
-      return autoSaveImagesIfEditing();
+    // One request, one GitHub commit, regardless of how many photos are
+    // selected — see admin-batch-update-product-images.js for why that
+    // matters (each separate commit is a separate deploy).
+    fetch('/.netlify/functions/admin-batch-update-product-images', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, productId: getTargetId(), uploads: [], deletions: filenames })
     })
-      .catch(function (err) { showStatus('error', 'Photos were removed from GitHub, but saving that to the saree record failed: ' + err.message + ' — try Save to GitHub below to retry.'); })
-      .then(function () { refreshCurrentPhotosGrid(); });
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) { showStatus('error', 'Could not remove photos: ' + (result.data.error || 'unknown error')); return; }
+        filenames.forEach(function (filename) {
+          currentImages = currentImages.filter(function (u) { return String(u).split('/').pop() !== filename; });
+          delete previewOverrides[filename];
+        });
+        syncProductFromResponse(result.data.product);
+      })
+      .catch(function () { showStatus('error', 'Network error — photos were not removed.'); })
+      .then(function () {
+        statusEl.textContent = '';
+        removeSelectedBtn.disabled = false;
+        refreshCurrentPhotosGrid();
+      });
   }
 
   function highestExistingImageIndex(targetId) {
@@ -696,47 +679,49 @@ function initSareeEditor(token) {
     var statusEl = document.getElementById('admin-upload-status');
     uploadSelectedBtn.disabled = true;
 
-    var nextIndex = highestExistingImageIndex(targetId) + 1;
     var toUpload = pendingUploads.filter(function (p) { return p.selected; });
     var stillPending = pendingUploads.filter(function (p) { return !p.selected; });
+    if (!toUpload.length) { uploadSelectedBtn.disabled = false; return; }
 
-    for (var i = 0; i < toUpload.length; i++) {
-      var item = toUpload[i];
-      statusEl.textContent = 'Uploading ' + (i + 1) + ' of ' + toUpload.length + '\u2026';
-      try {
-        var filename = targetId + '-' + nextIndex + '.jpg';
-        var res = await fetch('/.netlify/functions/admin-upload-product-image', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminToken: token, filename: filename, dataUrl: item.dataUrl })
-        });
-        var data = await res.json();
-        if (!res.ok || !data.success) throw new Error(data.error || 'Upload failed');
-        // The commit just landed on GitHub, but Netlify hasn't finished
-        // deploying it yet — the live pavnika.ae URL won't actually
-        // resolve for a little while. Show the photo the browser
-        // already has in memory instead of the not-yet-live URL, so
-        // the thumbnail doesn't render broken; data.url is still what
-        // gets saved to the product record.
-        previewOverrides[data.url] = item.dataUrl;
-        currentImages.push(data.url);
-        uploadedForId = targetId;
-        nextIndex++;
-      } catch (err) {
-        showStatus('error', 'Could not upload ' + item.file.name + ': ' + err.message);
-        stillPending.push(item); // keep it staged so it isn't silently lost
-      }
-    }
+    var nextIndex = highestExistingImageIndex(targetId) + 1;
+    var uploadsPayload = toUpload.map(function (item) {
+      return { filename: targetId + '-' + (nextIndex++) + '.jpg', dataUrl: item.dataUrl };
+    });
 
-    pendingUploads = stillPending;
-    renderPendingPhotosGrid();
-    statusEl.textContent = '';
+    statusEl.textContent = 'Uploading ' + uploadsPayload.length + ' photo' + (uploadsPayload.length === 1 ? '' : 's') + '\u2026';
 
     try {
-      await autoSaveImagesIfEditing();
+      // One request, one GitHub commit, regardless of how many photos
+      // are selected — see admin-batch-update-product-images.js for
+      // why that matters (each separate commit is a separate deploy).
+      var res = await fetch('/.netlify/functions/admin-batch-update-product-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, productId: targetId, uploads: uploadsPayload, deletions: [] })
+      });
+      var data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.error || 'Upload failed');
+
+      // The commit just landed on GitHub, but Netlify hasn't finished
+      // deploying it yet — the live pavnika.ae URLs won't actually
+      // resolve for a little while. Show the photos the browser
+      // already has in memory instead, so the thumbnails don't render
+      // broken; data.uploadedUrls is still what gets saved to the record.
+      toUpload.forEach(function (item, i) {
+        var url = data.uploadedUrls[i];
+        previewOverrides[url] = item.dataUrl;
+        currentImages.push(url);
+      });
+      uploadedForId = targetId;
+      syncProductFromResponse(data.product);
+      pendingUploads = stillPending;
+      renderPendingPhotosGrid();
     } catch (err) {
-      showStatus('error', 'Photos uploaded to GitHub, but saving that to the saree record failed: ' + err.message + ' — try Save to GitHub below to retry.');
+      showStatus('error', 'Could not upload photos: ' + err.message);
     }
+
+    statusEl.textContent = '';
+    uploadSelectedBtn.disabled = false;
     refreshCurrentPhotosGrid();
   }
 
