@@ -284,6 +284,7 @@ function initSareeEditor(token) {
   var idWarning = document.getElementById('admin-id-warning');
   var imagesList = document.getElementById('admin-images-list');
   var currentImages = []; // the saree's photo URLs — kept ones (editing) plus any uploaded this session
+  var previewOverrides = {}; // url -> local dataUrl, for photos uploaded this session whose live URL isn't deployed yet
   var uploadedForId = null; // which ID currentImages' uploads were filed under, to catch a mid-session ID change
   var addImageBtn = document.getElementById('admin-add-image-btn');
   var fileInput = document.getElementById('admin-image-file-input');
@@ -464,15 +465,41 @@ function initSareeEditor(token) {
     var row = document.createElement('div');
     row.className = 'admin-image-row';
     var filename = String(url).split('/').pop();
-    row.innerHTML = '<img src="' + url + '" loading="lazy" alt="">' +
+    var previewSrc = previewOverrides[url] || url;
+    row.innerHTML = '<img src="' + previewSrc + '" loading="lazy" alt="">' +
       '<span class="admin-image-name">' + filename + '</span>' +
       '<button type="button">Remove</button>';
     row.querySelector('button').addEventListener('click', function () {
-      var i = currentImages.indexOf(url);
-      if (i !== -1) currentImages.splice(i, 1);
-      renderImagesList();
+      removeImage(url, filename);
     });
     imagesList.appendChild(row);
+  }
+
+  function removeImage(url, filename) {
+    var i = currentImages.indexOf(url);
+    if (i !== -1) currentImages.splice(i, 1);
+    delete previewOverrides[url];
+    renderImagesList();
+    // This is a real, immediate delete from GitHub — not just removing
+    // it from this saree's record — since that's what was asked for.
+    // The row is already gone from the list above regardless of how
+    // this call turns out, so a failure here means an orphaned file
+    // rather than a stuck UI; refreshGithubFilesNote() afterwards will
+    // surface that orphan in the "Photos in GitHub" note either way.
+    fetch('/.netlify/functions/admin-delete-product-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, filename: filename })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) showStatus('error', 'Removed from this saree, but deleting ' + filename + ' from GitHub failed: ' + (result.data.error || 'unknown error'));
+        refreshGithubFilesNote();
+      })
+      .catch(function () {
+        showStatus('error', 'Removed from this saree, but a network error stopped ' + filename + ' from being deleted off GitHub.');
+        refreshGithubFilesNote();
+      });
   }
 
   function renderImagesList() {
@@ -488,9 +515,48 @@ function initSareeEditor(token) {
     return typed || null;
   }
 
-  function highestExistingImageIndex(urls, targetId) {
+  // What's actually sitting in assets/products/ on GitHub for this ID
+  // right now — refreshed at key moments (see refreshGithubFilesNote)
+  // rather than trusted from stale memory. This is what the "Photos in
+  // GitHub" note shows, and what upload numbering is based on, so a
+  // photo that got Removed-but-failed-to-delete earlier can't silently
+  // have its number reused.
+  var githubFilesForId = [];
+  var githubFilesNoteTimer = null;
+
+  function refreshGithubFilesNote() {
+    clearTimeout(githubFilesNoteTimer);
+    var targetId = getTargetId();
+    var noteEl = document.getElementById('admin-images-github-note');
+    if (!targetId) { noteEl.textContent = ''; githubFilesForId = []; return; }
+    noteEl.textContent = 'Checking GitHub…';
+    githubFilesNoteTimer = setTimeout(function () {
+      fetch('/.netlify/functions/admin-list-product-images', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, productId: targetId })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) { noteEl.textContent = 'Could not check GitHub just now.'; return; }
+          githubFilesForId = result.data.files || [];
+          noteEl.textContent = githubFilesForId.length
+            ? 'Photos in GitHub for ' + targetId + ' right now: ' + githubFilesForId.map(function (f) { return f.filename; }).join(', ')
+            : 'No photos in GitHub for ' + targetId + ' yet.';
+        })
+        .catch(function () { noteEl.textContent = 'Could not check GitHub just now.'; });
+    }, 500); // debounced — avoids firing once per keystroke while typing an ID
+  }
+
+  function highestExistingImageIndex(targetId) {
+    // githubFilesForId is the authoritative source (see above); fall
+    // back to whatever's listed in the form if that check hasn't come
+    // back yet or failed, rather than blocking uploads on it.
+    if (githubFilesForId.length) {
+      return githubFilesForId.reduce(function (max, f) { return Math.max(max, f.index); }, 0);
+    }
     var highest = 0;
-    (urls || []).forEach(function (url) {
+    currentImages.forEach(function (url) {
       var fname = String(url).split('/').pop();
       var m = fname.match(new RegExp('^' + targetId + '-(\\d+)\\.'));
       if (m) {
@@ -522,6 +588,7 @@ function initSareeEditor(token) {
       showStatus('error', 'The ID changed, so previously uploaded photos were cleared — please re-upload them under the new ID.');
       uploadedForId = null;
     }
+    refreshGithubFilesNote();
   }
 
   function resizeImageFile(file) {
@@ -559,7 +626,7 @@ function initSareeEditor(token) {
     addImageBtn.disabled = true;
     uploadingMsg.style.display = 'block';
 
-    var nextIndex = highestExistingImageIndex(currentImages, targetId) + 1;
+    var nextIndex = highestExistingImageIndex(targetId) + 1;
 
     for (var i = 0; i < fileList.length; i++) {
       var file = fileList[i];
@@ -574,6 +641,13 @@ function initSareeEditor(token) {
         });
         var data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Upload failed');
+        // The commit just landed on GitHub, but Netlify hasn't finished
+        // deploying it yet — the live pavnika.ae URL won't actually
+        // resolve for a little while. Show the photo the browser
+        // already has in memory instead of the not-yet-live URL, so
+        // the thumbnail doesn't render broken; data.url is still what
+        // gets saved to the product record.
+        previewOverrides[data.url] = dataUrl;
         currentImages.push(data.url);
         uploadedForId = targetId;
         nextIndex++;
@@ -586,6 +660,7 @@ function initSareeEditor(token) {
     uploadingMsg.style.display = 'none';
     addImageBtn.disabled = false;
     fileInput.value = ''; // allow re-selecting the same file(s) later if needed
+    refreshGithubFilesNote();
   }
 
   function checkIdDuplicate() {
@@ -651,6 +726,7 @@ function initSareeEditor(token) {
     idWrap.classList.remove('has-duplicate');
     imagesList.innerHTML = '';
     currentImages = [];
+    previewOverrides = {};
     uploadedForId = null;
     seriesSelect.selectedIndex = 0;
     seriesSelect.disabled = false; // series stays editable when adding — it's part of how the ID gets generated
@@ -695,6 +771,7 @@ function initSareeEditor(token) {
     });
     imagesList.innerHTML = '';
     currentImages = product.images ? product.images.slice() : [];
+    previewOverrides = {};
     uploadedForId = product.id;
     renderImagesList();
     updateUploadButtonState();

@@ -931,6 +931,7 @@
         <input type="file" id="admin-image-file-input" accept="image/*" multiple style="display:none;">
         <button type="button" class="btn btn-ghost" id="admin-add-image-btn" style="margin-bottom:16px;" disabled>+ Upload photo(s)</button>
         <p class="admin-id-hint" id="admin-images-uploading" style="display:none;">Uploading…</p>
+        <p class="admin-id-hint" id="admin-images-github-note" style="margin-bottom:16px;"></p>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button type="submit" class="btn btn-primary" id="admin-save-btn">Save to GitHub</button>
@@ -1427,7 +1428,7 @@
 <script src="jsbarcode.min.js"></script>
 <script src="products-data.js"></script>
 <script src="zxing.min.js"></script>
-<script src="admin.js?v=192"></script>
+<script src="admin.js?v=193"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
