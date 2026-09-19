@@ -529,14 +529,13 @@
   }
   .admin-field.readonly input { background: var(--ivory-deep); color: var(--green-deep); font-weight: 600; border-style: dashed; }
   .admin-id-hint { font-size: 0.7rem; color: var(--ink); opacity: 0.55; margin: -6px 0 12px; }
-  .admin-images-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
-  .admin-images-list input { flex: 1; }
-  .admin-image-row { display: flex; gap: 6px; align-items: center; }
-  .admin-image-row button { flex-shrink: 0; background: none; border: 1px solid var(--stone); border-radius: 3px; cursor: pointer; padding: 6px 10px; font-size: 0.75rem; }
-  .admin-image-row img { width: 40px; height: 52px; object-fit: cover; border-radius: 3px; flex-shrink: 0; background: var(--ivory-deep); }
-  .admin-image-row .admin-image-name { flex: 1; min-width: 0; font-size: 0.76rem; color: var(--ink); opacity: 0.75; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .admin-image-row.is-pending { opacity: 0.55; }
-  .admin-image-row .admin-image-status { font-size: 0.68rem; opacity: 0.7; flex-shrink: 0; }
+  .admin-photo-grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .admin-photo-grid:empty { display: none; }
+  .admin-photo-card { width: 96px; border: 1px solid var(--stone); border-radius: 6px; padding: 6px; background: #fff; text-align: center; }
+  .admin-photo-card img { width: 100%; height: 110px; object-fit: cover; border-radius: 4px; background: var(--ivory-deep); display: block; }
+  .admin-photo-card .admin-photo-name { font-size: 0.62rem; color: var(--ink); opacity: 0.75; margin: 4px 0 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .admin-photo-card.is-orphan { border-color: #a35b1f; background: #fff7ee; }
+  .admin-photo-card .admin-photo-tag { font-size: 0.58rem; color: #a35b1f; display: block; margin-bottom: 2px; }
   .admin-checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
   .admin-checkbox-row label { font-size: 0.8rem; }
   .admin-occasion-checks { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 0 2px; }
@@ -926,12 +925,22 @@
         </div>
 
         <label style="font-size:0.7rem; color:var(--ink); opacity:0.7; display:block; margin-bottom:6px;">Photos</label>
+        <p class="admin-id-hint">Removing or uploading photos below takes effect on GitHub immediately, one batch at a time — separate from Save/Cancel at the bottom, which is only for the other fields.</p>
         <p class="admin-id-hint" id="admin-images-hint" style="margin-bottom:8px;">Pick a series and ID above first — photos are named after the saree's ID.</p>
-        <div class="admin-images-list" id="admin-images-list"></div>
+
+        <div class="admin-photo-grid" id="admin-current-photos-grid"></div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+          <button type="button" class="btn btn-ghost" id="admin-remove-selected-btn" disabled>Remove selected (0)</button>
+          <span class="admin-id-hint" id="admin-remove-status"></span>
+        </div>
+
         <input type="file" id="admin-image-file-input" accept="image/*" multiple style="display:none;">
-        <button type="button" class="btn btn-ghost" id="admin-add-image-btn" style="margin-bottom:16px;" disabled>+ Upload photo(s)</button>
-        <p class="admin-id-hint" id="admin-images-uploading" style="display:none;">Uploading…</p>
-        <p class="admin-id-hint" id="admin-images-github-note" style="margin-bottom:16px;"></p>
+        <button type="button" class="btn btn-ghost" id="admin-add-image-btn" style="margin-bottom:10px;" disabled>+ Choose photo(s) to upload</button>
+        <div class="admin-photo-grid" id="admin-pending-photos-grid"></div>
+        <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+          <button type="button" class="btn btn-primary" id="admin-upload-selected-btn" style="display:none;">Upload selected (0)</button>
+          <span class="admin-id-hint" id="admin-upload-status"></span>
+        </div>
 
         <div style="display:flex; gap:10px; flex-wrap:wrap;">
           <button type="submit" class="btn btn-primary" id="admin-save-btn">Save to GitHub</button>
@@ -1428,7 +1437,7 @@
 <script src="jsbarcode.min.js"></script>
 <script src="products-data.js"></script>
 <script src="zxing.min.js"></script>
-<script src="admin.js?v=193"></script>
+<script src="admin.js?v=194"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

@@ -282,12 +282,17 @@ function initSareeEditor(token) {
   var idWrap = document.getElementById('admin-f-id-wrap');
   var idHint = document.getElementById('admin-id-hint');
   var idWarning = document.getElementById('admin-id-warning');
-  var imagesList = document.getElementById('admin-images-list');
-  var currentImages = []; // the saree's photo URLs — kept ones (editing) plus any uploaded this session
+  var currentImages = []; // the saree's photo URLs, as far as the live product record is concerned
   var previewOverrides = {}; // url -> local dataUrl, for photos uploaded this session whose live URL isn't deployed yet
   var uploadedForId = null; // which ID currentImages' uploads were filed under, to catch a mid-session ID change
   var addImageBtn = document.getElementById('admin-add-image-btn');
   var fileInput = document.getElementById('admin-image-file-input');
+  var currentPhotosGrid = document.getElementById('admin-current-photos-grid');
+  var pendingPhotosGrid = document.getElementById('admin-pending-photos-grid');
+  var removeSelectedBtn = document.getElementById('admin-remove-selected-btn');
+  var uploadSelectedBtn = document.getElementById('admin-upload-selected-btn');
+  var selectedForRemoval = {}; // filename -> true, only for entries currently checked
+  var pendingUploads = []; // [{ file, dataUrl, selected }] — picked but not yet uploaded
   var statusMsg = document.getElementById('admin-status-msg');
   var formTitle = document.getElementById('admin-form-title');
   var searchInput = document.getElementById('admin-search-input');
@@ -461,76 +466,49 @@ function initSareeEditor(token) {
     renderTable();
   });
 
-  function addImageRow(url) {
-    var row = document.createElement('div');
-    row.className = 'admin-image-row';
-    var filename = String(url).split('/').pop();
-    var previewSrc = previewOverrides[url] || url;
-    row.innerHTML = '<img src="' + previewSrc + '" loading="lazy" alt="">' +
-      '<span class="admin-image-name">' + filename + '</span>' +
-      '<button type="button">Remove</button>';
-    row.querySelector('button').addEventListener('click', function () {
-      removeImage(url, filename);
-    });
-    imagesList.appendChild(row);
-  }
+  function thumbSrc(url) { return previewOverrides[url] || url; }
 
-  function removeImage(url, filename) {
-    var i = currentImages.indexOf(url);
-    if (i !== -1) currentImages.splice(i, 1);
-    delete previewOverrides[url];
-    renderImagesList();
-    // This is a real, immediate delete from GitHub — not just removing
-    // it from this saree's record — since that's what was asked for.
-    // The row is already gone from the list above regardless of how
-    // this call turns out, so a failure here means an orphaned file
-    // rather than a stuck UI; refreshGithubFilesNote() afterwards will
-    // surface that orphan in the "Photos in GitHub" note either way.
-    fetch('/.netlify/functions/admin-delete-product-image', {
+  // Whenever a photo actually gets added to or removed from GitHub
+  // (see removeSelectedPhotos / uploadSelectedPendingPhotos below), the
+  // live product record is kept in sync in the very same action — this
+  // is specifically what closes the bug where removing a photo but
+  // forgetting to press the form's own Save button left a broken image
+  // live on the site after a reload. Add mode has no live record yet,
+  // so there's nothing to sync until the whole new saree is saved.
+  function autoSaveImagesIfEditing() {
+    if (!editingId) return Promise.resolve();
+    return fetch('/.netlify/functions/admin-save-product', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, filename: filename })
+      body: JSON.stringify({ adminToken: token, action: 'edit', product: { id: editingId, images: currentImages.slice(), image: currentImages[0] || '' } })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
-        if (!result.ok) showStatus('error', 'Removed from this saree, but deleting ' + filename + ' from GitHub failed: ' + (result.data.error || 'unknown error'));
-        refreshGithubFilesNote();
-      })
-      .catch(function () {
-        showStatus('error', 'Removed from this saree, but a network error stopped ' + filename + ' from being deleted off GitHub.');
-        refreshGithubFilesNote();
+        if (!result.ok) throw new Error(result.data.error || 'Save failed');
+        var idx = (window.PRODUCTS || []).findIndex(function (p) { return p.id === editingId; });
+        if (idx !== -1) window.PRODUCTS[idx] = result.data.product;
       });
   }
 
-  function renderImagesList() {
-    imagesList.innerHTML = '';
-    currentImages.forEach(function (url) { addImageRow(url); });
-  }
-
-  // The ID a newly-picked photo would be filed under right now — null
-  // when there isn't one yet (e.g. no series picked in Add mode), in
-  // which case uploading is disabled rather than guessing a name.
   function getTargetId() {
     var typed = idField.value.trim().toUpperCase();
     return typed || null;
   }
 
-  // What's actually sitting in assets/products/ on GitHub for this ID
-  // right now — refreshed at key moments (see refreshGithubFilesNote)
-  // rather than trusted from stale memory. This is what the "Photos in
-  // GitHub" note shows, and what upload numbering is based on, so a
-  // photo that got Removed-but-failed-to-delete earlier can't silently
-  // have its number reused.
   var githubFilesForId = [];
-  var githubFilesNoteTimer = null;
+  var currentPhotosLoadTimer = null;
 
-  function refreshGithubFilesNote() {
-    clearTimeout(githubFilesNoteTimer);
+  // The definitive photo list for the grid: whatever GitHub actually
+  // has for this ID (fetched fresh — never trusted from memory), with
+  // any entry not currently in the product's own images[] flagged as
+  // an orphan so stray files (e.g. from an earlier failed removal) are
+  // visible and cleanable too, not just hidden.
+  function refreshCurrentPhotosGrid() {
+    clearTimeout(currentPhotosLoadTimer);
     var targetId = getTargetId();
-    var noteEl = document.getElementById('admin-images-github-note');
-    if (!targetId) { noteEl.textContent = ''; githubFilesForId = []; return; }
-    noteEl.textContent = 'Checking GitHub…';
-    githubFilesNoteTimer = setTimeout(function () {
+    if (!targetId) { githubFilesForId = []; renderCurrentPhotosGrid(); return; }
+    currentPhotosGrid.innerHTML = '<p class="admin-id-hint">Checking GitHub\u2026</p>';
+    currentPhotosLoadTimer = setTimeout(function () {
       fetch('/.netlify/functions/admin-list-product-images', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -538,33 +516,87 @@ function initSareeEditor(token) {
       })
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
-          if (!result.ok) { noteEl.textContent = 'Could not check GitHub just now.'; return; }
+          if (!result.ok) { currentPhotosGrid.innerHTML = '<p class="admin-id-hint">Could not check GitHub just now.</p>'; return; }
           githubFilesForId = result.data.files || [];
-          noteEl.textContent = githubFilesForId.length
-            ? 'Photos in GitHub for ' + targetId + ' right now: ' + githubFilesForId.map(function (f) { return f.filename; }).join(', ')
-            : 'No photos in GitHub for ' + targetId + ' yet.';
+          selectedForRemoval = {};
+          renderCurrentPhotosGrid();
         })
-        .catch(function () { noteEl.textContent = 'Could not check GitHub just now.'; });
-    }, 500); // debounced — avoids firing once per keystroke while typing an ID
+        .catch(function () { currentPhotosGrid.innerHTML = '<p class="admin-id-hint">Could not check GitHub just now.</p>'; });
+    }, 400); // debounced — avoids firing once per keystroke while typing an ID
+  }
+
+  function renderCurrentPhotosGrid() {
+    var currentFilenames = currentImages.map(function (u) { return String(u).split('/').pop(); });
+    var merged = githubFilesForId.map(function (f) {
+      return { filename: f.filename, url: f.url, isOrphan: currentFilenames.indexOf(f.filename) === -1 };
+    });
+    // Cover the (normally momentary) case where currentImages has a
+    // photo the GitHub listing hasn't caught up to yet.
+    currentImages.forEach(function (u) {
+      var fname = String(u).split('/').pop();
+      if (!merged.some(function (m) { return m.filename === fname; })) merged.push({ filename: fname, url: u, isOrphan: false });
+    });
+
+    currentPhotosGrid.innerHTML = merged.map(function (m) {
+      return '<div class="admin-photo-card' + (m.isOrphan ? ' is-orphan' : '') + '" data-filename="' + m.filename + '">' +
+        (m.isOrphan ? '<span class="admin-photo-tag">not on this saree</span>' : '') +
+        '<img src="' + thumbSrc(m.url) + '" loading="lazy" alt="">' +
+        '<div class="admin-photo-name">' + m.filename + '</div>' +
+        '<label style="font-size:0.68rem; display:flex; align-items:center; gap:4px; justify-content:center;"><input type="checkbox" class="admin-photo-check"' + (selectedForRemoval[m.filename] ? ' checked' : '') + '> Select</label>' +
+      '</div>';
+    }).join('');
+
+    Array.from(currentPhotosGrid.querySelectorAll('.admin-photo-card')).forEach(function (card) {
+      var filename = card.getAttribute('data-filename');
+      card.querySelector('.admin-photo-check').addEventListener('change', function (e) {
+        if (e.target.checked) selectedForRemoval[filename] = true; else delete selectedForRemoval[filename];
+        updateRemoveSelectedButton();
+      });
+    });
+    updateRemoveSelectedButton();
+  }
+
+  function updateRemoveSelectedButton() {
+    var count = Object.keys(selectedForRemoval).length;
+    removeSelectedBtn.disabled = count === 0;
+    removeSelectedBtn.textContent = 'Remove selected (' + count + ')';
+  }
+
+  function removeSelectedPhotos() {
+    var filenames = Object.keys(selectedForRemoval);
+    if (!filenames.length) return;
+    var statusEl = document.getElementById('admin-remove-status');
+    removeSelectedBtn.disabled = true;
+
+    var chain = Promise.resolve();
+    filenames.forEach(function (filename, i) {
+      chain = chain.then(function () {
+        statusEl.textContent = 'Removing ' + (i + 1) + ' of ' + filenames.length + '\u2026';
+        return fetch('/.netlify/functions/admin-delete-product-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, filename: filename })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showStatus('error', 'Could not remove ' + filename + ': ' + (result.data.error || 'unknown error')); return; }
+            currentImages = currentImages.filter(function (u) { return String(u).split('/').pop() !== filename; });
+            delete previewOverrides[filename];
+          })
+          .catch(function () { showStatus('error', 'Network error — ' + filename + ' was not removed.'); });
+      });
+    });
+
+    chain.then(function () {
+      statusEl.textContent = '';
+      return autoSaveImagesIfEditing();
+    })
+      .catch(function (err) { showStatus('error', 'Photos were removed from GitHub, but saving that to the saree record failed: ' + err.message + ' — try Save to GitHub below to retry.'); })
+      .then(function () { refreshCurrentPhotosGrid(); });
   }
 
   function highestExistingImageIndex(targetId) {
-    // githubFilesForId is the authoritative source (see above); fall
-    // back to whatever's listed in the form if that check hasn't come
-    // back yet or failed, rather than blocking uploads on it.
-    if (githubFilesForId.length) {
-      return githubFilesForId.reduce(function (max, f) { return Math.max(max, f.index); }, 0);
-    }
-    var highest = 0;
-    currentImages.forEach(function (url) {
-      var fname = String(url).split('/').pop();
-      var m = fname.match(new RegExp('^' + targetId + '-(\\d+)\\.'));
-      if (m) {
-        var n = parseInt(m[1], 10);
-        if (n > highest) highest = n;
-      }
-    });
-    return highest;
+    return githubFilesForId.reduce(function (max, f) { return Math.max(max, f.index || 0); }, 0);
   }
 
   function updateUploadButtonState() {
@@ -579,16 +611,17 @@ function initSareeEditor(token) {
     }
     // If the ID changes after some photos were already uploaded this
     // session, those photos were filed under the OLD id — keeping them
-    // listed would silently save a mismatched filename/ID pair. Safer
-    // to clear the list and have the admin re-upload under the new ID
-    // than to guess at renaming already-committed files.
-    if (uploadedForId && targetId !== uploadedForId && currentImages.length) {
+    // (or any not-yet-uploaded picks) around would risk a mismatched
+    // filename/ID pair. Safer to clear and have the admin redo it under
+    // the new ID than to guess at renaming already-committed files.
+    if (uploadedForId && targetId !== uploadedForId && (currentImages.length || pendingUploads.length)) {
       currentImages = [];
-      renderImagesList();
-      showStatus('error', 'The ID changed, so previously uploaded photos were cleared — please re-upload them under the new ID.');
+      pendingUploads = [];
+      renderPendingPhotosGrid();
+      showStatus('error', 'The ID changed, so previously uploaded/picked photos were cleared — please redo them under the new ID.');
       uploadedForId = null;
     }
-    refreshGithubFilesNote();
+    refreshCurrentPhotosGrid();
   }
 
   function resizeImageFile(file) {
@@ -619,25 +652,63 @@ function initSareeEditor(token) {
     });
   }
 
-  async function uploadPickedFiles(fileList) {
+  function renderPendingPhotosGrid() {
+    pendingPhotosGrid.innerHTML = pendingUploads.map(function (p, i) {
+      return '<div class="admin-photo-card" data-i="' + i + '">' +
+        '<img src="' + p.dataUrl + '" alt="">' +
+        '<div class="admin-photo-name">' + p.file.name + '</div>' +
+        '<label style="font-size:0.68rem; display:flex; align-items:center; gap:4px; justify-content:center;"><input type="checkbox" class="admin-photo-check"' + (p.selected ? ' checked' : '') + '> Select</label>' +
+      '</div>';
+    }).join('');
+    Array.from(pendingPhotosGrid.querySelectorAll('.admin-photo-card')).forEach(function (card) {
+      var i = Number(card.getAttribute('data-i'));
+      card.querySelector('.admin-photo-check').addEventListener('change', function (e) {
+        pendingUploads[i].selected = e.target.checked;
+        updateUploadSelectedButton();
+      });
+    });
+    updateUploadSelectedButton();
+  }
+
+  function updateUploadSelectedButton() {
+    var count = pendingUploads.filter(function (p) { return p.selected; }).length;
+    uploadSelectedBtn.style.display = pendingUploads.length ? 'inline-block' : 'none';
+    uploadSelectedBtn.textContent = 'Upload selected (' + count + ')';
+    uploadSelectedBtn.disabled = count === 0;
+  }
+
+  async function stagePickedFiles(fileList) {
+    for (var i = 0; i < fileList.length; i++) {
+      try {
+        var dataUrl = await resizeImageFile(fileList[i]);
+        pendingUploads.push({ file: fileList[i], dataUrl: dataUrl, selected: true });
+      } catch (err) {
+        showStatus('error', 'Could not read ' + fileList[i].name + ': ' + err.message);
+      }
+    }
+    renderPendingPhotosGrid();
+    fileInput.value = ''; // allow re-picking the same file(s) later if needed
+  }
+
+  async function uploadSelectedPendingPhotos() {
     var targetId = getTargetId();
-    if (!targetId) return; // button should be disabled in this case anyway
-    var uploadingMsg = document.getElementById('admin-images-uploading');
-    addImageBtn.disabled = true;
-    uploadingMsg.style.display = 'block';
+    if (!targetId) return; // button should be disabled/hidden in this case anyway
+    var statusEl = document.getElementById('admin-upload-status');
+    uploadSelectedBtn.disabled = true;
 
     var nextIndex = highestExistingImageIndex(targetId) + 1;
+    var toUpload = pendingUploads.filter(function (p) { return p.selected; });
+    var stillPending = pendingUploads.filter(function (p) { return !p.selected; });
 
-    for (var i = 0; i < fileList.length; i++) {
-      var file = fileList[i];
-      uploadingMsg.textContent = 'Uploading ' + (i + 1) + ' of ' + fileList.length + '\u2026';
+    for (var i = 0; i < toUpload.length; i++) {
+      var item = toUpload[i];
+      statusEl.textContent = 'Uploading ' + (i + 1) + ' of ' + toUpload.length + '\u2026';
       try {
-        var dataUrl = await resizeImageFile(file);
         var filename = targetId + '-' + nextIndex + '.jpg';
         var res = await fetch('/.netlify/functions/admin-upload-product-image', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminToken: token, filename: filename, dataUrl: dataUrl })
+          body: JSON.stringify({ adminToken: token, filename: filename, dataUrl: item.dataUrl })
         });
         var data = await res.json();
         if (!res.ok || !data.success) throw new Error(data.error || 'Upload failed');
@@ -647,21 +718,28 @@ function initSareeEditor(token) {
         // already has in memory instead of the not-yet-live URL, so
         // the thumbnail doesn't render broken; data.url is still what
         // gets saved to the product record.
-        previewOverrides[data.url] = dataUrl;
+        previewOverrides[data.url] = item.dataUrl;
         currentImages.push(data.url);
         uploadedForId = targetId;
         nextIndex++;
-        renderImagesList();
       } catch (err) {
-        showStatus('error', 'Could not upload ' + file.name + ': ' + err.message);
+        showStatus('error', 'Could not upload ' + item.file.name + ': ' + err.message);
+        stillPending.push(item); // keep it staged so it isn't silently lost
       }
     }
 
-    uploadingMsg.style.display = 'none';
-    addImageBtn.disabled = false;
-    fileInput.value = ''; // allow re-selecting the same file(s) later if needed
-    refreshGithubFilesNote();
+    pendingUploads = stillPending;
+    renderPendingPhotosGrid();
+    statusEl.textContent = '';
+
+    try {
+      await autoSaveImagesIfEditing();
+    } catch (err) {
+      showStatus('error', 'Photos uploaded to GitHub, but saving that to the saree record failed: ' + err.message + ' — try Save to GitHub below to retry.');
+    }
+    refreshCurrentPhotosGrid();
   }
+
 
   function checkIdDuplicate() {
     if (!isAddMode) return;
@@ -724,9 +802,11 @@ function initSareeEditor(token) {
     idWrap.classList.remove('readonly');
     idWarning.style.display = 'none';
     idWrap.classList.remove('has-duplicate');
-    imagesList.innerHTML = '';
     currentImages = [];
     previewOverrides = {};
+    pendingUploads = [];
+    selectedForRemoval = {};
+    renderPendingPhotosGrid();
     uploadedForId = null;
     seriesSelect.selectedIndex = 0;
     seriesSelect.disabled = false; // series stays editable when adding — it's part of how the ID gets generated
@@ -769,11 +849,12 @@ function initSareeEditor(token) {
     document.querySelectorAll('#admin-f-occasions input').forEach(function (cb) {
       cb.checked = savedOccasions.indexOf(cb.value) !== -1;
     });
-    imagesList.innerHTML = '';
     currentImages = product.images ? product.images.slice() : [];
     previewOverrides = {};
+    pendingUploads = [];
+    selectedForRemoval = {};
+    renderPendingPhotosGrid();
     uploadedForId = product.id;
-    renderImagesList();
     updateUploadButtonState();
     showSareeDrawer();
   }
@@ -782,8 +863,10 @@ function initSareeEditor(token) {
   document.getElementById('admin-cancel-btn').addEventListener('click', hideSareeDrawer);
   addImageBtn.addEventListener('click', function () { fileInput.click(); });
   fileInput.addEventListener('change', function () {
-    if (fileInput.files.length) uploadPickedFiles(fileInput.files);
+    if (fileInput.files.length) stagePickedFiles(fileInput.files);
   });
+  removeSelectedBtn.addEventListener('click', removeSelectedPhotos);
+  uploadSelectedBtn.addEventListener('click', uploadSelectedPendingPhotos);
 
   /* ----- CSV download ----- */
   var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sale Price AED', 'Sold',
