@@ -1,10 +1,20 @@
 // netlify/functions/admin-save-product.js
 //
-// POST { adminToken, action: 'add' | 'edit', product: {...} }
+// POST { adminToken, action: 'add' | 'edit' | 'delete', product: {...},
+//        newImages?: [{filename, dataUrl}], removedImages?: [filename, ...] }
 // - Verifies the admin token (see _admin-auth.js).
-// - Fetches products-data.js from GitHub, applies the add/edit, and
-//   commits the change back — which triggers a normal Netlify deploy,
-//   the same as if you'd edited and uploaded the file yourself.
+// - Applies the add/edit/delete to products-data.js and commits it.
+// - If newImages or removedImages are present, those photo file changes
+//   are folded into the SAME commit as the product-data change (via
+//   GitHub's Git Data API — blobs/trees/commits/refs) rather than each
+//   being its own commit. One press of "Save to GitHub" — whatever
+//   combination of text-field edits, new photos, and removed photos it
+//   represents — is always exactly one commit, one deploy.
+// - This also closes the "forgot to save" gap a different way than an
+//   earlier version of this feature did: nothing about photos touches
+//   GitHub until this single save happens, so forgetting to press Save
+//   now means nothing happened yet (fully consistent), never a photo
+//   deleted with the record left pointing at it.
 // - Returns the real commit SHA and a link to view it on GitHub.
 
 const { verifyAdminToken } = require('./_admin-auth');
@@ -14,6 +24,9 @@ const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const FILE_PATH = 'products-data.js';
+const IMAGE_BASE_URL = 'https://pavnika.ae/assets/products/';
+
+const FILENAME_PATTERN = /^[A-Za-z0-9]+-[0-9]+\.jpe?g$/i;
 
 const SERIES_CODES = {
   'VALUE WEAVES': 'VW',
@@ -36,6 +49,12 @@ function githubHeaders() {
     'X-GitHub-Api-Version': '2022-11-28',
     'Content-Type': 'application/json'
   };
+}
+
+async function githubApi(path, options) {
+  const res = await fetch(`https://api.github.com${path}`, Object.assign({ headers: githubHeaders() }, options || {}));
+  if (!res.ok) throw new Error(`GitHub ${options && options.method || 'GET'} ${path} -> ${res.status}: ${await res.text()}`);
+  return res.json();
 }
 
 async function getFile() {
@@ -85,6 +104,58 @@ function nextIdForSeries(products, seriesCode) {
   return seriesCode + String(next).padStart(3, '0');
 }
 
+// Applies the add/edit/delete to an in-memory products array (does NOT
+// touch GitHub) — shared by both the simple path and the photo-aware
+// Git Data API path below, so the actual product-editing logic only
+// exists once.
+function applyAction(products, action, productInput) {
+  if (action === 'add') {
+    var suppliedId = productInput.id && String(productInput.id).trim().toUpperCase();
+    var finalId;
+    if (suppliedId) {
+      var duplicate = products.some(function (p) { return p.id.toUpperCase() === suppliedId; });
+      if (duplicate) return { error: { statusCode: 409, message: `ID ${suppliedId} already exists. Choose a different one.` } };
+      finalId = suppliedId;
+    } else {
+      var seriesCode = productInput.seriesCode || SERIES_CODES[productInput.series];
+      if (!seriesCode) return { error: { statusCode: 400, message: 'Unknown series — please provide a 2-letter series code.' } };
+      finalId = nextIdForSeries(products, seriesCode);
+    }
+    var savedProduct = {
+      id: finalId,
+      series: productInput.series,
+      category: productInput.category,
+      type: productInput.type,
+      sareeType: productInput.sareeType,
+      pattern: productInput.pattern,
+      design: productInput.design,
+      price: productInput.price,
+      sold: productInput.sold,
+      images: productInput.images,
+      image: productInput.image
+    };
+    products.push(savedProduct);
+    return { savedProduct: savedProduct, commitMessage: `Admin: add saree ${finalId}` };
+  } else if (action === 'edit') {
+    var idx = products.findIndex(function (p) { return p.id === productInput.id; });
+    if (idx === -1) return { error: { statusCode: 404, message: 'Saree ID not found.' } };
+    products[idx] = Object.assign({}, products[idx], productInput);
+    return { savedProduct: products[idx], commitMessage: `Admin: edit saree ${productInput.id}` };
+  } else if (action === 'delete') {
+    // Note: this only removes the product entry from products-data.js.
+    // Its photo files under assets/products/ are intentionally left in
+    // place rather than deleted — an unused file is harmless, whereas
+    // deleting the wrong one (e.g. a race with a concurrent edit) is
+    // not, so this trades a little disk space for that safety.
+    var delIdx = products.findIndex(function (p) { return p.id === productInput.id; });
+    if (delIdx === -1) return { error: { statusCode: 404, message: 'Saree ID not found.' } };
+    var deleted = products[delIdx];
+    products.splice(delIdx, 1);
+    return { savedProduct: deleted, commitMessage: `Admin: delete saree ${productInput.id}` };
+  }
+  return { error: { statusCode: 400, message: 'Unknown action.' } };
+}
+
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -104,80 +175,99 @@ exports.handler = async function (event) {
 
   const action = body.action;
   const productInput = body.product;
+  const newImages = Array.isArray(body.newImages) ? body.newImages : [];
+  const removedImages = Array.isArray(body.removedImages) ? body.removedImages : [];
   if (!action || !productInput) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Missing action or product data.' }) };
   }
 
+  for (const u of newImages) {
+    if (!u.filename || !FILENAME_PATTERN.test(u.filename)) return { statusCode: 400, body: JSON.stringify({ error: 'Invalid upload filename: ' + u.filename }) };
+    if (!u.dataUrl || !/^data:image\/jpeg;base64,/.test(u.dataUrl)) return { statusCode: 400, body: JSON.stringify({ error: 'Invalid image data for ' + u.filename }) };
+  }
+  for (const f of removedImages) {
+    if (!FILENAME_PATTERN.test(f)) return { statusCode: 400, body: JSON.stringify({ error: 'Invalid delete filename: ' + f }) };
+  }
+
   try {
-    const file = await getFile();
-    const products = parseProducts(file.content);
+    const hasPhotoChanges = newImages.length > 0 || removedImages.length > 0;
 
-    var commitMessage;
-    var savedProduct;
+    if (!hasPhotoChanges) {
+      // The common case (editing text fields only) — same simple
+      // single-file path this function has always used.
+      const file = await getFile();
+      const products = parseProducts(file.content);
+      const result = applyAction(products, action, productInput);
+      if (result.error) return { statusCode: result.error.statusCode, body: JSON.stringify({ error: result.error.message }) };
 
-    if (action === 'add') {
-      var suppliedId = productInput.id && String(productInput.id).trim().toUpperCase();
-      var finalId;
-
-      if (suppliedId) {
-        var duplicate = products.some(function (p) { return p.id.toUpperCase() === suppliedId; });
-        if (duplicate) {
-          return { statusCode: 409, body: JSON.stringify({ error: `ID ${suppliedId} already exists. Choose a different one.` }) };
-        }
-        finalId = suppliedId;
-      } else {
-        var seriesCode = productInput.seriesCode || SERIES_CODES[productInput.series];
-        if (!seriesCode) {
-          return { statusCode: 400, body: JSON.stringify({ error: 'Unknown series — please provide a 2-letter series code.' }) };
-        }
-        finalId = nextIdForSeries(products, seriesCode);
-      }
-
-      savedProduct = {
-        id: finalId,
-        series: productInput.series,
-        category: productInput.category,
-        type: productInput.type,
-        sareeType: productInput.sareeType,
-        pattern: productInput.pattern,
-        design: productInput.design,
-        price: productInput.price,
-        sold: productInput.sold,
-        images: productInput.images,
-        image: productInput.image
+      const commitResult = await putFile(serializeProducts(products), file.sha, result.commitMessage);
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          success: true,
+          product: result.savedProduct,
+          commitSha: commitResult.commit.sha.slice(0, 7),
+          commitUrl: commitResult.commit.html_url
+        })
       };
-      products.push(savedProduct);
-      commitMessage = `Admin: add saree ${finalId}`;
-    } else if (action === 'edit') {
-      var idx = products.findIndex(function (p) { return p.id === productInput.id; });
-      if (idx === -1) {
-        return { statusCode: 404, body: JSON.stringify({ error: 'Saree ID not found.' }) };
-      }
-      products[idx] = Object.assign({}, products[idx], productInput);
-      savedProduct = products[idx];
-      commitMessage = `Admin: edit saree ${productInput.id}`;
-    } else if (action === 'delete') {
-      var delIdx = products.findIndex(function (p) { return p.id === productInput.id; });
-      if (delIdx === -1) {
-        return { statusCode: 404, body: JSON.stringify({ error: 'Saree ID not found.' }) };
-      }
-      savedProduct = products[delIdx];
-      products.splice(delIdx, 1);
-      commitMessage = `Admin: delete saree ${productInput.id}`;
-    } else {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Unknown action.' }) };
     }
 
-    const newContent = serializeProducts(products);
-    const result = await putFile(newContent, file.sha, commitMessage);
+    // Photos are involved — bundle the file changes and the
+    // products-data.js update into one commit via the Git Data API.
+    const ref = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/ref/heads/${GITHUB_BRANCH}`);
+    const baseCommitSha = ref.object.sha;
+    const baseCommit = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits/${baseCommitSha}`);
+    const baseTreeSha = baseCommit.tree.sha;
+
+    const dataFile = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}?ref=${baseCommitSha}`);
+    const products = parseProducts(Buffer.from(dataFile.content, 'base64').toString('utf-8'));
+    const result = applyAction(products, action, productInput);
+    if (result.error) return { statusCode: result.error.statusCode, body: JSON.stringify({ error: result.error.message }) };
+
+    const treeEntries = [];
+    for (const u of newImages) {
+      const base64Content = u.dataUrl.replace(/^data:image\/jpeg;base64,/, '');
+      const blob = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/blobs`, {
+        method: 'POST',
+        body: JSON.stringify({ content: base64Content, encoding: 'base64' })
+      });
+      treeEntries.push({ path: `assets/products/${u.filename}`, mode: '100644', type: 'blob', sha: blob.sha });
+    }
+    removedImages.forEach(function (filename) {
+      treeEntries.push({ path: `assets/products/${filename}`, mode: '100644', type: 'blob', sha: null });
+    });
+
+    const dataBlob = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/blobs`, {
+      method: 'POST',
+      body: JSON.stringify({ content: serializeProducts(products), encoding: 'utf-8' })
+    });
+    treeEntries.push({ path: FILE_PATH, mode: '100644', type: 'blob', sha: dataBlob.sha });
+
+    const newTree = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees`, {
+      method: 'POST',
+      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
+    });
+
+    const photoNote = [];
+    if (newImages.length) photoNote.push(`+${newImages.length} photo${newImages.length === 1 ? '' : 's'}`);
+    if (removedImages.length) photoNote.push(`-${removedImages.length} photo${removedImages.length === 1 ? '' : 's'}`);
+    const commitMessage = `${result.commitMessage} (${photoNote.join(', ')})`;
+
+    const newCommit = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits`, {
+      method: 'POST',
+      body: JSON.stringify({ message: commitMessage, tree: newTree.sha, parents: [baseCommitSha] })
+    });
+    await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs/heads/${GITHUB_BRANCH}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ sha: newCommit.sha })
+    });
 
     return {
       statusCode: 200,
       body: JSON.stringify({
         success: true,
-        product: savedProduct,
-        commitSha: result.commit.sha.slice(0, 7),
-        commitUrl: result.commit.html_url
+        product: result.savedProduct,
+        commitSha: newCommit.sha.slice(0, 7)
       })
     };
   } catch (err) {

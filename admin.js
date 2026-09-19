@@ -63,6 +63,7 @@ function buildWhatsAppUrl(phone, message) {
 // Update these if your GitHub username or repo name ever changes.
 var GITHUB_OWNER = 'Prichuprabha';
 var GITHUB_REPO = 'pavnika';
+var IMAGE_BASE_URL = 'https://pavnika.ae/assets/products/';
 
 var SERIES_CODES = {
   'VALUE WEAVES': 'VW',
@@ -466,13 +467,10 @@ function initSareeEditor(token) {
     renderTable();
   });
 
-  function thumbSrc(url) { return previewOverrides[url] || url; }
+  var stagedRemovals = []; // filenames marked for removal — not deleted from GitHub until Save to GitHub is pressed
+  var stagedUploads = []; // [{filename, dataUrl}] confirmed for upload — not committed until Save to GitHub is pressed
 
-  function syncProductFromResponse(product) {
-    if (!product) return;
-    var idx = (window.PRODUCTS || []).findIndex(function (p) { return p.id === product.id; });
-    if (idx !== -1) window.PRODUCTS[idx] = product;
-  }
+  function thumbSrc(url) { return previewOverrides[url] || url; }
 
   function getTargetId() {
     var typed = idField.value.trim().toUpperCase();
@@ -483,10 +481,10 @@ function initSareeEditor(token) {
   var currentPhotosLoadTimer = null;
 
   // The definitive photo list for the grid: whatever GitHub actually
-  // has for this ID (fetched fresh — never trusted from memory), with
-  // any entry not currently in the product's own images[] flagged as
-  // an orphan so stray files (e.g. from an earlier failed removal) are
-  // visible and cleanable too, not just hidden.
+  // has for this ID (fetched fresh — never trusted from memory; this is
+  // a read, not a commit, so it's fine to call freely), with any entry
+  // not currently in the product's own images[] flagged as an orphan so
+  // stray files are visible and cleanable too, not just hidden.
   function refreshCurrentPhotosGrid() {
     clearTimeout(currentPhotosLoadTimer);
     var targetId = getTargetId();
@@ -511,19 +509,26 @@ function initSareeEditor(token) {
 
   function renderCurrentPhotosGrid() {
     var currentFilenames = currentImages.map(function (u) { return String(u).split('/').pop(); });
-    var merged = githubFilesForId.map(function (f) {
-      return { filename: f.filename, url: f.url, isOrphan: currentFilenames.indexOf(f.filename) === -1 };
-    });
+    var merged = githubFilesForId
+      .filter(function (f) { return stagedRemovals.indexOf(f.filename) === -1; }) // hide what's already staged to go
+      .map(function (f) {
+        return { filename: f.filename, url: f.url, isOrphan: currentFilenames.indexOf(f.filename) === -1, isPending: false };
+      });
     // Cover the (normally momentary) case where currentImages has a
-    // photo the GitHub listing hasn't caught up to yet.
+    // photo the GitHub listing hasn't caught up to yet — including any
+    // just-staged upload, which the listing can't know about at all
+    // until it's actually saved.
     currentImages.forEach(function (u) {
       var fname = String(u).split('/').pop();
-      if (!merged.some(function (m) { return m.filename === fname; })) merged.push({ filename: fname, url: u, isOrphan: false });
+      if (!merged.some(function (m) { return m.filename === fname; })) {
+        merged.push({ filename: fname, url: u, isOrphan: false, isPending: stagedUploads.some(function (s) { return s.filename === fname; }) });
+      }
     });
 
     currentPhotosGrid.innerHTML = merged.map(function (m) {
       return '<div class="admin-photo-card' + (m.isOrphan ? ' is-orphan' : '') + '" data-filename="' + m.filename + '">' +
         (m.isOrphan ? '<span class="admin-photo-tag">not on this saree</span>' : '') +
+        (m.isPending ? '<span class="admin-photo-tag" style="color:#2e7d32;">not saved yet</span>' : '') +
         '<img src="' + thumbSrc(m.url) + '" loading="lazy" alt="">' +
         '<div class="admin-photo-name">' + m.filename + '</div>' +
         '<label style="font-size:0.68rem; display:flex; align-items:center; gap:4px; justify-content:center;"><input type="checkbox" class="admin-photo-check"' + (selectedForRemoval[m.filename] ? ' checked' : '') + '> Select</label>' +
@@ -546,40 +551,44 @@ function initSareeEditor(token) {
     removeSelectedBtn.textContent = 'Remove selected (' + count + ')';
   }
 
+  // Marks the selected photos to be removed — this does NOT touch
+  // GitHub. Nothing is actually deleted until "Save to GitHub" (the
+  // form's main submit) is pressed, at which point this list travels
+  // alongside every other field change into one single commit. This is
+  // what lets removals, uploads, and text-field edits all collapse into
+  // one deploy no matter how they're combined in one editing session —
+  // and as a side effect, forgetting to press Save now just means
+  // nothing happened yet, never a half-applied change.
   function removeSelectedPhotos() {
     var filenames = Object.keys(selectedForRemoval);
     if (!filenames.length) return;
-    var statusEl = document.getElementById('admin-remove-status');
-    removeSelectedBtn.disabled = true;
-    statusEl.textContent = 'Removing ' + filenames.length + ' photo' + (filenames.length === 1 ? '' : 's') + '\u2026';
-
-    // One request, one GitHub commit, regardless of how many photos are
-    // selected — see admin-batch-update-product-images.js for why that
-    // matters (each separate commit is a separate deploy).
-    fetch('/.netlify/functions/admin-batch-update-product-images', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, productId: getTargetId(), uploads: [], deletions: filenames })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) { showStatus('error', 'Could not remove photos: ' + (result.data.error || 'unknown error')); return; }
-        filenames.forEach(function (filename) {
-          currentImages = currentImages.filter(function (u) { return String(u).split('/').pop() !== filename; });
-          delete previewOverrides[filename];
-        });
-        syncProductFromResponse(result.data.product);
-      })
-      .catch(function () { showStatus('error', 'Network error — photos were not removed.'); })
-      .then(function () {
-        statusEl.textContent = '';
-        removeSelectedBtn.disabled = false;
-        refreshCurrentPhotosGrid();
-      });
+    filenames.forEach(function (filename) {
+      if (stagedRemovals.indexOf(filename) === -1) stagedRemovals.push(filename);
+      currentImages = currentImages.filter(function (u) { return String(u).split('/').pop() !== filename; });
+      // If this filename was itself only staged (never actually
+      // uploaded yet), there's nothing to delete from GitHub at Save
+      // time — drop it from both staged lists rather than asking the
+      // save to delete a file that was never created.
+      var stagedIdx = stagedUploads.findIndex(function (s) { return s.filename === filename; });
+      if (stagedIdx !== -1) {
+        stagedUploads.splice(stagedIdx, 1);
+        stagedRemovals = stagedRemovals.filter(function (f) { return f !== filename; });
+      }
+      delete previewOverrides[filename];
+    });
+    selectedForRemoval = {};
+    document.getElementById('admin-remove-status').textContent =
+      filenames.length + ' photo' + (filenames.length === 1 ? '' : 's') + ' marked for removal — will be deleted when you press Save to GitHub below.';
+    renderCurrentPhotosGrid();
   }
 
   function highestExistingImageIndex(targetId) {
-    return githubFilesForId.reduce(function (max, f) { return Math.max(max, f.index || 0); }, 0);
+    var fromGithub = githubFilesForId.reduce(function (max, f) { return Math.max(max, f.index || 0); }, 0);
+    var fromStaged = stagedUploads.reduce(function (max, s) {
+      var m = s.filename.match(new RegExp('^' + targetId + '-(\\d+)\\.'));
+      return m ? Math.max(max, parseInt(m[1], 10)) : max;
+    }, 0);
+    return Math.max(fromGithub, fromStaged);
   }
 
   function updateUploadButtonState() {
@@ -673,56 +682,40 @@ function initSareeEditor(token) {
     fileInput.value = ''; // allow re-picking the same file(s) later if needed
   }
 
-  async function uploadSelectedPendingPhotos() {
+  // Confirms which staged photos should end up on this saree — this
+  // does NOT touch GitHub yet either. It just assigns each one its
+  // final filename (so the "Photos in GitHub" grid and any duplicate
+  // numbering checks make sense right away) and moves it into
+  // currentImages using the local copy for preview. The actual upload
+  // happens together with everything else when "Save to GitHub" is
+  // pressed — see removeSelectedPhotos above for why.
+  function uploadSelectedPendingPhotos() {
     var targetId = getTargetId();
     if (!targetId) return; // button should be disabled/hidden in this case anyway
-    var statusEl = document.getElementById('admin-upload-status');
-    uploadSelectedBtn.disabled = true;
 
     var toUpload = pendingUploads.filter(function (p) { return p.selected; });
     var stillPending = pendingUploads.filter(function (p) { return !p.selected; });
-    if (!toUpload.length) { uploadSelectedBtn.disabled = false; return; }
+    if (!toUpload.length) return;
 
     var nextIndex = highestExistingImageIndex(targetId) + 1;
-    var uploadsPayload = toUpload.map(function (item) {
-      return { filename: targetId + '-' + (nextIndex++) + '.jpg', dataUrl: item.dataUrl };
+    toUpload.forEach(function (item) {
+      var filename = targetId + '-' + (nextIndex++) + '.jpg';
+      var url = IMAGE_BASE_URL + filename;
+      previewOverrides[url] = item.dataUrl;
+      currentImages.push(url);
+      stagedUploads.push({ filename: filename, dataUrl: item.dataUrl });
     });
 
-    statusEl.textContent = 'Uploading ' + uploadsPayload.length + ' photo' + (uploadsPayload.length === 1 ? '' : 's') + '\u2026';
-
-    try {
-      // One request, one GitHub commit, regardless of how many photos
-      // are selected — see admin-batch-update-product-images.js for
-      // why that matters (each separate commit is a separate deploy).
-      var res = await fetch('/.netlify/functions/admin-batch-update-product-images', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminToken: token, productId: targetId, uploads: uploadsPayload, deletions: [] })
-      });
-      var data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.error || 'Upload failed');
-
-      // The commit just landed on GitHub, but Netlify hasn't finished
-      // deploying it yet — the live pavnika.ae URLs won't actually
-      // resolve for a little while. Show the photos the browser
-      // already has in memory instead, so the thumbnails don't render
-      // broken; data.uploadedUrls is still what gets saved to the record.
-      toUpload.forEach(function (item, i) {
-        var url = data.uploadedUrls[i];
-        previewOverrides[url] = item.dataUrl;
-        currentImages.push(url);
-      });
-      uploadedForId = targetId;
-      syncProductFromResponse(data.product);
-      pendingUploads = stillPending;
-      renderPendingPhotosGrid();
-    } catch (err) {
-      showStatus('error', 'Could not upload photos: ' + err.message);
-    }
-
-    statusEl.textContent = '';
-    uploadSelectedBtn.disabled = false;
-    refreshCurrentPhotosGrid();
+    uploadedForId = targetId;
+    pendingUploads = stillPending;
+    renderPendingPhotosGrid();
+    document.getElementById('admin-upload-status').textContent =
+      toUpload.length + ' photo' + (toUpload.length === 1 ? '' : 's') + ' staged — will be uploaded when you press Save to GitHub below.';
+    // A local re-render, not refreshCurrentPhotosGrid() — nothing
+    // actually changed on GitHub yet, so there's no reason to re-fetch
+    // the listing (and briefly flicker to a "Checking GitHub…" state)
+    // for what's still a purely local staging action.
+    renderCurrentPhotosGrid();
   }
 
 
@@ -790,7 +783,11 @@ function initSareeEditor(token) {
     currentImages = [];
     previewOverrides = {};
     pendingUploads = [];
+    stagedRemovals = [];
+    stagedUploads = [];
     selectedForRemoval = {};
+    document.getElementById('admin-remove-status').textContent = '';
+    document.getElementById('admin-upload-status').textContent = '';
     renderPendingPhotosGrid();
     uploadedForId = null;
     seriesSelect.selectedIndex = 0;
@@ -837,7 +834,11 @@ function initSareeEditor(token) {
     currentImages = product.images ? product.images.slice() : [];
     previewOverrides = {};
     pendingUploads = [];
+    stagedRemovals = [];
+    stagedUploads = [];
     selectedForRemoval = {};
+    document.getElementById('admin-remove-status').textContent = '';
+    document.getElementById('admin-upload-status').textContent = '';
     renderPendingPhotosGrid();
     uploadedForId = product.id;
     updateUploadButtonState();
@@ -1350,7 +1351,13 @@ function initSareeEditor(token) {
     fetch('/.netlify/functions/admin-save-product', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, action: action, product: productData })
+      body: JSON.stringify({
+        adminToken: token,
+        action: action,
+        product: productData,
+        newImages: stagedUploads,
+        removedImages: stagedRemovals
+      })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -1375,6 +1382,8 @@ function initSareeEditor(token) {
           var idx = window.PRODUCTS.findIndex(function (p) { return p.id === result.data.product.id; });
           if (idx !== -1) window.PRODUCTS[idx] = result.data.product;
         }
+        stagedUploads = [];
+        stagedRemovals = [];
         renderTable();
         hideSareeDrawer();
       })
