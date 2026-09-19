@@ -1242,9 +1242,7 @@ window.PRODUCTS = [
     "images": [
       "https://pavnika.ae/assets/products/FV003-1.jpg",
       "https://pavnika.ae/assets/products/FV003-2.jpg",
-      "https://pavnika.ae/assets/products/FV003-3.jpg",
-      "https://pavnika.ae/assets/products/FV003-4.jpg",
-      "https://pavnika.ae/assets/products/FV003-5.jpg"
+      "https://pavnika.ae/assets/products/FV003-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/FV003-1.jpg",
     "occasions": [
