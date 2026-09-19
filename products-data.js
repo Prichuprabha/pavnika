@@ -12,9 +12,9 @@ window.PRODUCTS = [
     "price": 227,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG"
+      "https://pavnika.ae/assets/products/VW001-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sk1ARok9xHht1GTcPakm.JPG",
+    "image": "https://pavnika.ae/assets/products/VW001-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -32,9 +32,9 @@ window.PRODUCTS = [
     "price": 247,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG"
+      "https://pavnika.ae/assets/products/VW002-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p05gTTlowbiYhKFFdj5q.JPG",
+    "image": "https://pavnika.ae/assets/products/VW002-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -52,9 +52,9 @@ window.PRODUCTS = [
     "price": 206,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG"
+      "https://pavnika.ae/assets/products/VW003-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cc2VMZDXib7zqCcfPAme.JPG",
+    "image": "https://pavnika.ae/assets/products/VW003-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -72,9 +72,9 @@ window.PRODUCTS = [
     "price": 186,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG"
+      "https://pavnika.ae/assets/products/VW004-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/w9gwfgtrfZaOweiEfCrs.JPG",
+    "image": "https://pavnika.ae/assets/products/VW004-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -92,9 +92,9 @@ window.PRODUCTS = [
     "price": 257,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG"
+      "https://pavnika.ae/assets/products/VW005-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a324neTQls3VtHW8ouYz.JPG",
+    "image": "https://pavnika.ae/assets/products/VW005-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -112,11 +112,11 @@ window.PRODUCTS = [
     "price": 230,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V9tWzRismyYJBJteEaB1.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZCFWHisgrZ8KiiUP9m6I.jpg"
+      "https://pavnika.ae/assets/products/VW006-1.jpg",
+      "https://pavnika.ae/assets/products/VW006-2.jpg",
+      "https://pavnika.ae/assets/products/VW006-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BPqoW0frq60FpPVI75Fy.jpg",
+    "image": "https://pavnika.ae/assets/products/VW006-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -135,15 +135,15 @@ window.PRODUCTS = [
     "price": 865,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/G9Sj8cfZzLFPUofe1BDr.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rEn89H09Kbhy62HmbOy6.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yyvxJPOa9BHG5Bsurkyq.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/E7ikqwhjRXJtgUvQn5YC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SfmZBvQnwjAvlHrHbxVs.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MfGIMvM9Duu8AtjxR2r4.jpg"
+      "https://pavnika.ae/assets/products/PP002-1.jpg",
+      "https://pavnika.ae/assets/products/PP002-2.jpg",
+      "https://pavnika.ae/assets/products/PP002-3.jpg",
+      "https://pavnika.ae/assets/products/PP002-4.jpg",
+      "https://pavnika.ae/assets/products/PP002-5.jpg",
+      "https://pavnika.ae/assets/products/PP002-6.jpg",
+      "https://pavnika.ae/assets/products/PP002-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3lS3dT8JmVaLTGNyVQ50.jpg",
+    "image": "https://pavnika.ae/assets/products/PP002-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -162,13 +162,13 @@ window.PRODUCTS = [
     "price": 865,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pYp9yOlpqicnFsde9zsh.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IUhPpSgo8j4if9S5ZoMe.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aifsckEShe9tYnVeIBuJ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N2yNbbs8Inz0sjTx3VIr.jpg"
+      "https://pavnika.ae/assets/products/PP003-1.jpg",
+      "https://pavnika.ae/assets/products/PP003-2.jpg",
+      "https://pavnika.ae/assets/products/PP003-3.jpg",
+      "https://pavnika.ae/assets/products/PP003-4.jpg",
+      "https://pavnika.ae/assets/products/PP003-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rlsPG6ofIqtcOkR8ecOV.jpg",
+    "image": "https://pavnika.ae/assets/products/PP003-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -187,14 +187,14 @@ window.PRODUCTS = [
     "price": 865,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PNAEQmdCdbvsJOemmtCc.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/505ds0BlMfofdFjXk01F.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2WQ49RUDcStO5OByhWfz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H9MxQ5mkkbRYXosRAaRR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yHAUf2v2VYZtXBlsewjl.jpg"
+      "https://pavnika.ae/assets/products/PP004-1.jpg",
+      "https://pavnika.ae/assets/products/PP004-2.jpg",
+      "https://pavnika.ae/assets/products/PP004-3.jpg",
+      "https://pavnika.ae/assets/products/PP004-4.jpg",
+      "https://pavnika.ae/assets/products/PP004-5.jpg",
+      "https://pavnika.ae/assets/products/PP004-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mPZL4306KabCVaFY4VsG.jpg",
+    "image": "https://pavnika.ae/assets/products/PP004-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -213,15 +213,15 @@ window.PRODUCTS = [
     "price": 790,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4KPHI7wr4chWF2ZTDPVv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J6diFyDCbXatp8UyLTEo.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8eFc3X30UVVnUFtJHRty.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8F9eO18FbeoX7VcG9NTt.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZBczcj7MuqbmwPsR8AFB.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ooaWzerdryN0QzEsZknp.jpg"
+      "https://pavnika.ae/assets/products/GG002-1.jpg",
+      "https://pavnika.ae/assets/products/GG002-2.jpg",
+      "https://pavnika.ae/assets/products/GG002-3.jpg",
+      "https://pavnika.ae/assets/products/GG002-4.jpg",
+      "https://pavnika.ae/assets/products/GG002-5.jpg",
+      "https://pavnika.ae/assets/products/GG002-6.jpg",
+      "https://pavnika.ae/assets/products/GG002-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bxJY02NxMYvl3d2KQ4uG.jpg",
+    "image": "https://pavnika.ae/assets/products/GG002-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -240,15 +240,15 @@ window.PRODUCTS = [
     "price": 1059,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JmzJdj2I28u2Bq9c0qVG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HvxwGVPE5sS5mHd6dE3b.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTDAYPbyi0ys5NWEfwtF.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OdDFYDkKGM60QTbtiB5y.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4R1aUBhteAZZD6GIxqkE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XTKWvJw4sQjuzKvftbRA.jpg"
+      "https://pavnika.ae/assets/products/SU002-1.jpg",
+      "https://pavnika.ae/assets/products/SU002-2.jpg",
+      "https://pavnika.ae/assets/products/SU002-3.jpg",
+      "https://pavnika.ae/assets/products/SU002-4.jpg",
+      "https://pavnika.ae/assets/products/SU002-5.jpg",
+      "https://pavnika.ae/assets/products/SU002-6.jpg",
+      "https://pavnika.ae/assets/products/SU002-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8lw9yFExFgEv8KFu7dX.jpg",
+    "image": "https://pavnika.ae/assets/products/SU002-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -267,9 +267,9 @@ window.PRODUCTS = [
     "price": 974,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG"
+      "https://pavnika.ae/assets/products/SU001-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRuUYG9JtUrNfzGJJIe6.JPG",
+    "image": "https://pavnika.ae/assets/products/SU001-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -287,9 +287,9 @@ window.PRODUCTS = [
     "price": 1015,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg"
+      "https://pavnika.ae/assets/products/SU003-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHgZlMMCtM0H7Eo3AC8h.jpg",
+    "image": "https://pavnika.ae/assets/products/SU003-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -307,14 +307,14 @@ window.PRODUCTS = [
     "price": 1295,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Sz4TqcWBR2w3qGVl4V4N.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tyZyemRropuwDwySua7d.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Xs5LZPppkNl3qWNalP2O.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zPlNnXnUUeqIsGPxOSt9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/No5SNvhFU31CWKC6Bahk.jpg"
+      "https://pavnika.ae/assets/products/SU004-1.jpg",
+      "https://pavnika.ae/assets/products/SU004-2.jpg",
+      "https://pavnika.ae/assets/products/SU004-3.jpg",
+      "https://pavnika.ae/assets/products/SU004-4.jpg",
+      "https://pavnika.ae/assets/products/SU004-5.jpg",
+      "https://pavnika.ae/assets/products/SU004-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nbjlUnRbhUIZW5EFckLm.jpg",
+    "image": "https://pavnika.ae/assets/products/SU004-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -333,13 +333,13 @@ window.PRODUCTS = [
     "price": 795,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/r0hw53PBgeJlqybNtsb2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xdy7otBAFMgohtELBNQE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZcwUbkrAkUMr5ukvjf3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mN282IPLn0UMgV4pQts7.jpg"
+      "https://pavnika.ae/assets/products/SU005-1.jpg",
+      "https://pavnika.ae/assets/products/SU005-2.jpg",
+      "https://pavnika.ae/assets/products/SU005-3.jpg",
+      "https://pavnika.ae/assets/products/SU005-4.jpg",
+      "https://pavnika.ae/assets/products/SU005-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4dTHv7fPXBEaevSBX6ve.jpg",
+    "image": "https://pavnika.ae/assets/products/SU005-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -358,9 +358,9 @@ window.PRODUCTS = [
     "price": 840,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg"
+      "https://pavnika.ae/assets/products/SU006-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S2dfFnvPsO1iQRmSk4qJ.jpg",
+    "image": "https://pavnika.ae/assets/products/SU006-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -379,9 +379,9 @@ window.PRODUCTS = [
     "price": 754,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg"
+      "https://pavnika.ae/assets/products/SU007-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VcUgX50oPWpCWA3653Gm.jpg",
+    "image": "https://pavnika.ae/assets/products/SU007-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -399,14 +399,14 @@ window.PRODUCTS = [
     "price": 720,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YIQhh0nRh8y3rOcZQbha.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kdy5eAOLCjXBMQ3lOZhG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/h2hMyCqgKxwLBO6UOhTS.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RReD5PeZDy81SwhX25Dz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4SA77fqX2LeqcE0X7en2.jpg"
+      "https://pavnika.ae/assets/products/SU008-1.jpg",
+      "https://pavnika.ae/assets/products/SU008-2.jpg",
+      "https://pavnika.ae/assets/products/SU008-3.jpg",
+      "https://pavnika.ae/assets/products/SU008-4.jpg",
+      "https://pavnika.ae/assets/products/SU008-5.jpg",
+      "https://pavnika.ae/assets/products/SU008-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5iXJFB2Ke0EQmybEZzY4.jpg",
+    "image": "https://pavnika.ae/assets/products/SU008-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -425,15 +425,15 @@ window.PRODUCTS = [
     "price": 892,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/M2UcV8V6q0j3vHNL6EPt.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VuAVX1RYE2DHOaIzHPFR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/onXC1M5LnyVrxSgzE4S7.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zBRjaS3rHelSJk0gG7vM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FX0tLpx2LgbGwpx1GuHj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4k2Spq7UABzQWVUwu6QH.jpg"
+      "https://pavnika.ae/assets/products/SU009-1.jpg",
+      "https://pavnika.ae/assets/products/SU009-2.jpg",
+      "https://pavnika.ae/assets/products/SU009-3.jpg",
+      "https://pavnika.ae/assets/products/SU009-4.jpg",
+      "https://pavnika.ae/assets/products/SU009-5.jpg",
+      "https://pavnika.ae/assets/products/SU009-6.jpg",
+      "https://pavnika.ae/assets/products/SU009-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gp7lpXiErx1vXDD2P92W.jpg",
+    "image": "https://pavnika.ae/assets/products/SU009-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -451,11 +451,11 @@ window.PRODUCTS = [
     "price": 887,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IhCSkZbyHNLj1FA3Zw2V.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vIKK8DCxMvq4I4rgDumW.jpg"
+      "https://pavnika.ae/assets/products/SU010-1.jpg",
+      "https://pavnika.ae/assets/products/SU010-2.jpg",
+      "https://pavnika.ae/assets/products/SU010-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dHIHYoDAkNGayDLa3fOf.jpg",
+    "image": "https://pavnika.ae/assets/products/SU010-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -473,14 +473,14 @@ window.PRODUCTS = [
     "price": 925,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NkzHLWYBJPgbyKl5Pm6G.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v0KDf220525D2fvQuIkS.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/M90xdIk2whEGsZbefObK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fPxsLPhvAFe83nudKCuQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vXJwikyHWUbhNhjVacLZ.jpg"
+      "https://pavnika.ae/assets/products/GG001-1.jpg",
+      "https://pavnika.ae/assets/products/GG001-2.jpg",
+      "https://pavnika.ae/assets/products/GG001-3.jpg",
+      "https://pavnika.ae/assets/products/GG001-4.jpg",
+      "https://pavnika.ae/assets/products/GG001-5.jpg",
+      "https://pavnika.ae/assets/products/GG001-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GtthxcjaP4fScFNHyXL8.jpg",
+    "image": "https://pavnika.ae/assets/products/GG001-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -498,9 +498,9 @@ window.PRODUCTS = [
     "price": 685,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG"
+      "https://pavnika.ae/assets/products/SA005-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AISUBb0qbrf9VBwCgV3g.JPG",
+    "image": "https://pavnika.ae/assets/products/SA005-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -519,9 +519,9 @@ window.PRODUCTS = [
     "price": 715,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG"
+      "https://pavnika.ae/assets/products/SA006-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dsB8PiYXZR6CDajjAs1m.JPG",
+    "image": "https://pavnika.ae/assets/products/SA006-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal",
@@ -541,14 +541,14 @@ window.PRODUCTS = [
     "price": 743,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2ikASFvQlbHnwpoHquow.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OPGLIDSClD28wHWwt361.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bCavGZ2EI2DJj0L6Gzze.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0u504jUvC6FFfkyMhglE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PvyXhEmrD25s7bOwKIWR.jpg"
+      "https://pavnika.ae/assets/products/SA007-1.jpg",
+      "https://pavnika.ae/assets/products/SA007-2.jpg",
+      "https://pavnika.ae/assets/products/SA007-3.jpg",
+      "https://pavnika.ae/assets/products/SA007-4.jpg",
+      "https://pavnika.ae/assets/products/SA007-5.jpg",
+      "https://pavnika.ae/assets/products/SA007-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IIboMk9aI3pJslvhFiiZ.jpg",
+    "image": "https://pavnika.ae/assets/products/SA007-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -567,14 +567,14 @@ window.PRODUCTS = [
     "price": 866,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3ohgagOvLlcOMFjAGQTz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2Q3kugYBvyvUGWwW9Azk.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/atVykavUWzoTd9ESaCMa.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/f7FWrUEjO2KYl4WTlQaB.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/s729rlkK0xeoFhT3F56w.png"
+      "https://pavnika.ae/assets/products/DA001-1.jpg",
+      "https://pavnika.ae/assets/products/DA001-2.jpg",
+      "https://pavnika.ae/assets/products/DA001-3.jpg",
+      "https://pavnika.ae/assets/products/DA001-4.jpg",
+      "https://pavnika.ae/assets/products/DA001-5.jpg",
+      "https://pavnika.ae/assets/products/DA001-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17ElsFDxax1FAgziXqre.jpg",
+    "image": "https://pavnika.ae/assets/products/DA001-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -592,13 +592,13 @@ window.PRODUCTS = [
     "price": 690,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/b6JZkVwy5Z5m9QH7JIHP.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TUmbi45eBeHIo09bBCPZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kZBBSpjRUMu2mtYYCt4X.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QmPeRutYAxM1s5z7EXHp.jpg"
+      "https://pavnika.ae/assets/products/SA002-1.jpg",
+      "https://pavnika.ae/assets/products/SA002-2.jpg",
+      "https://pavnika.ae/assets/products/SA002-3.jpg",
+      "https://pavnika.ae/assets/products/SA002-4.jpg",
+      "https://pavnika.ae/assets/products/SA002-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2GL3HquYEzuT5yN1JG9d.jpg",
+    "image": "https://pavnika.ae/assets/products/SA002-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -617,14 +617,14 @@ window.PRODUCTS = [
     "price": 687,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DfwI8BWDS6U2jfP4JW9I.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Q5qwGYAW7HDkfn8i7Seq.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NCmoEskkUBVy7GEzOQtU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/B5m8YxrSRMDEQUs7BJXj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yggcgIbYOulZ0rwsnUEJ.jpg"
+      "https://pavnika.ae/assets/products/SA003-1.jpg",
+      "https://pavnika.ae/assets/products/SA003-2.jpg",
+      "https://pavnika.ae/assets/products/SA003-3.jpg",
+      "https://pavnika.ae/assets/products/SA003-4.jpg",
+      "https://pavnika.ae/assets/products/SA003-5.jpg",
+      "https://pavnika.ae/assets/products/SA003-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sUqGUdxLfmijxvWlK02C.jpg",
+    "image": "https://pavnika.ae/assets/products/SA003-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -642,14 +642,14 @@ window.PRODUCTS = [
     "price": 499,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2Z4i7sKAWcUgm5lqTqMl.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/opukgbJsVKdjXI09oCco.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UkHcxfE7xBSK95jIDwz7.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/flylKDMpGqpjHIE6OyL1.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pIfbFkAzdC5TFdGG7K3y.jpg"
+      "https://pavnika.ae/assets/products/SA004-1.jpg",
+      "https://pavnika.ae/assets/products/SA004-2.jpg",
+      "https://pavnika.ae/assets/products/SA004-3.jpg",
+      "https://pavnika.ae/assets/products/SA004-4.jpg",
+      "https://pavnika.ae/assets/products/SA004-5.jpg",
+      "https://pavnika.ae/assets/products/SA004-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/j0KBIU5qhUuCI76Wjoya.jpg",
+    "image": "https://pavnika.ae/assets/products/SA004-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -668,14 +668,14 @@ window.PRODUCTS = [
     "price": 626,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8tfgdZfZreBGjJ87L92q.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vZfpf7Ez0PwdypnVJClW.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LuCNEeZhn6dMn1BymrAy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7BbJl3opyfoMd3fz0Lyi.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IDkZLr6eFUPBmvZNJso7.jpg"
+      "https://pavnika.ae/assets/products/SA001-1.jpg",
+      "https://pavnika.ae/assets/products/SA001-2.jpg",
+      "https://pavnika.ae/assets/products/SA001-3.jpg",
+      "https://pavnika.ae/assets/products/SA001-4.jpg",
+      "https://pavnika.ae/assets/products/SA001-5.jpg",
+      "https://pavnika.ae/assets/products/SA001-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ox3OzjaNMyVHasREOkCA.jpg",
+    "image": "https://pavnika.ae/assets/products/SA001-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -694,14 +694,14 @@ window.PRODUCTS = [
     "price": 1179,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/m6KpI7HUyz9KaNn2x6e8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Og11cRC1GW2e5nqMFJXp.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qEVA8ecxoQkojQ8Wj6Ph.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LYBE6IApAUnEsZ2YzIkK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5W5kRhLeu7NGiURTyiYd.jpg"
+      "https://pavnika.ae/assets/products/PS001-1.jpg",
+      "https://pavnika.ae/assets/products/PS001-2.jpg",
+      "https://pavnika.ae/assets/products/PS001-3.jpg",
+      "https://pavnika.ae/assets/products/PS001-4.jpg",
+      "https://pavnika.ae/assets/products/PS001-5.jpg",
+      "https://pavnika.ae/assets/products/PS001-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oPDt976iznrElrkD1C0U.jpg",
+    "image": "https://pavnika.ae/assets/products/PS001-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest",
@@ -721,14 +721,14 @@ window.PRODUCTS = [
     "price": 1281,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/r7HQaerTlryBfhIjOE3D.png",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BN88GnHcsdKM48SyhrkX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xvV6Af2dCSXooSklaM38.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ixquBfbsy9e5aAXxd54s.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fnNjn2u0Yk3QxV0Que0e.jpg"
+      "https://pavnika.ae/assets/products/PP001-1.jpg",
+      "https://pavnika.ae/assets/products/PP001-2.jpg",
+      "https://pavnika.ae/assets/products/PP001-3.jpg",
+      "https://pavnika.ae/assets/products/PP001-4.jpg",
+      "https://pavnika.ae/assets/products/PP001-5.jpg",
+      "https://pavnika.ae/assets/products/PP001-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gIhJBBNYWzwABnJvIlHR.png",
+    "image": "https://pavnika.ae/assets/products/PP001-1.jpg",
     "occasions": [
       "Bridal",
       "Reception"
@@ -747,14 +747,14 @@ window.PRODUCTS = [
     "price": 1299,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4M8ZjrqcvLuF0JWgAcIA.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/45oIXkQkKkALNFat9i80.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dPSf9n56ylVn51GDYnk6.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CLHNVjYX3sVUYlNe7rj7.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JExiaxeFwveXERGeBXG1.jpg"
+      "https://pavnika.ae/assets/products/PS002-1.jpg",
+      "https://pavnika.ae/assets/products/PS002-2.jpg",
+      "https://pavnika.ae/assets/products/PS002-3.jpg",
+      "https://pavnika.ae/assets/products/PS002-4.jpg",
+      "https://pavnika.ae/assets/products/PS002-5.jpg",
+      "https://pavnika.ae/assets/products/PS002-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXFSZvU5EIKVrts7kHMY.jpg",
+    "image": "https://pavnika.ae/assets/products/PS002-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest",
@@ -774,13 +774,13 @@ window.PRODUCTS = [
     "price": 170,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3GR9khPBawFgpOjsY5Y3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/c8BajF3qR6YGVLf6oboQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XvfdcGBvAP4BJfynLF8k.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BrkBDt5G9HAI3htvse8k.jpg"
+      "https://pavnika.ae/assets/products/SS001-1.jpg",
+      "https://pavnika.ae/assets/products/SS001-2.jpg",
+      "https://pavnika.ae/assets/products/SS001-3.jpg",
+      "https://pavnika.ae/assets/products/SS001-4.jpg",
+      "https://pavnika.ae/assets/products/SS001-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YfuBod6jA9S9RIvejvHg.jpg",
+    "image": "https://pavnika.ae/assets/products/SS001-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -799,13 +799,13 @@ window.PRODUCTS = [
     "price": 195,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TiQsiXzexFJxrt6mt8jv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YkgMiuereyLyFUsMyMoP.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tnWxMpq90U298e0ceAg9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4yu4IL7h60Pfn8UMA6Ey.jpg"
+      "https://pavnika.ae/assets/products/SS002-1.jpg",
+      "https://pavnika.ae/assets/products/SS002-2.jpg",
+      "https://pavnika.ae/assets/products/SS002-3.jpg",
+      "https://pavnika.ae/assets/products/SS002-4.jpg",
+      "https://pavnika.ae/assets/products/SS002-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kDvLY5iv57Igx05yfWO0.jpg",
+    "image": "https://pavnika.ae/assets/products/SS002-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -824,9 +824,9 @@ window.PRODUCTS = [
     "price": 257,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg"
+      "https://pavnika.ae/assets/products/VW007-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OCY9PvetWfWCQln4qINg.jpg",
+    "image": "https://pavnika.ae/assets/products/VW007-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -844,9 +844,9 @@ window.PRODUCTS = [
     "price": 283,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg"
+      "https://pavnika.ae/assets/products/SS003-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/W9V9bfsC5VBYENwjy6k5.jpg",
+    "image": "https://pavnika.ae/assets/products/SS003-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -864,13 +864,13 @@ window.PRODUCTS = [
     "price": 201,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/O5nVYaDB3ECytRFP59Fr.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QcJMVJGyUXcjLZ9bM4Za.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9YsPJZMn9ihkFOnoLXah.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BQ7hCJr9AwJaJTCVWx2T.jpg"
+      "https://pavnika.ae/assets/products/SO001-1.jpg",
+      "https://pavnika.ae/assets/products/SO001-2.jpg",
+      "https://pavnika.ae/assets/products/SO001-3.jpg",
+      "https://pavnika.ae/assets/products/SO001-4.jpg",
+      "https://pavnika.ae/assets/products/SO001-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQVTmX7anJmmbIPnipo8.jpg",
+    "image": "https://pavnika.ae/assets/products/SO001-1.jpg",
     "occasions": [
       "Everyday"
     ]
@@ -888,11 +888,11 @@ window.PRODUCTS = [
     "price": 215,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AJbHqF2WAjKkRcIUIftz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pYoWXKBE5cTsFvjuVGRR.jpg"
+      "https://pavnika.ae/assets/products/VW008-1.jpg",
+      "https://pavnika.ae/assets/products/VW008-2.jpg",
+      "https://pavnika.ae/assets/products/VW008-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/v4bfVVZfDOfQNdtZDd94.jpg",
+    "image": "https://pavnika.ae/assets/products/VW008-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest",
@@ -912,11 +912,11 @@ window.PRODUCTS = [
     "price": 240,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DpCisJc3WaLNUG3GS0tg.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kQgffYfFFmJBmo3BMM5w.jpg"
+      "https://pavnika.ae/assets/products/VW009-1.jpg",
+      "https://pavnika.ae/assets/products/VW009-2.jpg",
+      "https://pavnika.ae/assets/products/VW009-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cw1tql9ZlBGa3rYPQH12.jpg",
+    "image": "https://pavnika.ae/assets/products/VW009-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest",
@@ -936,10 +936,10 @@ window.PRODUCTS = [
     "price": 275,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/htduwaEZTRPWB03CEwCK.jpg"
+      "https://pavnika.ae/assets/products/SA008-1.jpg",
+      "https://pavnika.ae/assets/products/SA008-2.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lAZWhQWVBEJImWS05jj3.jpg",
+    "image": "https://pavnika.ae/assets/products/SA008-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -958,11 +958,11 @@ window.PRODUCTS = [
     "price": 285,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3fviqy672sFFC8mN6aRk.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zadMxEkUdi1XJzIrz5JG.jpg"
+      "https://pavnika.ae/assets/products/PP009-1.jpg",
+      "https://pavnika.ae/assets/products/PP009-2.jpg",
+      "https://pavnika.ae/assets/products/PP009-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jf68dcoLufHF8144fVym.jpg",
+    "image": "https://pavnika.ae/assets/products/PP009-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -981,13 +981,13 @@ window.PRODUCTS = [
     "price": 201,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/eZOoHuZOf1xUP1lGgJnZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ZWdC6V0n7Pm6DLVrkudE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TrzHEn4dAOXycPaIV4nf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/llkuUX0bW0LHC1jSLAxg.jpg"
+      "https://pavnika.ae/assets/products/SO002-1.jpg",
+      "https://pavnika.ae/assets/products/SO002-2.jpg",
+      "https://pavnika.ae/assets/products/SO002-3.jpg",
+      "https://pavnika.ae/assets/products/SO002-4.jpg",
+      "https://pavnika.ae/assets/products/SO002-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/I241F4brN2j7IhRtZqSh.jpg",
+    "image": "https://pavnika.ae/assets/products/SO002-1.jpg",
     "occasions": [
       "Everyday"
     ]
@@ -1005,11 +1005,11 @@ window.PRODUCTS = [
     "price": 257,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H66wOTdFZ4KpLd1TEOkk.png",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/17hPhIGxMy34y7Pb6RTz.jpg"
+      "https://pavnika.ae/assets/products/VW010-1.jpg",
+      "https://pavnika.ae/assets/products/VW010-2.jpg",
+      "https://pavnika.ae/assets/products/VW010-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MVacGA0QcPc8VCB39VPQ.jpg",
+    "image": "https://pavnika.ae/assets/products/VW010-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1027,11 +1027,11 @@ window.PRODUCTS = [
     "price": 285,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iGJUvAngKmp1VA5TotmB.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2CWEIRrPsZqDFgISWOjN.jpg"
+      "https://pavnika.ae/assets/products/PP010-1.jpg",
+      "https://pavnika.ae/assets/products/PP010-2.jpg",
+      "https://pavnika.ae/assets/products/PP010-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gTr2dXp12cmMo9WSbAtP.jpg",
+    "image": "https://pavnika.ae/assets/products/PP010-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1050,9 +1050,9 @@ window.PRODUCTS = [
     "price": 267,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg"
+      "https://pavnika.ae/assets/products/VW011-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q7cMl2JchHLNcDKJVeim.jpg",
+    "image": "https://pavnika.ae/assets/products/VW011-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1070,13 +1070,13 @@ window.PRODUCTS = [
     "price": 340,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6eLVpei37fFNyI28EuOP.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R9VIaZYqa4bUohnSUaOH.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9N7eMLtcQ5oFiFdf4s5F.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/78REAxmmXPsOsQhUyiSo.jpg"
+      "https://pavnika.ae/assets/products/GG003-1.jpg",
+      "https://pavnika.ae/assets/products/GG003-2.jpg",
+      "https://pavnika.ae/assets/products/GG003-3.jpg",
+      "https://pavnika.ae/assets/products/GG003-4.jpg",
+      "https://pavnika.ae/assets/products/GG003-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6ptzdrsPmGAWRetM9mtS.jpg",
+    "image": "https://pavnika.ae/assets/products/GG003-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal",
@@ -1096,15 +1096,15 @@ window.PRODUCTS = [
     "price": 401,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MrhN5T3eM1DRLR7D94my.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fHn71MS6gG3gbP04Z59h.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dQxxSxkiCE5HdN9NKBY2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CJ7hoeZBLPbTqT58qkGS.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3D9K8ofa1WLvxSCLeEjM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Z2KBruHYz63w8wIw4tWZ.jpg"
+      "https://pavnika.ae/assets/products/GG004-1.jpg",
+      "https://pavnika.ae/assets/products/GG004-2.jpg",
+      "https://pavnika.ae/assets/products/GG004-3.jpg",
+      "https://pavnika.ae/assets/products/GG004-4.jpg",
+      "https://pavnika.ae/assets/products/GG004-5.jpg",
+      "https://pavnika.ae/assets/products/GG004-6.jpg",
+      "https://pavnika.ae/assets/products/GG004-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/op1GUtuUpy0iAx1nkRwx.jpg",
+    "image": "https://pavnika.ae/assets/products/GG004-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -1123,13 +1123,13 @@ window.PRODUCTS = [
     "price": 285,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uT8XjBEFwuI1XclT9I6y.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kA5XEPAokJA00jNlmyMK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DUqu6ikG8P0url6RVAH2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FpxdQz9lHgk0Xb2KN67j.jpg"
+      "https://pavnika.ae/assets/products/PP011-1.jpg",
+      "https://pavnika.ae/assets/products/PP011-2.jpg",
+      "https://pavnika.ae/assets/products/PP011-3.jpg",
+      "https://pavnika.ae/assets/products/PP011-4.jpg",
+      "https://pavnika.ae/assets/products/PP011-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qfMgtcY8biLGJtTCKPTu.jpg",
+    "image": "https://pavnika.ae/assets/products/PP011-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1148,15 +1148,15 @@ window.PRODUCTS = [
     "price": 240,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ouYOfEfqC8Xl1bbUJa5b.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sijiqyWWAg1D87YfoSqb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CII7HhdIzMMAuhUMwuEq.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qX7G58vT35rIHwBDST9N.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/e8C2Q32mTtleGbstl4xX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Ua6QFX8GlzOxxDIIBJQn.jpg"
+      "https://pavnika.ae/assets/products/VW012-1.jpg",
+      "https://pavnika.ae/assets/products/VW012-2.jpg",
+      "https://pavnika.ae/assets/products/VW012-3.jpg",
+      "https://pavnika.ae/assets/products/VW012-4.jpg",
+      "https://pavnika.ae/assets/products/VW012-5.jpg",
+      "https://pavnika.ae/assets/products/VW012-6.jpg",
+      "https://pavnika.ae/assets/products/VW012-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QDA480awbfmR6Y6DdqMU.jpg",
+    "image": "https://pavnika.ae/assets/products/VW012-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest",
@@ -1176,9 +1176,9 @@ window.PRODUCTS = [
     "price": 503,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg"
+      "https://pavnika.ae/assets/products/SA009-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oujNxImOUnV874lEf5Fm.jpg",
+    "image": "https://pavnika.ae/assets/products/SA009-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1196,9 +1196,9 @@ window.PRODUCTS = [
     "price": 221,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg"
+      "https://pavnika.ae/assets/products/FV001-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FTSlUVZ7c1FRUdni1XoW.jpg",
+    "image": "https://pavnika.ae/assets/products/FV001-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -1217,11 +1217,11 @@ window.PRODUCTS = [
     "price": 221,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kcW7GR2EM0scKhExUcfz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hPHmtyxxxFuZV3ugnwxj.jpg"
+      "https://pavnika.ae/assets/products/FV002-1.jpg",
+      "https://pavnika.ae/assets/products/FV002-2.jpg",
+      "https://pavnika.ae/assets/products/FV002-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DaeI88MxCDTieJTwOOv0.jpg",
+    "image": "https://pavnika.ae/assets/products/FV002-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -1240,11 +1240,11 @@ window.PRODUCTS = [
     "price": 242,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V4l3AwwIaocXqlidMvF0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5SHYbc8Mi5w5WGNi6rhN.jpg"
+      "https://pavnika.ae/assets/products/FV003-1.jpg",
+      "https://pavnika.ae/assets/products/FV003-2.jpg",
+      "https://pavnika.ae/assets/products/FV003-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/me5XxUNP4KGyIcwgBYcX.jpg",
+    "image": "https://pavnika.ae/assets/products/FV003-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -1263,11 +1263,11 @@ window.PRODUCTS = [
     "price": 150,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HQ1EdQq3RRrPz4ninQgU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XI08IFMS2gIXxJUdVlC2.jpg"
+      "https://pavnika.ae/assets/products/FV004-1.jpg",
+      "https://pavnika.ae/assets/products/FV004-2.jpg",
+      "https://pavnika.ae/assets/products/FV004-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LRfIoW6lagEncRFmOCHF.jpg",
+    "image": "https://pavnika.ae/assets/products/FV004-1.jpg",
     "salePrice": null,
     "occasions": [
       "Festive",
@@ -1287,11 +1287,11 @@ window.PRODUCTS = [
     "price": 199,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kkZ3FtGbGqduAH0V6mp3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ktIZL77ok6YDQEAPXvHw.jpg"
+      "https://pavnika.ae/assets/products/FV005-1.jpg",
+      "https://pavnika.ae/assets/products/FV005-2.jpg",
+      "https://pavnika.ae/assets/products/FV005-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7p650XSE18fSjxhJa8zH.jpg",
+    "image": "https://pavnika.ae/assets/products/FV005-1.jpg",
     "salePrice": null,
     "occasions": [
       "Festive",
@@ -1311,11 +1311,11 @@ window.PRODUCTS = [
     "price": 199,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qAvXVzxL3Bq3sIQJIgaj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AXejsAqELdsKsafdTzQD.jpg"
+      "https://pavnika.ae/assets/products/FV006-1.jpg",
+      "https://pavnika.ae/assets/products/FV006-2.jpg",
+      "https://pavnika.ae/assets/products/FV006-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mAH4zgI077BrKu8M1Nw6.jpg",
+    "image": "https://pavnika.ae/assets/products/FV006-1.jpg",
     "salePrice": null,
     "occasions": [
       "Festive",
@@ -1335,11 +1335,11 @@ window.PRODUCTS = [
     "price": 199,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9iJ5ey19WRZRtaavkgGv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GeeBVxSM0LbmLf2n6VX3.jpg"
+      "https://pavnika.ae/assets/products/FV007-1.jpg",
+      "https://pavnika.ae/assets/products/FV007-2.jpg",
+      "https://pavnika.ae/assets/products/FV007-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pwsIc9jgzOYDvsXEMoAc.jpg",
+    "image": "https://pavnika.ae/assets/products/FV007-1.jpg",
     "salePrice": null,
     "occasions": [
       "Festive",
@@ -1359,12 +1359,12 @@ window.PRODUCTS = [
     "price": 665,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cUjeGXf9YhfVthA8BtPC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mvsy7iSgaqwe1ieNHOA8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VjmYmkXi66rjw7CMRSie.jpg"
+      "https://pavnika.ae/assets/products/SA010-1.jpg",
+      "https://pavnika.ae/assets/products/SA010-2.jpg",
+      "https://pavnika.ae/assets/products/SA010-3.jpg",
+      "https://pavnika.ae/assets/products/SA010-4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1viycCw2zGytv2OQIvfQ.jpg",
+    "image": "https://pavnika.ae/assets/products/SA010-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1383,12 +1383,12 @@ window.PRODUCTS = [
     "price": 320,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R0tzxnt2wpxqg6A54ji0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TU7YetKBBXNIWxM8grg2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pWlbikzb5iBPkvs1kuOX.jpg"
+      "https://pavnika.ae/assets/products/SA011-1.jpg",
+      "https://pavnika.ae/assets/products/SA011-2.jpg",
+      "https://pavnika.ae/assets/products/SA011-3.jpg",
+      "https://pavnika.ae/assets/products/SA011-4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N8eDpaDJhn6ie6fE1Hpd.jpg",
+    "image": "https://pavnika.ae/assets/products/SA011-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1407,12 +1407,12 @@ window.PRODUCTS = [
     "price": 242,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/42mGoGUDmvrKV48Ba7su.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XIQd5gba1TfVung7Mzt8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bboyJbQrFKNjPcfWJVei.jpg"
+      "https://pavnika.ae/assets/products/VW013-1.jpg",
+      "https://pavnika.ae/assets/products/VW013-2.jpg",
+      "https://pavnika.ae/assets/products/VW013-3.jpg",
+      "https://pavnika.ae/assets/products/VW013-4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vYuKGdyB0rnarHzByQAR.jpg",
+    "image": "https://pavnika.ae/assets/products/VW013-1.jpg",
     "occasions": [
       "Wedding Guest",
       "Festive"
@@ -1431,9 +1431,9 @@ window.PRODUCTS = [
     "price": 298,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg"
+      "https://pavnika.ae/assets/products/VW014-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gshLStScLqQ7vgcvp0f4.jpg",
+    "image": "https://pavnika.ae/assets/products/VW014-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1451,13 +1451,13 @@ window.PRODUCTS = [
     "price": 293,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XQ5buBbFIz7D2bUVFolg.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/T3OvB52sCwrJheQWsHEy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nKWcajyDz7vCk8abTHL2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1SEkkaV6AxntYDmUC51a.jpg"
+      "https://pavnika.ae/assets/products/VW015-1.jpg",
+      "https://pavnika.ae/assets/products/VW015-2.jpg",
+      "https://pavnika.ae/assets/products/VW015-3.jpg",
+      "https://pavnika.ae/assets/products/VW015-4.jpg",
+      "https://pavnika.ae/assets/products/VW015-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bAmnPHpimDVWOgTZPS5K.jpg",
+    "image": "https://pavnika.ae/assets/products/VW015-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1475,11 +1475,11 @@ window.PRODUCTS = [
     "price": 365,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Rs5rF8jCcAZz7xuxoZkF.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dD0vVYqbvb4j5m9Vktwm.jpg"
+      "https://pavnika.ae/assets/products/SA012-1.jpg",
+      "https://pavnika.ae/assets/products/SA012-2.jpg",
+      "https://pavnika.ae/assets/products/SA012-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cH8Ck88d7uP9dFdYyOWg.jpg",
+    "image": "https://pavnika.ae/assets/products/SA012-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1497,11 +1497,11 @@ window.PRODUCTS = [
     "price": 247,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VeyKrvqofpTEkY8nPUYm.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/O8VXwSEIGDZAwPiFLbP4.jpg"
+      "https://pavnika.ae/assets/products/SA013-1.jpg",
+      "https://pavnika.ae/assets/products/SA013-2.jpg",
+      "https://pavnika.ae/assets/products/SA013-3.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CqkW1IZEWmZbgTzK9e7Y.jpg",
+    "image": "https://pavnika.ae/assets/products/SA013-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1519,15 +1519,15 @@ window.PRODUCTS = [
     "price": 240,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/opggG5M2wynfa1fWk1l9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XaRViXijDdNzhCRwO1AU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/miFDUZ8wMSTTZ7uUYZjD.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HzOvN7SmqQFfSddRvlxP.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qEhzjgf9qT5IGwZgmLE2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kUgNURuxm83C4Ko9ce2x.jpg"
+      "https://pavnika.ae/assets/products/VW016-1.jpg",
+      "https://pavnika.ae/assets/products/VW016-2.jpg",
+      "https://pavnika.ae/assets/products/VW016-3.jpg",
+      "https://pavnika.ae/assets/products/VW016-4.jpg",
+      "https://pavnika.ae/assets/products/VW016-5.jpg",
+      "https://pavnika.ae/assets/products/VW016-6.jpg",
+      "https://pavnika.ae/assets/products/VW016-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ORkv2ItPa5bn1OQdaWop.jpg",
+    "image": "https://pavnika.ae/assets/products/VW016-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1546,13 +1546,13 @@ window.PRODUCTS = [
     "price": 260,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yyc30gJ2QYLZPf5Cdk3F.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vNsFLNJwTLnHhOuyztSW.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/upZ68Mr3FCHCFnQ1ZTU9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bRbiQsH9BXNBXUqPvzrZ.jpg"
+      "https://pavnika.ae/assets/products/VW017-1.jpg",
+      "https://pavnika.ae/assets/products/VW017-2.jpg",
+      "https://pavnika.ae/assets/products/VW017-3.jpg",
+      "https://pavnika.ae/assets/products/VW017-4.jpg",
+      "https://pavnika.ae/assets/products/VW017-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uIJbYxMmFKlTrenY2xjy.jpg",
+    "image": "https://pavnika.ae/assets/products/VW017-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1571,13 +1571,13 @@ window.PRODUCTS = [
     "price": 257,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tXRxCeza5CFU5ZRvBHnj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3EbUY2OgjysuWbuDDyoZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WNKZgAjoPH20Ir85BSAG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/APRGlUNUOyuxfRO7SQPR.jpg"
+      "https://pavnika.ae/assets/products/VW018-1.jpg",
+      "https://pavnika.ae/assets/products/VW018-2.jpg",
+      "https://pavnika.ae/assets/products/VW018-3.jpg",
+      "https://pavnika.ae/assets/products/VW018-4.jpg",
+      "https://pavnika.ae/assets/products/VW018-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ZLO6BOGqiK88E0hwMfe.jpg",
+    "image": "https://pavnika.ae/assets/products/VW018-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1595,9 +1595,9 @@ window.PRODUCTS = [
     "price": 257,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg"
+      "https://pavnika.ae/assets/products/VW019-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/covhrnyz7ooWYC0DVvQ4.jpg",
+    "image": "https://pavnika.ae/assets/products/VW019-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1615,15 +1615,15 @@ window.PRODUCTS = [
     "price": 165,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/12ec43ljbtKtWBcwZW8X.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/47pwyxIFkL6RcKVPqdzW.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/oDCvuPAJZnCZHFezcVPM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yvOvd98E5HIYj0owscUq.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jThE2xiPgX6KOxpZ6VZR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qIbBNsTWmcNVXhX4AaV4.jpg"
+      "https://pavnika.ae/assets/products/VW020-1.jpg",
+      "https://pavnika.ae/assets/products/VW020-2.jpg",
+      "https://pavnika.ae/assets/products/VW020-3.jpg",
+      "https://pavnika.ae/assets/products/VW020-4.jpg",
+      "https://pavnika.ae/assets/products/VW020-5.jpg",
+      "https://pavnika.ae/assets/products/VW020-6.jpg",
+      "https://pavnika.ae/assets/products/VW020-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a7m0K7j64uN8moYZPxiu.jpg",
+    "image": "https://pavnika.ae/assets/products/VW020-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1641,15 +1641,15 @@ window.PRODUCTS = [
     "price": 227,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a8pEHf5EAJuTpshiReGD.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ofl4coo0R3qll7xN4P9M.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Jf6OtIGvydkive5cvFG2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iwmmI38jxHmUz72s6GKX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UEqsqJMMJTbfF6wgxkVZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aFZvFHBrPy34gwB4IKnj.jpg"
+      "https://pavnika.ae/assets/products/VW021-1.jpg",
+      "https://pavnika.ae/assets/products/VW021-2.jpg",
+      "https://pavnika.ae/assets/products/VW021-3.jpg",
+      "https://pavnika.ae/assets/products/VW021-4.jpg",
+      "https://pavnika.ae/assets/products/VW021-5.jpg",
+      "https://pavnika.ae/assets/products/VW021-6.jpg",
+      "https://pavnika.ae/assets/products/VW021-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tMhHvSdN7isfqpklyKMs.jpg",
+    "image": "https://pavnika.ae/assets/products/VW021-1.jpg",
     "occasions": [
       "Wedding Guest",
       "Everyday"
@@ -1668,15 +1668,15 @@ window.PRODUCTS = [
     "price": 285,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1Y0Bnp8TP7gwhXHqARNv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mGGzySbdfxTzRMT0ofJd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/z4tLyp671HtiTOA7g1Id.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/aHF203rWwVv1tqp7kALr.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zEbo3eQuzcUhT9DuNmLs.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/eanxcZs1PhndMayYimg3.jpg"
+      "https://pavnika.ae/assets/products/VW022-1.jpg",
+      "https://pavnika.ae/assets/products/VW022-2.jpg",
+      "https://pavnika.ae/assets/products/VW022-3.jpg",
+      "https://pavnika.ae/assets/products/VW022-4.jpg",
+      "https://pavnika.ae/assets/products/VW022-5.jpg",
+      "https://pavnika.ae/assets/products/VW022-6.jpg",
+      "https://pavnika.ae/assets/products/VW022-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lB5yrpe14L5ycXjPL2BC.jpg",
+    "image": "https://pavnika.ae/assets/products/VW022-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1695,15 +1695,15 @@ window.PRODUCTS = [
     "price": 242,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zLWEzL0nvlNlUoXEllRp.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Oh9taeIMcDzIm5ZaQtsU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wSeVdWUvQNznd2SQcySd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WHnJtg4rSfldtCAKgQJc.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mzUFRrbMCtepj7XxZtoC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IGQeYtl4Mzx1OqYheRrq.jpg"
+      "https://pavnika.ae/assets/products/VW023-1.jpg",
+      "https://pavnika.ae/assets/products/VW023-2.jpg",
+      "https://pavnika.ae/assets/products/VW023-3.jpg",
+      "https://pavnika.ae/assets/products/VW023-4.jpg",
+      "https://pavnika.ae/assets/products/VW023-5.jpg",
+      "https://pavnika.ae/assets/products/VW023-6.jpg",
+      "https://pavnika.ae/assets/products/VW023-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yEt3siCHL367rVOI1LTY.jpg",
+    "image": "https://pavnika.ae/assets/products/VW023-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1721,15 +1721,15 @@ window.PRODUCTS = [
     "price": 278,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IcKMVo0u2MH6hwo4GE3H.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Yyj8lQTe43p0uPihJGUC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UH0YlHN8aweUnZ7lNlRR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Lm0hgb3HIvNCa3zqKCNE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AX5j6GX6x7qYt1UNu5Ip.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wX4oqtWe1tXBk3hv53tU.jpg"
+      "https://pavnika.ae/assets/products/VW024-1.jpg",
+      "https://pavnika.ae/assets/products/VW024-2.jpg",
+      "https://pavnika.ae/assets/products/VW024-3.jpg",
+      "https://pavnika.ae/assets/products/VW024-4.jpg",
+      "https://pavnika.ae/assets/products/VW024-5.jpg",
+      "https://pavnika.ae/assets/products/VW024-6.jpg",
+      "https://pavnika.ae/assets/products/VW024-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dDcxlhB9eIiJV39xFpRJ.jpg",
+    "image": "https://pavnika.ae/assets/products/VW024-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1747,9 +1747,9 @@ window.PRODUCTS = [
     "price": 252,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg"
+      "https://pavnika.ae/assets/products/VW025-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RSBGmjVQJJuYwsN7yPJv.jpg",
+    "image": "https://pavnika.ae/assets/products/VW025-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1767,12 +1767,12 @@ window.PRODUCTS = [
     "price": 242,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SOSaBbtPVwyx2k07FL5X.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/D5Zc9irv33gulV5tUSUv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PlVQbf2NUeOYJ2sZwSmB.jpg"
+      "https://pavnika.ae/assets/products/VW026-1.jpg",
+      "https://pavnika.ae/assets/products/VW026-2.jpg",
+      "https://pavnika.ae/assets/products/VW026-3.jpg",
+      "https://pavnika.ae/assets/products/VW026-4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zG163XVDpZW8jOkiUXdf.jpg",
+    "image": "https://pavnika.ae/assets/products/VW026-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1790,15 +1790,15 @@ window.PRODUCTS = [
     "price": 285,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bae64N95fOeEfiWMQItu.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lgXqFsxg6hgfIv3hfuuX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MI55CBOocGmJdZnSbOiq.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/o1bY50jG2tY0mZKbvSxm.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6yEOk8Pg8ZGjlWTdzlpy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/isrkgqOvdRVCKIiviZRj.jpg"
+      "https://pavnika.ae/assets/products/SA014-1.jpg",
+      "https://pavnika.ae/assets/products/SA014-2.jpg",
+      "https://pavnika.ae/assets/products/SA014-3.jpg",
+      "https://pavnika.ae/assets/products/SA014-4.jpg",
+      "https://pavnika.ae/assets/products/SA014-5.jpg",
+      "https://pavnika.ae/assets/products/SA014-6.jpg",
+      "https://pavnika.ae/assets/products/SA014-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qyze66YIoVB1sovdKULF.jpg",
+    "image": "https://pavnika.ae/assets/products/SA014-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1817,15 +1817,15 @@ window.PRODUCTS = [
     "price": 349,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4vdEsFuFMvb3yAqdM3zb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/x1A6xIXSlAvZhnIAx5SX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hpa66wIMQkYJ4TvVVsul.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PHUyT3wOyRCG6z1PzpNd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p9Hdso7bYA6RYbQK8lMl.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Fag5PVKsFrBrKjSiLgMu.jpg"
+      "https://pavnika.ae/assets/products/SO003-1.jpg",
+      "https://pavnika.ae/assets/products/SO003-2.jpg",
+      "https://pavnika.ae/assets/products/SO003-3.jpg",
+      "https://pavnika.ae/assets/products/SO003-4.jpg",
+      "https://pavnika.ae/assets/products/SO003-5.jpg",
+      "https://pavnika.ae/assets/products/SO003-6.jpg",
+      "https://pavnika.ae/assets/products/SO003-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BNodhWJuEtvbCSREhSSG.jpg",
+    "image": "https://pavnika.ae/assets/products/SO003-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest",
@@ -1845,9 +1845,9 @@ window.PRODUCTS = [
     "price": 641,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg"
+      "https://pavnika.ae/assets/products/SA015-1.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ii74xwu0Ruj1sYPB70G6.jpg",
+    "image": "https://pavnika.ae/assets/products/SA015-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1865,15 +1865,15 @@ window.PRODUCTS = [
     "price": 360,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JvsOzd2JK6VaG06CjXyU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Fhba4YDVF8OQzLhjs7JC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sA6H5hHqmgPnocqiVTbV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FWAX7ftvBx2inBPJHAQj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vY8rpHTDiceX7SuKXAID.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/u2QBtCalZfObw6VEK9iG.jpg"
+      "https://pavnika.ae/assets/products/SO004-1.jpg",
+      "https://pavnika.ae/assets/products/SO004-2.jpg",
+      "https://pavnika.ae/assets/products/SO004-3.jpg",
+      "https://pavnika.ae/assets/products/SO004-4.jpg",
+      "https://pavnika.ae/assets/products/SO004-5.jpg",
+      "https://pavnika.ae/assets/products/SO004-6.jpg",
+      "https://pavnika.ae/assets/products/SO004-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/92KBZDHLqHi4pK1Wpu1M.jpg",
+    "image": "https://pavnika.ae/assets/products/SO004-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1891,15 +1891,15 @@ window.PRODUCTS = [
     "price": 918,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/U2mARk4pmT9CKpWwXsL6.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/XamYWXhxVJB0ZNAmFILJ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SRukmismt4r4ZZb8Axn3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zYEb11DmICuVC7InkbWb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/M8DUbkRL0XE4pU23ZhtR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/57NdvAFb9kPJCY9U1JW2.jpg"
+      "https://pavnika.ae/assets/products/SU011-1.jpg",
+      "https://pavnika.ae/assets/products/SU011-2.jpg",
+      "https://pavnika.ae/assets/products/SU011-3.jpg",
+      "https://pavnika.ae/assets/products/SU011-4.jpg",
+      "https://pavnika.ae/assets/products/SU011-5.jpg",
+      "https://pavnika.ae/assets/products/SU011-6.jpg",
+      "https://pavnika.ae/assets/products/SU011-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KevrYnCZknw21lRG8zRC.jpg",
+    "image": "https://pavnika.ae/assets/products/SU011-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -1917,14 +1917,14 @@ window.PRODUCTS = [
     "price": 943,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/uZAHYGVZF0Xbvj77ZI7Y.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QOv46joIP3JeJuZvq6Kd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8FxehsdmLEtNlDqHBYRO.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bhXbi6n5hfsMP43w98IX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/82HiirOKqAbayTB7nmtq.jpg"
+      "https://pavnika.ae/assets/products/SU012-1.jpg",
+      "https://pavnika.ae/assets/products/SU012-2.jpg",
+      "https://pavnika.ae/assets/products/SU012-3.jpg",
+      "https://pavnika.ae/assets/products/SU012-4.jpg",
+      "https://pavnika.ae/assets/products/SU012-5.jpg",
+      "https://pavnika.ae/assets/products/SU012-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/14ujOHu1W06CROUdGNot.jpg",
+    "image": "https://pavnika.ae/assets/products/SU012-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -1942,15 +1942,15 @@ window.PRODUCTS = [
     "price": 275,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QkiUY7jp0ky2WC94OpuU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GekwXl0dtBVM2ELVP1KZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/G2367Sjrrdd4PKZQ5juw.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WWIi7ZSHA4oWGgtQvGt0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nsZOJJldSUU7I3BlWmW1.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hzdEliU3YYg5OL8gjIwt.jpg"
+      "https://pavnika.ae/assets/products/VW027-1.jpg",
+      "https://pavnika.ae/assets/products/VW027-2.jpg",
+      "https://pavnika.ae/assets/products/VW027-3.jpg",
+      "https://pavnika.ae/assets/products/VW027-4.jpg",
+      "https://pavnika.ae/assets/products/VW027-5.jpg",
+      "https://pavnika.ae/assets/products/VW027-6.jpg",
+      "https://pavnika.ae/assets/products/VW027-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4wRiZll2sWE48Bkx9FUw.jpg",
+    "image": "https://pavnika.ae/assets/products/VW027-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -1969,15 +1969,15 @@ window.PRODUCTS = [
     "price": 252,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/am43QMJxcomtNSjsCLjO.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/T2OW9X51O99ediVJq7Vh.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/slm5APgKuqcNH40oGUo0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AkNCYLUqsa7H98V9vs2L.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/YXhVvx7XonVoTMFeCgM3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HSSBGr5pVHcn70ySSDIZ.jpg"
+      "https://pavnika.ae/assets/products/VW028-1.jpg",
+      "https://pavnika.ae/assets/products/VW028-2.jpg",
+      "https://pavnika.ae/assets/products/VW028-3.jpg",
+      "https://pavnika.ae/assets/products/VW028-4.jpg",
+      "https://pavnika.ae/assets/products/VW028-5.jpg",
+      "https://pavnika.ae/assets/products/VW028-6.jpg",
+      "https://pavnika.ae/assets/products/VW028-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KZfCJKBH1KAsSJjbciDU.jpg",
+    "image": "https://pavnika.ae/assets/products/VW028-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -1995,12 +1995,12 @@ window.PRODUCTS = [
     "price": 225,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KJYpLTTPKISCwmGD81yf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gZQkqSqqLclJmd8D1gRF.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AZXF0sGaHesMRITldW4G.jpg"
+      "https://pavnika.ae/assets/products/VW029-1.jpg",
+      "https://pavnika.ae/assets/products/VW029-2.jpg",
+      "https://pavnika.ae/assets/products/VW029-3.jpg",
+      "https://pavnika.ae/assets/products/VW029-4.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ulRDAPSQpfbhTzRZGF5S.jpg",
+    "image": "https://pavnika.ae/assets/products/VW029-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -2019,13 +2019,13 @@ window.PRODUCTS = [
     "price": 247,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NBGOJnGiS3ypFqCO1lxE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/y5z8oJGkcN9VtAzdbV91.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7QwWEfckVGOgspRxd1Ec.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/s417VGy19P1fpLYmhNI2.jpg"
+      "https://pavnika.ae/assets/products/VW030-1.jpg",
+      "https://pavnika.ae/assets/products/VW030-2.jpg",
+      "https://pavnika.ae/assets/products/VW030-3.jpg",
+      "https://pavnika.ae/assets/products/VW030-4.jpg",
+      "https://pavnika.ae/assets/products/VW030-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rhfnQ2lLN70RieduztBS.jpg",
+    "image": "https://pavnika.ae/assets/products/VW030-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -2043,15 +2043,15 @@ window.PRODUCTS = [
     "price": 242,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/U6TtXXR8e7JEBhCT7DvV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/O9DVMDqa5ZcWt9rlS1dv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FOusXTbEkR91AYYn5uRu.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QJfWNOFWNbjxtKme4mx9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GhuWN3nCfqRHLbYLycTu.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OuExsW6YMTTEa4gI53xY.jpg"
+      "https://pavnika.ae/assets/products/VW031-1.jpg",
+      "https://pavnika.ae/assets/products/VW031-2.jpg",
+      "https://pavnika.ae/assets/products/VW031-3.jpg",
+      "https://pavnika.ae/assets/products/VW031-4.jpg",
+      "https://pavnika.ae/assets/products/VW031-5.jpg",
+      "https://pavnika.ae/assets/products/VW031-6.jpg",
+      "https://pavnika.ae/assets/products/VW031-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/krXX99p3bTnWpnbeUWPD.jpg",
+    "image": "https://pavnika.ae/assets/products/VW031-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -2069,14 +2069,14 @@ window.PRODUCTS = [
     "price": 240,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/RPUnyZCKcsqmYUB9PEQv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/qNu1qKmiJTwbEk9IyAtV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BRPuOKvJ7drhGer7Iloe.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TxPNfmambBCovTlDQ4pa.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/DLKvjzfO8Vw77xwWKZxW.jpg"
+      "https://pavnika.ae/assets/products/VW032-1.jpg",
+      "https://pavnika.ae/assets/products/VW032-2.jpg",
+      "https://pavnika.ae/assets/products/VW032-3.jpg",
+      "https://pavnika.ae/assets/products/VW032-4.jpg",
+      "https://pavnika.ae/assets/products/VW032-5.jpg",
+      "https://pavnika.ae/assets/products/VW032-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zQ1FBmHBf9ovjoA2yzeQ.jpg",
+    "image": "https://pavnika.ae/assets/products/VW032-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -2095,15 +2095,15 @@ window.PRODUCTS = [
     "price": 242,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CpNezwoGzjFZn0ZpyEul.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UF5DCH2t658cjDQ1eqrb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3Y3XJeXEYI8orZx7Wm8U.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3K57iYp0vmHpjyx5AcDe.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wtbPDgFKkABk8tpNQdqq.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zHQJp0oc5BNTjOs8gmkV.jpg"
+      "https://pavnika.ae/assets/products/VW033-1.jpg",
+      "https://pavnika.ae/assets/products/VW033-2.jpg",
+      "https://pavnika.ae/assets/products/VW033-3.jpg",
+      "https://pavnika.ae/assets/products/VW033-4.jpg",
+      "https://pavnika.ae/assets/products/VW033-5.jpg",
+      "https://pavnika.ae/assets/products/VW033-6.jpg",
+      "https://pavnika.ae/assets/products/VW033-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pSwoDcZ7bEnvQ1YQIdEw.jpg",
+    "image": "https://pavnika.ae/assets/products/VW033-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -2121,14 +2121,14 @@ window.PRODUCTS = [
     "price": 247,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dTXtvBMxp7s4Hy3Ikwbt.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/0ro8rWPbiSNAWhwkKiTM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/94XuPIBu8BHBtfxn2Mt9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wHekYXzGON7p8PQoFjlx.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PAKvLQJnjQlOiGrf8Rp8.jpg"
+      "https://pavnika.ae/assets/products/VW034-1.jpg",
+      "https://pavnika.ae/assets/products/VW034-2.jpg",
+      "https://pavnika.ae/assets/products/VW034-3.jpg",
+      "https://pavnika.ae/assets/products/VW034-4.jpg",
+      "https://pavnika.ae/assets/products/VW034-5.jpg",
+      "https://pavnika.ae/assets/products/VW034-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iybiBsXnog1DnFaBhnZf.jpg",
+    "image": "https://pavnika.ae/assets/products/VW034-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -2146,15 +2146,15 @@ window.PRODUCTS = [
     "price": 345,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KleGpGKnApHpvJE4zX5r.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ElVWHXkNexyI5hWLbfJV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1iyhKE0TwvfN4TWIuBmh.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UJPXmGrbVA0sGJmLczgj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VHyxFcxcNdvIro9XbHHb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/opDQvVJYpVEQQk8rE2Vu.jpg"
+      "https://pavnika.ae/assets/products/VW035-1.jpg",
+      "https://pavnika.ae/assets/products/VW035-2.jpg",
+      "https://pavnika.ae/assets/products/VW035-3.jpg",
+      "https://pavnika.ae/assets/products/VW035-4.jpg",
+      "https://pavnika.ae/assets/products/VW035-5.jpg",
+      "https://pavnika.ae/assets/products/VW035-6.jpg",
+      "https://pavnika.ae/assets/products/VW035-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yr96t9taqK7DVaJi6Vt5.jpg",
+    "image": "https://pavnika.ae/assets/products/VW035-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal",
@@ -2174,15 +2174,15 @@ window.PRODUCTS = [
     "price": 325,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BfVOOwOYfrDSKmDrYFi2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/myCdbQLEIvIdRuHCnuit.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tuJN0b7r6ZHrYwDSKCSy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Z91VrFLxI3qeKcfJ4ja3.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7L9XTKIkUoUF26Cwc3yo.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zvPnRQ0WLDzXTD6kEFnK.jpg"
+      "https://pavnika.ae/assets/products/FV008-1.jpg",
+      "https://pavnika.ae/assets/products/FV008-2.jpg",
+      "https://pavnika.ae/assets/products/FV008-3.jpg",
+      "https://pavnika.ae/assets/products/FV008-4.jpg",
+      "https://pavnika.ae/assets/products/FV008-5.jpg",
+      "https://pavnika.ae/assets/products/FV008-6.jpg",
+      "https://pavnika.ae/assets/products/FV008-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Icfa8jPo87hv9hxrLndY.jpg",
+    "image": "https://pavnika.ae/assets/products/FV008-1.jpg",
     "salePrice": null,
     "occasions": [
       "Festive",
@@ -2202,13 +2202,13 @@ window.PRODUCTS = [
     "price": 330,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/bsuq039NabP3KRmd7itM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PL1IacUjbL31wuJZCT0L.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WYwbnCZzkib16Y7JOE3V.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J3Gpf4k7pV4u7EO1Ro6T.jpg"
+      "https://pavnika.ae/assets/products/BB001-1.jpg",
+      "https://pavnika.ae/assets/products/BB001-2.jpg",
+      "https://pavnika.ae/assets/products/BB001-3.jpg",
+      "https://pavnika.ae/assets/products/BB001-4.jpg",
+      "https://pavnika.ae/assets/products/BB001-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5uhP3X288u9LflVy16P1.jpg",
+    "image": "https://pavnika.ae/assets/products/BB001-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -2227,15 +2227,15 @@ window.PRODUCTS = [
     "price": 349,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9WHEJPqZeduklvs7121C.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6BRKYlsGIzmywVpLWqyZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gJM5hUKLgG6eQllVEknP.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nE9yayIYtClL2d4L6Xdo.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/o1ROgfV1wI7VeInOKkWg.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vcgfhVCqH75Pr1XDgpUr.jpg"
+      "https://pavnika.ae/assets/products/BB002-1.jpg",
+      "https://pavnika.ae/assets/products/BB002-2.jpg",
+      "https://pavnika.ae/assets/products/BB002-3.jpg",
+      "https://pavnika.ae/assets/products/BB002-4.jpg",
+      "https://pavnika.ae/assets/products/BB002-5.jpg",
+      "https://pavnika.ae/assets/products/BB002-6.jpg",
+      "https://pavnika.ae/assets/products/BB002-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FzdiifBRBKuBTh9lZGdx.jpg",
+    "image": "https://pavnika.ae/assets/products/BB002-1.jpg",
     "occasions": [
       "Bridal"
     ]
@@ -2253,15 +2253,15 @@ window.PRODUCTS = [
     "price": 349,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dRygdgfKmI5QvUoxhb6w.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UOvwcz2Qx54H1kkMhWFo.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wSwst9SDc0JoCTAmScAn.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PIfUxLKFDLfQN9fzTABN.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Zl0aMfcE416JLlR6XAOK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sSjCUAaRygwy1Zf7CXZA.jpg"
+      "https://pavnika.ae/assets/products/BB003-1.jpg",
+      "https://pavnika.ae/assets/products/BB003-2.jpg",
+      "https://pavnika.ae/assets/products/BB003-3.jpg",
+      "https://pavnika.ae/assets/products/BB003-4.jpg",
+      "https://pavnika.ae/assets/products/BB003-5.jpg",
+      "https://pavnika.ae/assets/products/BB003-6.jpg",
+      "https://pavnika.ae/assets/products/BB003-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/36FkzESAsLpAAlvVjYqX.jpg",
+    "image": "https://pavnika.ae/assets/products/BB003-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2280,14 +2280,14 @@ window.PRODUCTS = [
     "price": 349,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ELXiy7n1gPqnDdmUoSZe.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Go20ikvinMtTXzbc2L9S.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/1wMZKvQhAmxpoRVtNF1K.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rPRwq8s28ykWCDC4YTpV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9Xhj0XAy0ROwgT42puE3.jpg"
+      "https://pavnika.ae/assets/products/BB004-1.jpg",
+      "https://pavnika.ae/assets/products/BB004-2.jpg",
+      "https://pavnika.ae/assets/products/BB004-3.jpg",
+      "https://pavnika.ae/assets/products/BB004-4.jpg",
+      "https://pavnika.ae/assets/products/BB004-5.jpg",
+      "https://pavnika.ae/assets/products/BB004-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gme2ZYmAFHCdeO3J6jmD.jpg",
+    "image": "https://pavnika.ae/assets/products/BB004-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2306,15 +2306,15 @@ window.PRODUCTS = [
     "price": 349,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/q9sZenXA7HQWZos5HV8k.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NmbEXOQj7R1e3LBOvmyR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7IT2cPT7QxBqtLiTlmIJ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/KxNcGrrhZoBvTiYXN62B.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4ubQ5caOTkiYeSILh3L0.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vbN7xByG71IzwZUDEdRv.jpg"
+      "https://pavnika.ae/assets/products/BB005-1.jpg",
+      "https://pavnika.ae/assets/products/BB005-2.jpg",
+      "https://pavnika.ae/assets/products/BB005-3.jpg",
+      "https://pavnika.ae/assets/products/BB005-4.jpg",
+      "https://pavnika.ae/assets/products/BB005-5.jpg",
+      "https://pavnika.ae/assets/products/BB005-6.jpg",
+      "https://pavnika.ae/assets/products/BB005-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wgJ30gEc47wPwFGRcWnI.jpg",
+    "image": "https://pavnika.ae/assets/products/BB005-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2333,15 +2333,15 @@ window.PRODUCTS = [
     "price": 940,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AYIeDHgHw9G0Q2qQ08SA.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8zp14WTQ8emh4MP9IwNf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WkDEReB8sPNxImyvUxF8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/y05o3qiRD4rxLAxHUAOi.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JEiNgXnGgf9g7Jku0CZd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/pOtHzIks9OgxBuZy303i.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3QIegA3rlUsOOpmObPG4.jpg"
+      "https://pavnika.ae/assets/products/SU013-1.jpg",
+      "https://pavnika.ae/assets/products/SU013-2.jpg",
+      "https://pavnika.ae/assets/products/SU013-3.jpg",
+      "https://pavnika.ae/assets/products/SU013-4.jpg",
+      "https://pavnika.ae/assets/products/SU013-5.jpg",
+      "https://pavnika.ae/assets/products/SU013-6.jpg",
+      "https://pavnika.ae/assets/products/SU013-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/AYIeDHgHw9G0Q2qQ08SA.jpg",
+    "image": "https://pavnika.ae/assets/products/SU013-1.jpg",
     "occasions": [
       "Bridal"
     ],
@@ -2360,14 +2360,14 @@ window.PRODUCTS = [
     "price": 164,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FGT9JxOQ7dJkO3xhHfHN.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dbn2682pazStgWoUVZTK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/N3wmCgmvMMsJTE7GzP3P.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HAQOwfUXOl3ylDW9hkDj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tKRjJ1OeGmtkDZ2U2bMZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/A15sJ8Q57ITNra6NYYMw.jpg"
+      "https://pavnika.ae/assets/products/FV009-1.jpg",
+      "https://pavnika.ae/assets/products/FV009-2.jpg",
+      "https://pavnika.ae/assets/products/FV009-3.jpg",
+      "https://pavnika.ae/assets/products/FV009-4.jpg",
+      "https://pavnika.ae/assets/products/FV009-5.jpg",
+      "https://pavnika.ae/assets/products/FV009-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/FGT9JxOQ7dJkO3xhHfHN.jpg",
+    "image": "https://pavnika.ae/assets/products/FV009-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2386,14 +2386,14 @@ window.PRODUCTS = [
     "price": 164,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a2jgFreMvcKrCSbYmQZv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/utZ9q6cxt82bY9513UAz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/S1TbnLr65ZfZcNuioBtV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Q5x5J6nG5IXTKAmKktl8.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/52KSg0mB3aW2FQuBi0SL.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/2xml6wbLsuRZewMPmCZr.jpg"
+      "https://pavnika.ae/assets/products/FV010-1.jpg",
+      "https://pavnika.ae/assets/products/FV010-2.jpg",
+      "https://pavnika.ae/assets/products/FV010-3.jpg",
+      "https://pavnika.ae/assets/products/FV010-4.jpg",
+      "https://pavnika.ae/assets/products/FV010-5.jpg",
+      "https://pavnika.ae/assets/products/FV010-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/a2jgFreMvcKrCSbYmQZv.jpg",
+    "image": "https://pavnika.ae/assets/products/FV010-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2412,14 +2412,14 @@ window.PRODUCTS = [
     "price": 221,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CUzDGxj7HFDAxdhjuk11.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GBKxfCxzdSPVnBMK9PYf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LOhUkLxSUtxwf8akVx2S.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4fgtPUnSNsdFElo1fy7S.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fXSZ55hPBWDlsdRW6DZ9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/WXliP2usNeVI4OZ8Mx0M.jpg"
+      "https://pavnika.ae/assets/products/FV011-1.jpg",
+      "https://pavnika.ae/assets/products/FV011-2.jpg",
+      "https://pavnika.ae/assets/products/FV011-3.jpg",
+      "https://pavnika.ae/assets/products/FV011-4.jpg",
+      "https://pavnika.ae/assets/products/FV011-5.jpg",
+      "https://pavnika.ae/assets/products/FV011-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/CUzDGxj7HFDAxdhjuk11.jpg",
+    "image": "https://pavnika.ae/assets/products/FV011-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2438,14 +2438,14 @@ window.PRODUCTS = [
     "price": 221,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lvSFkl9f07oxfPUSXHkA.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/5jk1gjgF0wZV5RqsHaGv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cBG0xRfT1cvBGmUfzbVY.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/Tt2oteutYSOXjB5cS5vE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nS328uEJb96b2FiTMjfr.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/x8y31Tw7ukhDpUIz0waV.jpg"
+      "https://pavnika.ae/assets/products/FV012-1.jpg",
+      "https://pavnika.ae/assets/products/FV012-2.jpg",
+      "https://pavnika.ae/assets/products/FV012-3.jpg",
+      "https://pavnika.ae/assets/products/FV012-4.jpg",
+      "https://pavnika.ae/assets/products/FV012-5.jpg",
+      "https://pavnika.ae/assets/products/FV012-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/lvSFkl9f07oxfPUSXHkA.jpg",
+    "image": "https://pavnika.ae/assets/products/FV012-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2464,15 +2464,15 @@ window.PRODUCTS = [
     "price": 907,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vqZdBFqKkGb0Z1jUrqxa.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/H0AM1FVfrmR17wgbUXek.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4rBg3nYUAskZeYZKfxoQ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/clITJjL34eLsiLUMBJ6z.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/J6blR09pJIsviPxYZJ1p.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/k1hx15W8pKQsHZ9Yu28c.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tQAfAA7A6L2e1D1sOd5m.jpg"
+      "https://pavnika.ae/assets/products/SU014-1.jpg",
+      "https://pavnika.ae/assets/products/SU014-2.jpg",
+      "https://pavnika.ae/assets/products/SU014-3.jpg",
+      "https://pavnika.ae/assets/products/SU014-4.jpg",
+      "https://pavnika.ae/assets/products/SU014-5.jpg",
+      "https://pavnika.ae/assets/products/SU014-6.jpg",
+      "https://pavnika.ae/assets/products/SU014-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vqZdBFqKkGb0Z1jUrqxa.jpg",
+    "image": "https://pavnika.ae/assets/products/SU014-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal",
@@ -2492,13 +2492,13 @@ window.PRODUCTS = [
     "price": 575,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yWCeJv2n0pQtUqt7SGdw.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/fGxgdanW5mNbpFT5rOwZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/97Red62oXjynnhiCwjzf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vsMxtvCTzjSz54ZNYG4W.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/f4la62ZSanXRTMItHi1m.jpg"
+      "https://pavnika.ae/assets/products/SO005-1.jpg",
+      "https://pavnika.ae/assets/products/SO005-2.jpg",
+      "https://pavnika.ae/assets/products/SO005-3.jpg",
+      "https://pavnika.ae/assets/products/SO005-4.jpg",
+      "https://pavnika.ae/assets/products/SO005-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yWCeJv2n0pQtUqt7SGdw.jpg",
+    "image": "https://pavnika.ae/assets/products/SO005-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -2516,13 +2516,13 @@ window.PRODUCTS = [
     "price": 575,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tENQ78opOdviROlpNZgM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/4UhWSiJeLdVCBxtpKV5A.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wEKC0dBdshmrQJJz4xNc.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GcSEwb2F6Rdn812F9mwE.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/dojpKCPRxh3HtERUHlpa.jpg"
+      "https://pavnika.ae/assets/products/SO006-1.jpg",
+      "https://pavnika.ae/assets/products/SO006-2.jpg",
+      "https://pavnika.ae/assets/products/SO006-3.jpg",
+      "https://pavnika.ae/assets/products/SO006-4.jpg",
+      "https://pavnika.ae/assets/products/SO006-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tENQ78opOdviROlpNZgM.jpg",
+    "image": "https://pavnika.ae/assets/products/SO006-1.jpg",
     "occasions": [
       "Wedding Guest"
     ]
@@ -2540,14 +2540,14 @@ window.PRODUCTS = [
     "price": 359,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/SxOuDEN3MoAvOaPbcJO5.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/62bvwxL5Mbj4mi8avjMF.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7D1IHxgnsN5Owx10q32D.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/F0cCREq1l7xn37oPZ5Uz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UT69gYPmcjF3MZU9x4K1.jpg"
+      "https://pavnika.ae/assets/products/SO007-1.jpg",
+      "https://pavnika.ae/assets/products/SO007-2.jpg",
+      "https://pavnika.ae/assets/products/SO007-3.jpg",
+      "https://pavnika.ae/assets/products/SO007-4.jpg",
+      "https://pavnika.ae/assets/products/SO007-5.jpg",
+      "https://pavnika.ae/assets/products/SO007-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHOU50UQ1XTqXfwAzz7H.jpg",
+    "image": "https://pavnika.ae/assets/products/SO007-1.jpg",
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
@@ -2566,15 +2566,15 @@ window.PRODUCTS = [
     "price": 339,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iISAhXtq7QlsUuzqvJ4R.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/rCQlrk1m6bIJYQbZBFFx.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/tHVKpm6Z1zHEcjks5Ood.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/h7M5smlTJ6tOusRUKsQ9.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cegW4fMcdIOteXiUN7oo.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/p0S5T1YCivm9FK07jKuZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LlbvcSg4PlReuUu0gvKV.jpg"
+      "https://pavnika.ae/assets/products/BB007-1.jpg",
+      "https://pavnika.ae/assets/products/BB007-2.jpg",
+      "https://pavnika.ae/assets/products/BB007-3.jpg",
+      "https://pavnika.ae/assets/products/BB007-4.jpg",
+      "https://pavnika.ae/assets/products/BB007-5.jpg",
+      "https://pavnika.ae/assets/products/BB007-6.jpg",
+      "https://pavnika.ae/assets/products/BB007-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/iISAhXtq7QlsUuzqvJ4R.jpg",
+    "image": "https://pavnika.ae/assets/products/BB007-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2593,15 +2593,15 @@ window.PRODUCTS = [
     "price": 370,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zGVD7IFXYbWE3mCdFGgL.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/nxXnP2KGAwLnhzv25JOM.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/naeBqk5cZhYu7NnDonBR.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/vOTSUA26SO3QmPIwAro4.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/TdoWmSykV2YjKnbICWjf.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IPoconRHIxnYd8sBnGmn.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8eH53qIKBfK2yP6cScqA.jpg"
+      "https://pavnika.ae/assets/products/BB008-1.jpg",
+      "https://pavnika.ae/assets/products/BB008-2.jpg",
+      "https://pavnika.ae/assets/products/BB008-3.jpg",
+      "https://pavnika.ae/assets/products/BB008-4.jpg",
+      "https://pavnika.ae/assets/products/BB008-5.jpg",
+      "https://pavnika.ae/assets/products/BB008-6.jpg",
+      "https://pavnika.ae/assets/products/BB008-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zGVD7IFXYbWE3mCdFGgL.jpg",
+    "image": "https://pavnika.ae/assets/products/BB008-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal",
@@ -2621,14 +2621,14 @@ window.PRODUCTS = [
     "price": 325,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LX6V68P1rJ8hFIsHTYgZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hZ2VhkbzD035nwMqPCca.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/OnFr9ZGV09jYvdNz1uzu.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yKQ04AUS3MKriL2xLXyH.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/h2FQWPQKWT5XdjvzLUt7.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6fmv65mtCxmKarFtmMQp.jpg"
+      "https://pavnika.ae/assets/products/BB009-1.jpg",
+      "https://pavnika.ae/assets/products/BB009-2.jpg",
+      "https://pavnika.ae/assets/products/BB009-3.jpg",
+      "https://pavnika.ae/assets/products/BB009-4.jpg",
+      "https://pavnika.ae/assets/products/BB009-5.jpg",
+      "https://pavnika.ae/assets/products/BB009-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/LX6V68P1rJ8hFIsHTYgZ.jpg",
+    "image": "https://pavnika.ae/assets/products/BB009-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2647,15 +2647,15 @@ window.PRODUCTS = [
     "price": 295,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kXI7EQzAUDeVtwk60Bfc.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R01ZTf0zqe8s4ibTk7BV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7cbcav3m9NhTVjkdWDmb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cbGBAXNt28gxzZSB268f.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HAZkHQ2iPRvufy8T9XRW.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HLuz8tRnGTnU0bXOtd6f.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/G94WwlArV0m2dr1X2Thu.jpg"
+      "https://pavnika.ae/assets/products/BB010-1.jpg",
+      "https://pavnika.ae/assets/products/BB010-2.jpg",
+      "https://pavnika.ae/assets/products/BB010-3.jpg",
+      "https://pavnika.ae/assets/products/BB010-4.jpg",
+      "https://pavnika.ae/assets/products/BB010-5.jpg",
+      "https://pavnika.ae/assets/products/BB010-6.jpg",
+      "https://pavnika.ae/assets/products/BB010-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kXI7EQzAUDeVtwk60Bfc.jpg",
+    "image": "https://pavnika.ae/assets/products/BB010-1.jpg",
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2675,15 +2675,15 @@ window.PRODUCTS = [
     "price": 995,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sjvsUVNJJnfDNvJqM1CG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/8gkdsroBVWPEmp8rUXaJ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gJhXCLtQWMPO8Cwt8QBk.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mRrhe3jh0KjVb5VoYxHn.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/HM0wOBi4wAqUGXGd8bMj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/jKPHQ875PzrmhBg2vKse.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BGDYD3BLJy5J5mXogTif.jpg"
+      "https://pavnika.ae/assets/products/SU015-1.jpg",
+      "https://pavnika.ae/assets/products/SU015-2.jpg",
+      "https://pavnika.ae/assets/products/SU015-3.jpg",
+      "https://pavnika.ae/assets/products/SU015-4.jpg",
+      "https://pavnika.ae/assets/products/SU015-5.jpg",
+      "https://pavnika.ae/assets/products/SU015-6.jpg",
+      "https://pavnika.ae/assets/products/SU015-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/sjvsUVNJJnfDNvJqM1CG.jpg",
+    "image": "https://pavnika.ae/assets/products/SU015-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
@@ -2702,15 +2702,15 @@ window.PRODUCTS = [
     "price": 325,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/QfCSsjpQs3AqOsQPTVgd.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/V0aGcM4cIjh24fjUPCdH.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/9YPAVCblK31JP69t8nTJ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ImJXcHwMm8ALVS1y2vvh.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/gHop2nJ15DwdG3fs9D5x.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hVmf3gIUsQLG3qmQpl6f.jpg"
+      "https://pavnika.ae/assets/products/BB011-1.jpg",
+      "https://pavnika.ae/assets/products/BB011-2.jpg",
+      "https://pavnika.ae/assets/products/BB011-3.jpg",
+      "https://pavnika.ae/assets/products/BB011-4.jpg",
+      "https://pavnika.ae/assets/products/BB011-5.jpg",
+      "https://pavnika.ae/assets/products/BB011-6.jpg",
+      "https://pavnika.ae/assets/products/BB011-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/xUo3Yx44ymkKnduukHF1.jpg",
+    "image": "https://pavnika.ae/assets/products/BB011-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal",
@@ -2730,14 +2730,14 @@ window.PRODUCTS = [
     "price": 164,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IEosUdAdPsD3iDszwM9P.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/mRPkXL5JRem8fruylwoK.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/16myfpkQf8Lqgxv45XU5.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NZAvBfIq1jQodto0UALG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/hnTDcyFQhT6dIGeFlR7e.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/x9fKTAS24gZZT2hbk1tQ.jpg"
+      "https://pavnika.ae/assets/products/FV013-1.jpg",
+      "https://pavnika.ae/assets/products/FV013-2.jpg",
+      "https://pavnika.ae/assets/products/FV013-3.jpg",
+      "https://pavnika.ae/assets/products/FV013-4.jpg",
+      "https://pavnika.ae/assets/products/FV013-5.jpg",
+      "https://pavnika.ae/assets/products/FV013-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IEosUdAdPsD3iDszwM9P.jpg",
+    "image": "https://pavnika.ae/assets/products/FV013-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2756,13 +2756,13 @@ window.PRODUCTS = [
     "price": 164,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UGPlwwnIK3jmRe7FSBKz.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/PzSTMM3hzlU0qcX1ujTI.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/ECv9LD4WAOSKPCW1b5cy.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/GkhW3yzAQ9PUOo60FXxj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zJ1w2LfnjjYQApXOQ5cX.jpg"
+      "https://pavnika.ae/assets/products/FV014-1.jpg",
+      "https://pavnika.ae/assets/products/FV014-2.jpg",
+      "https://pavnika.ae/assets/products/FV014-3.jpg",
+      "https://pavnika.ae/assets/products/FV014-4.jpg",
+      "https://pavnika.ae/assets/products/FV014-5.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/UGPlwwnIK3jmRe7FSBKz.jpg",
+    "image": "https://pavnika.ae/assets/products/FV014-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2781,14 +2781,14 @@ window.PRODUCTS = [
     "price": 164,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6w4GJt3XYud879xPTwBx.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/JLwFcK1YiuFUG4cjSzuG.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zMu1FNBYqr96VvYt0RKj.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7qWvqey7LYe4xdPepfsV.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/yS8vZWCtn8WVhFy6U0sZ.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/cPdVDOcIc1ozwullJHpI.jpg"
+      "https://pavnika.ae/assets/products/FV015-1.jpg",
+      "https://pavnika.ae/assets/products/FV015-2.jpg",
+      "https://pavnika.ae/assets/products/FV015-3.jpg",
+      "https://pavnika.ae/assets/products/FV015-4.jpg",
+      "https://pavnika.ae/assets/products/FV015-5.jpg",
+      "https://pavnika.ae/assets/products/FV015-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/6w4GJt3XYud879xPTwBx.jpg",
+    "image": "https://pavnika.ae/assets/products/FV015-1.jpg",
     "occasions": [
       "Festive",
       "Everyday"
@@ -2807,14 +2807,14 @@ window.PRODUCTS = [
     "price": 247,
     "sold": true,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IB333whjtsIERcFonomI.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/wGnWLSZgmkJ0yuuw3jip.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/zgGzzHHJzCg2riC3LaCT.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/EA07seJAkfsDvXSv41fv.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/MiSGxkA22mg2Q8H1bxO2.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/F4HYc2sWGrs0hbo9qItJ.jpg"
+      "https://pavnika.ae/assets/products/VW036-1.jpg",
+      "https://pavnika.ae/assets/products/VW036-2.jpg",
+      "https://pavnika.ae/assets/products/VW036-3.jpg",
+      "https://pavnika.ae/assets/products/VW036-4.jpg",
+      "https://pavnika.ae/assets/products/VW036-5.jpg",
+      "https://pavnika.ae/assets/products/VW036-6.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/IB333whjtsIERcFonomI.jpg",
+    "image": "https://pavnika.ae/assets/products/VW036-1.jpg",
     "occasions": [
       "Wedding Guest",
       "Festive"
@@ -2831,15 +2831,15 @@ window.PRODUCTS = [
     "price": 295,
     "sold": false,
     "images": [
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/7MXrquSit6nlsdpPeOLb.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/NOctHaNAKwXHJUI89X6d.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/kslRbA03Bm3R90q5Syoi.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/BRZFZokKkIIxaveTzGzB.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/3piHMHQ6ay9lRd98GVgl.jpg",
-      "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/VFYq9JjX1cZxqD4Ta39S.jpg"
+      "https://pavnika.ae/assets/products/BB006-1.jpg",
+      "https://pavnika.ae/assets/products/BB006-2.jpg",
+      "https://pavnika.ae/assets/products/BB006-3.jpg",
+      "https://pavnika.ae/assets/products/BB006-4.jpg",
+      "https://pavnika.ae/assets/products/BB006-5.jpg",
+      "https://pavnika.ae/assets/products/BB006-6.jpg",
+      "https://pavnika.ae/assets/products/BB006-7.jpg"
     ],
-    "image": "https://storage.googleapis.com/glide-prod.appspot.com/uploads-v2/OIO1eNJhmc3xSwkV1I6h/pub/R5FXr05DPlmzczcBBXuN.jpg",
+    "image": "https://pavnika.ae/assets/products/BB006-1.jpg",
     "material": "Semi Kanchipuram",
     "shade": "Green",
     "salePrice": null,

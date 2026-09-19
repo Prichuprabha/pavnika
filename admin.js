@@ -283,6 +283,10 @@ function initSareeEditor(token) {
   var idHint = document.getElementById('admin-id-hint');
   var idWarning = document.getElementById('admin-id-warning');
   var imagesList = document.getElementById('admin-images-list');
+  var currentImages = []; // the saree's photo URLs — kept ones (editing) plus any uploaded this session
+  var uploadedForId = null; // which ID currentImages' uploads were filed under, to catch a mid-session ID change
+  var addImageBtn = document.getElementById('admin-add-image-btn');
+  var fileInput = document.getElementById('admin-image-file-input');
   var statusMsg = document.getElementById('admin-status-msg');
   var formTitle = document.getElementById('admin-form-title');
   var searchInput = document.getElementById('admin-search-input');
@@ -456,12 +460,132 @@ function initSareeEditor(token) {
     renderTable();
   });
 
-  function addImageRow(value) {
+  function addImageRow(url) {
     var row = document.createElement('div');
     row.className = 'admin-image-row';
-    row.innerHTML = '<input type="text" value="' + (value || '') + '" placeholder="https://..."><button type="button">Remove</button>';
-    row.querySelector('button').addEventListener('click', function () { row.remove(); });
+    var filename = String(url).split('/').pop();
+    row.innerHTML = '<img src="' + url + '" loading="lazy" alt="">' +
+      '<span class="admin-image-name">' + filename + '</span>' +
+      '<button type="button">Remove</button>';
+    row.querySelector('button').addEventListener('click', function () {
+      var i = currentImages.indexOf(url);
+      if (i !== -1) currentImages.splice(i, 1);
+      renderImagesList();
+    });
     imagesList.appendChild(row);
+  }
+
+  function renderImagesList() {
+    imagesList.innerHTML = '';
+    currentImages.forEach(function (url) { addImageRow(url); });
+  }
+
+  // The ID a newly-picked photo would be filed under right now — null
+  // when there isn't one yet (e.g. no series picked in Add mode), in
+  // which case uploading is disabled rather than guessing a name.
+  function getTargetId() {
+    var typed = idField.value.trim().toUpperCase();
+    return typed || null;
+  }
+
+  function highestExistingImageIndex(urls, targetId) {
+    var highest = 0;
+    (urls || []).forEach(function (url) {
+      var fname = String(url).split('/').pop();
+      var m = fname.match(new RegExp('^' + targetId + '-(\\d+)\\.'));
+      if (m) {
+        var n = parseInt(m[1], 10);
+        if (n > highest) highest = n;
+      }
+    });
+    return highest;
+  }
+
+  function updateUploadButtonState() {
+    var targetId = getTargetId();
+    var hint = document.getElementById('admin-images-hint');
+    if (targetId) {
+      addImageBtn.disabled = false;
+      hint.style.display = 'none';
+    } else {
+      addImageBtn.disabled = true;
+      hint.style.display = 'block';
+    }
+    // If the ID changes after some photos were already uploaded this
+    // session, those photos were filed under the OLD id — keeping them
+    // listed would silently save a mismatched filename/ID pair. Safer
+    // to clear the list and have the admin re-upload under the new ID
+    // than to guess at renaming already-committed files.
+    if (uploadedForId && targetId !== uploadedForId && currentImages.length) {
+      currentImages = [];
+      renderImagesList();
+      showStatus('error', 'The ID changed, so previously uploaded photos were cleared — please re-upload them under the new ID.');
+      uploadedForId = null;
+    }
+  }
+
+  function resizeImageFile(file) {
+    return new Promise(function (resolve, reject) {
+      var reader = new FileReader();
+      reader.onerror = function () { reject(new Error('Could not read ' + file.name)); };
+      reader.onload = function () {
+        var img = new Image();
+        img.onerror = function () { reject(new Error(file.name + ' is not a readable image.')); };
+        img.onload = function () {
+          var MAX_DIM = 1600;
+          var w = img.naturalWidth, h = img.naturalHeight;
+          var longest = Math.max(w, h);
+          if (longest > MAX_DIM) {
+            var scale = MAX_DIM / longest;
+            w = Math.round(w * scale);
+            h = Math.round(h * scale);
+          }
+          var canvas = document.createElement('canvas');
+          canvas.width = w;
+          canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function uploadPickedFiles(fileList) {
+    var targetId = getTargetId();
+    if (!targetId) return; // button should be disabled in this case anyway
+    var uploadingMsg = document.getElementById('admin-images-uploading');
+    addImageBtn.disabled = true;
+    uploadingMsg.style.display = 'block';
+
+    var nextIndex = highestExistingImageIndex(currentImages, targetId) + 1;
+
+    for (var i = 0; i < fileList.length; i++) {
+      var file = fileList[i];
+      uploadingMsg.textContent = 'Uploading ' + (i + 1) + ' of ' + fileList.length + '\u2026';
+      try {
+        var dataUrl = await resizeImageFile(file);
+        var filename = targetId + '-' + nextIndex + '.jpg';
+        var res = await fetch('/.netlify/functions/admin-upload-product-image', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, filename: filename, dataUrl: dataUrl })
+        });
+        var data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Upload failed');
+        currentImages.push(data.url);
+        uploadedForId = targetId;
+        nextIndex++;
+        renderImagesList();
+      } catch (err) {
+        showStatus('error', 'Could not upload ' + file.name + ': ' + err.message);
+      }
+    }
+
+    uploadingMsg.style.display = 'none';
+    addImageBtn.disabled = false;
+    fileInput.value = ''; // allow re-selecting the same file(s) later if needed
   }
 
   function checkIdDuplicate() {
@@ -490,8 +614,8 @@ function initSareeEditor(token) {
     checkIdDuplicate();
   }
 
-  seriesSelect.addEventListener('change', updateIdSuggestion);
-  idField.addEventListener('input', checkIdDuplicate);
+  seriesSelect.addEventListener('change', function () { updateIdSuggestion(); updateUploadButtonState(); });
+  idField.addEventListener('input', function () { checkIdDuplicate(); updateUploadButtonState(); });
 
   var materialSelect = document.getElementById('admin-f-material');
   var materialNewInput = document.getElementById('admin-f-material-new');
@@ -526,11 +650,13 @@ function initSareeEditor(token) {
     idWarning.style.display = 'none';
     idWrap.classList.remove('has-duplicate');
     imagesList.innerHTML = '';
-    addImageRow('');
+    currentImages = [];
+    uploadedForId = null;
     seriesSelect.selectedIndex = 0;
     seriesSelect.disabled = false; // series stays editable when adding — it's part of how the ID gets generated
     refreshMaterialOptions();
     updateIdSuggestion();
+    updateUploadButtonState();
   }
 
   function openFormForAdd() {
@@ -568,13 +694,19 @@ function initSareeEditor(token) {
       cb.checked = savedOccasions.indexOf(cb.value) !== -1;
     });
     imagesList.innerHTML = '';
-    (product.images && product.images.length ? product.images : ['']).forEach(function (src) { addImageRow(src); });
+    currentImages = product.images ? product.images.slice() : [];
+    uploadedForId = product.id;
+    renderImagesList();
+    updateUploadButtonState();
     showSareeDrawer();
   }
 
   document.getElementById('admin-add-new-btn').addEventListener('click', openFormForAdd);
   document.getElementById('admin-cancel-btn').addEventListener('click', hideSareeDrawer);
-  document.getElementById('admin-add-image-btn').addEventListener('click', function () { addImageRow(''); });
+  addImageBtn.addEventListener('click', function () { fileInput.click(); });
+  fileInput.addEventListener('change', function () {
+    if (fileInput.files.length) uploadPickedFiles(fileInput.files);
+  });
 
   /* ----- CSV download ----- */
   var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sale Price AED', 'Sold',
@@ -1016,7 +1148,7 @@ function initSareeEditor(token) {
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     var saveBtn = document.getElementById('admin-save-btn');
-    var images = Array.from(imagesList.querySelectorAll('input')).map(function (i) { return i.value.trim(); }).filter(Boolean);
+    var images = currentImages.slice();
 
     if (materialSelect.value === ADD_NEW_MATERIAL_VALUE && !materialNewInput.value.trim()) {
       showStatus('error', 'Please type the new material, or pick an existing one instead.');
@@ -3312,7 +3444,7 @@ function initManualOrderView(token) {
         var label = sareeResultLabel(p);
         return '<div class="admin-mo-saree-result-item" data-i="' + i + '">' +
           (p.image ? '<img src="' + p.image + '" loading="lazy" alt="">' : '') +
-          '<div>' +
+          '<div class="sinfo">' +
             '<div class="sname">' + (p.material || p.design) + '</div>' +
             '<div class="smeta">' + p.id + (p.pattern ? ' · ' + p.pattern : '') + '</div>' +
           '</div>' +
