@@ -1239,11 +1239,8 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 242,
     "sold": true,
-    "images": [
-      "https://pavnika.ae/assets/products/FV003-3.jpg",
-      "https://pavnika.ae/assets/products/FV003-4.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/FV003-3.jpg",
+    "images": [],
+    "image": "",
     "occasions": [
       "Festive",
       "Everyday"
