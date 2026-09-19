@@ -2359,7 +2359,7 @@ window.PRODUCTS = [
     "material": "Banarasi",
     "shade": "Black",
     "price": 164,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/FV009-1.jpg",
       "https://pavnika.ae/assets/products/FV009-2.jpg",
