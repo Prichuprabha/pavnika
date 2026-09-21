@@ -2592,7 +2592,7 @@ window.PRODUCTS = [
     "material": "Semi Kanchipuram",
     "shade": "White / Off-white",
     "price": 370,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/BB008-1.jpg",
       "https://pavnika.ae/assets/products/BB008-2.jpg",
