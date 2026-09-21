@@ -2963,7 +2963,7 @@ function initOrdersView(token) {
           '<td>' + (o.customer_name || '—') + '<br><span style="opacity:0.6; font-size:0.72rem;">' + (o.customer_email || '') + '</span></td>' +
           '<td style="font-size:0.76rem;">' + itemsSummary + '</td>' +
           '<td>AED ' + Number(o.total || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) + '</td>' +
-          '<td style="font-size:0.76rem;">' + (o.payment_method || '—') + '</td>' +
+          '<td style="font-size:0.76rem;">' + buildPaymentMethodSelect(o) + '</td>' +
           '<td>' + buildStatusSelect(o) + '</td>' +
         '</tr>'
       );
@@ -3136,6 +3136,31 @@ function initOrdersView(token) {
     }).join('') : '<p style="font-size:0.85rem; opacity:0.6; padding:16px;">No shop orders match.</p>';
   }
 
+  // Reduces whatever's actually sitting in payment_method — a raw
+  // Nomod response ("visa", "card"), "Nomod (confirmed manually)" from
+  // a logged manual sale, "Bank Transfer", "Cash", "COD", or already
+  // one of the three clean categories — down to exactly one of Cash /
+  // Bank Transfer / Electronic. This is what the payment-method
+  // dropdown below pre-selects to, and what the customer receipt
+  // (script.js) now also uses, so both always agree with each other
+  // without needing every existing order re-tagged by hand.
+  function normalizePaymentMethod(raw) {
+    var v = String(raw || '').toLowerCase();
+    if (!v) return null;
+    if (v.indexOf('cash') !== -1 || v === 'cod') return 'Cash';
+    if (v.indexOf('bank') !== -1 || v.indexOf('transfer') !== -1) return 'Bank Transfer';
+    return 'Electronic'; // Nomod (confirmed manually), visa, mastercard, card, any other gateway string
+  }
+
+  function buildPaymentMethodSelect(o) {
+    var methods = ['Cash', 'Bank Transfer', 'Electronic'];
+    var current = normalizePaymentMethod(o.payment_method);
+    var options = (current ? '' : '<option value="" selected disabled>Not recorded</option>') + methods.map(function (m) {
+      return '<option value="' + m + '"' + (current === m ? ' selected' : '') + '>' + m + '</option>';
+    }).join('');
+    return '<select class="admin-order-payment-select" data-id="' + o.id + '" title="Raw value on file: ' + (o.payment_method ? o.payment_method.replace(/"/g, '&quot;') : 'none') + '">' + options + '</select>';
+  }
+
   function buildStatusSelect(o) {
     var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard'];
     var options = statuses.map(function (s) {
@@ -3145,25 +3170,52 @@ function initOrdersView(token) {
   }
 
   rowsEl.addEventListener('change', function (e) {
-    var select = e.target.closest('.admin-order-status-select');
-    if (!select) return;
-    var orderId = select.getAttribute('data-id');
-    var newStatus = select.value;
+    var statusSelectEl = e.target.closest('.admin-order-status-select');
+    if (statusSelectEl) {
+      var orderId = statusSelectEl.getAttribute('data-id');
+      var newStatus = statusSelectEl.value;
 
-    fetch('/.netlify/functions/admin-update-order-status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
-        var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
-        if (order) order.status = newStatus;
-        showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
-        renderSummary();
+      fetch('/.netlify/functions/admin-update-order-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
       })
-      .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
+          var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
+          if (order) order.status = newStatus;
+          showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
+          renderSummary();
+        })
+        .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
+      return;
+    }
+
+    var paymentSelectEl = e.target.closest('.admin-order-payment-select');
+    if (paymentSelectEl) {
+      var payOrderId = paymentSelectEl.getAttribute('data-id');
+      var newPaymentMethod = paymentSelectEl.value;
+      if (!newPaymentMethod) return; // the disabled "Not recorded" placeholder — nothing to save
+
+      fetch('/.netlify/functions/admin-update-order-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, orderId: payOrderId, paymentMethod: newPaymentMethod })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) { showStatus('error', result.data.error || 'Could not update payment method.'); return; }
+          var order = allOrders.find(function (o) { return String(o.id) === String(payOrderId); });
+          // Store the clean category, not the old raw value — this is a
+          // deliberate correction (that's the point of setting it here),
+          // and keeps this admin session's own view consistent with what
+          // was just saved without needing a full reload.
+          if (order) order.payment_method = newPaymentMethod;
+          showStatus('success', 'Order #' + (order ? order.order_number : payOrderId) + ' payment method set to ' + newPaymentMethod + '.');
+        })
+        .catch(function () { showStatus('error', 'Network error — payment method was not updated.'); });
+    }
   });
 
   document.querySelectorAll('.admin-sortable').forEach(function (th) {
@@ -3299,7 +3351,9 @@ function initOrdersView(token) {
       '<div class="admin-order-drawer-totals-row total"><span>Total</span><span>AED ' + Number(order.total || 0).toFixed(2) + '</span></div>' +
 
       '<h4>Payment Method</h4>' +
-      '<p style="margin:0;">' + (order.payment_method || 'Not recorded') + '</p>';
+      (isShop
+        ? '<p style="margin:0;">' + (order.payment_method || 'Not recorded') + '</p>'
+        : buildPaymentMethodSelect(order));
 
     if (isShop) {
       html +=
@@ -3397,27 +3451,52 @@ function initOrdersView(token) {
 
   drawerBody.addEventListener('change', function (e) {
     var select = e.target.closest('.admin-order-status-select');
-    if (!select) return;
-    var orderId = select.getAttribute('data-id');
-    var newStatus = select.value;
-    showDrawerStatus('success', 'Saving...');
+    if (select) {
+      var orderId = select.getAttribute('data-id');
+      var newStatus = select.value;
+      showDrawerStatus('success', 'Saving...');
 
-    fetch('/.netlify/functions/admin-update-order-status', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
-    })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-      .then(function (result) {
-        if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); return; }
-        var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
-        if (order) order.status = newStatus;
-        drawerStatusBadge.textContent = statusLabel(newStatus);
-        showDrawerStatus('success', 'Updated to ' + statusLabel(newStatus) + '.');
-        renderSummary();
-        renderTable();
+      fetch('/.netlify/functions/admin-update-order-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
       })
-      .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); });
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); return; }
+          var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
+          if (order) order.status = newStatus;
+          drawerStatusBadge.textContent = statusLabel(newStatus);
+          showDrawerStatus('success', 'Updated to ' + statusLabel(newStatus) + '.');
+          renderSummary();
+          renderTable();
+        })
+        .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); });
+      return;
+    }
+
+    var paymentSelect = e.target.closest('.admin-order-payment-select');
+    if (paymentSelect) {
+      var payOrderId = paymentSelect.getAttribute('data-id');
+      var newPaymentMethod = paymentSelect.value;
+      if (!newPaymentMethod) return; // the disabled "Not recorded" placeholder — nothing to save
+      showDrawerStatus('success', 'Saving...');
+
+      fetch('/.netlify/functions/admin-update-order-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, orderId: payOrderId, paymentMethod: newPaymentMethod })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update payment method.'); return; }
+          var order = allOrders.find(function (o) { return String(o.id) === String(payOrderId); });
+          if (order) order.payment_method = newPaymentMethod;
+          showDrawerStatus('success', 'Payment method set to ' + newPaymentMethod + '.');
+          renderTable();
+        })
+        .catch(function () { showDrawerStatus('error', 'Network error — payment method was not updated.'); });
+    }
   });
 
   function loadOrders() {

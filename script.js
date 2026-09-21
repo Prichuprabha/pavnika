@@ -5364,8 +5364,23 @@ function initPinnedHero() {
   }
 
   // ---- Receipt ----
-  function paymentModeLabel(status) {
-    return /cod/i.test(String(status || '')) ? 'Cash on Delivery' : 'Card (Nomod)';
+  // Reduces whatever's actually in payment_method (a raw Nomod response
+  // like "visa"/"card", "Nomod (confirmed manually)" from a logged
+  // manual sale, "Bank Transfer", "Cash", "COD", or already one of the
+  // clean admin-set categories) down to one customer-facing label. This
+  // used to just guess from the order's status instead of looking at
+  // the real payment_method field at all — which meant anything that
+  // wasn't literally cash-on-delivery got labelled "Card (Nomod)" even
+  // when it plainly wasn't (a bank transfer order, for instance).
+  function paymentModeLabel(order) {
+    var v = String(order.payment_method || '').toLowerCase();
+    if (v.indexOf('cash') !== -1 || v === 'cod') return 'Cash';
+    if (v.indexOf('bank') !== -1 || v.indexOf('transfer') !== -1) return 'Bank Transfer';
+    if (v) return 'Card'; // Nomod (confirmed manually), visa, mastercard, card, any other gateway string
+    // No payment_method recorded at all (an older order, or a gap in
+    // some other flow) — fall back to the old cod-vs-not-cod guess from
+    // status rather than showing nothing on the receipt.
+    return /cod/i.test(String(order.status || '')) ? 'Cash' : null;
   }
 
   function showReceipt(source, id) {
@@ -5382,7 +5397,7 @@ function initPinnedHero() {
         promo: o.promo_code || '',
         total: o.total,
         status: o.status,
-        mode: paymentModeLabel(o.status),
+        mode: paymentModeLabel(o),
         payments: o.payment_method ? [{ label: o.payment_method, amount: o.total }] : []
       };
     } else {

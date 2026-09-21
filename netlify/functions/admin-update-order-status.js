@@ -1,13 +1,21 @@
 // netlify/functions/admin-update-order-status.js
 //
-// POST { adminToken, orderId, status }
+// POST { adminToken, orderId, status?, paymentMethod? }
 // - Updates an order's status (e.g. paid, shipped, payment_error,
-//   cancelled, refunded, refunded_giftcard) from the admin Orders tab.
+//   cancelled, refunded, refunded_giftcard) and/or its payment method
+//   (Cash, Bank Transfer, Electronic) from the admin Orders tab — at
+//   least one of the two must be given, but neither requires the other.
 // - "refunded_giftcard" additionally credits the order's value to a
 //   pos_customers gift card balance (matched by email, then phone;
 //   created if no matching customer exists yet), since gift card
 //   balance is only ever tracked on that table. Guarded against
 //   double-crediting if the same status is saved more than once.
+// - Payment method is deliberately just these three broad categories
+//   (not, say, "Visa" vs "Mastercard", or which gateway was used) —
+//   it exists so revenue can be split into cash collected, bank
+//   transfers, and electronic/gateway payments (the latter being what
+//   a % processing fee would apply to), not to replace the raw
+//   payment_method detail Nomod itself already records at checkout.
 
 const { verifyAdminToken } = require('./_admin-auth');
 
@@ -16,6 +24,7 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
 const ALLOWED_STATUSES = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard'];
+const ALLOWED_PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Electronic'];
 
 function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -86,13 +95,22 @@ exports.handler = async function (event) {
 
   const orderId = body.orderId;
   const status = body.status;
+  const paymentMethod = body.paymentMethod;
+  const hasStatus = status !== undefined && status !== null && status !== '';
+  const hasPaymentMethod = paymentMethod !== undefined && paymentMethod !== null && paymentMethod !== '';
 
-  if (!orderId || ALLOWED_STATUSES.indexOf(status) === -1) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid order ID or status.' }) };
+  if (!orderId || (!hasStatus && !hasPaymentMethod)) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid order ID, or nothing to update.' }) };
+  }
+  if (hasStatus && ALLOWED_STATUSES.indexOf(status) === -1) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid status.' }) };
+  }
+  if (hasPaymentMethod && ALLOWED_PAYMENT_METHODS.indexOf(paymentMethod) === -1) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid payment method.' }) };
   }
 
   try {
-    if (status === 'refunded_giftcard') {
+    if (hasStatus && status === 'refunded_giftcard') {
       const orderRes = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}&select=id,status,total,customer_name,customer_email,customer_phone`, { headers: supabaseHeaders() });
       if (!orderRes.ok) throw new Error(`Supabase error ${orderRes.status}`);
       const orderRows = await orderRes.json();
@@ -140,6 +158,10 @@ exports.handler = async function (event) {
       }
     }
 
+    const patch = {};
+    if (hasStatus) patch.status = status;
+    if (hasPaymentMethod) patch.payment_method = paymentMethod;
+
     const res = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
       method: 'PATCH',
       headers: {
@@ -148,7 +170,7 @@ exports.handler = async function (event) {
         'Content-Type': 'application/json',
         'Prefer': 'return=representation'
       },
-      body: JSON.stringify({ status: status })
+      body: JSON.stringify(patch)
     });
     if (!res.ok) throw new Error(`Supabase error ${res.status}`);
 
@@ -161,7 +183,7 @@ exports.handler = async function (event) {
       return { statusCode: 404, body: JSON.stringify({ error: 'No order found with that ID — nothing was updated.' }) };
     }
 
-    return { statusCode: 200, body: JSON.stringify({ success: true }) };
+    return { statusCode: 200, body: JSON.stringify({ success: true, order: updatedRows[0] }) };
   } catch (err) {
     console.error(err);
     return { statusCode: 500, body: JSON.stringify({ error: 'Failed to update order: ' + err.message }) };
