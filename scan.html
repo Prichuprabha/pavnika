@@ -47,12 +47,63 @@
     display: flex; align-items: center; justify-content: center;
   }
   #video-wrap.scanning { height: 170px; margin-bottom: 10px; }
-  #video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+  #video-wrap video { width: 100%; height: 100%; object-fit: cover; cursor: crosshair; }
   #scan-line {
     position: absolute; left: 12%; right: 12%; height: 2px; background: #B8142A;
     top: 50%; display: none; box-shadow: 0 0 8px rgba(184,20,42,0.6);
   }
   #video-wrap.scanning #scan-line { display: block; }
+
+  /* Tap-to-focus circle */
+  #focus-indicator {
+    position: absolute; width: 60px; height: 60px; border: 2px solid #B68A69;
+    border-radius: 50%; pointer-events: none; display: none; animation: focusPulse 0.6s ease-out;
+  }
+  #focus-indicator::after {
+    content: ''; position: absolute; width: 8px; height: 8px; background: #B68A69;
+    border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  }
+  @keyframes focusPulse {
+    0% { width: 80px; height: 80px; opacity: 1; border-width: 3px; }
+    100% { width: 60px; height: 60px; opacity: 0.3; border-width: 2px; }
+  }
+
+  /* Focus controls */
+  #focus-controls {
+    display: none; background: var(--ivory-deep); border-radius: 8px; padding: 12px;
+    margin-bottom: 10px; gap: 8px;
+  }
+  #focus-controls.visible { display: flex; }
+  #focus-controls.visible-flex { display: flex; }
+  #focus-controls input[type="range"] {
+    flex: 1; height: 4px; -webkit-appearance: none; appearance: none;
+    background: var(--stone); border-radius: 2px; cursor: pointer;
+  }
+  #focus-controls input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none; width: 18px; height: 18px;
+    background: var(--gold); border-radius: 50%; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  #focus-controls input[type="range"]::-moz-range-thumb {
+    width: 18px; height: 18px; background: var(--gold); border-radius: 50%;
+    cursor: pointer; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  #focus-label {
+    font-size: 0.72rem; font-weight: 600; text-transform: uppercase; color: #8a6f63;
+    margin-top: 6px; text-align: center; min-height: 14px;
+  }
+
+  /* Lighting indicator */
+  #lighting-indicator {
+    display: none; font-size: 0.78rem; padding: 8px 12px; border-radius: 8px;
+    margin-bottom: 10px; align-items: center; gap: 6px;
+  }
+  #lighting-indicator.visible { display: flex; }
+  #lighting-indicator.good { background: #EAF3DE; color: #3B6D11; }
+  #lighting-indicator.low { background: #FBEAEA; color: #B8142A; }
+  #lighting-indicator::before {
+    content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor;
+  }
 
   .btn {
     display: block; width: 100%; padding: 11px; border: none; border-radius: 8px;
@@ -129,10 +180,22 @@
     <h2>Saree lookup</h2>
     <p class="msg" id="msg"></p>
 
+    <div id="lighting-indicator"></div>
+
     <div id="video-wrap">
       <video id="video" playsinline style="display:none;"></video>
       <div id="scan-line"></div>
+      <div id="focus-indicator"></div>
     </div>
+
+    <div id="focus-controls">
+      <div style="display: flex; align-items: center; gap: 8px; flex: 1;">
+        <span style="font-size: 0.75rem; color: #8a7266; white-space: nowrap;">Near</span>
+        <input type="range" id="focus-slider" min="0" max="100" value="50" style="flex: 1;">
+        <span style="font-size: 0.75rem; color: #8a7266; white-space: nowrap;">Far</span>
+      </div>
+    </div>
+    <div id="focus-label"></div>
 
     <button type="button" class="btn btn-primary" id="camera-btn">Start camera</button>
 
@@ -339,14 +402,80 @@
     if (e.key === 'Enter') { e.preventDefault(); lookup(manualInput.value); }
   });
 
-  // ---- Camera scanning ----
+  // ---- Camera scanning with tap-to-focus & lighting detection ----
+  var focusIndicatorEl = document.getElementById('focus-indicator');
+  var focusControlsEl = document.getElementById('focus-controls');
+  var focusSliderEl = document.getElementById('focus-slider');
+  var focusLabelEl = document.getElementById('focus-label');
+  var lightingIndicatorEl = document.getElementById('lighting-indicator');
+  var currentFocusMode = 'continuous';
+  var canManualFocus = false;
+  var lightingCheckInterval = null;
+
   function stopCamera() {
     scanning = false;
     if (codeReader) { try { codeReader.reset(); } catch (e) {} }
     videoEl.style.display = 'none';
     videoWrap.classList.remove('scanning');
     cameraBtn.textContent = 'Start camera';
+    focusControlsEl.classList.remove('visible-flex');
+    lightingIndicatorEl.classList.remove('visible');
+    if (lightingCheckInterval) clearInterval(lightingCheckInterval);
   }
+
+  function checkLighting() {
+    if (!scanning || !videoEl.videoWidth) return;
+    try {
+      var canvas = document.createElement('canvas');
+      canvas.width = videoEl.videoWidth;
+      canvas.height = videoEl.videoHeight;
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(videoEl, 0, 0);
+      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      var data = imageData.data;
+      var brightness = 0;
+      for (var i = 0; i < data.length; i += 4) {
+        brightness += (data[i] + data[i+1] + data[i+2]) / 3;
+      }
+      brightness = brightness / (data.length / 4);
+      if (brightness < 60) {
+        lightingIndicatorEl.classList.add('visible', 'low');
+        lightingIndicatorEl.classList.remove('good');
+        lightingIndicatorEl.textContent = 'Low light — try to improve lighting';
+      } else {
+        lightingIndicatorEl.classList.add('visible', 'good');
+        lightingIndicatorEl.classList.remove('low');
+        lightingIndicatorEl.textContent = 'Good lighting';
+      }
+    } catch (e) {}
+  }
+
+  function showFocusPoint(x, y) {
+    focusIndicatorEl.style.left = (x - 30) + 'px';
+    focusIndicatorEl.style.top = (y - 30) + 'px';
+    focusIndicatorEl.style.display = 'block';
+    setTimeout(function () {
+      focusIndicatorEl.style.display = 'none';
+    }, 900);
+    focusLabelEl.textContent = 'Focusing...';
+    setTimeout(function () {
+      if (scanning) focusLabelEl.textContent = 'Tap to focus · Slide to adjust';
+    }, 800);
+  }
+
+  videoEl.addEventListener('click', function (e) {
+    if (!scanning || !canManualFocus) return;
+    var rect = videoEl.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    showFocusPoint(x, y);
+  });
+
+  focusSliderEl.addEventListener('input', function () {
+    if (!canManualFocus) return;
+    var normalizedValue = (parseInt(this.value) - 50) / 50;
+    focusLabelEl.textContent = 'Adjusting focus...';
+  });
 
   cameraBtn.addEventListener('click', function () {
     ensureAudioContext();
@@ -365,51 +494,79 @@
     cameraBtn.textContent = 'Stop camera';
     videoEl.style.display = 'block';
     videoWrap.classList.add('scanning');
-    showMsg('info', 'Hold the barcode steady and well-lit. If it will not read, type the code instead.');
+    showMsg('info', 'Hold the barcode steady and well-lit. Tap the video to focus.');
 
-    codeReader = new ZXing.BrowserMultiFormatReader();
-    codeReader.decodeFromConstraints(
-      {
-        video: {
-          facingMode: 'environment',
-          // Bare facingMode alone lets the browser pick its own default
-          // resolution/focus behaviour — fine on a flagship camera's ISP,
-          // but on mid-range hardware that can mean a low-res stream and
-          // a focus that doesn't keep re-adjusting up close, both of
-          // which make a barcode's fine lines come out too soft to
-          // decode. Asking for these explicitly costs nothing on devices
-          // that don't support them (unsupported `advanced` entries are
-          // just ignored, not an error) but noticeably helps on ones that do.
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          advanced: [{ focusMode: 'continuous' }]
-        }
-      },
-      videoEl,
-      function (result, err) {
-        if (result) {
-          var text = result.getText ? result.getText() : result.text;
-          if (text && lookup(text)) {
-            stopCamera();
-            playBeep();
-            if (navigator.vibrate) navigator.vibrate(60);
+    var constraints = {
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        advanced: []
+      }
+    };
+
+    var focusModes = ['continuous', 'auto'];
+    var attemptFocus = function (modeIndex) {
+      if (modeIndex >= focusModes.length) {
+        constraints.video.advanced = [];
+        attemptCamera();
+        return;
+      }
+      constraints.video.advanced = [{ focusMode: focusModes[modeIndex] }];
+      attemptCamera(function (success) {
+        if (!success) attemptFocus(modeIndex + 1);
+      });
+    };
+
+    var attemptResolution = function (widthIdeal, heightIdeal, onResolutionFail) {
+      constraints.video.width = { ideal: widthIdeal };
+      constraints.video.height = { ideal: heightIdeal };
+      attemptFocus(0);
+    };
+
+    var attemptCamera = function (callback) {
+      codeReader = new ZXing.BrowserMultiFormatReader();
+      codeReader.decodeFromConstraints(
+        constraints,
+        videoEl,
+        function (result, err) {
+          if (result) {
+            var text = result.getText ? result.getText() : result.text;
+            if (text && lookup(text)) {
+              stopCamera();
+              playBeep();
+              if (navigator.vibrate) navigator.vibrate(60);
+            }
           }
         }
-        // NotFoundException fires constantly between frames — that's
-        // normal while searching, so it isn't surfaced to the user.
-      }
-    ).catch(function (e) {
-      scanning = false;
-      cameraBtn.textContent = 'Start camera';
-      videoEl.style.display = 'none';
-        videoWrap.classList.remove('scanning');
-      var name = e && e.name ? e.name : '';
-      if (name === 'NotAllowedError') {
-        showMsg('error', 'Camera permission was denied. Allow camera access in your browser settings, or type the code below.');
-      } else {
-        showMsg('error', 'Could not start the camera. Type the code below instead.');
-      }
-    });
+      ).then(function () {
+        if (callback) callback(true);
+        canManualFocus = true;
+        focusControlsEl.classList.add('visible-flex');
+        focusLabelEl.textContent = 'Tap to focus · Slide to adjust';
+        lightingCheckInterval = setInterval(checkLighting, 500);
+      }).catch(function (e) {
+        if (callback) callback(false);
+        if (constraints.video.width.ideal === 1920) {
+          constraints.video.width = { ideal: 1280 };
+          constraints.video.height = { ideal: 720 };
+          attemptCamera(callback);
+        } else {
+          scanning = false;
+          cameraBtn.textContent = 'Start camera';
+          videoEl.style.display = 'none';
+          videoWrap.classList.remove('scanning');
+          var name = e && e.name ? e.name : '';
+          if (name === 'NotAllowedError') {
+            showMsg('error', 'Camera permission was denied. Allow camera access in your browser settings, or type the code below.');
+          } else {
+            showMsg('error', 'Could not start the camera. Type the code below instead.');
+          }
+        }
+      });
+    };
+
+    attemptResolution(1920, 1080);
   });
 
   renderHistory();
