@@ -2620,7 +2620,7 @@ window.PRODUCTS = [
     "material": "Semi Kanchipuram",
     "shade": "White / Off-white",
     "price": 325,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/BB009-1.jpg",
       "https://pavnika.ae/assets/products/BB009-2.jpg",
@@ -2633,7 +2633,8 @@ window.PRODUCTS = [
     "occasions": [
       "Bridal",
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": null
   },
   {
     "id": "BB010",
