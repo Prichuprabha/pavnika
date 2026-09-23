@@ -3,50 +3,87 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Saree lookup — Pavnika by Saranya</title>
-<link rel="manifest" href="/scan-manifest.json">
-<link rel="apple-touch-icon" href="/assets/scan-icon-192.png">
-<meta name="theme-color" content="#fff8f5">
+<meta name="robots" content="noindex, nofollow">
+<title>Saree Lookup — Pavnika by Saranya</title>
+<link rel="icon" href="assets/maroonlogo.png">
+<link rel="manifest" href="scan-manifest.json">
+<meta name="theme-color" content="#3C1223">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Saree Lookup">
+<link rel="apple-touch-icon" href="assets/scan-icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #fff8f5; --text: #2a1a14; --text-secondary: #8a7266; --text-muted: #aaa;
-    --border: #ddd; --border-strong: #999; --surface: #fafaf8; --surface-0: #f5f5f3;
-    --ivory-deep: #efe8e2; --stone: #d4cec6; --gold: #B68A69;
-    --gold-light: #e8ddd4; --gold-tint: #f5ede4; --maroon: #B8142A;
+    --ivory: #FCF5ED; --ivory-deep: #F8ECE2; --green: #3C1223; --green-deep: #2B0D1A;
+    --gold: #B68A69; --gold-light: #F6DFD5; --ink: #3B2528; --stone: #DED0C7;
+    --display: 'Cormorant Garamond', serif; --body: 'Jost', sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1a1410; --text: #faf8f5; --text-secondary: #b8a89f; --text-muted: #666;
-      --border: #444; --border-strong: #666; --surface: #252019; --surface-0: #2d2620;
-      --ivory-deep: #3d3530; --stone: #5a5450; --gold: #d4a376;
-      --gold-light: #4a4038; --gold-tint: #332a23; --maroon: #ff6b7a;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--body); background: var(--ivory); color: var(--ink);
+    min-height: 100vh; padding: 12px; -webkit-text-size-adjust: 100%;
+  }
+  .wrap { max-width: 460px; margin: 0 auto; }
+
+  .topbar { display: flex; align-items: center; justify-content: center; margin-bottom: 12px; }
+  .topbar img { height: 34px; }
+
+  .card {
+    background: #fff; border-radius: 12px; border: 1px solid var(--stone);
+    padding: 14px; margin-bottom: 12px;
+  }
+  .card h2 {
+    font-family: var(--display); font-size: 1.25rem; font-weight: 600;
+    color: var(--green-deep); margin-bottom: 10px;
   }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  html, body { height: 100%; width: 100%; background: var(--bg); color: var(--text); }
-  body { font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 12px; }
-
-  .card { background: var(--surface); border-radius: 8px; padding: 20px; margin-bottom: 20px; border: 0.5px solid var(--border); }
-  h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
-  .msg { padding: 10px 12px; border-radius: 6px; font-size: 13px; margin-bottom: 12px; display: none; }
-  .msg.info { background: #e3f2fd; color: #1565c0; }
-  .msg.error { background: #ffebee; color: #c62828; }
-  .msg.success { background: #e8f5e9; color: #2e7d32; }
-
+  /* Collapsed while idle so the logo, controls and result all fit in
+     one mobile view; expands only while the camera is actually on. */
   #video-wrap {
     position: relative; width: 100%; height: 0; background: var(--ivory-deep);
     border-radius: 8px; overflow: hidden; margin-bottom: 0;
     display: flex; align-items: center; justify-content: center;
   }
   #video-wrap.scanning { height: 170px; margin-bottom: 10px; }
-  #video-wrap video { width: 100%; height: 100%; object-fit: cover; }
+  #video-wrap video { width: 100%; height: 100%; object-fit: cover; cursor: crosshair; }
   #scan-line {
     position: absolute; left: 12%; right: 12%; height: 2px; background: #B8142A;
     top: 50%; display: none; box-shadow: 0 0 8px rgba(184,20,42,0.6);
   }
   #video-wrap.scanning #scan-line { display: block; }
 
+  
+    100% { width: 60px; height: 60px; opacity: 0.3; border-width: 2px; }
+  }
+
+  /* Image quality indicators */
+  #image-quality {
+    display: none; background: var(--surface-0); border-radius: 8px; padding: 12px;
+    margin-bottom: 10px; gap: 12px;
+  }
+  #image-quality.visible { display: flex; }
+  #image-quality.visible-flex { display: flex; }
+  
+  #sharpness-meter {
+    flex: 1; display: flex; flex-direction: column; gap: 6px;
+  }
+  #sharpness-bar {
+    height: 6px; background: #ddd; border-radius: 3px; overflow: hidden;
+  }
+  #sharpness-fill {
+    height: 100%; width: 0%; background: #3B6D11; transition: width 0.3s;
+  }
+  #sharpness-fill.low { background: #B8142A; }
+  #sharpness-fill.medium { background: #E8A91F; }
+  #sharpness-fill.high { background: #3B6D11; }
+  
+  #quality-label {
+    font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #8a7266;
+    text-align: center; min-height: 14px;
+  }
+  
   /* Distance hint badge */
   #distance-hint {
     padding: 8px 12px; border-radius: 6px; font-size: 0.78rem; text-align: center;
@@ -57,285 +94,422 @@
   #distance-hint.good { background: #EAF3DE; color: #3B6D11; }
   #distance-hint.too-far { background: #FFF3E0; color: #E8A91F; }
 
-  /* Image quality meter */
-  #image-quality {
-    display: none; background: var(--surface-0); border-radius: 8px; padding: 12px;
-    margin-bottom: 10px; gap: 12px; flex-direction: column;
+  /* Lighting indicator */
+  #lighting-indicator {
+    display: none; font-size: 0.78rem; padding: 8px 12px; border-radius: 8px;
+    margin-bottom: 10px; align-items: center; gap: 6px;
   }
-  #image-quality.visible { display: flex; }
-  #sharpness-bar {
-    height: 6px; background: #ddd; border-radius: 3px; overflow: hidden;
-  }
-  #sharpness-fill {
-    height: 100%; width: 0%; background: #3B6D11; transition: width 0.3s;
-  }
-  #sharpness-fill.low { background: #B8142A; }
-  #sharpness-fill.medium { background: #E8A91F; }
-  #sharpness-fill.high { background: #3B6D11; }
-  #quality-label {
-    font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #8a7266;
-    text-align: center; min-height: 14px;
+  #lighting-indicator.visible { display: flex; }
+  #lighting-indicator.good { background: #EAF3DE; color: #3B6D11; }
+  #lighting-indicator.low { background: #FBEAEA; color: #B8142A; }
+  #lighting-indicator::before {
+    content: ''; display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor;
   }
 
-  button { padding: 10px 16px; background: var(--gold); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
-  button.btn-primary { background: var(--maroon); }
-  input { padding: 10px 12px; border: 0.5px solid var(--border); border-radius: 6px; width: 100%; }
+  .btn {
+    display: block; width: 100%; padding: 11px; border: none; border-radius: 8px;
+    font-family: var(--body); font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  }
+  .btn-primary { background: var(--green-deep); color: #fff; }
+  .btn-outline { background: transparent; border: 1.5px solid var(--green-deep); color: var(--green-deep); }
 
-  #history-wrap { margin-top: 20px; }
-  #history-list { list-style: none; }
-  .hist-item { padding: 12px; background: var(--surface-0); border-radius: 6px; margin-bottom: 8px; cursor: pointer; }
-  .h-code { font-weight: 600; font-family: monospace; }
-  .h-price { color: var(--text-secondary); font-size: 12px; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+  .divider span { font-size: 0.78rem; color: #a08b7f; }
+  .divider .line { flex: 1; height: 1px; background: var(--stone); }
+
+  .manual-row { display: flex; gap: 8px; }
+  .manual-row input {
+    flex: 1; padding: 10px 12px; border: 1px solid var(--stone); border-radius: 8px;
+    font-family: var(--body); font-size: 1rem; text-transform: uppercase; background: var(--ivory);
+  }
+  .manual-row button { width: auto; padding: 10px 18px; flex-shrink: 0; }
+
+  .msg { font-size: 0.85rem; padding: 10px 12px; border-radius: 8px; margin-bottom: 12px; display: none; }
+  .msg.error { display: block; background: #FBEAEA; color: #791f1f; }
+  .msg.info { display: block; background: var(--ivory-deep); color: var(--ink); }
+
+  /* ---- Result card ---- */
+  #result { display: none; }
+  .res-head { display: flex; gap: 12px; margin-bottom: 12px; }
+  .res-head img {
+    width: 78px; height: 100px; object-fit: cover; border-radius: 8px;
+    flex-shrink: 0; background: var(--ivory-deep);
+  }
+  .res-info { flex: 1; min-width: 0; }
+  .res-code { font-family: monospace; font-size: 0.78rem; color: #8a7266; letter-spacing: 0.5px; }
+  .res-name { font-size: 1.05rem; font-weight: 600; color: var(--green-deep); margin: 2px 0; }
+  .res-series { font-size: 0.82rem; color: #8a7266; text-transform: capitalize; }
+  .res-price { font-family: var(--body); font-size: 1.6rem; font-weight: 600; letter-spacing: -0.5px; color: var(--green-deep); margin-top: 6px; }
+  .badge {
+    display: inline-block; font-size: 0.72rem; font-weight: 600;
+    padding: 3px 11px; border-radius: 6px; margin-top: 6px;
+  }
+  .badge.available { background: #EAF3DE; color: #3B6D11; }
+  .badge.sold { background: #FBEAEA; color: #B8142A; }
+
+  .res-details { border-top: 1px solid var(--stone); padding-top: 10px; }
+  .res-details .row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 0.82rem; }
+  .res-details .row .label { color: #8a7266; }
+  .res-details .row .val { text-align: right; font-weight: 500; }
+
+  /* ---- History ---- */
+  #history-card { display: none; }
+  .hist-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 0;
+    border-bottom: 1px solid var(--stone); cursor: pointer; font-size: 0.85rem;
+  }
+  .hist-item:last-child { border-bottom: none; }
+  .hist-item img { width: 30px; height: 38px; object-fit: cover; border-radius: 4px; flex-shrink: 0; background: var(--ivory-deep); }
+  .hist-item .h-code { font-family: monospace; font-weight: 600; }
+  .hist-item .h-name { color: #8a7266; font-size: 0.78rem; }
+  .hist-item .h-price { margin-left: auto; font-weight: 600; flex-shrink: 0; }
+  #hist-clear { background: none; border: none; color: #8a7266; font-size: 0.76rem; text-decoration: underline; cursor: pointer; font-family: var(--body); margin-top: 8px; }
 </style>
 </head>
 <body>
+<div class="wrap">
+
+  <div class="topbar"><img src="assets/maroonlogo.png" alt="Pavnika by Saranya"></div>
+
+  <div id="install-banner" style="display:none; background:var(--ivory-deep); border:1px solid var(--gold); border-radius:10px; padding:11px 13px; margin-bottom:12px; align-items:center; gap:10px;">
+    <div style="flex:1; font-size:0.82rem; line-height:1.4;">Install this as an app for quicker access.</div>
+    <button type="button" id="install-btn" style="flex-shrink:0; background:var(--green-deep); color:#fff; border:none; border-radius:7px; padding:8px 14px; font-family:var(--body); font-size:0.8rem; font-weight:600; cursor:pointer;">Install</button>
+    <button type="button" id="install-dismiss" aria-label="Dismiss" style="flex-shrink:0; background:none; border:none; color:#8a7266; font-size:1.1rem; cursor:pointer; padding:0 2px;">&times;</button>
+  </div>
 
   <div class="card">
     <h2>Saree lookup</h2>
     <p class="msg" id="msg"></p>
 
-    <div id="distance-hint"></div>
+    <div id="lighting-indicator"></div>
 
     <div id="video-wrap">
       <video id="video" playsinline style="display:none;"></video>
       <div id="scan-line"></div>
+      
     </div>
+
+    <div id="distance-hint"></div>
 
     <div id="image-quality">
-      <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #8a7266;">Focus Quality</div>
-      <div id="sharpness-bar">
-        <div id="sharpness-fill"></div>
+      <div id="sharpness-meter">
+        <div style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #8a7266;">Focus Quality</div>
+        <div id="sharpness-bar">
+          <div id="sharpness-fill"></div>
+        </div>
       </div>
-      <div id="quality-label"></div>
     </div>
+    <div id="quality-label"></div>
 
-    <button type="button" class="btn-primary" id="camera-btn">Start camera</button>
+    <button type="button" class="btn btn-primary" id="camera-btn">Start camera</button>
 
-    <div style="border-top: 0.5px solid var(--border); padding-top: 12px; margin-top: 12px;">
-      <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px; text-align: center;">Or enter the code</p>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="manual-input" placeholder="e.g. PP002">
-        <button type="button" id="manual-btn" style="width: auto;">Find</button>
-      </div>
+    <div class="divider"><div class="line"></div><span>or enter the code</span><div class="line"></div></div>
+
+    <div class="manual-row">
+      <input type="text" id="manual-input" placeholder="e.g. PP002" autocomplete="off" autocapitalize="characters" enterkeyhint="search">
+      <button type="button" class="btn btn-outline" id="manual-btn">Find</button>
     </div>
   </div>
 
-  <div id="history-wrap" style="display:none;">
-    <h3 style="font-size: 14px; font-weight: 600; margin-bottom: 10px;">Recent lookups</h3>
-    <ul id="history-list"></ul>
-    <button type="button" id="hist-clear" style="width: 100%; margin-top: 10px;">Clear history</button>
+  <div class="card" id="result">
+    <div class="res-head">
+      <img id="res-img" src="" alt="">
+      <div class="res-info">
+        <p class="res-code" id="res-code"></p>
+        <p class="res-name" id="res-name"></p>
+        <p class="res-series" id="res-series"></p>
+        <p class="res-price" id="res-price"></p>
+        <span class="badge" id="res-badge"></span>
+      </div>
+    </div>
+    <div class="res-details" id="res-details"></div>
   </div>
 
-  <script src="/zxing.min.js"></script>
-  <script src="/products-data.js"></script>
-  <script>
-    var videoEl = document.getElementById('video');
-    var cameraBtn = document.getElementById('camera-btn');
-    var manualInput = document.getElementById('manual-input');
-    var msgEl = document.getElementById('msg');
-    var videoWrap = document.getElementById('video-wrap');
-    var historyWrap = document.getElementById('history-wrap');
-    var historyList = document.getElementById('history-list');
-    var scanning = false;
-    var codeReader = null;
+  <div class="card" id="history-card">
+    <h2>Recent lookups</h2>
+    <div id="history-list"></div>
+    <button type="button" id="hist-clear">Clear history</button>
+  </div>
 
-    function showMsg(type, text) {
-      msgEl.className = 'msg ' + type;
-      msgEl.textContent = text;
-      msgEl.style.display = 'block';
+</div>
+
+<script src="zxing.min.js"></script>
+<script src="products-data.js"></script>
+<script>
+(function () {
+  var msgEl = document.getElementById('msg');
+  var videoEl = document.getElementById('video');
+  var videoWrap = document.getElementById('video-wrap');
+  var cameraBtn = document.getElementById('camera-btn');
+  var manualInput = document.getElementById('manual-input');
+  var resultEl = document.getElementById('result');
+  var historyCard = document.getElementById('history-card');
+  var historyList = document.getElementById('history-list');
+
+  var HISTORY_KEY = 'pavnika_scan_history';
+  var MAX_HISTORY = 8;
+  var codeReader = null;
+  var scanning = false;
+
+  // Success beep, synthesized rather than loaded from a file — keeps
+  // this working offline and avoids bundling an audio asset. Mobile
+  // browsers block sound until the person has interacted with the
+  // page at least once; the "Start camera" tap satisfies that, so the
+  // AudioContext is created there rather than lazily on first beep.
+  var audioCtx = null;
+  function ensureAudioContext() {
+    if (audioCtx) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) { try { audioCtx = new AC(); } catch (e) {} }
+  }
+  function playBeep() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    // A quick two-tone rise reads as a clear, positive "found it" cue —
+    // closer to a real scanner than a single flat tone.
+    [[880, 0], [1320, 0.09]].forEach(function (pair) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = pair[0];
+      var startAt = audioCtx.currentTime + pair[1];
+      gain.gain.setValueAtTime(0.001, startAt);
+      gain.gain.exponentialRampToValueAtTime(0.25, startAt + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, startAt + 0.09);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(startAt);
+      osc.stop(startAt + 0.1);
+    });
+  }
+
+  function showMsg(type, text) {
+    msgEl.className = 'msg ' + type;
+    msgEl.textContent = text;
+  }
+  function clearMsg() { msgEl.className = 'msg'; msgEl.textContent = ''; }
+
+  function titleCase(s) {
+    return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+  function formatAED(n) {
+    return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  // Same rule used identically on the website, in the till, and in
+  // admin: a valid sale price if one is set, otherwise the regular
+  // price. Staff scanning a saree should see what it actually sells
+  // for right now, not its pre-discount price.
+  function effectivePrice(p) {
+    var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+    return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
+  }
+
+  function findProduct(code) {
+    var clean = String(code || '').trim().toUpperCase();
+    if (!clean) return null;
+    return (window.PRODUCTS || []).filter(function (p) {
+      return String(p.id).toUpperCase() === clean;
+    })[0] || null;
+  }
+
+  function showProduct(p) {
+    document.getElementById('res-code').textContent = p.id;
+    document.getElementById('res-name').textContent = p.material || p.design || 'Saree';
+    document.getElementById('res-series').textContent = titleCase(p.series);
+
+    var onSale = p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
+    var priceEl = document.getElementById('res-price');
+    if (onSale) {
+      priceEl.innerHTML = '<span style="text-decoration:line-through; opacity:0.5; font-size:0.8em; margin-right:6px;">AED ' + formatAED(p.price) + '</span>AED ' + formatAED(p.salePrice);
+    } else {
+      priceEl.textContent = 'AED ' + formatAED(p.price);
     }
-    function clearMsg() { msgEl.style.display = 'none'; }
 
-    function playBeep() {
-      try {
-        var audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        var oscillator = audioContext.createOscillator();
-        var gain = audioContext.createGain();
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-        oscillator.frequency.value = 800;
-        oscillator.type = 'sine';
-        gain.gain.setValueAtTime(0.2, audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.1);
-      } catch (e) {}
+    var badge = document.getElementById('res-badge');
+    badge.className = 'badge ' + (p.sold ? 'sold' : 'available');
+    badge.textContent = p.sold ? 'Sold' : 'Available';
+
+    var img = document.getElementById('res-img');
+    if (p.image) { img.src = p.image; img.style.display = 'block'; }
+    else { img.style.display = 'none'; }
+
+    var fields = [
+      ['Type', p.type], ['Design', p.design], ['Colour', p.sareeType],
+      ['Pattern', p.pattern], ['Shade', p.shade], ['Category', p.category]
+    ].filter(function (f) { return f[1]; });
+
+    document.getElementById('res-details').innerHTML = fields.map(function (f) {
+      return '<div class="row"><span class="label">' + f[0] + '</span><span class="val">' + f[1] + '</span></div>';
+    }).join('');
+
+    resultEl.style.display = 'block';
+    clearMsg();
+    addToHistory(p);
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function lookup(code) {
+    var p = findProduct(code);
+    if (!p) {
+      resultEl.style.display = 'none';
+      showMsg('error', 'No saree found with code "' + String(code).trim().toUpperCase() + '". Check the code and try again.');
+      return false;
     }
+    showProduct(p);
+    return true;
+  }
 
-    function ensureAudioContext() {
-      try {
-        new (window.AudioContext || window.webkitAudioContext)();
-      } catch (e) {}
-    }
+  // ---- History (localStorage, so it survives a page refresh) ----
+  function getHistory() {
+    try {
+      var raw = localStorage.getItem(HISTORY_KEY);
+      var arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch (e) { return []; }
+  }
+  function saveHistory(arr) {
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
+  function addToHistory(p) {
+    var hist = getHistory().filter(function (h) { return h.id !== p.id; });
+    hist.unshift({ id: p.id, name: p.material || p.design || 'Saree', price: effectivePrice(p), image: p.image || '' });
+    if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
+    saveHistory(hist);
+    renderHistory();
+  }
+  function renderHistory() {
+    var hist = getHistory();
+    if (!hist.length) { historyCard.style.display = 'none'; return; }
+    historyCard.style.display = 'block';
+    historyList.innerHTML = hist.map(function (h) {
+      return '<div class="hist-item" data-id="' + h.id + '">' +
+        (h.image ? '<img src="' + h.image + '" alt="">' : '') +
+        '<div><div class="h-code">' + h.id + '</div><div class="h-name">' + h.name + '</div></div>' +
+        '<div class="h-price">AED ' + formatAED(h.price) + '</div>' +
+      '</div>';
+    }).join('');
+    historyList.querySelectorAll('.hist-item').forEach(function (el) {
+      el.addEventListener('click', function () { lookup(el.getAttribute('data-id')); });
+    });
+  }
+  document.getElementById('hist-clear').addEventListener('click', function () {
+    saveHistory([]);
+    renderHistory();
+  });
 
-    function lookup(code) {
-      if (!code || !code.trim()) return false;
-      code = code.trim().toUpperCase();
-      var item = window.PRODUCTS.find(function (p) { return p.id === code; });
-      if (!item) {
-        showMsg('error', 'Saree not found. Try another code.');
-        return false;
+  // ---- Manual entry ----
+  document.getElementById('manual-btn').addEventListener('click', function () {
+    lookup(manualInput.value);
+  });
+  manualInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); lookup(manualInput.value); }
+  });
+
+  // ---- Camera scanning with tap-to-focus & lighting detection ----
+  var focusSliderEl = document.getElementById('focus-slider');
+  var lightingIndicatorEl = document.getElementById('lighting-indicator');
+  var currentFocusMode = 'continuous';
+  var lightingCheckInterval = null;
+
+  function stopCamera() {
+    scanning = false;
+    if (codeReader) { try { codeReader.reset(); } catch (e) {} }
+    videoEl.style.display = 'none';
+    videoWrap.classList.remove('scanning');
+    cameraBtn.textContent = 'Start camera';
+    focusControlsEl.classList.remove('visible-flex');
+    lightingIndicatorEl.classList.remove('visible');
+    if (lightingCheckInterval) clearInterval(lightingCheckInterval);
+  }
+
+  // Blur detection handled in analyzeImageQuality()
+      brightness = brightness / (data.length / 4);
+      if (brightness < 60) {
+        lightingIndicatorEl.classList.add('visible', 'low');
+        lightingIndicatorEl.classList.remove('good');
+        lightingIndicatorEl.textContent = 'Low light — try to improve lighting';
+      } else {
+        lightingIndicatorEl.classList.add('visible', 'good');
+        lightingIndicatorEl.classList.remove('low');
+        lightingIndicatorEl.textContent = 'Good lighting';
       }
-      clearMsg();
-      saveHistory(code);
-      var details = '<strong>' + (item.occasion ? item.occasion + ' • ' : '') + item.name + '</strong><br>';
-      if (item.price) details += 'AED ' + item.price + '<br>';
-      if (item.status && item.status !== 'Available') details += '<span style="color: #B8142A;">' + item.status + '</span>';
-      showMsg('success', details);
-      return true;
+    } catch (e) {}
+  }
+
+  // Focus point display removed
+    focusLabelEl.textContent = 'Focusing...';
+    setTimeout(function () {
+      if (scanning) focusLabelEl.textContent = 'Tap to focus · Slide to adjust';
+    }, 800);
+  }
+
+  videoEl.addEventListener('click', function (e) {
+    if (!scanning || !canManualFocus) return;
+    var rect = videoEl.getBoundingClientRect();
+    var x = e.clientX - rect.left;
+    var y = e.clientY - rect.top;
+    showFocusPoint(x, y);
+  });
+
+  focusSliderEl.addEventListener('input', function () {
+    if (!canManualFocus) return;
+    var normalizedValue = (parseInt(this.value) - 50) / 50;
+    focusLabelEl.textContent = 'Adjusting focus...';
+  });
+
+  cameraBtn.addEventListener('click', function () {
+    ensureAudioContext();
+    if (scanning) { stopCamera(); clearMsg(); return; }
+
+    if (typeof ZXing === 'undefined') {
+      showMsg('error', 'Scanner library did not load. Use the code box below instead.');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      showMsg('error', 'This browser cannot use the camera. Use the code box below instead.');
+      return;
     }
 
-    function saveHistory(code) {
-      var history = JSON.parse(localStorage.getItem('scan-history') || '[]');
-      history = history.filter(function (c) { return c !== code; });
-      history.unshift(code);
-      history = history.slice(0, 10);
-      localStorage.setItem('scan-history', JSON.stringify(history));
-      renderHistory();
-    }
+    scanning = true;
+    cameraBtn.textContent = 'Stop camera';
+    videoEl.style.display = 'block';
+    videoWrap.classList.add('scanning');
+    showMsg('info', 'Hold the barcode steady and well-lit.');
 
-    function renderHistory() {
-      var history = JSON.parse(localStorage.getItem('scan-history') || '[]');
-      if (history.length === 0) {
-        historyWrap.style.display = 'none';
+    var constraints = {
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+        advanced: []
+      }
+    };
+
+    var focusModes = ['continuous', 'auto'];
+    var attemptFocus = function (modeIndex) {
+      if (modeIndex >= focusModes.length) {
+        constraints.video.advanced = [];
+        attemptCamera();
         return;
       }
-      historyWrap.style.display = 'block';
-      historyList.innerHTML = history.map(function (code) {
-        var item = window.PRODUCTS.find(function (p) { return p.id === code; });
-        if (!item) return '';
-        return '<li class="hist-item" data-id="' + code + '">' +
-          '<div class="h-code">' + code + '</div>' +
-          '<div style="font-size: 12px; color: var(--text-secondary);">' + (item.name || 'Unknown') + '</div>' +
-          (item.price ? '<div class="h-price">AED ' + item.price + '</div>' : '') +
-          '</li>';
-      }).join('');
-      historyList.querySelectorAll('.hist-item').forEach(function (el) {
-        el.addEventListener('click', function () { lookup(el.getAttribute('data-id')); });
+      constraints.video.advanced = [{ focusMode: focusModes[modeIndex] }];
+      attemptCamera(function (success) {
+        if (!success) attemptFocus(modeIndex + 1);
       });
-    }
+    };
 
-    document.getElementById('hist-clear').addEventListener('click', function () {
-      localStorage.setItem('scan-history', '[]');
-      renderHistory();
-    });
+    var attemptResolution = function (widthIdeal, heightIdeal, onResolutionFail) {
+      constraints.video.width = { ideal: widthIdeal };
+      constraints.video.height = { ideal: heightIdeal };
+      attemptFocus(0);
+    };
 
-    document.getElementById('manual-btn').addEventListener('click', function () {
-      lookup(manualInput.value);
-    });
-    manualInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') { e.preventDefault(); lookup(manualInput.value); }
-    });
-
-    // Image quality analysis
-    var imageQualityEl = document.getElementById('image-quality');
-    var sharpnessFillEl = document.getElementById('sharpness-fill');
-    var qualityLabelEl = document.getElementById('quality-label');
-    var distanceHintEl = document.getElementById('distance-hint');
-    var qualityCheckInterval = null;
-
-    function stopCamera() {
-      scanning = false;
-      if (codeReader) { try { codeReader.reset(); } catch (e) {} }
-      videoEl.style.display = 'none';
-      videoWrap.classList.remove('scanning');
-      cameraBtn.textContent = 'Start camera';
-      imageQualityEl.classList.remove('visible');
-      if (qualityCheckInterval) clearInterval(qualityCheckInterval);
-    }
-
-    function analyzeImageQuality() {
-      if (!scanning || !videoEl.videoWidth) return;
-      try {
-        var canvas = document.createElement('canvas');
-        canvas.width = videoEl.videoWidth;
-        canvas.height = videoEl.videoHeight;
-        var ctx = canvas.getContext('2d');
-        ctx.drawImage(videoEl, 0, 0);
-        var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        var data = imageData.data;
-
-        // Blur detection via Laplacian variance
-        var variance = 0, count = 0, width = canvas.width;
-        for (var y = 1; y < canvas.height - 1; y += 4) {
-          for (var x = 1; x < width - 1; x += 4) {
-            var idx = (y * width + x) * 4;
-            if (idx >= data.length) break;
-            var neighbors = [];
-            for (var dy = -1; dy <= 1; dy++) {
-              for (var dx = -1; dx <= 1; dx++) {
-                var nIdx = ((y + dy) * width + (x + dx)) * 4;
-                if (nIdx >= 0 && nIdx < data.length) {
-                  var g = data[nIdx] * 0.299 + data[nIdx + 1] * 0.587 + data[nIdx + 2] * 0.114;
-                  neighbors.push(g);
-                }
-              }
-            }
-            if (neighbors.length === 9) {
-              var lap = -neighbors[0] - neighbors[1] - neighbors[2] - neighbors[3] + 8 * neighbors[4] - neighbors[5] - neighbors[6] - neighbors[7] - neighbors[8];
-              variance += lap * lap;
-              count++;
-            }
-          }
-        }
-        var sharpness = count > 0 ? Math.sqrt(variance / count) / 1000 : 0;
-        sharpness = Math.min(100, sharpness);
-        
-        sharpnessFillEl.style.width = sharpness + '%';
-        sharpnessFillEl.className = '';
-        if (sharpness < 30) {
-          sharpnessFillEl.classList.add('low');
-          qualityLabelEl.textContent = 'Very blurry — try to steady';
-        } else if (sharpness < 60) {
-          sharpnessFillEl.classList.add('medium');
-          qualityLabelEl.textContent = 'Slightly blurry — hold steady';
-        } else {
-          sharpnessFillEl.classList.add('high');
-          qualityLabelEl.textContent = 'Sharp — ready to scan';
-        }
-
-        // Distance detection
-        var darkPixels = 0;
-        for (var i = 0; i < data.length; i += 4) {
-          if ((data[i] + data[i+1] + data[i+2]) / 3 < 100) darkPixels++;
-        }
-        var darkRatio = darkPixels / (data.length / 4);
-        
-        if (darkRatio < 0.1) {
-          distanceHintEl.className = 'visible too-far';
-          distanceHintEl.textContent = 'Too far — move closer';
-        } else if (darkRatio > 0.4) {
-          distanceHintEl.className = 'visible too-close';
-          distanceHintEl.textContent = 'Too close — move back';
-        } else {
-          distanceHintEl.className = 'visible good';
-          distanceHintEl.textContent = 'Good distance';
-        }
-      } catch (e) {}
-    }
-
-    cameraBtn.addEventListener('click', function () {
-      ensureAudioContext();
-      if (scanning) { stopCamera(); clearMsg(); return; }
-
-      if (typeof ZXing === 'undefined') {
-        showMsg('error', 'Scanner did not load. Type code below instead.');
-        return;
-      }
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        showMsg('error', 'Camera not available. Type code below instead.');
-        return;
-      }
-
-      scanning = true;
-      cameraBtn.textContent = 'Stop camera';
-      videoEl.style.display = 'block';
-      videoWrap.classList.add('scanning');
-      showMsg('info', 'Hold barcode steady and well-lit.');
-
+    var attemptCamera = function (callback) {
       codeReader = new ZXing.BrowserMultiFormatReader();
       codeReader.decodeFromConstraints(
-        { video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 }, advanced: [{ focusMode: 'continuous' }] } },
+        constraints,
         videoEl,
         function (result, err) {
           if (result) {
@@ -348,26 +522,91 @@
           }
         }
       ).then(function () {
-        imageQualityEl.classList.add('visible');
-        qualityCheckInterval = setInterval(analyzeImageQuality, 500);
+        if (callback) callback(true);
+        canManualFocus = true;
+        focusControlsEl.classList.add('visible-flex');
+        focusLabelEl.textContent = 'Tap to focus · Slide to adjust';
+        lightingCheckInterval = setInterval(checkLighting, 500);
       }).catch(function (e) {
-        scanning = false;
-        cameraBtn.textContent = 'Start camera';
-        videoEl.style.display = 'none';
-        videoWrap.classList.remove('scanning');
-        if (e.name === 'NotAllowedError') {
-          showMsg('error', 'Camera permission denied. Type code below instead.');
+        if (callback) callback(false);
+        if (constraints.video.width.ideal === 1920) {
+          constraints.video.width = { ideal: 1280 };
+          constraints.video.height = { ideal: 720 };
+          attemptCamera(callback);
         } else {
-          showMsg('error', 'Could not start camera. Type code below instead.');
+          scanning = false;
+          cameraBtn.textContent = 'Start camera';
+          videoEl.style.display = 'none';
+          videoWrap.classList.remove('scanning');
+          var name = e && e.name ? e.name : '';
+          if (name === 'NotAllowedError') {
+            showMsg('error', 'Camera permission was denied. Allow camera access in your browser settings, or type the code below.');
+          } else {
+            showMsg('error', 'Could not start the camera. Type the code below instead.');
+          }
         }
       });
-    });
+    };
 
-    renderHistory();
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/scan-sw.js').catch(function () {});
+    attemptResolution(1920, 1080);
+    imageQualityEl.classList.add('visible-flex');
+    qualityCheckInterval = setInterval(analyzeImageQuality, 500);
+  });
+
+  renderHistory();
+
+  // ---- Install as an app ----
+  // Chrome/Edge/Android fire beforeinstallprompt, which lets us show
+  // our own button. iOS Safari doesn't support it at all, so those
+  // users get instructions for the Share > Add to Home Screen route.
+  var deferredPrompt = null;
+  var banner = document.getElementById('install-banner');
+  var installBtn = document.getElementById('install-btn');
+
+  function isStandalone() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (!isStandalone() && localStorage.getItem('pavnika_install_dismissed') !== '1') {
+      banner.style.display = 'flex';
     }
-  </script>
+  });
 
+  installBtn.addEventListener('click', function () {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function () {
+      deferredPrompt = null;
+      banner.style.display = 'none';
+    });
+  });
+
+  document.getElementById('install-dismiss').addEventListener('click', function () {
+    banner.style.display = 'none';
+    try { localStorage.setItem('pavnika_install_dismissed', '1'); } catch (e) {}
+  });
+
+  // iOS: no install API, so show the manual steps instead.
+  var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  if (isIOS && !isStandalone() && localStorage.getItem('pavnika_install_dismissed') !== '1') {
+    banner.querySelector('div').textContent = 'To install: tap Share, then "Add to Home Screen".';
+    installBtn.style.display = 'none';
+    banner.style.display = 'flex';
+  }
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('scan-sw.js').catch(function (e) {
+        // Not fatal — the page works fine without it, it just can't be
+        // installed or used offline.
+        console.warn('Service worker registration failed:', e);
+      });
+    });
+  }
+})();
+</script>
 </body>
 </html>
