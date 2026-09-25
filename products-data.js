@@ -1816,7 +1816,7 @@ window.PRODUCTS = [
     "material": "Soft Silk",
     "shade": "Orange / Brown",
     "price": 349,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/SO003-1.jpg",
       "https://pavnika.ae/assets/products/SO003-2.jpg",
