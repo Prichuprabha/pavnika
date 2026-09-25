@@ -3724,6 +3724,49 @@ function initManualOrderView(token) {
   var billingCountrySelect = document.getElementById('admin-mo-billing-country');
   var shippingCountrySelect = document.getElementById('admin-mo-shipping-country');
   var submitBtn = document.getElementById('admin-mo-submit-btn');
+  var giftCardCard = document.getElementById('admin-mo-giftcard-card');
+  var giftCardBalanceText = document.getElementById('admin-mo-giftcard-balance-text');
+  var giftCardCheckboxLabel = document.getElementById('admin-mo-giftcard-checkbox-label');
+  var applyGiftCardCheckbox = document.getElementById('admin-mo-apply-giftcard');
+  var knownGiftCardBalance = 0;
+
+  // Purely informational until submit — the server always re-checks
+  // and re-caps the real balance itself, so a stale value here (e.g.
+  // if the balance changed in another tab a second ago) can't cause
+  // more credit to be applied than the customer actually has.
+  function checkGiftCardBalance() {
+    var email = document.getElementById('admin-mo-email').value.trim();
+    var phone = document.getElementById('admin-mo-phone').value.trim();
+    if (!email && !phone) {
+      giftCardCard.style.display = 'none';
+      knownGiftCardBalance = 0;
+      applyGiftCardCheckbox.checked = false;
+      return;
+    }
+    fetch('/.netlify/functions/admin-lookup-gift-card-balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, email: email, phone: phone })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        knownGiftCardBalance = (data.found && Number(data.balance) > 0) ? Number(data.balance) : 0;
+        if (knownGiftCardBalance > 0) {
+          giftCardCard.style.display = 'block';
+          giftCardBalanceText.textContent = 'This customer has AED ' + knownGiftCardBalance.toFixed(2) + ' in store credit.';
+          giftCardCheckboxLabel.textContent = 'Apply available store credit (up to AED ' + knownGiftCardBalance.toFixed(2) + ')';
+        } else {
+          giftCardCard.style.display = 'none';
+          applyGiftCardCheckbox.checked = false;
+        }
+        renderTotals();
+      })
+      .catch(function () { giftCardCard.style.display = 'none'; });
+  }
+
+  document.getElementById('admin-mo-email').addEventListener('blur', checkGiftCardBalance);
+  document.getElementById('admin-mo-phone').addEventListener('blur', checkGiftCardBalance);
+  applyGiftCardCheckbox.addEventListener('change', renderTotals);
 
   var MO_COUNTRY_LIST = [
     'United Arab Emirates', 'India', 'Saudi Arabia', 'Qatar', 'Kuwait', 'Bahrain', 'Oman',
@@ -3802,6 +3845,7 @@ function initManualOrderView(token) {
 
     customerSearchInput.value = '';
     customerResultsEl.classList.remove('is-open');
+    checkGiftCardBalance();
   });
 
   document.addEventListener('click', function (e) {
@@ -3894,8 +3938,12 @@ function initManualOrderView(token) {
     var discountInput = Number(discountValueInput.value) || 0;
     var discountAmount = discountType === 'percent' ? subtotal * discountInput / 100 : discountInput;
     if (discountAmount > subtotal) discountAmount = subtotal; // never let a flat/percent typo produce a negative total
-    var total = subtotal - discountAmount;
-    return { subtotal: subtotal, discountAmount: discountAmount, total: total };
+    var owedBeforeCredit = subtotal - discountAmount;
+    var giftCardEstimate = (applyGiftCardCheckbox.checked && knownGiftCardBalance > 0)
+      ? Math.min(knownGiftCardBalance, owedBeforeCredit)
+      : 0;
+    var total = owedBeforeCredit - giftCardEstimate;
+    return { subtotal: subtotal, discountAmount: discountAmount, giftCardEstimate: giftCardEstimate, total: total };
   }
 
   function renderTotals() {
@@ -3903,6 +3951,7 @@ function initManualOrderView(token) {
     totalPreview.innerHTML =
       '<div style="display:flex; justify-content:space-between; padding:2px 0;"><span>Subtotal</span><span>AED ' + t.subtotal.toFixed(2) + '</span></div>' +
       (t.discountAmount > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Discount</span><span>-AED ' + t.discountAmount.toFixed(2) + '</span></div>' : '') +
+      (t.giftCardEstimate > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Store credit</span><span>-AED ' + t.giftCardEstimate.toFixed(2) + '</span></div>' : '') +
       '<div style="display:flex; justify-content:space-between; padding:6px 0 0; margin-top:4px; border-top:1px solid var(--stone); font-weight:700; color:var(--green-deep);"><span>Total</span><span>AED ' + t.total.toFixed(2) + '</span></div>';
   }
 
@@ -4048,6 +4097,7 @@ function initManualOrderView(token) {
       subtotal: t.subtotal,
       discountAmount: t.discountAmount,
       total: t.total,
+      applyGiftCard: !!(applyGiftCardCheckbox.checked && knownGiftCardBalance > 0),
       paymentMode: document.getElementById('admin-mo-payment-mode').value
     };
 
@@ -4065,7 +4115,13 @@ function initManualOrderView(token) {
           showStatus('error', result.data.error || 'Could not create the order.');
           return;
         }
-        showStatus('success', 'Order #' + result.data.orderNumber + ' created and confirmation email sent to ' + email + '.');
+        var successMsg = 'Order #' + result.data.orderNumber + ' created and confirmation email sent to ' + email + '.';
+        if (result.data.giftCardApplied > 0) {
+          successMsg += ' AED ' + Number(result.data.giftCardApplied).toFixed(2) + ' store credit was applied.';
+        } else if (result.data.giftCardNote) {
+          successMsg += ' Note: ' + result.data.giftCardNote;
+        }
+        showStatus('success', successMsg);
         pickedItems = [];
         renderPickedItems();
         document.getElementById('admin-mo-first-name').value = '';
@@ -4073,6 +4129,9 @@ function initManualOrderView(token) {
         document.getElementById('admin-mo-email').value = '';
         document.getElementById('admin-mo-phone').value = '';
         discountValueInput.value = '0';
+        applyGiftCardCheckbox.checked = false;
+        giftCardCard.style.display = 'none';
+        knownGiftCardBalance = 0;
         renderTotals();
         refreshSareeList(); // the sold saree(s) should drop out of the picker
         if (window.__refreshOrders) window.__refreshOrders();
