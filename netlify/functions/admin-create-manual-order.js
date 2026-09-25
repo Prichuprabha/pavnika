@@ -11,9 +11,15 @@
 //   confirmation email an online purchase gets — via the shared
 //   _order-shared.js module, so there's no separate/divergent copy
 //   of that email template to maintain.
-// - Status is set to "delivered_direct_pay" by default, distinguishing
-//   these from online orders in the Orders tab status dropdown, while
-//   remaining fully editable afterward like any other order.
+// - Status is set to "paid" by default for Bank Transfer, Cash, and
+//   Nomod (confirmed manually) — payment being confirmed doesn't mean
+//   the saree has already been handed over, so it goes through the
+//   same shipped/delivered progression as an online order. COD orders
+//   still start as "cod_pending" since payment itself isn't confirmed
+//   yet. Staff can still manually set a manual order to
+//   "Delivered (Direct Pay)" for genuine in-person hand-offs — that
+//   status still exists and still counts toward revenue/completed
+//   totals exactly as before, it's just no longer forced on by default.
 
 const { verifyAdminToken } = require('./_admin-auth');
 const { supabaseHeaders, generateOrderNumber, sendReceiptEmail, markSareesSold } = require('./_order-shared');
@@ -92,7 +98,7 @@ exports.handler = async function (event) {
     subtotal: subtotal,
     discount_amount: discountAmount,
     total: total,
-    status: paymentMode === 'COD' ? 'cod_pending' : 'delivered_direct_pay',
+    status: paymentMode === 'COD' ? 'cod_pending' : 'paid',
     payment_method: paymentMode,
     billing_address: JSON.stringify(billing),
     shipping_address: JSON.stringify(shipping)
