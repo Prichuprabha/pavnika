@@ -10,6 +10,10 @@
 //   created if no matching customer exists yet), since gift card
 //   balance is only ever tracked on that table. Guarded against
 //   double-crediting if the same status is saved more than once.
+// - "refunded" sends a courtesy refund-confirmation email (order
+//   number, amount, and Cash/Bank transfer wording) — good-practice
+//   record-keeping, not a legal UAE Tax Credit Note. Same double-send
+//   guard as refunded_giftcard.
 // - Payment method is deliberately just these three broad categories
 //   (not, say, "Visa" vs "Mastercard", or which gateway was used) —
 //   it exists so revenue can be split into cash collected, bank
@@ -28,6 +32,18 @@ const ALLOWED_PAYMENT_METHODS = ['Cash', 'Bank Transfer', 'Electronic'];
 
 function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+// Customer-facing wording for the plain "Refunded" receipt email. Only
+// Cash is called out by name; Bank Transfer, Electronic, and any raw
+// gateway string still on file (e.g. "visa") are all worded as "Bank
+// transfer" — a deliberate simplification per how refunds are actually
+// handled here (always back through the original payment medium), not
+// meant to distinguish gateway from bank transfer to the customer.
+function refundPaymentLabel(raw) {
+  var v = String(raw || '').toLowerCase();
+  if (v.indexOf('cash') !== -1 || v === 'cod') return 'Cash';
+  return 'Bank transfer';
 }
 
 function supabaseHeaders() {
@@ -76,6 +92,49 @@ async function sendGiftCardNotice(email, name, refundAmount, newBalance, orderNu
   }
 }
 
+// Courtesy receipt for a plain "Refunded" order (money returned the
+// same way it was paid — cash from the till, or a bank transfer/card
+// reversal outside this system). Not a legal UAE Tax Credit Note
+// (no TRN, no VAT breakdown) — the business is currently below the
+// VAT registration threshold, so this is a good-practice confirmation
+// email only, matching the look of the existing gift-card notice above.
+async function sendRefundNotice(email, name, refundAmount, orderNumber, paymentLabel) {
+  if (!email) return; // nothing to notify — the customer will need to be told some other way
+  var html = `
+    <div style="font-family:sans-serif; max-width:480px; margin:0 auto; background:#FCF5ED;">
+      <div style="background:#3C1223; padding:24px 20px; text-align:center; border-radius:6px 6px 0 0;">
+        <p style="font-family:Georgia,serif; font-size:18px; color:#FCF5ED; margin:0;">Your refund has been processed</p>
+      </div>
+      <div style="padding:20px 22px; color:#3B2528;">
+        <p style="font-size:13px; line-height:1.7;">Hi ${name || 'there'}, this confirms your order ${orderNumber ? '#' + orderNumber : ''} has been refunded.</p>
+        <div style="background:#F8ECE2; border-radius:8px; padding:14px 16px; margin:16px 0;">
+          <p style="margin:0 0 4px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Amount refunded</p>
+          <p style="margin:0 0 10px; font-size:16px; font-weight:bold; color:#B68A69;">AED ${formatAED(refundAmount)}</p>
+          <p style="margin:0 0 4px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Refunded via</p>
+          <p style="margin:0; font-size:16px; font-weight:bold; color:#2B0D1A;">${paymentLabel}</p>
+        </div>
+        <p style="font-size:13px; line-height:1.7;">Questions about this refund? Contact us at <a href="mailto:support@pavnika.ae" style="color:#B68A69;">support@pavnika.ae</a> or WhatsApp +971 52 66 30307.</p>
+        <p style="font-size:11px; color:#a08b7f; margin-top:18px; text-align:center;">Pavnika by Saranya &middot; Dubai, UAE</p>
+      </div>
+    </div>`;
+
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'Pavnika by Saranya <orders@pavnika.ae>',
+        reply_to: 'support@pavnika.ae',
+        to: [email],
+        subject: `Your refund of AED ${formatAED(refundAmount)} has been processed`,
+        html: html
+      })
+    });
+  } catch (e) {
+    console.error('sendRefundNotice failed (order was still marked refunded):', e);
+  }
+}
+
 exports.handler = async function (event) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -111,7 +170,7 @@ exports.handler = async function (event) {
 
   try {
     if (hasStatus && status === 'refunded_giftcard') {
-      const orderRes = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}&select=id,status,total,customer_name,customer_email,customer_phone`, { headers: supabaseHeaders() });
+      const orderRes = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}&select=id,status,order_number,total,customer_name,customer_email,customer_phone`, { headers: supabaseHeaders() });
       if (!orderRes.ok) throw new Error(`Supabase error ${orderRes.status}`);
       const orderRows = await orderRes.json();
       if (!orderRows.length) return { statusCode: 404, body: JSON.stringify({ error: 'Order not found.' }) };
@@ -155,6 +214,24 @@ exports.handler = async function (event) {
           });
           await sendGiftCardNotice(order.customer_email, order.customer_name, refundAmount, refundAmount, order.order_number || order.id);
         }
+      }
+    }
+
+    // Plain "Refunded" (money returned the same way it was paid, outside
+    // this system) — no balance to credit, just a courtesy receipt email.
+    // Guarded the same way as refunded_giftcard above, so re-saving an
+    // order that's already 'refunded' doesn't resend the email.
+    if (hasStatus && status === 'refunded') {
+      const orderRes = await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}&select=id,status,order_number,total,customer_name,customer_email,payment_method`, { headers: supabaseHeaders() });
+      if (!orderRes.ok) throw new Error(`Supabase error ${orderRes.status}`);
+      const orderRows = await orderRes.json();
+      if (!orderRows.length) return { statusCode: 404, body: JSON.stringify({ error: 'Order not found.' }) };
+      const order = orderRows[0];
+
+      if (order.status !== 'refunded') {
+        const refundAmount = Number(order.total) || 0;
+        const paymentLabel = refundPaymentLabel(order.payment_method);
+        await sendRefundNotice(order.customer_email, order.customer_name, refundAmount, order.order_number || order.id, paymentLabel);
       }
     }
 
