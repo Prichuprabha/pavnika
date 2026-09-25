@@ -1999,8 +1999,26 @@ function initStatsDashboard(token) {
   // list the Orders tab already fetches — no separate backend
   // aggregation needed. Only these statuses represent a genuine
   // completed sale; pending/cancelled/payment_error/refunded don't
-  // count toward revenue.
-  var REVENUE_STATUSES = ['paid', 'shipped', 'delivered', 'delivered_direct_pay'];
+  // count toward revenue. A partially-refunded order still counts —
+  // netOrderRevenue() below reduces it by whatever was actually
+  // refunded in cash/bank transfer (gift-card refunds don't reduce
+  // revenue, since the money never actually left the business).
+  var REVENUE_STATUSES = ['paid', 'shipped', 'delivered', 'delivered_direct_pay', 'partially_refunded'];
+
+  // An order's revenue contribution, net of any cash/bank-transfer
+  // return refunds recorded against it (see order_returns, attached
+  // as o.returns by admin-get-orders.js). Gift-card refunds are
+  // deliberately NOT subtracted — that money stays with the business
+  // as store credit owed, not a loss of revenue, matching how a whole
+  // order refunded to gift card (status 'refunded_giftcard') has
+  // always been treated here.
+  function netOrderRevenue(o) {
+    var total = Number(o.total) || 0;
+    var cashBankRefunded = (o.returns || []).reduce(function (sum, r) {
+      return r.refund_method === 'gift_card' ? sum : sum + (Number(r.refund_amount) || 0);
+    }, 0);
+    return Math.max(0, total - cashBankRefunded);
+  }
 
   function dayKey(iso) {
     var d = new Date(iso);
@@ -2025,8 +2043,8 @@ function initStatsDashboard(token) {
     var current = revenueOrders.filter(function (o) { return withinRange(o, rangeStart, rangeEnd); });
     var previous = revenueOrders.filter(function (o) { return withinRange(o, prevStart, prevEnd); });
 
-    var currentRevenue = current.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
-    var previousRevenue = previous.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+    var currentRevenue = current.reduce(function (sum, o) { return sum + netOrderRevenue(o); }, 0);
+    var previousRevenue = previous.reduce(function (sum, o) { return sum + netOrderRevenue(o); }, 0);
 
     function pctChange(cur, prev) {
       if (prev === 0) return cur > 0 ? 100 : 0;
@@ -2036,7 +2054,7 @@ function initStatsDashboard(token) {
     var dailyMap = {};
     current.forEach(function (o) {
       var key = dayKey(o.created_at);
-      dailyMap[key] = (dailyMap[key] || 0) + (Number(o.total) || 0);
+      dailyMap[key] = (dailyMap[key] || 0) + netOrderRevenue(o);
     });
     var dailyPoints = [];
     var cursor = new Date(rangeStart);
@@ -2092,6 +2110,7 @@ function initStatsDashboard(token) {
 
   function recentOrderStatusLabel(s) {
     if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
+    if (s === 'partially_refunded') return 'Partially Refunded';
     return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
@@ -2850,6 +2869,7 @@ function initOrdersView(token) {
     if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
     if (s === 'refunded_giftcard') return 'Refunded (To Gift Card)';
     if (s === 'cod_pending') return 'Cash on Delivery (Pending)';
+    if (s === 'partially_refunded') return 'Partially Refunded';
     return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
@@ -2859,7 +2879,7 @@ function initOrdersView(token) {
     // Overall
     var allOrdersCount = allOrders.length + allShopOrders.length;
     var onlineRevenue = allOrders.filter(function (o) { return ['pending', 'cod_pending', 'cancelled', 'payment_error', 'refunded'].indexOf(o.status) === -1; })
-      .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+      .reduce(function (sum, o) { return sum + netOrderRevenue(o); }, 0);
     var shopRevenue = allShopOrders.filter(function (o) { return o.status !== 'Returned'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
     document.getElementById('admin-orders-summary-overall').innerHTML =
@@ -2905,6 +2925,7 @@ function initOrdersView(token) {
 
   var ordersPresetFromTime = null; // set when a rolling-window preset (24h/7d/30d) is active, overriding the manual date inputs
   var currentDrawerShopOrder = null; // the shop order currently open in the detail drawer, for the Delete button
+  var currentDrawerOnlineOrder = null; // the website order currently open in the detail drawer, for the Process Return controls
 
   function getOrdersDateBounds() {
     if (ordersPresetFromTime !== null) {
@@ -3162,7 +3183,7 @@ function initOrdersView(token) {
   }
 
   function buildStatusSelect(o) {
-    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard'];
+    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard', 'partially_refunded'];
     var options = statuses.map(function (s) {
       return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
     }).join('');
@@ -3315,6 +3336,86 @@ function initOrdersView(token) {
     return '<p style="margin:0;">' + [addr.building, addr.street, addr.city, addr.state, addr.pincode, addr.country].filter(Boolean).join(', ') + '</p>';
   }
 
+  // Only an order that's actually been paid for, and isn't already
+  // fully refunded, can have something returned from it.
+  var RETURNABLE_STATUSES = ['paid', 'shipped', 'delivered', 'delivered_direct_pay', 'partially_refunded'];
+  var RETURN_METHOD_LABEL = { cash: 'Cash', bank_transfer: 'Bank transfer', gift_card: 'Store credit' };
+
+  function buildReturnSectionHtml(order, items) {
+    var alreadyReturnedIds = {};
+    (order.returns || []).forEach(function (r) {
+      (r.items_returned || []).forEach(function (it) { alreadyReturnedIds[it.id] = true; });
+    });
+
+    var returnableItems = items.filter(function (it) { return !alreadyReturnedIds[it.id]; });
+
+    var itemsHtml = items.map(function (it) {
+      var isReturned = !!alreadyReturnedIds[it.id];
+      if (isReturned) {
+        return '<div style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EADFD6; font-size:0.82rem; opacity:0.5;">' +
+          '<span style="flex:1;">' + (it.id || '') + ' \u2014 ' + (it.name || it.id || 'Item') + '</span>' +
+          '<span style="font-size:0.68rem; color:#B8142A; font-weight:700; text-transform:uppercase;">Already returned</span>' +
+        '</div>';
+      }
+      return '<label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EADFD6; font-size:0.82rem; cursor:pointer;">' +
+        '<input type="checkbox" class="admin-return-item-checkbox" data-item-id="' + it.id + '" data-item-price="' + (Number(it.price) || 0) + '">' +
+        '<span style="flex:1;">' + (it.id || '') + ' \u2014 ' + (it.name || it.id || 'Item') + '</span>' +
+        '<span style="font-weight:600;">AED ' + Number(it.price || 0).toFixed(2) + '</span>' +
+      '</label>';
+    }).join('');
+
+    var historyHtml = '';
+    if ((order.returns || []).length) {
+      historyHtml = '<p style="font-size:0.72rem; opacity:0.6; margin:12px 0 4px;">Return history</p>' +
+        order.returns.map(function (r) {
+          var names = (r.items_returned || []).map(function (it) { return it.id || it.name; }).join(', ');
+          return '<div style="font-size:0.72rem; opacity:0.75; padding:4px 0;">' +
+            new Date(r.created_at).toLocaleDateString() + ' \u2014 ' + names + ' \u2014 AED ' + Number(r.refund_amount || 0).toFixed(2) +
+            ' via ' + (RETURN_METHOD_LABEL[r.refund_method] || r.refund_method) +
+            (r.processed_by ? ' (' + r.processed_by + ')' : '') +
+          '</div>';
+        }).join('');
+    }
+
+    if (!returnableItems.length) {
+      return '<h4 style="margin-top:20px;">Process Return</h4>' +
+        '<p style="font-size:0.82rem; opacity:0.6;">Every item on this order has already been returned.</p>' + historyHtml;
+    }
+
+    return '<h4 style="margin-top:20px;">Process Return</h4>' +
+      '<div id="admin-return-items">' + itemsHtml + '</div>' +
+      '<div style="margin-top:10px;">' +
+        '<label style="font-size:0.76rem; opacity:0.7; display:block; margin-bottom:4px;">Refund via</label>' +
+        '<select id="admin-return-method" style="width:100%;">' +
+          '<option value="cash">Cash</option>' +
+          '<option value="bank_transfer">Bank transfer</option>' +
+          '<option value="gift_card">Store credit (Gift Card)</option>' +
+        '</select>' +
+      '</div>' +
+      '<p id="admin-return-estimate" style="font-size:0.82rem; font-weight:600; margin:10px 0 0;">Select at least one item</p>' +
+      '<button type="button" class="btn btn-primary" id="admin-return-submit-btn" style="width:100%; margin-top:10px;" disabled>Process Return</button>' +
+      '<p id="admin-return-msg" class="admin-status-msg" style="display:none; margin-top:8px;"></p>' +
+      historyHtml;
+  }
+
+  function updateReturnEstimate(order) {
+    var submitBtn = document.getElementById('admin-return-submit-btn');
+    var estimateEl = document.getElementById('admin-return-estimate');
+    if (!submitBtn || !estimateEl) return;
+    var checked = Array.prototype.slice.call(drawerBody.querySelectorAll('.admin-return-item-checkbox:checked'));
+    if (!checked.length) {
+      estimateEl.textContent = 'Select at least one item';
+      submitBtn.disabled = true;
+      return;
+    }
+    var listValue = checked.reduce(function (sum, cb) { return sum + (Number(cb.getAttribute('data-item-price')) || 0); }, 0);
+    var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
+    var ratio = subtotal > 0 ? (Number(order.total) || 0) / subtotal : 1;
+    var estimate = Math.round(listValue * ratio * 100) / 100;
+    estimateEl.textContent = 'Estimated refund: AED ' + estimate.toFixed(2) + (ratio !== 1 ? ' (after order discount)' : '');
+    submitBtn.disabled = false;
+  }
+
   function openOrderDrawer(order) {
     drawerStatusMsg.className = 'admin-status-msg';
     drawerStatusMsg.textContent = '';
@@ -3385,6 +3486,10 @@ function initOrdersView(token) {
           '<button type="button" class="btn" id="admin-dispatch-confirm-btn" style="width:100%; background:#25D366; color:#fff;">Send WhatsApp confirmation</button>' +
           '<p style="font-size:0.72rem; opacity:0.6; margin:6px 0 0;">Confirms delivery address, asks for a Google Maps pin, thanks the customer, signed from the Pavnika dispatch team.</p>';
       }
+
+      if (RETURNABLE_STATUSES.indexOf(order.status) !== -1) {
+        html += buildReturnSectionHtml(order, items);
+      }
     }
 
     drawerBody.innerHTML = html;
@@ -3407,9 +3512,60 @@ function initOrdersView(token) {
     }
 
     currentDrawerShopOrder = isShop ? order : null;
+    currentDrawerOnlineOrder = isShop ? null : order;
     if (isShop) {
       document.getElementById('admin-shop-delete-btn').addEventListener('click', function () {
         openDeleteSaleWarning(order);
+      });
+    }
+
+    var returnSubmitBtn = document.getElementById('admin-return-submit-btn');
+    if (returnSubmitBtn) {
+      returnSubmitBtn.addEventListener('click', function () {
+        var checked = Array.prototype.slice.call(drawerBody.querySelectorAll('.admin-return-item-checkbox:checked'));
+        if (!checked.length) return;
+        var itemIds = checked.map(function (cb) { return cb.getAttribute('data-item-id'); });
+        var method = document.getElementById('admin-return-method').value;
+        var returnMsgEl = document.getElementById('admin-return-msg');
+
+        if (!confirm('Process a return for ' + itemIds.length + ' item(s) via ' + RETURN_METHOD_LABEL[method] + '? This cannot be undone here.')) return;
+
+        returnSubmitBtn.disabled = true;
+        returnSubmitBtn.textContent = 'Processing...';
+        returnMsgEl.style.display = 'none';
+
+        fetch('/.netlify/functions/admin-process-order-return', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, orderId: order.id, itemIds: itemIds, refundMethod: method })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) {
+              returnMsgEl.className = 'admin-status-msg admin-status-error';
+              returnMsgEl.textContent = result.data.error || 'Could not process the return.';
+              returnMsgEl.style.display = 'block';
+              returnSubmitBtn.disabled = false;
+              returnSubmitBtn.textContent = 'Process Return';
+              return;
+            }
+            var liveOrder = allOrders.find(function (o) { return String(o.id) === String(order.id); });
+            if (liveOrder) {
+              liveOrder.status = result.data.newStatus;
+              liveOrder.returns = (liveOrder.returns || []).concat([result.data.returnRecord]);
+              openOrderDrawer(liveOrder);
+            }
+            showDrawerStatus('success', 'Return processed \u2014 AED ' + Number(result.data.refundAmount || 0).toFixed(2) + ' refunded via ' + RETURN_METHOD_LABEL[method] + '.');
+            renderSummary();
+            renderTable();
+          })
+          .catch(function () {
+            returnMsgEl.className = 'admin-status-msg admin-status-error';
+            returnMsgEl.textContent = 'Network error \u2014 return was not processed.';
+            returnMsgEl.style.display = 'block';
+            returnSubmitBtn.disabled = false;
+            returnSubmitBtn.textContent = 'Process Return';
+          });
       });
     }
   }
@@ -3450,6 +3606,11 @@ function initOrdersView(token) {
   }
 
   drawerBody.addEventListener('change', function (e) {
+    if (e.target.classList && e.target.classList.contains('admin-return-item-checkbox') && currentDrawerOnlineOrder) {
+      updateReturnEstimate(currentDrawerOnlineOrder);
+      return;
+    }
+
     var select = e.target.closest('.admin-order-status-select');
     if (select) {
       var orderId = select.getAttribute('data-id');
