@@ -10,6 +10,22 @@ function effectivePrice(p) {
   return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
 }
 
+// An order's revenue contribution, net of any cash/bank-transfer
+// return refunds recorded against it (see order_returns, attached as
+// o.returns by admin-get-orders.js). Gift-card refunds are
+// deliberately NOT subtracted — that money stays with the business as
+// store credit owed, not a loss of revenue, matching how a whole
+// order refunded to gift card (status 'refunded_giftcard') has always
+// been treated. Shared between initStatsDashboard and initOrdersView,
+// so it lives up here rather than inside either one of them.
+function netOrderRevenue(o) {
+  var total = Number(o.total) || 0;
+  var cashBankRefunded = (o.returns || []).reduce(function (sum, r) {
+    return r.refund_method === 'gift_card' ? sum : sum + (Number(r.refund_amount) || 0);
+  }, 0);
+  return Math.max(0, total - cashBankRefunded);
+}
+
 // Builds the pre-filled WhatsApp follow-up for an order stuck in
 // 'pending' (checkout started, payment never completed) — not shown
 // for 'cod_pending', which is an intentional cash-on-delivery order,
@@ -2004,21 +2020,6 @@ function initStatsDashboard(token) {
   // refunded in cash/bank transfer (gift-card refunds don't reduce
   // revenue, since the money never actually left the business).
   var REVENUE_STATUSES = ['paid', 'shipped', 'delivered', 'delivered_direct_pay', 'partially_refunded'];
-
-  // An order's revenue contribution, net of any cash/bank-transfer
-  // return refunds recorded against it (see order_returns, attached
-  // as o.returns by admin-get-orders.js). Gift-card refunds are
-  // deliberately NOT subtracted — that money stays with the business
-  // as store credit owed, not a loss of revenue, matching how a whole
-  // order refunded to gift card (status 'refunded_giftcard') has
-  // always been treated here.
-  function netOrderRevenue(o) {
-    var total = Number(o.total) || 0;
-    var cashBankRefunded = (o.returns || []).reduce(function (sum, r) {
-      return r.refund_method === 'gift_card' ? sum : sum + (Number(r.refund_amount) || 0);
-    }, 0);
-    return Math.max(0, total - cashBankRefunded);
-  }
 
   function dayKey(iso) {
     var d = new Date(iso);
