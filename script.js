@@ -4171,6 +4171,37 @@ function initCheckoutPage() {
   if (window.__checkoutOneTimeSetupDone) return;
   window.__checkoutOneTimeSetupDone = true;
 
+  // Store credit: only shown if the visitor has a genuine signed
+  // visitorToken (real OTP verification, not just the plain display
+  // cookie) AND actually has a balance. A missing/invalid token simply
+  // means this card never appears — checkout otherwise works exactly
+  // as it always has.
+  applyGiftCardCheckbox = document.getElementById('checkout-apply-giftcard');
+  var giftCardCard = document.getElementById('checkout-giftcard-card');
+  var giftCardLabel = document.getElementById('checkout-giftcard-label');
+  var giftCardCheckboxLabel = document.getElementById('checkout-giftcard-checkbox-label');
+  var visitorToken = typeof getVisitorToken === 'function' ? getVisitorToken() : null;
+  if (visitorToken && giftCardCard) {
+    fetch('/.netlify/functions/lookup-gift-card-balance', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorToken: visitorToken })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (data.found && Number(data.balance) > 0) {
+          giftCardBalance = Number(data.balance);
+          giftCardLabel.textContent = 'You have AED ' + formatAED(giftCardBalance) + ' in store credit';
+          giftCardCheckboxLabel.textContent = 'Apply my store credit (up to AED ' + formatAED(giftCardBalance) + ')';
+          giftCardCard.style.display = 'block';
+        }
+      })
+      .catch(function () { /* no balance shown — checkout still works normally */ });
+  }
+  if (applyGiftCardCheckbox) {
+    applyGiftCardCheckbox.addEventListener('change', updateSummary);
+  }
+
   // Phone: the country code + number split is purely a UX convenience —
   // reuses the same PHONE_COUNTRY_CODES list as the appointment form.
   // Whatever the visitor picks/types, this reconstructs the exact same
@@ -4326,20 +4357,39 @@ function initCheckoutPage() {
 
   var appliedDiscount = 0;
   var appliedCode = '';
+  var giftCardBalance = 0;
 
   function currentTotal() {
-    return Math.round(subtotal * (1 - appliedDiscount / 100));
+    var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
+    var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
+    var giftCardEstimate = (giftCardCheckbox && giftCardCheckbox.checked) ? Math.min(giftCardBalance, afterDiscount) : 0;
+    return Math.max(0, afterDiscount - giftCardEstimate);
   }
 
   function updateSummary() {
     if (appliedDiscount > 0) {
-      var discountAmount = subtotal - currentTotal();
+      var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
+      var discountAmount = subtotal - afterDiscount;
       discountLabel.textContent = appliedCode + ' (' + appliedDiscount + '% off)';
       discountAmountEl.textContent = '-AED ' + formatAED(discountAmount);
       discountRow.style.display = 'flex';
     } else {
       discountRow.style.display = 'none';
     }
+
+    var giftCardRow = document.getElementById('checkout-giftcard-row');
+    var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
+    if (giftCardRow) {
+      if (giftCardCheckbox && giftCardCheckbox.checked) {
+        var afterDiscountForGC = Math.round(subtotal * (1 - appliedDiscount / 100));
+        var giftCardEstimate = Math.min(giftCardBalance, afterDiscountForGC);
+        document.getElementById('checkout-giftcard-amount').textContent = '-AED ' + formatAED(giftCardEstimate);
+        giftCardRow.style.display = 'flex';
+      } else {
+        giftCardRow.style.display = 'none';
+      }
+    }
+
     totalEl.textContent = formatAED(currentTotal());
   }
 
@@ -4559,7 +4609,9 @@ function initCheckoutPage() {
         billingAddress: billingAddress,
         shippingAddress: shippingAddress,
         discountPercent: appliedDiscount,
-        promoCode: appliedCode
+        promoCode: appliedCode,
+        visitorToken: typeof getVisitorToken === 'function' ? getVisitorToken() : null,
+        applyGiftCard: !!(applyGiftCardCheckbox && applyGiftCardCheckbox.checked && giftCardBalance > 0)
       };
 
       fetch('/.netlify/functions/create-nomod-checkout', {
@@ -4569,12 +4621,24 @@ function initCheckoutPage() {
       })
         .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
         .then(function (result) {
-          if (!result.ok || !result.data.url) {
+          if (!result.ok || (!result.data.url && !result.data.directPaid)) {
             alert(result.data.error || 'Could not start payment. Please try WhatsApp checkout instead.');
             payBtn.textContent = 'Pay Online';
             payBtn.style.pointerEvents = '';
             return;
           }
+
+          // Store credit alone covered the order — there's no Nomod
+          // session to redirect to at all. The order is already
+          // recorded as paid, so this just goes straight to the same
+          // success page a normal payment lands on; it re-checks via
+          // verify-nomod-order like always, which recognizes the order
+          // is already 'paid' and confirms immediately.
+          if (result.data.directPaid) {
+            window.location.href = '/order-success.html?ref=' + encodeURIComponent(result.data.referenceId);
+            return;
+          }
+
           // Remember this checkout locally before leaving for Nomod. If the
           // server-side order record is ever missing when the customer comes
           // back, the success page sends this checkoutId along and
@@ -5317,13 +5381,19 @@ function initPinnedHero() {
         })
           .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); })
           .then(function (result) {
-            if (!result.ok || !result.data.checkoutUrl) {
+            if (!result.ok || (!result.data.checkoutUrl && !result.data.directPaid)) {
               btn.disabled = false;
               btn.textContent = originalText;
               if (errorEl) {
                 errorEl.textContent = result.data.error || 'Could not continue this order right now. Please try again.';
                 errorEl.className = 'acct-msg error';
               }
+              return;
+            }
+            // Freshly re-checked store credit fully covered it — the
+            // order is already finalized server-side, no Nomod involved.
+            if (result.data.directPaid) {
+              window.location.href = '/order-success.html?ref=' + encodeURIComponent(result.data.referenceId);
               return;
             }
             window.location.href = result.data.checkoutUrl;

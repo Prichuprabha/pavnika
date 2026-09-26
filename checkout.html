@@ -129,6 +129,19 @@
         </div>
         <p class="checkout-promo-msg" id="checkout-promo-msg"></p>
 
+        <div class="checkout-promo-card" id="checkout-giftcard-card" style="display:none;">
+          <div class="checkout-promo-row-top">
+            <span class="checkout-promo-tag-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </span>
+            <span class="checkout-promo-label" id="checkout-giftcard-label">You have store credit available</span>
+          </div>
+          <label class="checkout-checkbox-row">
+            <input type="checkbox" id="checkout-apply-giftcard">
+            <span id="checkout-giftcard-checkbox-label">Apply my store credit to this order</span>
+          </label>
+        </div>
+
         <div class="checkout-section">
           <div class="checkout-section-head"><span class="checkout-badge-num">1</span><h3>Contact Information</h3></div>
           <div class="checkout-customer-fields">
@@ -192,6 +205,10 @@
             <div class="checkout-summary-row checkout-discount-row" id="checkout-discount-row" style="display:none;">
               <span id="checkout-discount-label">Discount</span>
               <span id="checkout-discount-amount">-AED 0</span>
+            </div>
+            <div class="checkout-summary-row checkout-discount-row" id="checkout-giftcard-row" style="display:none;">
+              <span>Store credit</span>
+              <span id="checkout-giftcard-amount">-AED 0</span>
             </div>
             <div class="checkout-summary-row checkout-shipping-row"><span>Shipping</span><span class="checkout-free">Free within UAE</span></div>
             <div class="checkout-total-row">
