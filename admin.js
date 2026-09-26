@@ -199,6 +199,7 @@ function showAdminPanel(token, displayName) {
   initStatsDashboard(token);
   initOrdersView(token);
   initManualOrderView(token);
+  initCustomersView(token);
   initSareeTagsView(token);
   initSidebarNav();
 
@@ -4147,6 +4148,187 @@ function initManualOrderView(token) {
 }
 
 // ---------------------------------------------------------------
+/* ---------- Customers ---------- */
+// Merges two independent identity sources by email: pos_customers
+// (created by an in-store sale or a return credited to store credit)
+// and orders (every website purchase, which never creates a
+// pos_customers row on its own). An online-only customer therefore
+// shows up here with customerId === null until their first edit,
+// which is when admin-update-customer.js creates their row.
+function initCustomersView(token) {
+  var statusMsg = document.getElementById('admin-customers-status-msg');
+  var summaryEl = document.getElementById('admin-customers-summary');
+  var searchInput = document.getElementById('admin-customers-search');
+  var sortSelect = document.getElementById('admin-customers-sort');
+  var rowsEl = document.getElementById('admin-customers-rows');
+  var drawerOverlay = document.getElementById('admin-customer-drawer-overlay');
+  var drawerNameEl = document.getElementById('admin-customer-drawer-name');
+  var drawerBody = document.getElementById('admin-customer-drawer-body');
+  var drawerMsg = document.getElementById('admin-customer-drawer-msg');
+  var drawerCloseBtn = document.getElementById('admin-customer-drawer-close');
+  var allCustomers = [];
+  var loaded = false;
+
+  function formatAED(n) {
+    return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function loadCustomers() {
+    statusMsg.textContent = 'Loading customers\u2026';
+    statusMsg.className = 'admin-status-msg';
+    fetch('/.netlify/functions/admin-list-customers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        if (!result.ok) {
+          statusMsg.textContent = result.data.error || 'Could not load customers.';
+          statusMsg.className = 'admin-status-msg admin-status-error';
+          return;
+        }
+        statusMsg.textContent = '';
+        allCustomers = result.data.customers || [];
+        loaded = true;
+        renderSummary();
+        renderRows();
+      })
+      .catch(function () {
+        statusMsg.textContent = 'Network error loading customers.';
+        statusMsg.className = 'admin-status-msg admin-status-error';
+      });
+  }
+
+  function renderSummary() {
+    var totalSpend = allCustomers.reduce(function (s, c) { return s + c.totalSpend; }, 0);
+    var totalCredit = allCustomers.reduce(function (s, c) { return s + c.giftCardBalance; }, 0);
+    summaryEl.innerHTML =
+      buildStatCardHtml('Total Customers', allCustomers.length, 'users', 'gold') +
+      buildStatCardHtml('Combined Spend', 'AED ' + formatAED(totalSpend), 'wallet', 'green') +
+      buildStatCardHtml('Store Credit Outstanding', 'AED ' + formatAED(totalCredit), 'wallet', 'orange');
+  }
+
+  function filteredSorted() {
+    var q = (searchInput.value || '').trim().toLowerCase();
+    var list = allCustomers.filter(function (c) {
+      if (!q) return true;
+      return (c.name || '').toLowerCase().indexOf(q) !== -1 ||
+        (c.email || '').toLowerCase().indexOf(q) !== -1 ||
+        (c.phone || '').indexOf(q) !== -1;
+    });
+    var sortBy = sortSelect.value;
+    return list.slice().sort(function (a, b) {
+      if (sortBy === 'spend') return b.totalSpend - a.totalSpend;
+      if (sortBy === 'name') return (a.name || '').localeCompare(b.name || '');
+      var ad = a.lastPurchase ? new Date(a.lastPurchase).getTime() : 0;
+      var bd = b.lastPurchase ? new Date(b.lastPurchase).getTime() : 0;
+      return bd - ad; // most recent first
+    });
+  }
+
+  function renderRows() {
+    if (!loaded) return;
+    var list = filteredSorted();
+    if (!list.length) {
+      rowsEl.innerHTML = '<p style="opacity:0.6; padding:20px 0; text-align:center;">No customers found.</p>';
+      return;
+    }
+    rowsEl.innerHTML = list.map(function (c, idx) {
+      var lastDate = c.lastPurchase ? new Date(c.lastPurchase).toLocaleDateString() : 'Never';
+      var initials = (c.name || '?').trim().split(/\s+/).map(function (w) { return w[0] || ''; }).slice(0, 2).join('').toUpperCase();
+      return '<div class="admin-order-mobile-card" data-idx="' + idx + '">' +
+        '<div class="admin-order-mobile-icon">' + (initials || '?') + '</div>' +
+        '<div class="admin-order-mobile-info">' +
+          '<p class="omn">' + (c.name || 'Unnamed') + '</p>' +
+          '<p class="ome">' + (c.email || c.phone || 'No contact on file') + '</p>' +
+          '<p class="omd">Last purchase: ' + lastDate + ' &middot; ' + c.totalOrders + ' order' + (c.totalOrders === 1 ? '' : 's') + '</p>' +
+        '</div>' +
+        '<div class="admin-order-mobile-right">' +
+          '<p class="omt">AED ' + formatAED(c.totalSpend) + '</p>' +
+          (c.giftCardBalance > 0 ? '<p class="omp" style="color:#3B6D11; font-weight:600;">AED ' + formatAED(c.giftCardBalance) + ' credit</p>' : '') +
+        '</div>' +
+      '</div>';
+    }).join('');
+    rowsEl.querySelectorAll('.admin-order-mobile-card').forEach(function (el) {
+      el.addEventListener('click', function () {
+        openCustomerDrawer(list[Number(el.getAttribute('data-idx'))]);
+      });
+    });
+  }
+
+  function openCustomerDrawer(c) {
+    drawerNameEl.textContent = c.name || 'Unnamed customer';
+    drawerMsg.style.display = 'none';
+    drawerMsg.textContent = '';
+
+    drawerBody.innerHTML =
+      '<div class="admin-metric-grid" style="margin-bottom:16px;">' +
+        buildStatCardHtml('Online Spend', 'AED ' + formatAED(c.onlineSpend), 'box', 'gold') +
+        buildStatCardHtml('In-Store Spend', 'AED ' + formatAED(c.inStoreSpend), 'box', 'gold') +
+      '</div>' +
+      '<p style="font-size:0.8rem; opacity:0.7; margin:0 0 16px;">' + c.onlineOrders + ' online order' + (c.onlineOrders === 1 ? '' : 's') + ' &middot; ' + c.inStoreOrders + ' in-store order' + (c.inStoreOrders === 1 ? '' : 's') + '</p>' +
+      (c.giftCardBalance > 0 ? '<p style="background:#EAF3DE; color:#3B6D11; padding:10px 14px; border-radius:8px; font-weight:600; font-size:0.86rem; margin-bottom:16px;">Store credit balance: AED ' + formatAED(c.giftCardBalance) + '</p>' : '') +
+      '<h4>Contact Details</h4>' +
+      '<div class="admin-field"><label>Name</label><input type="text" id="admin-cust-name" value="' + (c.name || '').replace(/"/g, '&quot;') + '"></div>' +
+      '<div class="admin-field"><label>Email</label><input type="text" id="admin-cust-email" value="' + (c.email || '').replace(/"/g, '&quot;') + '"></div>' +
+      '<div class="admin-field"><label>Phone</label><input type="text" id="admin-cust-phone" value="' + (c.phone || '').replace(/"/g, '&quot;') + '"></div>' +
+      '<p style="font-size:0.72rem; opacity:0.6; margin:6px 0 14px;">Store credit can only change through a return or a checkout redemption, never edited directly here.</p>' +
+      '<button type="button" class="btn btn-primary" id="admin-cust-save-btn" style="width:100%;">Save Changes</button>';
+
+    document.getElementById('admin-cust-save-btn').addEventListener('click', function () {
+      var btn = this;
+      var name = document.getElementById('admin-cust-name').value.trim();
+      var email = document.getElementById('admin-cust-email').value.trim();
+      var phone = document.getElementById('admin-cust-phone').value.trim();
+      btn.disabled = true;
+      btn.textContent = 'Saving\u2026';
+      fetch('/.netlify/functions/admin-update-customer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, customerId: c.customerId, name: name, email: email, phone: phone })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          btn.disabled = false;
+          btn.textContent = 'Save Changes';
+          if (!result.ok) {
+            drawerMsg.className = 'admin-status-msg admin-status-error';
+            drawerMsg.textContent = result.data.error || 'Could not save changes.';
+            drawerMsg.style.display = 'block';
+            return;
+          }
+          drawerMsg.className = 'admin-status-msg admin-status-success';
+          drawerMsg.textContent = 'Saved.';
+          drawerMsg.style.display = 'block';
+          c.customerId = result.data.customerId;
+          c.name = name;
+          c.email = email;
+          c.phone = phone;
+          renderRows();
+        })
+        .catch(function () {
+          btn.disabled = false;
+          btn.textContent = 'Save Changes';
+          drawerMsg.className = 'admin-status-msg admin-status-error';
+          drawerMsg.textContent = 'Network error. Please try again.';
+          drawerMsg.style.display = 'block';
+        });
+    });
+
+    drawerOverlay.classList.add('is-open');
+  }
+
+  drawerCloseBtn.addEventListener('click', function () { drawerOverlay.classList.remove('is-open'); });
+  drawerOverlay.addEventListener('click', function (e) {
+    if (e.target === drawerOverlay) drawerOverlay.classList.remove('is-open');
+  });
+  searchInput.addEventListener('input', renderRows);
+  sortSelect.addEventListener('change', renderRows);
+
+  loadCustomers();
+}
+
 // Saree Tags — select items and generate a printable tag sheet.
 // Tags are 2in x 3.5in, folded in half to 2in x 1.75in (mountain
 // fold, printed sides outward), 9 per A4 page. See tag design notes: the
