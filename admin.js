@@ -4156,6 +4156,7 @@ function initManualOrderView(token) {
 // shows up here with customerId === null until their first edit,
 // which is when admin-update-customer.js creates their row.
 function initCustomersView(token) {
+  try {
   var statusMsg = document.getElementById('admin-customers-status-msg');
   var summaryEl = document.getElementById('admin-customers-summary');
   var searchInput = document.getElementById('admin-customers-search');
@@ -4166,6 +4167,11 @@ function initCustomersView(token) {
   var drawerBody = document.getElementById('admin-customer-drawer-body');
   var drawerMsg = document.getElementById('admin-customer-drawer-msg');
   var drawerCloseBtn = document.getElementById('admin-customer-drawer-close');
+  if (!statusMsg || !summaryEl || !searchInput || !sortSelect || !rowsEl || !drawerOverlay || !drawerNameEl || !drawerBody || !drawerMsg || !drawerCloseBtn) {
+    alert('Customers tab: a required element is missing from the page (admin.html may be out of date). Missing: ' +
+      [!statusMsg && 'status-msg', !summaryEl && 'summary', !searchInput && 'search', !sortSelect && 'sort', !rowsEl && 'rows', !drawerOverlay && 'drawer-overlay', !drawerNameEl && 'drawer-name', !drawerBody && 'drawer-body', !drawerMsg && 'drawer-msg', !drawerCloseBtn && 'drawer-close'].filter(Boolean).join(', '));
+    return;
+  }
   var allCustomers = [];
   var loaded = false;
 
@@ -4181,11 +4187,21 @@ function initCustomersView(token) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ adminToken: token })
     })
-      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (res) {
+        return res.text().then(function (text) {
+          var parsed;
+          try { parsed = JSON.parse(text); } catch (e) {
+            throw new Error('Server did not return JSON (status ' + res.status + '): ' + text.slice(0, 200));
+          }
+          return { ok: res.ok, status: res.status, data: parsed };
+        });
+      })
       .then(function (result) {
         if (!result.ok) {
-          statusMsg.textContent = result.data.error || 'Could not load customers.';
+          var msg = (result.data && result.data.error) || ('Could not load customers (status ' + result.status + ').');
+          statusMsg.textContent = msg;
           statusMsg.className = 'admin-status-msg admin-status-error';
+          alert('Customers tab: server said: ' + msg);
           return;
         }
         statusMsg.textContent = '';
@@ -4194,9 +4210,11 @@ function initCustomersView(token) {
         renderSummary();
         renderRows();
       })
-      .catch(function () {
-        statusMsg.textContent = 'Network error loading customers.';
+      .catch(function (e) {
+        statusMsg.textContent = 'Error loading customers: ' + e.message;
         statusMsg.className = 'admin-status-msg admin-status-error';
+        alert('Customers tab fetch failed: ' + e.message);
+        console.error('loadCustomers error:', e);
       });
   }
 
@@ -4327,6 +4345,10 @@ function initCustomersView(token) {
   sortSelect.addEventListener('change', renderRows);
 
   loadCustomers();
+  } catch (e) {
+    alert('Customers tab crashed while setting up: ' + e.message);
+    console.error('initCustomersView error:', e);
+  }
 }
 
 // Saree Tags — select items and generate a printable tag sheet.
