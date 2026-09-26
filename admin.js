@@ -2033,7 +2033,7 @@ function initStatsDashboard(token) {
     var now = new Date();
     var rangeEnd = toDate ? new Date(toDate + 'T23:59:59') : now;
     var rangeStart = isAllTime ? new Date(0) // genuinely unbounded — every order ever placed
-      : fromDate ? new Date(fromDate + 'T00:00:00')
+      : fromDate ? new Date(fromDate.indexOf('T') !== -1 ? fromDate : fromDate + 'T00:00:00')
       : new Date(rangeEnd.getTime() - 6 * 86400000); // undecided yet -> default: last 7 days
     var rangeLengthMs = rangeEnd.getTime() - rangeStart.getTime();
     var prevEnd = new Date(rangeStart.getTime() - 1);
@@ -2215,8 +2215,9 @@ function initStatsDashboard(token) {
   });
 
   document.getElementById('admin-stats-reset-btn').addEventListener('click', function () {
-    statsPresetFromISO = null;
+    statsPresetFromISO = 'ALL_TIME';
     document.querySelectorAll('[data-stats-preset]').forEach(function (b) { b.classList.remove('active'); });
+    document.querySelector('[data-stats-preset="all"]').classList.add('active');
     document.getElementById('admin-stats-from').value = '';
     document.getElementById('admin-stats-till').value = '';
     dateRangeLabel.textContent = 'All-time';
