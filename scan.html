@@ -590,10 +590,22 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('scan-sw.js').catch(function (e) {
-        // Not fatal — the page works fine without it, it just can't be
-        // installed or used offline.
-        console.warn('Service worker registration failed:', e);
+      // Clean up any earlier registration that (due to a now-fixed bug)
+      // had no explicit scope and so defaulted to covering the entire
+      // site rather than just this page -- then register correctly,
+      // scoped only to /scan.html, so this tool can never again be
+      // mistaken for "already installed" when installing any other
+      // page on the site, or intercept requests meant for them.
+      navigator.serviceWorker.getRegistrations().then(function (regs) {
+        regs.forEach(function (reg) {
+          if (reg.scope === location.origin + '/') reg.unregister();
+        });
+      }).catch(function () {}).then(function () {
+        navigator.serviceWorker.register('/scan-sw.js', { scope: '/scan.html' }).catch(function (e) {
+          // Not fatal — the page works fine without it, it just can't be
+          // installed or used offline.
+          console.warn('Service worker registration failed:', e);
+        });
       });
     });
   }

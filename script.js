@@ -1,3 +1,19 @@
+// A now-fixed bug in the saree-scan tool once registered its service
+// worker without a scope, which silently defaulted to covering the
+// ENTIRE site rather than just /scan.html — including every page this
+// script runs on. That could make "Add to Home Screen" here wrongly
+// report the site as already installed, or serve a visitor stale
+// scan-tool content on a flaky connection. This cleans up any such
+// leftover registration on every page load, harmlessly doing nothing
+// once every visitor's browser has already been cleaned up once.
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function (regs) {
+    regs.forEach(function (reg) {
+      if (reg.scope === location.origin + '/') reg.unregister();
+    });
+  }).catch(function () {});
+}
+
 // If the browser restores this page from its back-forward cache (e.g. the
 // customer hits "back" after visiting Nomod's payment page), force a real
 // reload — otherwise things like a "Starting payment..." button label or a

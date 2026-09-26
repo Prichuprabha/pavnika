@@ -1,0 +1,25 @@
+{
+  "name": "Pavnika Admin",
+  "short_name": "Pavnika Admin",
+  "description": "Pavnika by Saranya \u2014 admin panel.",
+  "start_url": "/admin.html",
+  "scope": "/admin.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FCF5ED",
+  "theme_color": "#3C1223",
+  "icons": [
+    {
+      "src": "/assets/admin-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/admin-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
