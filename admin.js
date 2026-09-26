@@ -4223,8 +4223,8 @@ function initCustomersView(token) {
     var totalCredit = allCustomers.reduce(function (s, c) { return s + c.giftCardBalance; }, 0);
     summaryEl.innerHTML =
       buildStatCardHtml('Total Customers', allCustomers.length, 'users', 'gold') +
-      buildStatCardHtml('Combined Spend', 'AED ' + formatAED(totalSpend), 'wallet', 'green') +
-      buildStatCardHtml('Store Credit Outstanding', 'AED ' + formatAED(totalCredit), 'wallet', 'orange');
+      buildStatCardHtml('Combined Spend (AED)', formatAED(totalSpend), 'wallet', 'green') +
+      buildStatCardHtml('Store Credit Outstanding (AED)', formatAED(totalCredit), 'wallet', 'orange');
   }
 
   function filteredSorted() {
@@ -4282,8 +4282,8 @@ function initCustomersView(token) {
 
     drawerBody.innerHTML =
       '<div class="admin-metric-grid" style="margin-bottom:16px;">' +
-        buildStatCardHtml('Online Spend', 'AED ' + formatAED(c.onlineSpend), 'box', 'gold') +
-        buildStatCardHtml('In-Store Spend', 'AED ' + formatAED(c.inStoreSpend), 'box', 'gold') +
+        buildStatCardHtml('Online Spend (AED)', formatAED(c.onlineSpend), 'box', 'gold') +
+        buildStatCardHtml('In-Store Spend (AED)', formatAED(c.inStoreSpend), 'box', 'gold') +
       '</div>' +
       '<p style="font-size:0.8rem; opacity:0.7; margin:0 0 16px;">' + c.onlineOrders + ' online order' + (c.onlineOrders === 1 ? '' : 's') + ' &middot; ' + c.inStoreOrders + ' in-store order' + (c.inStoreOrders === 1 ? '' : 's') + '</p>' +
       (c.giftCardBalance > 0 ? '<p style="background:#EAF3DE; color:#3B6D11; padding:10px 14px; border-radius:8px; font-weight:600; font-size:0.86rem; margin-bottom:16px;">Store credit balance: AED ' + formatAED(c.giftCardBalance) + '</p>' : '') +

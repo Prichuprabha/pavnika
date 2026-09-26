@@ -93,10 +93,13 @@
   }
   #admin-orders-status-filter, #admin-shop-status-filter { width: 190px; }
   #admin-customers-search, #admin-customers-sort {
-    padding: 8px 12px; border: 1px solid var(--stone); border-radius: 3px;
-    font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
+    padding: 8px 10px; border: 1px solid var(--stone); border-radius: 3px;
+    font-family: var(--body); font-size: 0.8rem; background: var(--ivory);
   }
-  #admin-customers-sort { width: 210px; flex-shrink: 0; }
+  #admin-customers-sort { width: 150px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  @media (max-width: 480px) {
+    #admin-customers-sort { width: 130px; font-size: 0.72rem; }
+  }
 
   .admin-search-row-with-scan { display: flex; gap: 8px; align-items: stretch; }
   .admin-search-row-with-scan #admin-orders-search { flex: 1; min-width: 180px; }
@@ -805,8 +808,8 @@
 
       <div class="admin-metric-grid" id="admin-customers-summary"></div>
 
-      <div style="display:flex; gap:10px; margin:16px 0; flex-wrap:wrap; align-items:center;">
-        <input type="text" id="admin-customers-search" placeholder="Search name, email, or phone..." style="flex:1; min-width:200px;">
+      <div style="display:flex; gap:8px; margin:16px 0; flex-wrap:nowrap; align-items:center;">
+        <input type="text" id="admin-customers-search" placeholder="Search name, email, or phone..." style="flex:1; min-width:0;">
         <select id="admin-customers-sort">
           <option value="recent">Most recent purchase</option>
           <option value="spend">Highest total spend</option>
@@ -1486,7 +1489,7 @@
 <script src="jsbarcode.min.js"></script>
 <script src="products-data.js"></script>
 <script src="zxing.min.js"></script>
-<script src="admin.js?v=198"></script>
+<script src="admin.js?v=199"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
