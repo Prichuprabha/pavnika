@@ -1900,6 +1900,7 @@ function initStatsDashboard(token) {
     }
 
     function deltaHtml(pct) {
+      if (pct === null || pct === undefined) return '';
       var sign = pct > 0 ? '+' : '';
       var cls = pct >= 0 ? '' : ' negative';
       var label = (orderStats && orderStats.isDefaultWeek) ? 'vs last week' : 'vs previous period';
@@ -2028,9 +2029,12 @@ function initStatsDashboard(token) {
   }
 
   function computeOrderStats(allOrders, fromDate, toDate) {
+    var isAllTime = fromDate === 'ALL_TIME';
     var now = new Date();
     var rangeEnd = toDate ? new Date(toDate + 'T23:59:59') : now;
-    var rangeStart = fromDate ? new Date(fromDate + 'T00:00:00') : new Date(rangeEnd.getTime() - 6 * 86400000); // default: last 7 days
+    var rangeStart = isAllTime ? new Date(0) // genuinely unbounded — every order ever placed
+      : fromDate ? new Date(fromDate + 'T00:00:00')
+      : new Date(rangeEnd.getTime() - 6 * 86400000); // undecided yet -> default: last 7 days
     var rangeLengthMs = rangeEnd.getTime() - rangeStart.getTime();
     var prevEnd = new Date(rangeStart.getTime() - 1);
     var prevStart = new Date(prevEnd.getTime() - rangeLengthMs);
@@ -2043,7 +2047,11 @@ function initStatsDashboard(token) {
     }
 
     var current = revenueOrders.filter(function (o) { return withinRange(o, rangeStart, rangeEnd); });
-    var previous = revenueOrders.filter(function (o) { return withinRange(o, prevStart, prevEnd); });
+    // A "vs previous period" comparison is meaningless for All-time —
+    // there is no period before all of history — so it's skipped
+    // entirely rather than comparing against an empty, arbitrary
+    // pre-epoch window.
+    var previous = isAllTime ? [] : revenueOrders.filter(function (o) { return withinRange(o, prevStart, prevEnd); });
 
     var currentRevenue = current.reduce(function (sum, o) { return sum + netOrderRevenue(o); }, 0);
     var previousRevenue = previous.reduce(function (sum, o) { return sum + netOrderRevenue(o); }, 0);
@@ -2075,10 +2083,11 @@ function initStatsDashboard(token) {
     return {
       orderCount: current.length,
       revenue: currentRevenue,
-      orderCountDelta: pctChange(current.length, previous.length),
-      revenueDelta: pctChange(currentRevenue, previousRevenue),
+      orderCountDelta: isAllTime ? null : pctChange(current.length, previous.length),
+      revenueDelta: isAllTime ? null : pctChange(currentRevenue, previousRevenue),
       newlySoldCount: newlySoldCount,
       isDefaultWeek: !fromDate && !toDate,
+      isAllTime: isAllTime,
       dailyPoints: dailyPoints,
       recentOrders: allOrders.slice(0, 20) // "recent" is always just the newest, independent of the date filter — renderExpandable shows 5 at a time
     };
@@ -2140,12 +2149,18 @@ function initStatsDashboard(token) {
     metricGrid.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading stats...</p>';
     var fromDate = statsPresetFromISO || document.getElementById('admin-stats-from').value || null;
     var toDate = statsPresetFromISO ? null : (document.getElementById('admin-stats-till').value || null);
+    // 'ALL_TIME' is a client-side-only sentinel so computeOrderStats can
+    // tell "explicitly chose All-time" apart from "nothing chosen yet"
+    // (which falls back to a default week) — admin-get-stats has no
+    // such distinction to make, so it gets a genuine null instead,
+    // which it already correctly treats as no filter at all.
+    var fromDateForStatsApi = fromDate === 'ALL_TIME' ? null : fromDate;
 
     Promise.all([
       fetch('/.netlify/functions/admin-get-stats', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminToken: token, fromDate: fromDate, toDate: toDate })
+        body: JSON.stringify({ adminToken: token, fromDate: fromDateForStatsApi, toDate: toDate })
       }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); }),
       fetch('/.netlify/functions/admin-get-orders', {
         method: 'POST',
@@ -2220,7 +2235,7 @@ function initStatsDashboard(token) {
       document.getElementById('admin-stats-till').value = '';
 
       if (preset === 'all') {
-        statsPresetFromISO = null;
+        statsPresetFromISO = 'ALL_TIME';
       } else {
         var hoursBack = preset === '24h' ? 24 : (preset === '7d' ? 24 * 7 : 24 * 30);
         statsPresetFromISO = new Date(Date.now() - hoursBack * 60 * 60 * 1000).toISOString();
