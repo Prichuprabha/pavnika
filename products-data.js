@@ -357,10 +357,8 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 840,
     "sold": false,
-    "images": [
-      "https://pavnika.ae/assets/products/SU006-1.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/SU006-1.jpg",
+    "images": [],
+    "image": "",
     "salePrice": null,
     "occasions": [
       "Bridal"
