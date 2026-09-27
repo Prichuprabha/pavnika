@@ -634,14 +634,10 @@ function initCollectionsPage() {
   var PAGE_SIZE = DEFAULT_PAGE_SIZE;
   var state = { category: 'all', series: 'all', shade: 'all', occasion: 'all', hideSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
 
-  // No filter applied = the plain "browse everything" view (default
-  // category/series/shade, no search text, no price range, default
-  // sort). Only in that view do we flex the page size to guarantee a
-  // full last row — see updatePageSize() below. The moment any filter
-  // narrows the results, we fall back to a plain fixed 16 per page;
-  // with a filtered (often much smaller, unpredictable) result count,
-  // stretching or shrinking the page size to chase a "full row" isn't
-  // worth the inconsistency it'd introduce.
+  // isUnfiltered() no longer gates row-filling (see updatePageSize()
+  // below, which now applies regardless of any active filter) — it's
+  // kept only for the separate "hide the results count on the plain
+  // browse-everything view" behavior further down in render().
   function isUnfiltered(ignoreHideSold) {
     // priceMin/priceMax are never actually null — the slider pre-fills
     // to the full catalogue's min/max on load (see dataMin/dataMax
@@ -662,8 +658,11 @@ function initCollectionsPage() {
   //     on a weak last row, drop them (page size rounds down)
   //   - if it would leave 3 or 4 (closer to a full row), pull enough
   //     forward to complete it instead (page size rounds up)
-  // This only ever changes which fixed number of items we page by; it
-  // never hides real inventory except for the single unavoidable case
+  // Applies the same way regardless of category/series/shade/occasion/
+  // search/price filters or the Hide Sold Out toggle — a filtered view
+  // deserves a full last row just as much as the unfiltered one. This
+  // only ever changes which fixed number of items we page by; it never
+  // hides real inventory except for the single unavoidable case
   // explained where render() is called — the true last page of the
   // whole result set, where there just aren't more sarees to show.
   function currentColumnCount() {
@@ -671,16 +670,22 @@ function initCollectionsPage() {
     return cols || 1;
   }
   function updatePageSize() {
-    if (!isUnfiltered()) {
-      var changed = PAGE_SIZE !== DEFAULT_PAGE_SIZE;
-      PAGE_SIZE = DEFAULT_PAGE_SIZE;
-      return changed;
-    }
     var cols = currentColumnCount();
     var rows = Math.max(1, Math.round(DEFAULT_PAGE_SIZE / cols));
     var next = cols * rows;
     if (next !== PAGE_SIZE) {
+      // The page size can change out from under a visitor who's already
+      // past page 1 — resizing the window, rotating a device, or the
+      // browser's own zoom changing how many columns fit. Recomputing
+      // (page - 1) * PAGE_SIZE with the NEW size against the OLD page
+      // number would silently jump to a different set of sarees than
+      // what they were just looking at. Instead, keep the same first
+      // visible saree anchored and recompute which page it now falls
+      // on under the new page size, so the visitor's place is preserved
+      // rather than yanked out from under them.
+      var firstVisibleIndex = (state.page - 1) * PAGE_SIZE;
       PAGE_SIZE = next;
+      state.page = Math.floor(firstVisibleIndex / PAGE_SIZE) + 1;
       return true;
     }
     return false;
