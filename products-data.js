@@ -357,8 +357,16 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 840,
     "sold": false,
-    "images": [],
-    "image": "",
+    "images": [
+      "https://pavnika.ae/assets/products/SU006-1.jpg",
+      "https://pavnika.ae/assets/products/SU006-2.jpg",
+      "https://pavnika.ae/assets/products/SU006-3.jpg",
+      "https://pavnika.ae/assets/products/SU006-4.jpg",
+      "https://pavnika.ae/assets/products/SU006-5.jpg",
+      "https://pavnika.ae/assets/products/SU006-6.jpg",
+      "https://pavnika.ae/assets/products/SU006-7.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/SU006-1.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
