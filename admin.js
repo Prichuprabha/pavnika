@@ -3747,13 +3747,106 @@ function initManualOrderView(token) {
   var applyGiftCardCheckbox = document.getElementById('admin-mo-apply-giftcard');
   var knownGiftCardBalance = 0;
 
+  // Same country list and reconstruction logic as checkout.html's phone
+  // field, duplicated here rather than shared — admin.js and script.js
+  // are two entirely separate files with no shared module system, so
+  // this is the same pragmatic small duplication already used
+  // elsewhere in this codebase (e.g. formatAED).
+  var MO_PHONE_COUNTRY_CODES = [
+    { code: '971', label: '\uD83C\uDDE6\uD83C\uDDEA UAE +971', leadingZero: true },
+    { code: '91', label: '\uD83C\uDDEE\uD83C\uDDF3 India +91', leadingZero: false },
+    { code: '966', label: '\uD83C\uDDF8\uD83C\uDDE6 Saudi Arabia +966', leadingZero: false },
+    { code: '968', label: '\uD83C\uDDF4\uD83C\uDDF2 Oman +968', leadingZero: false },
+    { code: '974', label: '\uD83C\uDDF6\uD83C\uDDE6 Qatar +974', leadingZero: false },
+    { code: '973', label: '\uD83C\uDDE7\uD83C\uDDED Bahrain +973', leadingZero: false },
+    { code: '965', label: '\uD83C\uDDF0\uD83C\uDDFC Kuwait +965', leadingZero: false },
+    { code: '44', label: '\uD83C\uDDEC\uD83C\uDDE7 UK +44', leadingZero: false },
+    { code: '1', label: '\uD83C\uDDFA\uD83C\uDDF8 USA/Canada +1', leadingZero: false }
+  ];
+  var MO_PHONE_RE = /^\+[1-9][0-9]{6,14}$/;
+
+  var phoneCodeSelect = document.getElementById('admin-mo-phone-code');
+  var phoneNumberInput = document.getElementById('admin-mo-phone-number');
+  var phoneHiddenInput = document.getElementById('admin-mo-phone');
+  var phoneNote = document.getElementById('admin-mo-phone-note');
+
+  phoneCodeSelect.innerHTML = MO_PHONE_COUNTRY_CODES.map(function (c, i) {
+    return '<option value="' + c.code + '"' + (i === 0 ? ' selected' : '') + '>' + c.label + '</option>';
+  }).join('');
+  // First entry in the list above is UAE, so the default selection
+  // (i === 0) already pre-fills +971 as requested — nothing extra
+  // needed here beyond keeping UAE first in that list.
+
+  function syncManualOrderPhone() {
+    var codeEntry = MO_PHONE_COUNTRY_CODES.find(function (c) { return c.code === phoneCodeSelect.value; });
+    var digits = phoneNumberInput.value.replace(/[^\d]/g, '');
+    var startsWithZero = digits.charAt(0) === '0';
+
+    if (codeEntry && codeEntry.leadingZero && startsWithZero) {
+      phoneHiddenInput.value = '';
+      phoneNote.textContent = 'Don\u2019t include the leading 0 \u2014 with +' + codeEntry.code + ' already selected, just enter e.g. "50 123 4567".';
+      phoneNote.classList.remove('ok');
+      phoneNote.style.display = digits ? 'block' : 'none';
+      phoneNumberInput.classList.toggle('field-invalid', !!digits);
+      return false;
+    }
+
+    var full = '+' + phoneCodeSelect.value + digits;
+    phoneHiddenInput.value = digits ? full : '';
+
+    if (!digits) {
+      phoneNote.style.display = 'none';
+      phoneNumberInput.classList.remove('field-invalid');
+      return true;
+    }
+    if (!MO_PHONE_RE.test(full)) {
+      phoneNote.textContent = 'Please enter a valid mobile number.';
+      phoneNote.classList.remove('ok');
+      phoneNote.style.display = 'block';
+      phoneNumberInput.classList.add('field-invalid');
+      return false;
+    }
+    phoneNote.textContent = '\u2713 Looks good';
+    phoneNote.classList.add('ok');
+    phoneNote.style.display = 'block';
+    phoneNumberInput.classList.remove('field-invalid');
+    return true;
+  }
+
+  // Splits a phone string already on file (e.g. from a searched-up
+  // existing customer) back into {code, number} for the two visible
+  // fields — matched by longest code first, so +91... isn't
+  // accidentally matched by a hypothetical single-digit code before
+  // the real one is checked.
+  function splitExistingPhone(raw) {
+    var digits = String(raw || '').replace(/[^\d]/g, '');
+    var sorted = MO_PHONE_COUNTRY_CODES.slice().sort(function (a, b) { return b.code.length - a.code.length; });
+    for (var i = 0; i < sorted.length; i++) {
+      if (digits.indexOf(sorted[i].code) === 0) {
+        return { code: sorted[i].code, number: digits.slice(sorted[i].code.length) };
+      }
+    }
+    return { code: '971', number: digits }; // unrecognized prefix — default to UAE rather than guess wrong
+  }
+
+  function setManualOrderPhone(raw) {
+    var parts = splitExistingPhone(raw);
+    phoneCodeSelect.value = parts.code;
+    phoneNumberInput.value = parts.number;
+    syncManualOrderPhone();
+  }
+
+  phoneCodeSelect.addEventListener('change', syncManualOrderPhone);
+  phoneNumberInput.addEventListener('input', syncManualOrderPhone);
+  syncManualOrderPhone();
+
   // Purely informational until submit — the server always re-checks
   // and re-caps the real balance itself, so a stale value here (e.g.
   // if the balance changed in another tab a second ago) can't cause
   // more credit to be applied than the customer actually has.
   function checkGiftCardBalance() {
     var email = document.getElementById('admin-mo-email').value.trim();
-    var phone = document.getElementById('admin-mo-phone').value.trim();
+    var phone = phoneHiddenInput.value.trim();
     if (!email && !phone) {
       giftCardCard.style.display = 'none';
       knownGiftCardBalance = 0;
@@ -3782,7 +3875,7 @@ function initManualOrderView(token) {
   }
 
   document.getElementById('admin-mo-email').addEventListener('blur', checkGiftCardBalance);
-  document.getElementById('admin-mo-phone').addEventListener('blur', checkGiftCardBalance);
+  phoneNumberInput.addEventListener('blur', checkGiftCardBalance);
   applyGiftCardCheckbox.addEventListener('change', renderTotals);
 
   var MO_COUNTRY_LIST = [
@@ -3846,7 +3939,7 @@ function initManualOrderView(token) {
     document.getElementById('admin-mo-first-name').value = nameParts[0] || '';
     document.getElementById('admin-mo-last-name').value = nameParts.slice(1).join(' ');
     document.getElementById('admin-mo-email').value = c.email || '';
-    document.getElementById('admin-mo-phone').value = c.phone || '';
+    setManualOrderPhone(c.phone || '');
 
     if (c.billingAddress) {
       try {
@@ -4144,7 +4237,9 @@ function initManualOrderView(token) {
         document.getElementById('admin-mo-first-name').value = '';
         document.getElementById('admin-mo-last-name').value = '';
         document.getElementById('admin-mo-email').value = '';
-        document.getElementById('admin-mo-phone').value = '';
+        phoneCodeSelect.value = '971';
+        phoneNumberInput.value = '';
+        syncManualOrderPhone();
         discountValueInput.value = '0';
         applyGiftCardCheckbox.checked = false;
         giftCardCard.style.display = 'none';
