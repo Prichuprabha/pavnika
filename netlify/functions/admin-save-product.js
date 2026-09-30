@@ -121,26 +121,23 @@ function applyAction(products, action, productInput) {
       if (!seriesCode) return { error: { statusCode: 400, message: 'Unknown series — please provide a 2-letter series code.' } };
       finalId = nextIdForSeries(products, seriesCode);
     }
-    var savedProduct = {
-      id: finalId,
-      series: productInput.series,
-      category: productInput.category,
-      type: productInput.type,
-      sareeType: productInput.sareeType,
-      pattern: productInput.pattern,
-      design: productInput.design,
-      price: productInput.price,
-      sold: productInput.sold,
-      images: productInput.images,
-      image: productInput.image
-    };
+    // Every field the client sent is kept (not a hardcoded saree-only
+    // whitelist) so department-specific fields — department, colour,
+    // note, baseId, size, salePrice, occasions — are never silently
+    // dropped for a newly-added Jewellery or Accessory item. seriesCode
+    // is purely an instruction for picking finalId above, never meant
+    // to be stored on the product itself.
+    var savedProduct = Object.assign({}, productInput, { id: finalId });
+    delete savedProduct.seriesCode;
     products.push(savedProduct);
-    return { savedProduct: savedProduct, commitMessage: `Admin: add saree ${finalId}` };
+    var addedLabel = productInput.department === 'jewellery' ? 'jewellery item' : productInput.department === 'accessory' ? 'accessory' : 'saree';
+    return { savedProduct: savedProduct, commitMessage: `Admin: add ${addedLabel} ${finalId}` };
   } else if (action === 'edit') {
     var idx = products.findIndex(function (p) { return p.id === productInput.id; });
     if (idx === -1) return { error: { statusCode: 404, message: 'Saree ID not found.' } };
     products[idx] = Object.assign({}, products[idx], productInput);
-    return { savedProduct: products[idx], commitMessage: `Admin: edit saree ${productInput.id}` };
+    var editedLabel = products[idx].department === 'jewellery' ? 'jewellery item' : products[idx].department === 'accessory' ? 'accessory' : 'saree';
+    return { savedProduct: products[idx], commitMessage: `Admin: edit ${editedLabel} ${productInput.id}` };
   } else if (action === 'delete') {
     // Note: this only removes the product entry from products-data.js.
     // Its photo files under assets/products/ are intentionally left in
@@ -151,7 +148,8 @@ function applyAction(products, action, productInput) {
     if (delIdx === -1) return { error: { statusCode: 404, message: 'Saree ID not found.' } };
     var deleted = products[delIdx];
     products.splice(delIdx, 1);
-    return { savedProduct: deleted, commitMessage: `Admin: delete saree ${productInput.id}` };
+    var deletedLabel = deleted.department === 'jewellery' ? 'jewellery item' : deleted.department === 'accessory' ? 'accessory' : 'saree';
+    return { savedProduct: deleted, commitMessage: `Admin: delete ${deletedLabel} ${productInput.id}` };
   }
   return { error: { statusCode: 400, message: 'Unknown action.' } };
 }
