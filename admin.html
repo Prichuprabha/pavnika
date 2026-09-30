@@ -882,6 +882,17 @@
       <form id="admin-product-form">
         <div class="admin-form-grid">
           <div class="admin-field">
+            <label>Department</label>
+            <select id="admin-f-department">
+              <option value="saree">Saree</option>
+              <option value="jewellery">Jewellery</option>
+              <option value="accessory">Accessory</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="admin-form-grid">
+          <div class="admin-field" id="admin-f-series-field">
             <label>Series</label>
             <select id="admin-f-series"></select>
           </div>
@@ -893,6 +904,7 @@
         <p class="admin-id-hint" id="admin-id-hint"></p>
         <p class="admin-id-warning" id="admin-id-warning" style="display:none;">This ID already exists — choose a different one.</p>
 
+        <div id="admin-saree-only-fields">
         <div class="admin-form-grid">
           <div class="admin-field">
             <label>Category</label>
@@ -951,11 +963,72 @@
             <label>Price (AED, internal only)</label>
             <input type="number" id="admin-f-price" placeholder="e.g. 990">
           </div>
-          <div class="admin-field">
-            <label>Sale price (AED) — leave blank for no offer</label>
-            <input type="number" id="admin-f-sale-price" placeholder="e.g. 749">
-            <p class="admin-id-hint" id="admin-sale-preview" style="display:none;"></p>
+        </div>
+        </div>
+
+        <div id="admin-jewellery-only-fields" style="display:none;">
+          <div class="admin-form-grid">
+            <div class="admin-field">
+              <label>Type</label>
+              <select id="admin-f-jtype">
+                <option>Bangles &amp; Bracelets</option>
+                <option>Earrings</option>
+                <option>Haarams</option>
+                <option>Necklace</option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label>Colour</label>
+              <input type="text" id="admin-f-jcolour" placeholder="e.g. Antique gold-tone">
+            </div>
           </div>
+          <div class="admin-form-grid" id="admin-bangle-size-fields" style="display:none;">
+            <div class="admin-field">
+              <label>Bangle design</label>
+              <select id="admin-f-bangle-base">
+                <option value="">+ New design</option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label>Size (inches)</label>
+              <input type="text" id="admin-f-bangle-size" placeholder="e.g. 2.4">
+            </div>
+          </div>
+          <p class="admin-id-hint" id="admin-bangle-id-preview"></p>
+          <div class="admin-field">
+            <label>Note (optional)</label>
+            <input type="text" id="admin-f-jnote" placeholder="Any extra detail to show the customer">
+          </div>
+          <div class="admin-field">
+            <label>Price (AED, internal only)</label>
+            <input type="number" id="admin-f-jprice" placeholder="e.g. 185">
+          </div>
+          <p style="font-size:0.72rem; opacity:0.6; margin:4px 0 0;">Customers will see a "Fashion jewellery" label on this item automatically.</p>
+        </div>
+
+        <div id="admin-accessory-only-fields" style="display:none;">
+          <div class="admin-form-grid">
+            <div class="admin-field">
+              <label>Category</label>
+              <select id="admin-f-acat">
+                <option>Artificial Flowers</option>
+              </select>
+            </div>
+            <div class="admin-field">
+              <label>Price (AED, internal only)</label>
+              <input type="number" id="admin-f-aprice" placeholder="e.g. 45">
+            </div>
+          </div>
+          <div class="admin-field">
+            <label>Note (optional)</label>
+            <input type="text" id="admin-f-anote" placeholder="Any extra detail to show the customer">
+          </div>
+        </div>
+
+        <div class="admin-field" id="admin-sale-price-wrap">
+          <label>Sale price (AED) — leave blank for no offer</label>
+          <input type="number" id="admin-f-sale-price" placeholder="e.g. 749">
+          <p class="admin-id-hint" id="admin-sale-preview" style="display:none;"></p>
         </div>
 
         <div class="admin-checkbox-row">
@@ -963,7 +1036,7 @@
           <label for="admin-f-sold">Sold out</label>
         </div>
 
-        <div class="admin-field" style="margin-bottom:16px;">
+        <div class="admin-field" style="margin-bottom:16px;" id="admin-f-occasions-wrap">
           <label>Occasions</label>
           <div class="admin-occasion-checks" id="admin-f-occasions">
             <label><input type="checkbox" value="Bridal"> Bridal</label>
@@ -1519,7 +1592,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=202"></script>
+<script src="admin.js?v=203"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

@@ -300,6 +300,8 @@ function initSareeEditor(token) {
   var idWrap = document.getElementById('admin-f-id-wrap');
   var idHint = document.getElementById('admin-id-hint');
   var idWarning = document.getElementById('admin-id-warning');
+  var departmentSelect = document.getElementById('admin-f-department');
+  var DEPT_PREFIXES = { jewellery: 'JW', accessory: 'AC' };
   var currentImages = []; // the saree's photo URLs, as far as the live product record is concerned
   var previewOverrides = {}; // url -> local dataUrl, for photos uploaded this session whose live URL isn't deployed yet
   var uploadedForId = null; // which ID currentImages' uploads were filed under, to catch a mid-session ID change
@@ -383,7 +385,7 @@ function initSareeEditor(token) {
     var products = window.PRODUCTS || [];
     if (hideSold) products = products.filter(function (p) { return !p.sold; });
     if (!q) return products;
-    var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
+    var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category', 'colour', 'note'];
     return products.filter(function (p) {
       return fields.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
     });
@@ -417,6 +419,20 @@ function initSareeEditor(token) {
     return '<div style="color:var(--gold); font-weight:700; margin-bottom:4px;">AED ' + Number(p.price || 0).toFixed(2) + '</div>';
   }
 
+  // Sarees identify themselves by design + series; Jewellery and
+  // Accessories don't have a series at all, so each department gets
+  // its own subtitle line here rather than assuming every row is a
+  // saree (which used to crash outright on any non-saree row).
+  function subtitleHtml(p) {
+    if (p.department === 'jewellery') {
+      return p.type + (p.colour ? ' — ' + p.colour : '');
+    }
+    if (p.department === 'accessory') {
+      return p.category || 'Accessory';
+    }
+    return p.design + ' — ' + seriesTitle(p.series);
+  }
+
   function renderTable() {
     var filtered = getFilteredProducts();
     var start = (currentPage - 1) * PAGE_SIZE;
@@ -434,7 +450,7 @@ function initSareeEditor(token) {
           '<img src="' + (p.image || '') + '" alt="' + p.id + '">' +
           '<div class="admin-saree-card-info">' +
             '<div class="admin-saree-card-id">' + p.id + '</div>' +
-            '<div class="admin-saree-card-series">' + p.design + ' — ' + seriesTitle(p.series) + '</div>' +
+            '<div class="admin-saree-card-series">' + subtitleHtml(p) + '</div>' +
             priceHtml(p) +
             (p.sold ? '<span class="admin-sold-badge">Sold out</span>' : '<span class="admin-avail-badge">Available</span>') +
             '<div class="admin-saree-card-actions">' +
@@ -765,6 +781,122 @@ function initSareeEditor(token) {
   seriesSelect.addEventListener('change', function () { updateIdSuggestion(); updateUploadButtonState(); });
   idField.addEventListener('input', function () { checkIdDuplicate(); updateUploadButtonState(); });
 
+  // ---------- Department (Saree / Jewellery / Accessory) ----------
+  // A saree keeps its existing series-based ID scheme untouched.
+  // Jewellery and Accessories share the same underlying products-data.js
+  // array (a "department" field is the only new thing on their rows;
+  // an absent department always means "saree", so no existing saree
+  // needs to change) and get their own JW/AC prefixes.
+  //
+  // Bangles & Bracelets are the one case where a single design comes in
+  // several sizes, each of which is still sold as its own one-of-a-kind
+  // physical piece: JW006-24, JW006-26, JW006-28 share the base JW006
+  // but are three separate catalogue rows, each independently markable
+  // as sold. The storefront groups rows sharing a base into one card
+  // with a size picker; this form's "Bangle design" dropdown is the
+  // admin-side mirror of that — pick an existing design to add another
+  // size to it, or start a new one.
+  function jewelleryFields() { return document.getElementById('admin-jewellery-only-fields'); }
+  function accessoryFields() { return document.getElementById('admin-accessory-only-fields'); }
+  function sareeFields() { return document.getElementById('admin-saree-only-fields'); }
+
+  function updateDepartmentFieldVisibility() {
+    var dept = departmentSelect.value;
+    sareeFields().style.display = dept === 'saree' ? 'block' : 'none';
+    jewelleryFields().style.display = dept === 'jewellery' ? 'block' : 'none';
+    accessoryFields().style.display = dept === 'accessory' ? 'block' : 'none';
+    document.getElementById('admin-f-series-field').style.display = dept === 'saree' ? 'block' : 'none';
+    document.getElementById('admin-f-occasions-wrap').style.display = dept === 'saree' ? 'block' : 'none';
+  }
+
+  function bangleBaseIds() {
+    // Every distinct base a Bangles & Bracelets row already belongs to,
+    // derived from the part of its ID before the "-NN" size suffix —
+    // reading it straight off existing IDs rather than a separate
+    // stored field, since that's the one thing guaranteed to already
+    // be there for every bangle row regardless of when it was added.
+    var bases = {};
+    (window.PRODUCTS || []).forEach(function (p) {
+      if (p.department === 'jewellery' && p.type === 'Bangles & Bracelets' && p.id && p.id.indexOf('-') !== -1) {
+        bases[p.id.slice(0, p.id.indexOf('-'))] = true;
+      }
+    });
+    return Object.keys(bases).sort();
+  }
+
+  function refreshBangleBaseOptions() {
+    var sel = document.getElementById('admin-f-bangle-base');
+    var current = sel.value;
+    sel.innerHTML = '<option value="">+ New design</option>' +
+      bangleBaseIds().map(function (b) { return '<option value="' + b + '">' + b + '</option>'; }).join('');
+    if (bangleBaseIds().indexOf(current) !== -1) sel.value = current;
+  }
+
+  function nextBaseId(prefix, isBaseOnly) {
+    // isBaseOnly: only count the part before any "-NN" suffix, so a
+    // family of bangle sizes (JW006-24, JW006-26...) counts once
+    // toward finding the next free base number, not three times.
+    var highest = 0;
+    (window.PRODUCTS || []).forEach(function (p) {
+      if (!p.id || p.id.indexOf(prefix) !== 0) return;
+      var rest = p.id.slice(prefix.length);
+      var numPart = isBaseOnly ? rest.split('-')[0] : rest;
+      var num = parseInt(numPart, 10);
+      if (!isNaN(num) && num > highest) highest = num;
+    });
+    return prefix + String(highest + 1).padStart(3, '0');
+  }
+
+  function sizeSuffix(raw) {
+    // "2.4" -> "24", "2.40" -> "24", "8" -> "08" — always exactly two
+    // digits, since that's the ID format decided on (JW001-24).
+    var digits = String(raw || '').replace(/\D/g, '');
+    return digits.slice(-2).padStart(2, '0');
+  }
+
+  function updateBangleIdPreview() {
+    var base = document.getElementById('admin-f-bangle-base').value || nextBaseId('JW', true);
+    var sizeRaw = document.getElementById('admin-f-bangle-size').value.trim();
+    var preview = document.getElementById('admin-bangle-id-preview');
+    if (!sizeRaw) {
+      preview.textContent = 'Enter a size to see the final ID (design: ' + base + ').';
+      idField.value = '';
+      checkIdDuplicate();
+      return;
+    }
+    var finalId = base + '-' + sizeSuffix(sizeRaw);
+    preview.textContent = 'This piece will be saved as ' + finalId + '.';
+    idField.value = finalId;
+    checkIdDuplicate();
+  }
+
+  function updateNonSareeIdSuggestion() {
+    var dept = departmentSelect.value;
+    if (!isAddMode || dept === 'saree') return;
+    var isBangle = dept === 'jewellery' && document.getElementById('admin-f-jtype').value === 'Bangles & Bracelets';
+    document.getElementById('admin-bangle-size-fields').style.display = isBangle ? 'grid' : 'none';
+    document.getElementById('admin-bangle-id-preview').style.display = isBangle ? 'block' : 'none';
+    if (isBangle) {
+      refreshBangleBaseOptions();
+      updateBangleIdPreview();
+      idHint.textContent = '';
+    } else {
+      var prefix = DEPT_PREFIXES[dept];
+      idField.value = nextBaseId(prefix, false);
+      idHint.textContent = 'Suggested next ' + prefix + ' number. You can type your own ID instead if you prefer.';
+      checkIdDuplicate();
+    }
+  }
+
+  departmentSelect.addEventListener('change', function () {
+    updateDepartmentFieldVisibility();
+    if (departmentSelect.value === 'saree') { updateIdSuggestion(); }
+    else { updateNonSareeIdSuggestion(); }
+  });
+  document.getElementById('admin-f-jtype').addEventListener('change', updateNonSareeIdSuggestion);
+  document.getElementById('admin-f-bangle-base').addEventListener('change', updateBangleIdPreview);
+  document.getElementById('admin-f-bangle-size').addEventListener('input', updateBangleIdPreview);
+
   var materialSelect = document.getElementById('admin-f-material');
   var materialNewInput = document.getElementById('admin-f-material-new');
   var ADD_NEW_MATERIAL_VALUE = '__add_new__';
@@ -807,6 +939,9 @@ function initSareeEditor(token) {
     document.getElementById('admin-upload-status').textContent = '';
     renderPendingPhotosGrid();
     uploadedForId = null;
+    departmentSelect.value = 'saree';
+    departmentSelect.disabled = false;
+    updateDepartmentFieldVisibility();
     seriesSelect.selectedIndex = 0;
     seriesSelect.disabled = false; // series stays editable when adding — it's part of how the ID gets generated
     refreshMaterialOptions();
@@ -824,30 +959,49 @@ function initSareeEditor(token) {
     if (!product) return;
     editingId = id;
     isAddMode = false;
-    formTitle.textContent = 'Edit Saree — ' + id;
-    seriesSelect.value = product.series;
-    seriesSelect.disabled = true; // locked while editing — changing series after creation could orphan the existing ID scheme
+    var dept = product.department || 'saree';
+    formTitle.textContent = 'Edit ' + (dept === 'saree' ? 'Saree' : dept === 'jewellery' ? 'Jewellery' : 'Accessory') + ' — ' + id;
+    departmentSelect.value = dept;
+    departmentSelect.disabled = true; // locked while editing, same reasoning as Series below
+    updateDepartmentFieldVisibility();
     idField.value = product.id;
     idField.readOnly = true;
     idWrap.classList.add('readonly');
     idWarning.style.display = 'none';
     idWrap.classList.remove('has-duplicate');
-    idHint.textContent = 'Editing an existing saree — ID stays fixed.';
-    document.getElementById('admin-f-category').value = product.category || 'Budget';
-    document.getElementById('admin-f-type').value = product.type || '';
-    document.getElementById('admin-f-sareeType').value = product.sareeType || '';
-    document.getElementById('admin-f-pattern').value = product.pattern || '';
-    document.getElementById('admin-f-design').value = product.design || '';
-    refreshMaterialOptions(product.material || '');
-    document.getElementById('admin-f-shade').value = product.shade || 'Others';
-    document.getElementById('admin-f-price').value = product.price || '';
+    idHint.textContent = 'Editing an existing item — ID stays fixed.';
     document.getElementById('admin-f-sale-price').value = product.salePrice || '';
     updateSalePreview();
     document.getElementById('admin-f-sold').checked = !!product.sold;
-    var savedOccasions = product.occasions || [];
-    document.querySelectorAll('#admin-f-occasions input').forEach(function (cb) {
-      cb.checked = savedOccasions.indexOf(cb.value) !== -1;
-    });
+
+    if (dept === 'saree') {
+      seriesSelect.value = product.series;
+      seriesSelect.disabled = true; // locked while editing — changing series after creation could orphan the existing ID scheme
+      document.getElementById('admin-f-category').value = product.category || 'Budget';
+      document.getElementById('admin-f-type').value = product.type || '';
+      document.getElementById('admin-f-sareeType').value = product.sareeType || '';
+      document.getElementById('admin-f-pattern').value = product.pattern || '';
+      document.getElementById('admin-f-design').value = product.design || '';
+      refreshMaterialOptions(product.material || '');
+      document.getElementById('admin-f-shade').value = product.shade || 'Others';
+      document.getElementById('admin-f-price').value = product.price || '';
+      var savedOccasions = product.occasions || [];
+      document.querySelectorAll('#admin-f-occasions input').forEach(function (cb) {
+        cb.checked = savedOccasions.indexOf(cb.value) !== -1;
+      });
+    } else if (dept === 'jewellery') {
+      document.getElementById('admin-f-jtype').value = product.type || 'Bangles & Bracelets';
+      document.getElementById('admin-f-jcolour').value = product.colour || '';
+      document.getElementById('admin-f-jnote').value = product.note || '';
+      document.getElementById('admin-f-jprice').value = product.price || '';
+      document.getElementById('admin-bangle-size-fields').style.display = 'none'; // the base/size pickers are an add-mode-only convenience
+      document.getElementById('admin-bangle-id-preview').style.display = 'none';
+    } else {
+      document.getElementById('admin-f-acat').value = product.category || 'Artificial Flowers';
+      document.getElementById('admin-f-anote').value = product.note || '';
+      document.getElementById('admin-f-aprice').value = product.price || '';
+    }
+
     currentImages = product.images ? product.images.slice() : [];
     previewOverrides = {};
     pendingUploads = [];
@@ -1312,8 +1466,9 @@ function initSareeEditor(token) {
     e.preventDefault();
     var saveBtn = document.getElementById('admin-save-btn');
     var images = currentImages.slice();
+    var dept = departmentSelect.value;
 
-    if (materialSelect.value === ADD_NEW_MATERIAL_VALUE && !materialNewInput.value.trim()) {
+    if (dept === 'saree' && materialSelect.value === ADD_NEW_MATERIAL_VALUE && !materialNewInput.value.trim()) {
       showStatus('error', 'Please type the new material, or pick an existing one instead.');
       return;
     }
@@ -1330,26 +1485,55 @@ function initSareeEditor(token) {
       }
     }
 
-    var materialValue = materialSelect.value === ADD_NEW_MATERIAL_VALUE
-      ? materialNewInput.value.trim()
-      : materialSelect.value;
-
-    var productData = {
-      series: seriesSelect.value,
-      category: document.getElementById('admin-f-category').value,
-      type: document.getElementById('admin-f-type').value.trim(),
-      material: materialValue,
-      shade: document.getElementById('admin-f-shade').value,
-      sareeType: document.getElementById('admin-f-sareeType').value.trim(),
-      pattern: document.getElementById('admin-f-pattern').value.trim(),
-      design: document.getElementById('admin-f-design').value.trim(),
-      price: parseInt(document.getElementById('admin-f-price').value, 10) || 0,
-      salePrice: parseSalePriceInput(),
-      sold: document.getElementById('admin-f-sold').checked,
-      occasions: Array.from(document.querySelectorAll('#admin-f-occasions input:checked')).map(function (cb) { return cb.value; }),
-      images: images,
-      image: images[0] || ''
-    };
+    var productData;
+    if (dept === 'saree') {
+      var materialValue = materialSelect.value === ADD_NEW_MATERIAL_VALUE
+        ? materialNewInput.value.trim()
+        : materialSelect.value;
+      productData = {
+        series: seriesSelect.value,
+        category: document.getElementById('admin-f-category').value,
+        type: document.getElementById('admin-f-type').value.trim(),
+        material: materialValue,
+        shade: document.getElementById('admin-f-shade').value,
+        sareeType: document.getElementById('admin-f-sareeType').value.trim(),
+        pattern: document.getElementById('admin-f-pattern').value.trim(),
+        design: document.getElementById('admin-f-design').value.trim(),
+        price: parseInt(document.getElementById('admin-f-price').value, 10) || 0,
+        salePrice: parseSalePriceInput(),
+        sold: document.getElementById('admin-f-sold').checked,
+        occasions: Array.from(document.querySelectorAll('#admin-f-occasions input:checked')).map(function (cb) { return cb.value; }),
+        images: images,
+        image: images[0] || ''
+      };
+    } else if (dept === 'jewellery') {
+      productData = {
+        department: 'jewellery',
+        type: document.getElementById('admin-f-jtype').value,
+        colour: document.getElementById('admin-f-jcolour').value.trim(),
+        note: document.getElementById('admin-f-jnote').value.trim(),
+        price: parseInt(document.getElementById('admin-f-jprice').value, 10) || 0,
+        salePrice: parseSalePriceInput(),
+        sold: document.getElementById('admin-f-sold').checked,
+        images: images,
+        image: images[0] || ''
+      };
+      if (productData.type === 'Bangles & Bracelets' && isAddMode) {
+        productData.baseId = idField.value.indexOf('-') !== -1 ? idField.value.slice(0, idField.value.indexOf('-')) : idField.value;
+        productData.size = document.getElementById('admin-f-bangle-size').value.trim();
+      }
+    } else {
+      productData = {
+        department: 'accessory',
+        category: document.getElementById('admin-f-acat').value,
+        note: document.getElementById('admin-f-anote').value.trim(),
+        price: parseInt(document.getElementById('admin-f-aprice').value, 10) || 0,
+        salePrice: parseSalePriceInput(),
+        sold: document.getElementById('admin-f-sold').checked,
+        images: images,
+        image: images[0] || ''
+      };
+    }
 
     var action;
     if (editingId) {
@@ -1358,7 +1542,7 @@ function initSareeEditor(token) {
     } else {
       action = 'add';
       productData.id = idField.value.trim().toUpperCase();
-      productData.seriesCode = SERIES_CODES[seriesSelect.value];
+      if (dept === 'saree') productData.seriesCode = SERIES_CODES[seriesSelect.value];
     }
 
     saveBtn.disabled = true;
