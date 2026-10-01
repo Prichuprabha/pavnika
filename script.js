@@ -88,6 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
   // Collections is now public — no gating, no deferred rendering, just
   // like Home's curated showcase or any other public page's content.
   initCollectionsPage();
+  initJewelleryAccessoriesPage();
   if (document.getElementById('checkout-content') && !gateGetCookie('pavnika_verified')) {
     showGateOverlay('generic', initCheckoutPage);
   } else {
@@ -403,6 +404,8 @@ function seriesTitleCase(s) {
 }
 
 function productCardHTML(p) {
+  if (p.department === 'jewellery' || p.department === 'accessory') return nonSareeCardHTML(p);
+
   var soldClass = p.sold ? ' is-sold' : '';
   var soldRibbon = p.sold ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
   var onSale = p.salePrice && p.salePrice < p.price && !p.sold;
@@ -429,6 +432,57 @@ function productCardHTML(p) {
       '</div>' +
     '</div>'
   );
+}
+
+// Jewellery and Accessories share this card instead of the saree one
+// above — no series/material/design fields to build a card around, and
+// a Bangles & Bracelets group (several sizes, one design) shows a
+// "multiple sizes available" hint and a from-price rather than a
+// single fixed price, since the exact price a customer pays depends on
+// which sibling size they pick inside the lightbox.
+function nonSareeCardHTML(p) {
+  var group = jewelleryGroupSiblings(p);
+  var isGroup = group.length > 1;
+  var allSoldInGroup = group.every(function (s) { return s.sold; });
+  var soldClass = allSoldInGroup ? ' is-sold' : '';
+  var soldRibbon = allSoldInGroup ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
+  var onSale = p.salePrice && p.salePrice < p.price && !p.sold;
+  var saleBadge = onSale ? '<span class="sale-badge">Sale</span>' : '';
+  var badgeLabel = p.department === 'jewellery' ? p.type : p.category;
+  var namePart = p.department === 'jewellery' ? (p.type + (p.colour ? ' — ' + p.colour : '')) : (p.category || 'Accessory');
+  var displayPrice = isGroup ? Math.min.apply(null, group.map(function (s) { return effectivePrice(s); })) : effectivePrice(p);
+  var pricingHtml = onSale
+    ? '<span class="p-price-row">' +
+        '<span class="p-price-was">AED ' + formatAED(p.price) + '</span>' +
+        '<span class="p-price-now">AED ' + formatAED(p.salePrice) + '</span>' +
+      '</span>'
+    : '<span class="p-price">' + (isGroup ? 'From ' : '') + 'AED ' + formatAED(displayPrice) + '</span>';
+  return (
+    '<div class="product-card" data-category="' + badgeLabel + '" data-id="' + p.id + '">' +
+      '<div class="product-photo' + soldClass + '">' +
+        '<span class="series-badge">' + badgeLabel + '</span>' +
+        '<span class="id-badge">' + (p.baseId || p.id) + '</span>' +
+        saleBadge +
+        '<img src="' + p.image + '" alt="' + namePart + '" loading="lazy" decoding="async">' +
+        soldRibbon +
+      '</div>' +
+      '<div class="product-info">' +
+        '<span class="p-design">' + namePart + '</span>' +
+        '<span class="p-meta">' + (p.department === 'jewellery' ? 'Fashion jewellery' : '') + (p.note ? (p.department === 'jewellery' ? ' · ' : '') + p.note : '') + '</span>' +
+        pricingHtml +
+        (isGroup ? '<span class="p-size-hint">Multiple sizes available</span>' : '') +
+      '</div>' +
+    '</div>'
+  );
+}
+
+// Every catalogue row sharing this item's baseId (or, for a
+// non-grouped item, just itself) — the one place this "which sizes
+// belong together" logic lives, so the grid card, the lightbox size
+// picker, and the "from AED X" price all agree with each other.
+function jewelleryGroupSiblings(p) {
+  if (!p.baseId) return [p];
+  return (window.PRODUCTS || []).filter(function (x) { return x.baseId === p.baseId; });
 }
 
 /* ---------- Hover image cycling: fade through all of a saree's images on mouseover ---------- */
@@ -704,6 +758,12 @@ function initCollectionsPage() {
   function getFiltered() {
     var q = state.query.trim().toLowerCase();
     return window.PRODUCTS.filter(function (p) {
+      // The Sarees grid must never show a Jewellery or Accessory row —
+      // without this, one would appear the moment a real item existed,
+      // regardless of which material/series/shade/occasion filter is
+      // selected, since none of those checks below say anything about
+      // department at all.
+      if ((p.department || 'saree') !== 'saree') return false;
       // NOTE: the first sidebar group is labeled Material and filters on
       // p.material — internal state/ids kept as 'category' to avoid churn.
       var okCat = state.category === 'all' || p.material === state.category;
@@ -1293,7 +1353,7 @@ function initCollectionsPage() {
   var updatePriceUI = function () {};
 
   if (priceMinInput && priceMaxInput && window.PRODUCTS && window.PRODUCTS.length) {
-    var allPrices = window.PRODUCTS.map(function (p) { return effectivePrice(p); });
+    var allPrices = window.PRODUCTS.filter(function (p) { return (p.department || 'saree') === 'saree'; }).map(function (p) { return effectivePrice(p); });
     var dataMin = Math.floor(Math.min.apply(null, allPrices) / 50) * 50;
     var dataMax = Math.ceil(Math.max.apply(null, allPrices) / 50) * 50;
 
@@ -1452,6 +1512,257 @@ function initCollectionsPage() {
     var product = window.PRODUCTS.find(function (p) { return p.id === id; });
     if (product) window.openLightbox(product);
   });
+}
+
+/* ---------- Jewellery & Accessories page ----------
+   A deliberately simpler sibling to Collections above: just a type
+   chip row, search, sort, hide-sold-out, and a price slider — the
+   richer material/series/shade/occasion filter drawer only ever
+   applied to sarees and has no equivalent here, per the agreed scope.
+   Reuses the genuinely shared pieces (productCardHTML, openLightbox,
+   cartAddItem, effectivePrice, shuffleForToday) rather than any part
+   of initCollectionsPage's own closure, which is saree-specific
+   top to bottom and not meant to be shared. */
+function initJewelleryAccessoriesPage() {
+  var grid = document.getElementById('ja-product-grid');
+  if (!grid || typeof window.PRODUCTS === 'undefined') return;
+
+  var DEFAULT_PAGE_SIZE = 16;
+  var PAGE_SIZE = DEFAULT_PAGE_SIZE;
+  var state = { type: 'all', hideSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
+
+  var chipRow = document.getElementById('ja-chip-row');
+  var searchInput = document.getElementById('ja-search-input');
+  var sortSelect = document.getElementById('ja-sort-select');
+  var hideSoldToggle = document.getElementById('ja-hide-sold-toggle');
+  var resultsCountEl = document.getElementById('ja-results-count');
+  var noResultsEl = document.getElementById('ja-no-results');
+  var paginationEl = document.getElementById('ja-pagination');
+
+  var SEARCH_FIELDS = ['id', 'baseId', 'type', 'colour', 'category', 'note'];
+
+  // Collapses a Bangles & Bracelets size family (JW006-24, JW006-26...)
+  // into ONE representative card per design, same grouping notion as
+  // jewelleryGroupSiblings/nonSareeCardHTML use — the grid should show
+  // one card per design, not one per size.
+  function groupedCatalogue() {
+    var all = (window.PRODUCTS || []).filter(function (p) { return p.department === 'jewellery' || p.department === 'accessory'; });
+    var seen = {};
+    var out = [];
+    all.forEach(function (p) {
+      var key = p.baseId || p.id;
+      if (seen[key]) return;
+      seen[key] = true;
+      var group = jewelleryGroupSiblings(p);
+      // Represented by its first still-available sibling so clicking
+      // the card opens a buyable size by default; if every size is
+      // sold, falls back to the first one — nonSareeCardHTML already
+      // shows the Sold Out ribbon correctly either way, since that's
+      // based on the whole group, not just this one representative.
+      var representative = group.filter(function (s) { return !s.sold; })[0] || group[0];
+      out.push(representative);
+    });
+    return out;
+  }
+
+  // isUnfiltered() no longer gates row-filling (see updatePageSize()
+  // below) — kept only to decide whether to show the live results
+  // count, same reasoning as Collections' own version of this.
+  function isUnfiltered() {
+    return state.type === 'all' && !state.hideSold && !state.query.trim() &&
+      (typeof dataMin === 'undefined' || (state.priceMin === dataMin && state.priceMax === dataMax));
+  }
+
+  function getFiltered() {
+    var q = state.query.trim().toLowerCase();
+    return groupedCatalogue().filter(function (p) {
+      var okType = state.type === 'all' || p.type === state.type || p.category === state.type;
+      var okSold = !state.hideSold || !p.sold;
+      var okQuery = !q || SEARCH_FIELDS.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
+      var price = effectivePrice(p);
+      var okMinPrice = state.priceMin === null || price >= state.priceMin;
+      var okMaxPrice = state.priceMax === null || price <= state.priceMax;
+      return okType && okSold && okQuery && okMinPrice && okMaxPrice;
+    });
+  }
+
+  // Same whole-row-filling approach as Collections (see that function's
+  // own comments for the full reasoning) — re-implemented here rather
+  // than shared, since the two pages' pagination state isn't shared
+  // either. Applies regardless of chip/search/price/hide-sold state,
+  // same as the Collections version.
+  function currentColumnCount() {
+    var cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+    return cols || 1;
+  }
+  function updatePageSize() {
+    var cols = currentColumnCount();
+    var rows = Math.max(1, Math.round(DEFAULT_PAGE_SIZE / cols));
+    var next = cols * rows;
+    if (next !== PAGE_SIZE) {
+      var firstVisibleIndex = (state.page - 1) * PAGE_SIZE;
+      PAGE_SIZE = next;
+      state.page = Math.floor(firstVisibleIndex / PAGE_SIZE) + 1;
+      return true;
+    }
+    return false;
+  }
+
+  function renderPagination(totalItems) {
+    var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+    if (state.page > totalPages) state.page = totalPages;
+    if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
+
+    var buttons = [];
+    buttons.push('<button type="button" class="page-btn" data-page="' + (state.page - 1) + '"' + (state.page === 1 ? ' disabled' : '') + ' aria-label="Previous page">&#8249;</button>');
+    for (var i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || Math.abs(i - state.page) <= 1) {
+        buttons.push('<button type="button" class="page-btn' + (i === state.page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>');
+      } else if (Math.abs(i - state.page) === 2) {
+        buttons.push('<span class="page-btn page-ellipsis">&hellip;</span>');
+      }
+    }
+    buttons.push('<button type="button" class="page-btn" data-page="' + (state.page + 1) + '"' + (state.page === totalPages ? ' disabled' : '') + ' aria-label="Next page">&#8250;</button>');
+    paginationEl.innerHTML = buttons.join('');
+  }
+
+  function render() {
+    updatePageSize();
+    var filtered = getFiltered();
+
+    if (state.sort === 'default') {
+      filtered = shuffleForToday(filtered);
+    } else if (state.sort === 'price-asc') {
+      filtered = filtered.slice().sort(function (a, b) { return effectivePrice(a) - effectivePrice(b); });
+    } else if (state.sort === 'price-desc') {
+      filtered = filtered.slice().sort(function (a, b) { return effectivePrice(b) - effectivePrice(a); });
+    } else if (state.sort === 'newest') {
+      filtered = filtered.slice().reverse();
+    }
+
+    var start = (state.page - 1) * PAGE_SIZE;
+    var pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+    grid.innerHTML = pageItems.map(productCardHTML).join('');
+    noResultsEl.style.display = filtered.length ? 'none' : 'block';
+
+    if (resultsCountEl) {
+      if (isUnfiltered()) {
+        resultsCountEl.style.display = 'none';
+      } else {
+        resultsCountEl.style.display = '';
+        resultsCountEl.textContent = filtered.length + (filtered.length === 1 ? ' piece' : ' pieces');
+      }
+    }
+
+    renderPagination(filtered.length);
+
+    grid.querySelectorAll('.product-card').forEach(function (card) {
+      card.addEventListener('click', function () {
+        var id = card.getAttribute('data-id');
+        var product = window.PRODUCTS.find(function (p) { return p.id === id; });
+        if (product) window.openLightbox(product);
+      });
+    });
+
+    initHoverCycle(grid);
+  }
+
+  chipRow.querySelectorAll('.filter-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      state.type = btn.getAttribute('data-value');
+      state.page = 1;
+      render();
+    });
+  });
+
+  searchInput.addEventListener('input', function () {
+    state.query = searchInput.value;
+    state.page = 1;
+    render();
+  });
+
+  sortSelect.addEventListener('change', function () {
+    state.sort = sortSelect.value;
+    state.page = 1;
+    render();
+  });
+
+  hideSoldToggle.addEventListener('change', function () {
+    state.hideSold = hideSoldToggle.checked;
+    state.page = 1;
+    render();
+  });
+
+  paginationEl.addEventListener('click', function (e) {
+    var btn = e.target.closest('.page-btn[data-page]');
+    if (!btn || btn.disabled) return;
+    var page = Number(btn.getAttribute('data-page'));
+    if (page < 1) return;
+    state.page = page;
+    render();
+    grid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
+  // Price slider — same dual-handle pattern as Collections, bounds
+  // computed from the actual jewellery/accessory prices in the
+  // catalogue (grouped, so a bangle family counts once at its lowest
+  // size's price, not three times).
+  var priceMinInput = document.getElementById('ja-price-min-input');
+  var priceMaxInput = document.getElementById('ja-price-max-input');
+  var priceMinLabel = document.getElementById('ja-price-min-label');
+  var priceMaxLabel = document.getElementById('ja-price-max-label');
+  var priceTrackFill = document.getElementById('ja-price-track-fill');
+  var dataMin, dataMax, updatePriceUI = function () {};
+
+  if (priceMinInput && priceMaxInput) {
+    var allPrices = groupedCatalogue().map(function (p) { return effectivePrice(p); });
+    if (allPrices.length) {
+      dataMin = Math.floor(Math.min.apply(null, allPrices) / 5) * 5;
+      dataMax = Math.ceil(Math.max.apply(null, allPrices) / 5) * 5;
+      [priceMinInput, priceMaxInput].forEach(function (input) {
+        input.min = dataMin;
+        input.max = dataMax;
+      });
+      priceMinInput.value = dataMin;
+      priceMaxInput.value = dataMax;
+      state.priceMin = dataMin;
+      state.priceMax = dataMax;
+
+      updatePriceUI = function () {
+        var lo = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+        var hi = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+        priceMinLabel.textContent = lo.toLocaleString();
+        priceMaxLabel.textContent = hi.toLocaleString();
+        if (priceTrackFill) {
+          var pctLo = ((lo - dataMin) / (dataMax - dataMin)) * 100;
+          var pctHi = ((hi - dataMin) / (dataMax - dataMin)) * 100;
+          priceTrackFill.style.left = pctLo + '%';
+          priceTrackFill.style.width = (pctHi - pctLo) + '%';
+        }
+      };
+      updatePriceUI();
+
+      function onPriceChange() {
+        state.priceMin = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+        state.priceMax = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+        state.page = 1;
+        updatePriceUI();
+        render();
+      }
+      priceMinInput.addEventListener('input', onPriceChange);
+      priceMaxInput.addEventListener('input', onPriceChange);
+    }
+  }
+
+  window.addEventListener('resize', function () {
+    clearTimeout(window.__jaResizeTimer);
+    window.__jaResizeTimer = setTimeout(function () { render(); }, 150);
+  });
+
+  render();
 }
 
 /* ---------- Collections sidebar ad rotator ----------
@@ -1806,6 +2117,7 @@ function buildLightbox() {
               '<span class="lightbox-wishlist-pill-label" id="lightbox-wishlist-pill-label">Add to Wishlist</span>' +
             '</button>' +
           '</div>' +
+          '<div class="lightbox-size-picker" id="lightbox-size-picker" style="display:none;"></div>' +
           '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
             '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
             '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
@@ -1895,6 +2207,11 @@ function buildLightbox() {
   // are missing/empty are simply skipped, nothing hardcoded per-saree.
   function buildTags(p) {
     var tags = [];
+    if ((p.department || 'saree') !== 'saree') {
+      if (p.department === 'jewellery') { tags.push('Fashion Jewellery'); if (p.colour) tags.push(p.colour); }
+      if (p.category) tags.push(p.category);
+      return tags;
+    }
     if (p.series) tags.push(seriesTitleCase(p.series) + ' Series');
     if (p.category) tags.push(p.category);
     if (p.type) tags.push(p.type);
@@ -1905,6 +2222,17 @@ function buildLightbox() {
   // Builds a one-sentence description from the product's own fields.
   // New sarees automatically get a sensible sentence with no extra work.
   function buildDescription(p) {
+    if ((p.department || 'saree') !== 'saree') {
+      if (p.department === 'jewellery') {
+        var jBits = ['Fashion jewellery — ' + p.type.toLowerCase()];
+        if (p.colour) jBits.push('in ' + p.colour.toLowerCase());
+        if (p.note) jBits.push(p.note);
+        return jBits.join(', ') + '.';
+      }
+      var aBits = [p.category || 'Accessory'];
+      if (p.note) aBits.push(p.note);
+      return aBits.join(' — ') + '.';
+    }
     var bits = [];
     var opening = 'A';
     if (p.design) opening += ' ' + p.design + ' design';
@@ -1919,14 +2247,18 @@ function buildLightbox() {
   }
 
   function getRelatedProducts(product) {
-  var all = (window.PRODUCTS || []).filter(function (p) { return p.id !== product.id && !p.sold; });
+  var sameDept = function (p) { return (p.department || 'saree') === (product.department || 'saree'); };
+  var all = (window.PRODUCTS || []).filter(function (p) { return p.id !== product.id && !p.sold && sameDept(p); });
 
-  var sameSeries = all.filter(function (p) { return p.series === product.series; });
+  var sameSeries = all.filter(function (p) { return p.series === product.series && product.series; });
   if (sameSeries.length >= 4) return sameSeries.slice(0, 6);
 
   // Not enough in the same series — fill the rest with items in a
   // similar price range, closest price first, without duplicating
-  // anything already picked from the same series.
+  // anything already picked from the same series. Still confined to
+  // the same department as above — a saree should never end up
+  // "related" to a piece of jewellery just because the prices happen
+  // to be close, and vice versa.
   var pickedIds = sameSeries.map(function (p) { return p.id; });
   var remaining = all.filter(function (p) { return pickedIds.indexOf(p.id) === -1; })
     .sort(function (a, b) { return Math.abs(effectivePrice(a) - effectivePrice(product)) - Math.abs(effectivePrice(b) - effectivePrice(product)); });
@@ -1937,10 +2269,14 @@ function buildLightbox() {
 window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
-    document.getElementById('lightbox-design').textContent = (product.material || product.design) || '';
-    document.getElementById('lightbox-code').textContent = 'Code: ' + product.id;
-    document.getElementById('lightbox-meta').textContent =
-      (product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : '');
+    var isSaree = (product.department || 'saree') === 'saree';
+    document.getElementById('lightbox-design').textContent = isSaree
+      ? ((product.material || product.design) || '')
+      : (product.department === 'jewellery' ? product.type : (product.category || 'Accessory'));
+    document.getElementById('lightbox-code').textContent = 'Code: ' + (product.baseId || product.id);
+    document.getElementById('lightbox-meta').textContent = isSaree
+      ? ((product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : ''))
+      : ((product.department === 'jewellery' ? (product.colour || '') : (product.note || '')) + (product.sold ? ' · Sold Out' : ''));
 
     fetch('/.netlify/functions/log-view', {
       method: 'POST',
@@ -1963,6 +2299,41 @@ window.openLightbox = function (product) {
     } else {
       lbWasEl.style.display = 'none';
     }
+
+    // Bangles & Bracelets: several sizes of one design, each its own
+    // one-of-a-kind piece (see jewelleryGroupSiblings). Opening any one
+    // of them shows that size pre-selected; picking a different chip
+    // just reopens the lightbox for that sibling — the same recursive
+    // pattern "You May Also Like" already uses below — so price,
+    // sold-state, and everything else on screen updates correctly for
+    // whichever size is now being looked at.
+    var sizePickerEl = document.getElementById('lightbox-size-picker');
+    var siblings = jewelleryGroupSiblings(product);
+    if (siblings.length > 1) {
+      sizePickerEl.innerHTML = '<span class="size-picker-label">Select size</span><div class="size-chip-row">' +
+        siblings.map(function (s) {
+          var cls = 'filter-btn' + (s.id === product.id ? ' active' : '') + (s.sold ? ' is-unavailable' : '');
+          return '<span class="' + cls + '" data-id="' + s.id + '">' + (s.size || s.id) + (s.sold ? ' (sold)' : '') + '</span>';
+        }).join('') + '</div>';
+      sizePickerEl.style.display = 'block';
+      sizePickerEl.querySelectorAll('.filter-btn:not(.is-unavailable):not(.active)').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var sibling = siblings.find(function (s) { return s.id === chip.getAttribute('data-id'); });
+          if (sibling) window.openLightbox(sibling);
+        });
+      });
+    } else {
+      sizePickerEl.style.display = 'none';
+      sizePickerEl.innerHTML = '';
+    }
+
+    // The saree-specific care accordion (dry cleaning, zari, silk...)
+    // doesn't apply to jewellery or accessories — hidden for those
+    // rather than shown with misleading instructions. Department-
+    // specific care copy is a separate, deliberate step (needs its own
+    // review and approval), not invented here.
+    var careAccordionEl = document.querySelector('.care-accordion');
+    if (careAccordionEl) careAccordionEl.style.display = ((product.department || 'saree') === 'saree') ? 'block' : 'none';
 
     var addCartBtn = document.getElementById('lightbox-add-cart');
     var buyNowBtn = document.getElementById('lightbox-buy-now');
@@ -3354,6 +3725,11 @@ function initSearchPanel() {
     var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
     var matches = window.PRODUCTS.filter(function (p) {
       if (p.sold) return false;
+      // Jewellery/Accessories stay out of site-wide search results until
+      // the Launch switch turns them on deliberately, alongside the nav
+      // links and home sections — matching how Jewellery & Accessories
+      // is meant to stay reachable only by direct link until then.
+      if ((p.department || 'saree') !== 'saree') return false;
       return fields.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
       });
@@ -3996,12 +4372,15 @@ function renderCartDrawer() {
   var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
 
   itemsWrap.innerHTML = products.map(function (p) {
+    var isSaree = (p.department || 'saree') === 'saree';
+    var nameText = isSaree ? (p.material || p.design) : (p.department === 'jewellery' ? p.type : (p.category || 'Accessory'));
+    var subText = isSaree ? seriesTitleCase(p.series) : (p.department === 'jewellery' ? (p.colour || '') : '');
     return (
       '<div class="cart-drawer-item">' +
-        '<img src="' + p.image + '" alt="' + p.design + '" class="cart-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + (p.material || p.design) + '">' +
+        '<img src="' + p.image + '" alt="' + nameText + '" class="cart-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + nameText + '">' +
         '<div class="item-info">' +
-          '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
-          '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
+          '<span class="item-design">' + nameText + ' — ' + (p.baseId || p.id) + '</span>' +
+          '<span class="item-series">' + subText + (p.size ? (subText ? ' · ' : '') + 'Size: ' + p.size : '') + '</span>' +
           '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
         '</div>' +
         '<span class="item-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
@@ -5138,7 +5517,7 @@ function initCuratedShowcase() {
   var grid = document.getElementById('curated-showcase');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
 
-  var available = window.PRODUCTS.filter(function (p) { return !p.sold && p.image; });
+  var available = window.PRODUCTS.filter(function (p) { return !p.sold && p.image && (p.department || 'saree') === 'saree'; });
   if (!available.length) return;
 
   var shuffled = available.slice().sort(function () { return Math.random() - 0.5; });

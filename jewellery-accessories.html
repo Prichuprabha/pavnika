@@ -7,23 +7,11 @@
     var m = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
     return m ? m[2] : null;
   }
-  // Normalize away any .html extension before comparing — the site can
-  // serve pages at either /collections.html or /collections (no
-  // extension), and this needs to correctly recognize both forms.
   var gatedPages = ['checkout', 'order-success'];
   var currentPage = (window.location.pathname.split('/').pop() || 'home').toLowerCase().replace(/\.html$/, '');
   var isGated = gatedPages.indexOf(currentPage) !== -1;
   var verified = !!getCookie('pavnika_verified');
-
-  // Cart/wishlist now show unconditionally, for every visitor — this
-  // just avoids the icons flashing in late, or the header shifting,
-  // while script.js is still loading and catching up.
   document.documentElement.classList.add('show-cart-wishlist');
-  // On a gated page while unverified, hide the whole body until the
-  // real overlay (built once script.js loads) is ready to take over —
-  // this is what actually prevents the "page flashes, then gets
-  // covered by the overlay" effect, the same way the old full-page
-  // redirect never showed a flash, since it also ran this early.
   if (isGated && !verified) {
     var s = document.createElement('style');
     s.id = 'gate-pending-style';
@@ -34,11 +22,16 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Returns & Exchange Policy — Pavnika by Saranya</title>
-<link rel="canonical" href="https://pavnika.ae/returns">
-<meta name="description" content="Our current returns and exchange policy for sarees purchased from Pavnika by Saranya.">
+<title>Jewellery &amp; Accessories — Pavnika by Saranya</title>
+<!-- Deliberately unindexed and unlinked from anywhere on the live site
+     until the agreed Launch switch — reachable only by direct URL for
+     now, for review before going public. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="Fashion jewellery and accessories from Pavnika by Saranya: bangles, earrings, haarams, necklaces and more.">
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
+<link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css?v=217">
 </head>
@@ -49,7 +42,7 @@
       <img class="brand-lockup" src="assets/maroonlogo.png" alt="Pavnika by Saranya">
     </a>
     <div class="nav-controls">
-      <button type="button" class="nav-icon-btn" id="nav-search-btn" aria-label="Search sarees">
+      <button type="button" class="nav-icon-btn" id="nav-search-btn" aria-label="Search">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       </button>
       <div class="nav-account">
@@ -78,7 +71,7 @@
     <nav class="main-nav">
       <a href="home.html">Home</a>
       <a href="about.html">About</a>
-      <a href="collections.html">Collections</a>
+      <a href="collections.html" class="active">Collections</a>
       <a href="contact.html">Contact</a>
       <a href="contact.html" class="nav-cta">Book Appointment</a>
     </nav>
@@ -96,40 +89,93 @@
 </div>
 
 
-<section class="page-hero">
+<section class="page-hero catalogue-hero">
+  <img class="catalogue-hero-decor decor-left" src="assets/decor/ColleftV2.jpg" alt="">
+  <img class="catalogue-hero-decor decor-right" src="assets/decor/ColrightV2.jpg" alt="">
+  <div class="catalogue-hero-fade-bottom" aria-hidden="true"></div>
   <div class="container">
-    <span class="eyebrow">Shipping & Returns</span>
-    <h1>Returns &amp; Exchange Policy</h1>
+    <span class="eyebrow">Fashion Jewellery &amp; Accessories</span>
+    <h1>Pieces to complete<br>every look</h1>
+    <p class="catalogue-tagline">Bangles &nbsp;&middot;&nbsp; Earrings &nbsp;&middot;&nbsp; Haarams &nbsp;&middot;&nbsp; Necklaces</p>
   </div>
 </section>
 
 <section style="padding-top:0;">
   <div class="container">
-    <div class="legal-content">
-      <div class="legal-note">This page is provided as general information and does not constitute legal advice. If you have questions about your rights, please contact us directly.</div>
+    <div class="dept-switcher" data-active="jewellery">
+      <div class="dept-switcher-thumb"></div>
+      <a href="collections.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3c2 4 2 14 0 18M20 3c-2 4-2 14 0 18M8 3c1 4 1 14 0 18M16 3c-1 4-1 14 0 18"/></svg>
+        Sarees
+      </a>
+      <a href="jewellery-accessories.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z"/></svg>
+        Jewellery &amp; Accessories
+      </a>
+    </div>
+
+    <div class="ja-chip-row" id="ja-chip-row">
+      <button type="button" class="filter-btn active" data-value="all">All</button>
+      <button type="button" class="filter-btn" data-value="Bangles & Bracelets">Bangles &amp; Bracelets</button>
+      <button type="button" class="filter-btn" data-value="Earrings">Earrings</button>
+      <button type="button" class="filter-btn" data-value="Haarams">Haarams</button>
+      <button type="button" class="filter-btn" data-value="Necklace">Necklace</button>
+      <button type="button" class="filter-btn" data-value="Artificial Flowers">Artificial Flowers</button>
+    </div>
+
+    <div class="ja-toolbar">
+      <div class="ja-toolbar-row">
+        <input type="text" id="ja-search-input" class="search-input" placeholder="Search jewellery &amp; accessories...">
+        <select id="ja-sort-select">
+          <option value="default">Sort: Discover</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+      <div class="ja-toolbar-row">
+        <label class="toggle-switch">
+          <input type="checkbox" id="ja-hide-sold-toggle">
+          <span class="track"></span>
+          <span class="toggle-label">Hide sold out</span>
+        </label>
+      </div>
+      <div class="sidebar-filter-group" style="margin:14px 0 0;">
+        <h4 style="margin:0 0 8px;">Price Range</h4>
+        <div class="price-range-slider" id="ja-price-range-slider">
+          <div class="price-range-track">
+            <div class="price-range-fill" id="ja-price-track-fill"></div>
+          </div>
+          <input type="range" id="ja-price-min-input" class="price-range-input" min="0" max="500" value="0">
+          <input type="range" id="ja-price-max-input" class="price-range-input" min="0" max="500" value="500">
+          <div class="price-range-display">AED <span id="ja-price-min-label">0</span> &ndash; AED <span id="ja-price-max-label">500</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="live-count" id="ja-results-count"></p>
+
+    <div class="product-grid" id="ja-product-grid"></div>
+    <p class="no-results" id="ja-no-results" style="display:none;">No pieces match this filter yet — try another category or price range.</p>
+    <div class="pagination" id="ja-pagination"></div>
+
+  </div>
+</section>
 
 
-      <span class="updated-date">Last updated: July 2026</span>
+<section class="bg-green quote-silk">
+  <div class="container quote-block">
+    <p>&ldquo;Thoughtfully chosen pieces that complete every saree, every occasion.&rdquo;</p>
+    <span class="attribution">— Pavnika by Saranya Styling Desk</span>
+  </div>
+</section>
 
-      <h2>Our Current Policy</h2>
-      <p>At this time, Pavnika by Saranya does <strong>not offer returns or exchanges</strong> on purchased sarees. Because each piece is handled individually and often reserved specifically for a customer following direct discussion, all sales are considered final once confirmed.</p>
-
-      <h2>Before You Confirm a Purchase</h2>
-      <p>To help you feel confident before committing:</p>
-      <ul>
-        <li>We're happy to share additional photos or a short video of the actual piece over WhatsApp</li>
-        <li>We encourage questions about weave, colour, and sizing before you confirm</li>
-        <li>Private viewings can be arranged where possible</li>
-      </ul>
-
-      <h2>Damaged or Incorrect Items</h2>
-      <p>If an item arrives damaged in transit, or if you receive a different saree than the one confirmed, please contact us within <strong>48 hours of delivery</strong> at <a href="mailto:support@pavnika.ae">support@pavnika.ae</a> or via WhatsApp, with photos of the item received. We will review each case individually and do our best to make it right.</p>
-
-      <h2>Orders Paid Online</h2>
-      <p>This policy applies equally to orders paid for directly through the website via our payment partner, Nomod, and to orders arranged via WhatsApp or in person — all sales are final once payment is confirmed, subject to the damaged or incorrect item provision above.</p>
-
-      <h2>Contact Us</h2>
-      <p>Questions about this policy can be sent to <a href="mailto:support@pavnika.ae">support@pavnika.ae</a>.</p>
+<section>
+  <div class="container">
+    <div class="ready-close-card text-center">
+      <h2>Ready to see them up close?</h2>
+      <p style="max-width:50ch; margin-left:auto; margin-right:auto;">Book a private viewing and enjoy a personalised styling session, curated just for you.</p>
+      <a href="contact.html" class="btn btn-primary open-appointment">Book a Private Viewing</a>
     </div>
   </div>
 </section>
@@ -183,7 +229,7 @@
         </div>
       </div>
     </div>
-    
+
     <div class="footer-bottom">
       <span>&copy; 2026 Pavnika by Saranya.</span>
       <span>Webpage Crafted with care by P3R.</span>
