@@ -1684,6 +1684,27 @@ function initJewelleryAccessoriesPage() {
     });
   });
 
+  var clearAllBtn = document.getElementById('ja-clear-all-filters');
+  if (clearAllBtn) {
+    clearAllBtn.addEventListener('click', function () {
+      state.type = 'all';
+      state.hideSold = false;
+      state.query = '';
+      state.page = 1;
+      chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-value') === 'all'); });
+      hideSoldToggle.checked = false;
+      searchInput.value = '';
+      if (typeof dataMin !== 'undefined') {
+        priceMinInput.value = dataMin;
+        priceMaxInput.value = dataMax;
+        state.priceMin = dataMin;
+        state.priceMax = dataMax;
+        updatePriceUI();
+      }
+      render();
+    });
+  }
+
   searchInput.addEventListener('input', function () {
     state.query = searchInput.value;
     state.page = 1;

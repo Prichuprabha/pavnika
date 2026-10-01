@@ -4104,17 +4104,6 @@ body.login-page {
   .dept-switcher a { font-size: 0.76rem; gap: 6px; padding: 12px 6px; }
 }
 
-/* ---------- Jewellery & Accessories page: category chips inside the sidebar ---------- */
-.ja-chip-row {
-  display: flex; gap: 8px; flex-wrap: wrap;
-}
-@media (max-width: 900px) {
-  .ja-chip-row {
-    flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;
-  }
-  .ja-chip-row::-webkit-scrollbar { display: none; }
-}
-
 /* Contact: align content with the hero copy inset */
 .contact-grid { padding-left: var(--contact-inset); }
 .about-body-container { padding-left: var(--contact-inset); }
