@@ -2871,5 +2871,21 @@ window.PRODUCTS = [
     "baseId": "JW001",
     "size": "2.4",
     "id": "JW001-24"
+  },
+  {
+    "department": "jewellery",
+    "type": "Bangles & Bracelets",
+    "colour": "Test color2",
+    "note": "Test product2",
+    "price": 10,
+    "salePrice": null,
+    "sold": false,
+    "images": [
+      "https://pavnika.ae/assets/products/JW002-26-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/JW002-26-1.jpg",
+    "baseId": "JW002",
+    "size": "2.6",
+    "id": "JW002-26"
   }
 ];
