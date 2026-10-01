@@ -2922,7 +2922,7 @@ window.PRODUCTS = [
     "note": "test differnt size 2.8",
     "price": 82,
     "salePrice": null,
-    "sold": true,
+    "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/JW001-28-1.jpg"
     ],
