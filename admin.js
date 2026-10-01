@@ -4180,8 +4180,19 @@ function initManualOrderView(token) {
 
   var sareeResultsEl = document.getElementById('admin-mo-saree-results');
 
+  // Sarees identify themselves by material/design; Jewellery and
+  // Accessories have neither, which is what was showing up as the
+  // literal text "undefined" here (and, more importantly, in the
+  // order record, confirmation email, and invoice, since this exact
+  // name is what gets stored against the order).
+  function itemDisplayName(p) {
+    if (p.department === 'jewellery') return p.type + (p.colour ? ' — ' + p.colour : '');
+    if (p.department === 'accessory') return p.category || 'Accessory';
+    return p.material || p.design || p.id;
+  }
+
   function sareeResultLabel(p) {
-    return (p.material || p.design) + ' — ' + p.id + ' — AED ' + effectivePrice(p).toFixed(2);
+    return itemDisplayName(p) + ' — ' + p.id + ' — AED ' + effectivePrice(p).toFixed(2);
   }
 
   function renderSareeResults(query) {
@@ -4194,7 +4205,10 @@ function initManualOrderView(token) {
     var matches = available.filter(function (p) {
       return (p.id && String(p.id).toLowerCase().indexOf(q) !== -1) ||
         (p.material && p.material.toLowerCase().indexOf(q) !== -1) ||
-        (p.design && p.design.toLowerCase().indexOf(q) !== -1);
+        (p.design && p.design.toLowerCase().indexOf(q) !== -1) ||
+        (p.type && p.type.toLowerCase().indexOf(q) !== -1) ||
+        (p.colour && p.colour.toLowerCase().indexOf(q) !== -1) ||
+        (p.category && p.category.toLowerCase().indexOf(q) !== -1);
     }).slice(0, 20);
 
     if (!matches.length) {
@@ -4205,7 +4219,7 @@ function initManualOrderView(token) {
         return '<div class="admin-mo-saree-result-item" data-i="' + i + '">' +
           (p.image ? '<img src="' + p.image + '" loading="lazy" alt="">' : '') +
           '<div class="sinfo">' +
-            '<div class="sname">' + (p.material || p.design) + '</div>' +
+            '<div class="sname">' + itemDisplayName(p) + '</div>' +
             '<div class="smeta">' + p.id + (p.pattern ? ' · ' + p.pattern : '') + '</div>' +
           '</div>' +
           '<span class="sprice">AED ' + effectivePrice(p).toFixed(2) + '</span>' +
@@ -4348,7 +4362,7 @@ function initManualOrderView(token) {
     } else {
       pickedItems.push({
         id: product.id,
-        name: product.material || product.design,
+        name: itemDisplayName(product),
         price: effectivePrice(product),
         qty: qty,
         series: product.series,

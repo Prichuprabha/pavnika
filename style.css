@@ -2481,16 +2481,26 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 .lightbox-size-picker .size-picker-label {
   display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
-  color: var(--ink); opacity: 0.7; margin-bottom: 6px;
+  color: var(--ivory); opacity: 0.75; margin-bottom: 6px;
 }
 .lightbox-size-picker .size-chip-row {
   display: flex; gap: 8px; flex-wrap: wrap;
 }
-/* Sizing only — the chip's colors (default/active/is-unavailable) come
-   from the existing .filter-btn rules in this same file, reused as-is
-   for visual consistency with every other filter chip on the site. */
+/* This panel has a dark background (see .lightbox-details), the
+   opposite of where .filter-btn is normally used (light backgrounds
+   like the Collections sidebar) — so its default/active colors are
+   overridden here rather than reused as-is, which previously made the
+   "selected" chip blend into the dark background and the unselected
+   ones look more prominent, backwards from what it should be. */
 .lightbox-size-picker .filter-btn {
   padding: 8px 16px; font-size: 0.76rem;
+  background: transparent; color: var(--ivory); border: 1px solid rgba(252, 245, 237, 0.45);
+}
+.lightbox-size-picker .filter-btn.active {
+  background: var(--gold); color: var(--green-deep); border-color: var(--gold); font-weight: 600;
+}
+.lightbox-size-picker .filter-btn.is-unavailable {
+  color: rgba(252, 245, 237, 0.4); border-color: rgba(252, 245, 237, 0.2);
 }
 
 .lightbox-cart-actions {
@@ -4094,18 +4104,15 @@ body.login-page {
   .dept-switcher a { font-size: 0.76rem; gap: 6px; padding: 12px 6px; }
 }
 
-/* ---------- Jewellery & Accessories page: simpler filter toolbar ---------- */
+/* ---------- Jewellery & Accessories page: category chips inside the sidebar ---------- */
 .ja-chip-row {
-  display: flex; gap: 8px; flex-wrap: wrap; margin: 0 0 18px;
+  display: flex; gap: 8px; flex-wrap: wrap;
 }
-.ja-toolbar { margin-bottom: 10px; }
-.ja-toolbar-row {
-  display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 10px;
-}
-.ja-toolbar-row .search-input { flex: 1; min-width: 200px; }
-.ja-toolbar-row select {
-  font-family: var(--body); font-size: 0.82rem; padding: 10px 12px; border: 1px solid var(--stone);
-  border-radius: 8px; background: var(--ivory); color: var(--ink);
+@media (max-width: 900px) {
+  .ja-chip-row {
+    flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px;
+  }
+  .ja-chip-row::-webkit-scrollbar { display: none; }
 }
 
 /* Contact: align content with the hero copy inset */

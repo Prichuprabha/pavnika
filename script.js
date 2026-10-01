@@ -442,7 +442,13 @@ function productCardHTML(p) {
 // which sibling size they pick inside the lightbox.
 function nonSareeCardHTML(p) {
   var group = jewelleryGroupSiblings(p);
-  var isGroup = group.length > 1;
+  var availableSiblings = group.filter(function (s) { return !s.sold; });
+  // "Multiple sizes available" / "From AED X" only makes sense while a
+  // customer genuinely has more than one size to choose from — once
+  // only one size (or none) is left unsold, this should read exactly
+  // like a plain single item, not advertise a choice that no longer
+  // exists.
+  var isGroup = availableSiblings.length > 1;
   var allSoldInGroup = group.every(function (s) { return s.sold; });
   var soldClass = allSoldInGroup ? ' is-sold' : '';
   var soldRibbon = allSoldInGroup ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
@@ -450,7 +456,7 @@ function nonSareeCardHTML(p) {
   var saleBadge = onSale ? '<span class="sale-badge">Sale</span>' : '';
   var badgeLabel = p.department === 'jewellery' ? p.type : p.category;
   var namePart = p.department === 'jewellery' ? (p.type + (p.colour ? ' — ' + p.colour : '')) : (p.category || 'Accessory');
-  var displayPrice = isGroup ? Math.min.apply(null, group.map(function (s) { return effectivePrice(s); })) : effectivePrice(p);
+  var displayPrice = isGroup ? Math.min.apply(null, availableSiblings.map(function (s) { return effectivePrice(s); })) : effectivePrice(p);
   var pricingHtml = onSale
     ? '<span class="p-price-row">' +
         '<span class="p-price-was">AED ' + formatAED(p.price) + '</span>' +
