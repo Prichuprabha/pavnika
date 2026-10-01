@@ -2887,5 +2887,19 @@ window.PRODUCTS = [
     "baseId": "JW002",
     "size": "2.6",
     "id": "JW002-26"
+  },
+  {
+    "department": "jewellery",
+    "type": "Earrings",
+    "colour": "Test Earring color",
+    "note": "Test earring note",
+    "price": 50,
+    "salePrice": null,
+    "sold": false,
+    "images": [
+      "https://pavnika.ae/assets/products/JW003-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/JW003-1.jpg",
+    "id": "JW003"
   }
 ];
