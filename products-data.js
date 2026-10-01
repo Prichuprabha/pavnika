@@ -2901,5 +2901,16 @@ window.PRODUCTS = [
     ],
     "image": "https://pavnika.ae/assets/products/JW003-1.jpg",
     "id": "JW003"
+  },
+  {
+    "department": "accessory",
+    "category": "Artificial Flowers",
+    "note": "Test note for Aritficial flower",
+    "price": 100,
+    "salePrice": null,
+    "sold": false,
+    "images": [],
+    "image": "",
+    "id": "AC001"
   }
 ];
