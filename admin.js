@@ -889,13 +889,27 @@ function initSareeEditor(token) {
   }
 
   departmentSelect.addEventListener('change', function () {
-    updateDepartmentFieldVisibility();
-    if (departmentSelect.value === 'saree') { updateIdSuggestion(); }
-    else { updateNonSareeIdSuggestion(); }
+    try {
+      updateDepartmentFieldVisibility();
+      if (departmentSelect.value === 'saree') { updateIdSuggestion(); }
+      else { updateNonSareeIdSuggestion(); }
+    } catch (err) {
+      alert('Error switching department: ' + err.message);
+      console.error('Department switch error:', err);
+    }
   });
-  document.getElementById('admin-f-jtype').addEventListener('change', updateNonSareeIdSuggestion);
-  document.getElementById('admin-f-bangle-base').addEventListener('change', updateBangleIdPreview);
-  document.getElementById('admin-f-bangle-size').addEventListener('input', updateBangleIdPreview);
+  document.getElementById('admin-f-jtype').addEventListener('change', function () {
+    try { updateNonSareeIdSuggestion(); }
+    catch (err) { alert('Error switching jewellery type: ' + err.message); console.error(err); }
+  });
+  document.getElementById('admin-f-bangle-base').addEventListener('change', function () {
+    try { updateBangleIdPreview(); }
+    catch (err) { alert('Error picking bangle design: ' + err.message); console.error(err); }
+  });
+  document.getElementById('admin-f-bangle-size').addEventListener('input', function () {
+    try { updateBangleIdPreview(); }
+    catch (err) { alert('Error entering bangle size: ' + err.message); console.error(err); }
+  });
 
   var materialSelect = document.getElementById('admin-f-material');
   var materialNewInput = document.getElementById('admin-f-material-new');
@@ -1464,6 +1478,7 @@ function initSareeEditor(token) {
 
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    try {
     var saveBtn = document.getElementById('admin-save-btn');
     var images = currentImages.slice();
     var dept = departmentSelect.value;
@@ -1480,7 +1495,12 @@ function initSareeEditor(token) {
         return;
       }
       if (!idField.value.trim()) {
-        showStatus('error', 'Please provide an ID (or select a series to auto-generate one).');
+        var idHintMsg = dept === 'saree'
+          ? 'Please provide an ID (or select a series to auto-generate one).'
+          : (dept === 'jewellery' && document.getElementById('admin-f-jtype').value === 'Bangles & Bracelets'
+            ? 'Please enter a size for this bangle so an ID can be generated.'
+            : 'Please provide an ID.');
+        showStatus('error', idHintMsg);
         return;
       }
     }
@@ -1593,6 +1613,12 @@ function initSareeEditor(token) {
         saveBtn.disabled = false;
         saveBtn.textContent = 'Save to GitHub';
       });
+    } catch (err) {
+      alert('Save button error (nothing was sent to the server): ' + err.message);
+      console.error('Save button error:', err);
+      var btn = document.getElementById('admin-save-btn');
+      if (btn) { btn.disabled = false; btn.textContent = 'Save to GitHub'; }
+    }
   });
 
   renderTable();
