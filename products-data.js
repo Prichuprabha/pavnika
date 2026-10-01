@@ -2855,5 +2855,21 @@ window.PRODUCTS = [
       "Bridal",
       "Wedding Guest"
     ]
+  },
+  {
+    "department": "jewellery",
+    "type": "Bangles & Bracelets",
+    "colour": "Test color",
+    "note": "Test product",
+    "price": 5,
+    "salePrice": null,
+    "sold": false,
+    "images": [
+      "https://pavnika.ae/assets/products/JW001-24-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/JW001-24-1.jpg",
+    "baseId": "JW001",
+    "size": "2.4",
+    "id": "JW001-24"
   }
 ];
