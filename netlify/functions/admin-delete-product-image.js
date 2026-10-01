@@ -20,7 +20,7 @@ const GITHUB_OWNER = process.env.GITHUB_OWNER;
 const GITHUB_REPO = process.env.GITHUB_REPO;
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 
-const FILENAME_PATTERN = /^[A-Za-z0-9]+-[0-9]+\.jpe?g$/i;
+const FILENAME_PATTERN = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-[0-9]+\.jpe?g$/i;
 
 function githubHeaders() {
   return {

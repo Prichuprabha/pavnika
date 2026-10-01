@@ -26,7 +26,7 @@ const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const FILE_PATH = 'products-data.js';
 const IMAGE_BASE_URL = 'https://pavnika.ae/assets/products/';
 
-const FILENAME_PATTERN = /^[A-Za-z0-9]+-[0-9]+\.jpe?g$/i;
+const FILENAME_PATTERN = /^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*-[0-9]+\.jpe?g$/i;
 
 const SERIES_CODES = {
   'VALUE WEAVES': 'VW',

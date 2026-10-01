@@ -1474,6 +1474,7 @@ function initSareeEditor(token) {
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
     statusMsg.innerHTML = html;
+    statusMsg.style.display = 'block';
   }
 
   form.addEventListener('submit', function (e) {
