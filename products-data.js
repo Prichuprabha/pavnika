@@ -2909,8 +2909,10 @@ window.PRODUCTS = [
     "price": 100,
     "salePrice": null,
     "sold": false,
-    "images": [],
-    "image": "",
+    "images": [
+      "https://pavnika.ae/assets/products/AC001-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
     "id": "AC001"
   }
 ];
