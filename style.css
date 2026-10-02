@@ -2210,6 +2210,10 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    pixel of the box. */
 .lightbox-theme-light .lightbox-stage img { object-fit: contain; object-position: center top; }
 @media (min-width: 900px) {
+  /* rgba equivalent of --ivory (#FCF5ED), at the same 0.90 opacity the
+     saree backdrop already uses on desktop -- so the page shows
+     through behind the popup here too, not just for sarees. */
+  .lightbox-overlay.lightbox-theme-light { background: rgba(252, 245, 237, 0.90); }
   .lightbox-theme-light .lightbox-main-grid {
     grid-template-columns: 66px minmax(0, 1.3fr) minmax(0, 0.7fr);
     /* Stretch instead of start: lets the stage fill the row's actual
