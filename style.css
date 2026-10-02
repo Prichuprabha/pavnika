@@ -5260,7 +5260,8 @@ header.site-header.header-dark.is-scrolled {
     color: var(--green-deep);
     font-weight: 600;
   }
-  #qf-clear-all {
+  #qf-clear-all,
+  #ja-qf-clear-all {
     background: none;
     border: none;
     color: var(--gold);
