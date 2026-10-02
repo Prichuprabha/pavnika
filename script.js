@@ -2515,6 +2515,7 @@ window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
     var isSaree = (product.department || 'saree') === 'saree';
+    overlay.classList.toggle('lightbox-theme-light', !isSaree);
     document.getElementById('lightbox-design').textContent = isSaree
       ? ((product.material || product.design) || '')
       : (product.department === 'jewellery' ? product.type : (product.category || 'Accessory'));

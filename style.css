@@ -2125,6 +2125,48 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0s linear 0.3s;
 }
+/* ---------- Jewellery & Accessories: light theme ----------
+   Sarees keep the existing dark overlay/card completely unchanged —
+   none of this applies without .lightbox-theme-light, which
+   openLightbox only ever adds for a non-saree product. */
+.lightbox-overlay.lightbox-theme-light { background: var(--ivory); }
+.lightbox-theme-light .lightbox-details { color: var(--ink); }
+.lightbox-theme-light .lightbox-details .p-title { color: var(--green-deep); }
+.lightbox-theme-light .lightbox-details .p-code { color: #B8142A; }
+.lightbox-theme-light .lightbox-details .p-subtitle { color: var(--ink); opacity: 0.7; }
+.lightbox-theme-light .lightbox-tags span {
+  color: var(--ink); background: var(--ivory-deep); border-color: var(--stone);
+}
+.lightbox-theme-light .lightbox-description { color: var(--ink); opacity: 0.75; }
+.lightbox-theme-light .lightbox-price { color: #B8142A; }
+.lightbox-theme-light .lightbox-price-was { color: var(--ink); opacity: 0.6; }
+.lightbox-theme-light .lightbox-wishlist-pill { color: var(--ink); border-color: var(--stone); border-style: solid; }
+.lightbox-theme-light .lightbox-wishlist-pill-icon { border-color: var(--stone); }
+.lightbox-theme-light .lightbox-wishlist-pill:hover { background: var(--ivory-deep); }
+.lightbox-theme-light .lightbox-heart-wrap .lightbox-wishlist-heart { color: var(--green-deep); border-color: var(--stone); }
+/* Add to Cart / Buy Now swap roles for contrast against a light
+   background: Buy Now (previously filled) becomes the plain outline,
+   Add to Cart (previously outlined) becomes the filled, prominent
+   action — same spirit as the dark theme's own contrast, inverted. */
+.lightbox-theme-light .btn-add-cart { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
+.lightbox-theme-light .btn-add-cart:hover { background: var(--green); }
+.lightbox-theme-light .btn-buy-now { background: #fff; border-color: var(--stone); color: var(--green-deep); }
+.lightbox-theme-light .btn-buy-now:hover { background: var(--ivory-deep); }
+.lightbox-theme-light .trust-payment-label { color: var(--ink); opacity: 0.55; }
+.lightbox-theme-light .pay-badge { background: var(--ivory-deep); color: var(--ink); }
+.lightbox-theme-light .trust-delivery-row { color: var(--ink); opacity: 0.7; }
+.lightbox-theme-light .related-sarees-title { color: var(--green-deep); }
+.lightbox-theme-light .lightbox-size-picker .size-picker-label { color: var(--ink); opacity: 0.6; }
+.lightbox-theme-light .lightbox-size-picker .filter-btn {
+  background: #fff; color: var(--ink); border-color: var(--stone);
+}
+.lightbox-theme-light .lightbox-size-picker .filter-btn.active {
+  background: var(--gold); color: #fff; border-color: var(--gold);
+}
+.lightbox-theme-light .lightbox-size-picker .filter-btn.is-unavailable {
+  color: var(--ink); opacity: 0.35; border-color: var(--stone);
+}
+
 .lightbox-overlay.is-visible {
   opacity: 1;
   visibility: visible;
@@ -2626,6 +2668,9 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
     border-radius: 14px;
     padding: 34px 34px 30px;
     box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.65);
+  }
+  .lightbox-theme-light .lightbox-body {
+    background: linear-gradient(180deg, #FFFBF6, var(--ivory));
   }
   .lightbox-close-x { top: 18px; right: 18px; }
 }
