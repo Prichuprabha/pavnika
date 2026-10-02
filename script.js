@@ -1692,13 +1692,64 @@ function initJewelleryAccessoriesPage() {
     }
 
     var jaNoteEl = document.getElementById('ja-active-filter-note');
+    var jaPriceIsFullRange = (typeof dataMin === 'undefined') || (state.priceMin === dataMin && state.priceMax === dataMax);
     if (jaNoteEl) {
       var noteParts = [];
       if (state.type !== 'all') noteParts.push(state.type);
       if (state.query.trim()) noteParts.push('\u201C' + state.query.trim() + '\u201D');
-      var jaPriceIsFullRange = (typeof dataMin === 'undefined') || (state.priceMin === dataMin && state.priceMax === dataMax);
       if (!jaPriceIsFullRange) noteParts.push('price range');
       jaNoteEl.textContent = noteParts.length ? 'Filtered by: ' + noteParts.join(' \u00B7 ') : '';
+    }
+
+    // Active Filters tags inside the mobile Filters box -- same pattern
+    // as Sarees: one removable tag per active dimension, "Clear all"
+    // delegates to the same button the desktop header already uses
+    // rather than duplicating that reset logic.
+    var jaActiveFiltersRow = document.getElementById('ja-active-filters-row');
+    var jaActiveFiltersTagsEl = document.getElementById('ja-active-filters-tags');
+    if (jaActiveFiltersRow && jaActiveFiltersTagsEl) {
+      var jaTags = [];
+      if (state.type !== 'all') {
+        jaTags.push({ label: state.type, reset: function () {
+          state.type = 'all';
+          chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-value') === 'all'); });
+        }});
+      }
+      if (state.query.trim()) {
+        jaTags.push({ label: '\u201C' + state.query.trim() + '\u201D', reset: function () {
+          state.query = '';
+          searchInput.value = '';
+        }});
+      }
+      if (!jaPriceIsFullRange) {
+        jaTags.push({ label: 'AED ' + state.priceMin.toLocaleString() + ' \u2013 AED ' + state.priceMax.toLocaleString(), reset: function () {
+          priceMinInput.value = dataMin;
+          priceMaxInput.value = dataMax;
+          state.priceMin = dataMin;
+          state.priceMax = dataMax;
+          updatePriceUI();
+        }});
+      }
+
+      if (!jaTags.length) {
+        jaActiveFiltersRow.style.display = 'none';
+        jaActiveFiltersTagsEl.innerHTML = '';
+      } else {
+        jaActiveFiltersRow.style.display = '';
+        jaActiveFiltersTagsEl.innerHTML = jaTags.map(function (t, i) {
+          return '<span class="active-filter-tag" data-tag-index="' + i + '">' + t.label +
+            ' <button type="button" aria-label="Remove filter">&times;</button></span>';
+        }).join('');
+        jaActiveFiltersTagsEl.querySelectorAll('.active-filter-tag').forEach(function (tagEl, i) {
+          var removeBtn = tagEl.querySelector('button');
+          if (!removeBtn) return;
+          removeBtn.addEventListener('click', function () {
+            jaTags[i].reset();
+            state.page = 1;
+            render();
+          });
+        });
+      }
     }
 
     renderPagination(filtered.length);
@@ -1723,6 +1774,14 @@ function initJewelleryAccessoriesPage() {
       render();
     });
   });
+
+  var jaQfClearAllBtn = document.getElementById('ja-qf-clear-all');
+  if (jaQfClearAllBtn) {
+    jaQfClearAllBtn.addEventListener('click', function () {
+      var mainClearBtn = document.getElementById('ja-clear-all-filters');
+      if (mainClearBtn) mainClearBtn.click();
+    });
+  }
 
   var clearAllBtn = document.getElementById('ja-clear-all-filters');
   if (clearAllBtn) {
