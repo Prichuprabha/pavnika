@@ -2148,10 +2148,10 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    background: Buy Now (previously filled) becomes the plain outline,
    Add to Cart (previously outlined) becomes the filled, prominent
    action — same spirit as the dark theme's own contrast, inverted. */
-.lightbox-theme-light .btn-add-cart { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
-.lightbox-theme-light .btn-add-cart:hover { background: var(--green); }
-.lightbox-theme-light .btn-buy-now { background: #fff; border-color: var(--stone); color: var(--green-deep); }
-.lightbox-theme-light .btn-buy-now:hover { background: var(--ivory-deep); }
+.lightbox-theme-light .lightbox-cart-actions .btn-add-cart { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
+.lightbox-theme-light .lightbox-cart-actions .btn-add-cart:hover { background: var(--green); }
+.lightbox-theme-light .lightbox-cart-actions .btn-buy-now { background: #fff; border-color: var(--stone); color: var(--green-deep); }
+.lightbox-theme-light .lightbox-cart-actions .btn-buy-now:hover { background: var(--ivory-deep); }
 .lightbox-theme-light .trust-payment-label { color: var(--ink); opacity: 0.55; }
 .lightbox-theme-light .pay-badge { background: var(--ivory-deep); color: var(--ink); }
 .lightbox-theme-light .trust-delivery-row { color: var(--ink); opacity: 0.7; }
