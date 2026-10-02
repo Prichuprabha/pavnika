@@ -33,7 +33,7 @@
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=221">
+<link rel="stylesheet" href="style.css?v=223">
 </head>
 <body>
 <header class="site-header">
@@ -102,16 +102,18 @@
 
 <section style="padding-top:0;">
   <div class="container">
-    <div class="dept-switcher" data-active="jewellery">
-      <div class="dept-switcher-thumb"></div>
-      <a href="collections.html">
+    <div class="dept-switcher-elegant">
+      <span class="dse-flourish" aria-hidden="true"></span>
+      <a href="collections.html" class="dse-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3c2 4 2 14 0 18M20 3c-2 4-2 14 0 18M8 3c1 4 1 14 0 18M16 3c-1 4-1 14 0 18"/></svg>
         Sarees
       </a>
-      <a href="jewellery-accessories.html" class="active">
+      <span class="dse-divider" aria-hidden="true"></span>
+      <a href="jewellery-accessories.html" class="dse-pill dse-current">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z"/></svg>
-        Jewellery &amp; Accessories
+        Jewellery
       </a>
+      <span class="dse-flourish" aria-hidden="true"></span>
     </div>
 
     <div class="ja-layout">
@@ -163,13 +165,20 @@
 
           <div class="sidebar-filter-group">
             <h4>Category</h4>
-            <div class="filter-bar-vertical" id="ja-chip-row" data-filter-group="type">
-              <button type="button" class="filter-btn active" data-value="all">All</button>
-              <button type="button" class="filter-btn" data-value="Bangles & Bracelets">Bangles &amp; Bracelets</button>
-              <button type="button" class="filter-btn" data-value="Earrings">Earrings</button>
-              <button type="button" class="filter-btn" data-value="Haarams">Haarams</button>
-              <button type="button" class="filter-btn" data-value="Necklace">Necklace</button>
-              <button type="button" class="filter-btn" data-value="Artificial Flowers">Artificial Flowers</button>
+            <div class="chip-scroll-wrap">
+              <div class="filter-bar-vertical" id="ja-chip-row" data-filter-group="type">
+                <button type="button" class="filter-btn active" data-value="all">All</button>
+                <button type="button" class="filter-btn" data-value="Bangles & Bracelets">Bangles &amp; Bracelets</button>
+                <button type="button" class="filter-btn" data-value="Earrings">Earrings</button>
+                <button type="button" class="filter-btn" data-value="Haarams">Haarams</button>
+                <button type="button" class="filter-btn" data-value="Necklace">Necklace</button>
+                <button type="button" class="filter-btn" data-value="Artificial Flowers">Artificial Flowers</button>
+              </div>
+              <div class="chip-scroll-hint" id="ja-chip-scroll-hint">
+                <button type="button" class="chip-scroll-hint-circle" id="ja-chip-scroll-hint-btn" aria-label="Scroll to see more categories">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 6 15 12 9 18"/></svg>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -275,6 +284,6 @@
 </footer>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=226"></script>
+<script src="script.js?v=227"></script>
 </body>
 </html>
