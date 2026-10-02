@@ -26,6 +26,29 @@ function netOrderRevenue(o) {
   return Math.max(0, total - cashBankRefunded);
 }
 
+// Used on the printed tag itself, where there's very little room --
+// just the series for a saree, or the type/category for Jewellery and
+// Accessories (which have no series at all, previously leaving this
+// line blank).
+function tagSubtitle(item) {
+  if (item.department === 'jewellery') return item.type + (item.colour ? ' \u2014 ' + item.colour : '');
+  if (item.department === 'accessory') return item.category || 'Accessory';
+  var seriesTitleCase = function (s) { return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }); };
+  return seriesTitleCase(item.series);
+}
+
+// Used in the admin's own selection list, where there's room for the
+// fuller "Material · Series" detail sarees already show (e.g. "Semi
+// Kanchipuram · Bridal Bliss") -- Jewellery/Accessories get their own
+// equivalent (type + colour, or category) instead of the blank/bare "·"
+// that showed before, since they have no material or series at all.
+function tagListSubtitle(item) {
+  if (item.department === 'jewellery') return item.type + (item.colour ? ' \u2014 ' + item.colour : '');
+  if (item.department === 'accessory') return item.category || 'Accessory';
+  var seriesTitleCase = function (s) { return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }); };
+  return (item.material || item.design || '') + (item.series ? ' \u00B7 ' + seriesTitleCase(item.series) : '');
+}
+
 // Classifies a line item's department straight from its ID prefix
 // (JW.../AC.../anything else) rather than looking it up in
 // window.PRODUCTS, so this still works correctly for an order placed
@@ -361,6 +384,7 @@ function initSareeEditor(token) {
   var currentPage = 1;
   var searchQuery = '';
   var hideSold = false;
+  var deptFilter = 'all'; // 'all' | 'saree' | 'jewellery' (jewellery bucket covers accessories too, matching the customer-facing page's single department grouping)
 
   // The form now slides in as a drawer (overlay + panel), matching the
   // Orders drawer, instead of sitting permanently in a side column —
@@ -422,6 +446,8 @@ function initSareeEditor(token) {
     var q = searchQuery.trim().toLowerCase();
     var products = window.PRODUCTS || [];
     if (hideSold) products = products.filter(function (p) { return !p.sold; });
+    if (deptFilter === 'saree') products = products.filter(function (p) { return (p.department || 'saree') === 'saree'; });
+    if (deptFilter === 'jewellery') products = products.filter(function (p) { return p.department === 'jewellery' || p.department === 'accessory'; });
     if (!q) return products;
     var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category', 'colour', 'note'];
     return products.filter(function (p) {
@@ -526,6 +552,19 @@ function initSareeEditor(token) {
       hideSold = hideSoldToggle.checked;
       currentPage = 1;
       renderTable();
+    });
+  }
+
+  var deptFilterRow = document.getElementById('admin-dept-filter-row');
+  if (deptFilterRow) {
+    deptFilterRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        deptFilterRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        deptFilter = btn.getAttribute('data-dept');
+        currentPage = 1;
+        renderTable();
+      });
     });
   }
 
@@ -4761,13 +4800,20 @@ function initSareeTagsView(token) {
     statusMsg.textContent = msg;
   }
 
+  var tagsDeptFilter = 'all';
+
   function getVisibleProducts() {
     var q = searchInput.value.trim().toLowerCase();
     return (window.PRODUCTS || []).filter(function (p) {
       if (hideSoldBox.checked && p.sold) return false;
+      if (tagsDeptFilter === 'saree' && (p.department || 'saree') !== 'saree') return false;
+      if (tagsDeptFilter === 'jewellery' && p.department !== 'jewellery' && p.department !== 'accessory') return false;
       if (!q) return true;
       return (p.id || '').toLowerCase().indexOf(q) !== -1 ||
              (p.material || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.type || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.colour || '').toLowerCase().indexOf(q) !== -1 ||
+             (p.category || '').toLowerCase().indexOf(q) !== -1 ||
              (p.series || '').toLowerCase().indexOf(q) !== -1 ||
              (p.design || '').toLowerCase().indexOf(q) !== -1;
     });
@@ -4780,7 +4826,7 @@ function initSareeTagsView(token) {
   function renderList() {
     var products = getVisibleProducts();
     if (!products.length) {
-      listEl.innerHTML = '<p style="padding:20px; font-size:0.85rem; opacity:0.6;">No sarees match.</p>';
+      listEl.innerHTML = '<p style="padding:20px; font-size:0.85rem; opacity:0.6;">No items match.</p>';
       return;
     }
     listEl.innerHTML = products.map(function (p) {
@@ -4791,7 +4837,7 @@ function initSareeTagsView(token) {
           (p.image ? '<img src="' + p.image + '" alt="">' : '') +
           '<div>' +
             '<div class="tag-code">' + p.id + '</div>' +
-            '<div class="tag-meta">' + (p.material || p.design || '') + ' &middot; ' + seriesTitle(p.series) + '</div>' +
+            '<div class="tag-meta">' + tagListSubtitle(p) + '</div>' +
           '</div>' +
           (p.sold ? '<span class="tag-sold">Sold</span>' : '') +
         '</div>'
@@ -4823,6 +4869,18 @@ function initSareeTagsView(token) {
 
   searchInput.addEventListener('input', renderList);
   hideSoldBox.addEventListener('change', renderList);
+
+  var tagsDeptFilterRow = document.getElementById('admin-tags-dept-filter-row');
+  if (tagsDeptFilterRow) {
+    tagsDeptFilterRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tagsDeptFilterRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+        btn.classList.add('active');
+        tagsDeptFilter = btn.getAttribute('data-dept');
+        renderList();
+      });
+    });
+  }
 
   document.getElementById('admin-tags-select-all').addEventListener('click', function () {
     getVisibleProducts().forEach(function (p) {
@@ -4878,13 +4936,6 @@ function buildTagSheetHtml(items) {
   }
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
-  // Sarees show their series here; Jewellery/Accessories have no series
-  // at all, which previously left this line blank on their tags.
-  function tagSubtitle(item) {
-    if (item.department === 'jewellery') return item.type + (item.colour ? ' \u2014 ' + item.colour : '');
-    if (item.department === 'accessory') return item.category || 'Accessory';
-    return seriesTitle(item.series);
   }
 
   // Chunk into pages of 6 so each A4 sheet breaks cleanly
