@@ -377,6 +377,7 @@
   .admin-dash-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 16px; margin-bottom: 16px; }
   .admin-dash-row-2 { grid-template-columns: 1.2fr 1fr; }
   .admin-metric-card .delta { font-size: 0.66rem; color: #3B6D11; font-weight: 600; margin: 4px 0 0; }
+  .admin-metric-card .admin-dept-breakdown { font-size: 0.66rem; color: var(--ink); opacity: 0.6; font-weight: 400; margin: 4px 0 0; }
   .admin-metric-card .delta.negative { color: #B8142A; }
   .admin-view-all-link { font-size: 0.72rem; color: var(--gold); cursor: pointer; font-weight: 600; }
   .admin-view-all-link:hover { text-decoration: underline; }
@@ -1592,7 +1593,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=206"></script>
+<script src="admin.js?v=207"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

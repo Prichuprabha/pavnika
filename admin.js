@@ -26,6 +26,44 @@ function netOrderRevenue(o) {
   return Math.max(0, total - cashBankRefunded);
 }
 
+// Classifies a line item's department straight from its ID prefix
+// (JW.../AC.../anything else) rather than looking it up in
+// window.PRODUCTS, so this still works correctly for an order placed
+// months ago even if that exact item has since been deleted from the
+// live catalogue.
+function itemDepartmentFromId(id) {
+  var s = String(id || '');
+  if (s.indexOf('JW') === 0) return 'jewellery';
+  if (s.indexOf('AC') === 0) return 'accessory';
+  return 'saree';
+}
+
+// Splits a set of orders' combined net revenue (the same number the
+// headline Revenue card shows) across departments. An order can mix
+// sarees and jewellery in one cart, so this allocates proportionally by
+// each item's share of that order's own raw subtotal, scaled so the
+// three buckets always sum back to exactly the same net total already
+// shown elsewhere — a discount or partial refund on a mixed order
+// reduces each department's slice by the same proportion, rather than
+// being arbitrarily assigned to just one of them.
+function departmentRevenueSplit(orders) {
+  var buckets = { saree: 0, jewellery: 0, accessory: 0 };
+  orders.forEach(function (o) {
+    var items;
+    try { items = JSON.parse(o.items || '[]'); } catch (e) { items = []; }
+    if (!items.length) return;
+    var rawSubtotal = items.reduce(function (sum, it) { return sum + (Number(it.price) || 0) * (Number(it.qty) || 1); }, 0);
+    if (rawSubtotal <= 0) return;
+    var net = netOrderRevenue(o);
+    var scale = net / rawSubtotal;
+    items.forEach(function (it) {
+      var dept = itemDepartmentFromId(it.id);
+      buckets[dept] += (Number(it.price) || 0) * (Number(it.qty) || 1) * scale;
+    });
+  });
+  return buckets;
+}
+
 // Builds the pre-filled WhatsApp follow-up for an order stuck in
 // 'pending' (checkout started, payment never completed) — not shown
 // for 'cod_pending', which is an intentional cash-on-delivery order,
@@ -2133,11 +2171,23 @@ function initStatsDashboard(token) {
     var stockPeriodLabel = (orderStats && orderStats.isDefaultWeek) ? 'this week' : 'this period';
     var stockDelta = orderStats && orderStats.newlySoldCount ? '<p class="delta negative">-' + orderStats.newlySoldCount + ' sold ' + stockPeriodLabel + '</p>' : '';
 
+    // Only shown once jewellery/accessories actually have real sales in
+    // this period — a saree-only business (or a saree-only date range)
+    // sees the Revenue card exactly as it always has, with nothing new
+    // to look at.
+    function departmentBreakdownHtml(split) {
+      if (!split || (split.jewellery <= 0 && split.accessory <= 0)) return '';
+      var fmt = function (n) { return Math.round(n).toLocaleString(); };
+      return '<p class="admin-dept-breakdown">Sarees AED ' + fmt(split.saree) +
+        ' &middot; Jewellery AED ' + fmt(split.jewellery) +
+        ' &middot; Accessories AED ' + fmt(split.accessory) + '</p>';
+    }
+
     var orderCard = orderStats
       ? buildStatCardHtml('Orders', orderStats.orderCount, 'box', 'gold', deltaHtml(orderStats.orderCountDelta))
       : '';
     var revenueCard = orderStats
-      ? buildStatCardHtml('Revenue (AED)', orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }), 'wallet', 'gold', deltaHtml(orderStats.revenueDelta))
+      ? buildStatCardHtml('Revenue (AED)', orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }), 'wallet', 'gold', deltaHtml(orderStats.revenueDelta) + departmentBreakdownHtml(orderStats.departmentRevenue))
       : '';
 
     metricGrid.innerHTML =
@@ -2294,6 +2344,7 @@ function initStatsDashboard(token) {
     return {
       orderCount: current.length,
       revenue: currentRevenue,
+      departmentRevenue: departmentRevenueSplit(current),
       orderCountDelta: isAllTime ? null : pctChange(current.length, previous.length),
       revenueDelta: isAllTime ? null : pctChange(currentRevenue, previousRevenue),
       newlySoldCount: newlySoldCount,
@@ -4828,6 +4879,13 @@ function buildTagSheetHtml(items) {
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+  // Sarees show their series here; Jewellery/Accessories have no series
+  // at all, which previously left this line blank on their tags.
+  function tagSubtitle(item) {
+    if (item.department === 'jewellery') return item.type + (item.colour ? ' \u2014 ' + item.colour : '');
+    if (item.department === 'accessory') return item.category || 'Accessory';
+    return seriesTitle(item.series);
+  }
 
   // Chunk into pages of 6 so each A4 sheet breaks cleanly
   var pages = [];
@@ -4844,7 +4902,7 @@ function buildTagSheetHtml(items) {
           '</div>' +
           '<div class="fold-line"></div>' +
           '<div class="panel-inner">' +
-            '<p class="series-text">' + esc(seriesTitle(item.series)) + '</p>' +
+            '<p class="series-text">' + esc(tagSubtitle(item)) + '</p>' +
             '<svg class="barcode" id="bc-' + globalIdx + '"></svg>' +
             '<p class="code-text">' + esc(item.id) + '</p>' +
             '<div class="contact-footer">' +
