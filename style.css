@@ -2212,7 +2212,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   }
   .lightbox-theme-light .lightbox-stage-wrap { height: 100%; }
   .lightbox-theme-light .lightbox-stage {
-    aspect-ratio: unset; height: 100%; max-height: none;
+    aspect-ratio: unset; height: 100%; min-height: 62vh; max-height: none;
   }
 }
 /* Payment badges: one consistent light, neutral style instead of each
