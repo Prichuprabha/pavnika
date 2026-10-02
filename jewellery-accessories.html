@@ -33,7 +33,7 @@
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=225">
+<link rel="stylesheet" href="style.css?v=226">
 </head>
 <body>
 <header class="site-header">
@@ -177,8 +177,8 @@
             </label>
           </div>
 
-          <div class="sidebar-filter-group">
-            <h4>Category</h4>
+          <div class="sidebar-filter-group" id="ja-category-group">
+            <h4 class="category-label">Category</h4>
             <div class="chip-scroll-wrap">
               <div class="filter-bar-vertical" id="ja-chip-row" data-filter-group="type">
                 <button type="button" class="filter-btn active" data-value="all">All</button>
@@ -204,7 +204,7 @@
             </div>
           </div>
 
-          <div class="sidebar-filter-group">
+          <div class="sidebar-filter-group ja-price-group">
             <h4>Price Range</h4>
             <div class="price-range-slider" id="ja-price-range-slider">
               <div class="price-range-track">

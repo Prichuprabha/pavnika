@@ -4189,6 +4189,17 @@ body.login-page {
   }
   #ja-filters-body { padding: 0 14px 14px; }
   #ja-sidebar.collapsed #ja-filters-body { display: none; }
+
+  /* Tighter mobile spacing matching the Sarees filters box exactly:
+     11px from "Filters" to the chips (already correct, from
+     .ja-mobile-only's own padding + 0 top padding here), 10px between
+     the chips and Active Filters, no divider borders between sections.
+     Desktop keeps its own .sidebar-filter-group padding/border/heading
+     untouched -- these rules only apply inside this 900px query. */
+  #ja-filters-body .sidebar-filter-group { padding: 0; border-bottom: none; }
+  #ja-category-group .category-label { display: none; }
+  #ja-active-filters-row { margin-top: 10px; }
+  .ja-price-group { margin-top: 10px; }
 }
 
 /* Named grid areas so the visual order (search, then filters, then
