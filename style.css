@@ -2200,7 +2200,15 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-theme-light .lightbox-wishlist-pill { margin-left: auto; }
 /* Image fills its full box instead of letterboxing with empty space
    on the sides when its natural ratio doesn't match the container. */
-.lightbox-theme-light .lightbox-stage img { object-fit: cover; }
+/* contain, not cover: these photos have meaningful caption text baked
+   into the bottom of the image itself (e.g. "Haaram", "Bangles size
+   2.4"). cover crops whatever doesn't match the container's shape to
+   fill it -- fine for a generic photo, but it was cutting that caption
+   text off entirely once the container's height became independently
+   stretched from the image's own aspect ratio. contain always shows
+   the complete photo, which matters more here than filling every
+   pixel of the box. */
+.lightbox-theme-light .lightbox-stage img { object-fit: contain; object-position: center top; }
 @media (min-width: 900px) {
   .lightbox-theme-light .lightbox-main-grid {
     grid-template-columns: 66px minmax(0, 1.3fr) minmax(0, 0.7fr);
