@@ -1841,6 +1841,43 @@ function initJewelleryAccessoriesPage() {
     });
   }
 
+  // Animated scroll-hint circle on the category chip row — same
+  // reasoning and behavior as Sarees' quick-filter-chips: the row's
+  // own overflow-x:auto on mobile has no visual cue otherwise that
+  // "Artificial Flowers" (the last chip) exists past the edge.
+  var jaChipScrollHint = document.getElementById('ja-chip-scroll-hint');
+  var jaChipScrollHintBtn = document.getElementById('ja-chip-scroll-hint-btn');
+  if (jaChipScrollHint && chipRow) {
+    var updateJaChipScrollHint = function () {
+      var atEnd = chipRow.scrollLeft + chipRow.clientWidth >= chipRow.scrollWidth - 4;
+      var overflowing = chipRow.scrollWidth > chipRow.clientWidth + 4;
+      jaChipScrollHint.classList.toggle('hidden', atEnd || !overflowing);
+    };
+    chipRow.addEventListener('scroll', updateJaChipScrollHint);
+    window.addEventListener('resize', updateJaChipScrollHint);
+    // scrollWidth reads 0 while the Filters box is still collapsed
+    // (display:none), so re-check right after it's opened too.
+    filtersBoxHead.addEventListener('click', function () {
+      setTimeout(updateJaChipScrollHint, 0);
+    });
+    setTimeout(updateJaChipScrollHint, 0);
+
+    if (jaChipScrollHintBtn) {
+      jaChipScrollHintBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // A direct scrollLeft assignment always works, unlike scrollBy's
+        // options-object smooth-scroll, which has had real quirks in
+        // some mobile browser contexts silently no-oping instead of
+        // falling back to an instant scroll. CSS scroll-behavior on
+        // #ja-chip-row (mobile only) gives the same smooth feel.
+        var amount = chipRow.clientWidth * 0.6;
+        chipRow.scrollLeft = chipRow.scrollLeft + amount;
+        updateJaChipScrollHint();
+      });
+    }
+  }
+
   // Mobile "Hide sold out" is a separate pill button (quick access in
   // the toolbar row) rather than the desktop toggle-switch inside the
   // filters box — same split Sarees uses. Both drive the same

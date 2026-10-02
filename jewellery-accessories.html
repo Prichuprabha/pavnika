@@ -33,7 +33,7 @@
 <link rel="preconnect" href="https://storage.googleapis.com" crossorigin>
 <link rel="dns-prefetch" href="https://storage.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=223">
+<link rel="stylesheet" href="style.css?v=224">
 </head>
 <body>
 <header class="site-header">
@@ -102,7 +102,8 @@
 
 <section style="padding-top:0;">
   <div class="container">
-    <div class="dept-switcher-elegant">
+    <!-- Desktop only: the new elegant design -->
+    <div class="dept-switcher-elegant ja-switcher-desktop-only">
       <span class="dse-flourish" aria-hidden="true"></span>
       <a href="collections.html" class="dse-pill">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3c2 4 2 14 0 18M20 3c-2 4-2 14 0 18M8 3c1 4 1 14 0 18M16 3c-1 4-1 14 0 18"/></svg>
@@ -114,6 +115,19 @@
         Jewellery
       </a>
       <span class="dse-flourish" aria-hidden="true"></span>
+    </div>
+
+    <!-- Mobile only: the original sliding-pill design, unchanged -->
+    <div class="dept-switcher ja-switcher-mobile-only" data-active="jewellery">
+      <div class="dept-switcher-thumb"></div>
+      <a href="collections.html">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 3c2 4 2 14 0 18M20 3c-2 4-2 14 0 18M8 3c1 4 1 14 0 18M16 3c-1 4-1 14 0 18"/></svg>
+        Sarees
+      </a>
+      <a href="jewellery-accessories.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.5 8.5 8 11 4.5-2.5 8-6 8-11V5z"/></svg>
+        Jewellery &amp; Accessories
+      </a>
     </div>
 
     <div class="ja-layout">
@@ -284,6 +298,6 @@
 </footer>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=227"></script>
+<script src="script.js?v=228"></script>
 </body>
 </html>
