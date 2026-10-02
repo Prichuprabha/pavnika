@@ -2865,7 +2865,11 @@ window.PRODUCTS = [
     "salePrice": null,
     "sold": false,
     "images": [
-      "https://pavnika.ae/assets/products/JW001-24-1.jpg"
+      "https://pavnika.ae/assets/products/JW001-24-1.jpg",
+      "https://pavnika.ae/assets/products/JW001-24-2.jpg",
+      "https://pavnika.ae/assets/products/JW001-24-3.jpg",
+      "https://pavnika.ae/assets/products/JW001-24-4.jpg",
+      "https://pavnika.ae/assets/products/JW001-24-5.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JW001-24-1.jpg",
     "baseId": "JW001",
