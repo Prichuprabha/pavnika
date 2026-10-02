@@ -1693,6 +1693,8 @@ function initJewelleryAccessoriesPage() {
       state.page = 1;
       chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-value') === 'all'); });
       hideSoldToggle.checked = false;
+      var mobileToggleBtn = document.getElementById('ja-hide-sold-toggle-mobile');
+      if (mobileToggleBtn) mobileToggleBtn.classList.remove('checked');
       searchInput.value = '';
       if (typeof dataMin !== 'undefined') {
         priceMinInput.value = dataMin;
@@ -1788,6 +1790,59 @@ function initJewelleryAccessoriesPage() {
     clearTimeout(window.__jaResizeTimer);
     window.__jaResizeTimer = setTimeout(function () { render(); }, 150);
   });
+
+  // Mobile "Filters" box: starts collapsed, same as Sarees' version.
+  var jaSidebar = document.getElementById('ja-sidebar');
+  var filtersBoxHead = document.getElementById('ja-filters-box-head');
+  if (jaSidebar && filtersBoxHead) {
+    jaSidebar.classList.add('collapsed');
+    filtersBoxHead.addEventListener('click', function () {
+      jaSidebar.classList.toggle('collapsed');
+    });
+  }
+
+  // Mobile "Hide sold out" is a separate pill button (quick access in
+  // the toolbar row) rather than the desktop toggle-switch inside the
+  // filters box — same split Sarees uses. Both drive the same
+  // state.hideSold; only one of the two is ever actually visible at a
+  // given screen width, via the CSS already in place for each.
+  var hideSoldMobileBtn = document.getElementById('ja-hide-sold-toggle-mobile');
+  if (hideSoldMobileBtn) {
+    hideSoldMobileBtn.addEventListener('click', function () {
+      state.hideSold = !state.hideSold;
+      hideSoldToggle.checked = state.hideSold;
+      hideSoldMobileBtn.classList.toggle('checked', state.hideSold);
+      state.page = 1;
+      render();
+    });
+  }
+
+  // Mobile search: expands over Hide Sold Out + Sort on focus (same
+  // animation and triggers as Sarees' equivalent), collapses back on
+  // Cancel, Escape, or a tap outside the toolbar row.
+  var jaSearchRow = document.getElementById('ja-search-row');
+  var jaSearchCancelBtn = document.getElementById('ja-search-cancel-btn');
+  if (jaSearchRow && searchInput) {
+    searchInput.addEventListener('focus', function () {
+      jaSearchRow.classList.add('search-active');
+    });
+    searchInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { searchInput.blur(); jaSearchRow.classList.remove('search-active'); }
+    });
+    if (jaSearchCancelBtn) {
+      jaSearchCancelBtn.addEventListener('click', function () {
+        searchInput.value = '';
+        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+        searchInput.blur();
+        jaSearchRow.classList.remove('search-active');
+      });
+    }
+    document.addEventListener('click', function (e) {
+      if (jaSearchRow.classList.contains('search-active') && !jaSearchRow.contains(e.target)) {
+        jaSearchRow.classList.remove('search-active');
+      }
+    });
+  }
 
   render();
 }

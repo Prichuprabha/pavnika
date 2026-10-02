@@ -4104,6 +4104,76 @@ body.login-page {
   .dept-switcher a { font-size: 0.76rem; gap: 6px; padding: 12px 6px; }
 }
 
+/* ---------- Jewellery & Accessories: parity with Sarees' mobile toolbar ----------
+   #sort-select above is ID-scoped to the Sarees page specifically, so
+   #ja-sort-select needs its own matching copy of the same three rules
+   rather than being swept in automatically. Every other mobile-toolbar
+   piece here (.hide-sold-toggle-mobile, .search-wrap-mobile,
+   .search-cancel-btn, .collections-search-row) is already a plain
+   class, reused as-is with no extra CSS needed. */
+#ja-sort-select {
+  height: 40px;
+  padding: 0 34px 0 16px;
+  border: 1px solid var(--stone);
+  border-radius: 999px;
+  background: var(--ivory);
+  font-family: var(--body);
+  font-size: 0.82rem;
+  color: var(--ink);
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%231B241E' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  flex-shrink: 0;
+}
+@media (max-width: 900px) {
+  #ja-sort-select {
+    max-width: 140px;
+    opacity: 1;
+    transition: max-width 0.38s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s ease,
+      padding 0.38s cubic-bezier(0.4, 0, 0.2, 1), margin 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+      border-width 0.28s ease;
+  }
+  .collections-search-row.search-active #ja-sort-select {
+    max-width: 0;
+    opacity: 0;
+    padding-left: 0;
+    padding-right: 0;
+    margin: 0;
+    border-width: 0;
+    pointer-events: none;
+  }
+}
+
+/* Desktop: plain sidebar header. Mobile: the collapsible "Filters" box
+   instead — same visual treatment as Sarees' .filters-box, just
+   applied directly to this page's one sidebar element rather than a
+   separate box, since there's only one filter dimension here to show
+   either way (no separate "quick chips vs full drawer" split needed). */
+.ja-desktop-only { display: block; }
+.ja-mobile-only { display: none; }
+@media (max-width: 900px) {
+  .ja-desktop-only { display: none; }
+  .ja-mobile-only {
+    display: flex; align-items: center; gap: 6px; width: 100%;
+    padding: 11px 14px; border: none; background: none;
+    font-family: var(--body); font-size: 0.74rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.05em; color: var(--green-deep);
+    cursor: pointer;
+  }
+  .ja-mobile-only .filters-box-chev { margin-left: auto; transition: transform 0.25s ease; flex-shrink: 0; }
+  #ja-sidebar.collapsed .ja-mobile-only .filters-box-chev { transform: rotate(-90deg); }
+
+  #ja-sidebar {
+    border: 1px solid #EFE6DC; border-radius: 12px; background: #FFFDFB;
+    margin-bottom: 14px; overflow: hidden;
+  }
+  #ja-filters-body { padding: 0 14px 14px; }
+  #ja-sidebar.collapsed #ja-filters-body { display: none; }
+}
+
 /* Contact: align content with the hero copy inset */
 .contact-grid { padding-left: var(--contact-inset); }
 .about-body-container { padding-left: var(--contact-inset); }
