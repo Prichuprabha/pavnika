@@ -1034,7 +1034,7 @@ function itemDisplayName(item) {
 }
 
 function showBrowseView() {
-  document.getElementById('pos-preview-heading').textContent = 'Browse Sarees';
+  document.getElementById('pos-preview-heading').textContent = 'Browse Items';
   document.getElementById('pos-browse-cats').style.display = 'flex';
   document.getElementById('pos-browse-grid').style.display = 'grid';
   document.getElementById('pos-selected-preview').style.display = 'none';

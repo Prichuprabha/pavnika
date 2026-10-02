@@ -2484,7 +2484,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   color: var(--ivory); opacity: 0.75; margin-bottom: 6px;
 }
 .lightbox-size-picker .size-chip-row {
-  display: flex; gap: 8px; flex-wrap: wrap;
+  display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;
 }
 /* This panel has a dark background (see .lightbox-details), the
    opposite of where .filter-btn is normally used (light backgrounds

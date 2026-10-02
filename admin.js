@@ -311,6 +311,30 @@ function buildStatCardHtml(label, value, iconKey, colorKey, extraHtml) {
   );
 }
 
+// Same card shell as buildStatCardHtml, but the headline number is two
+// values side by side (Sarees | Jewellery & Accessories) instead of
+// one -- used for In Stock / Sold Out once jewellery/accessories
+// actually exist in the catalogue. The "sold this period" comparison
+// underneath stays a single combined total either way, per request,
+// since that's a time-based trend rather than a current inventory
+// count.
+function buildSplitStatCardHtml(label, sareeVal, otherVal, iconKey, colorKey, extraHtml) {
+  var color = ADMIN_STAT_COLORS[colorKey] || ADMIN_STAT_COLORS.gold;
+  var icon = ADMIN_STAT_ICONS[iconKey] || ADMIN_STAT_ICONS.box;
+  var bg = color + '24';
+  return (
+    '<div class="admin-metric-card admin-metric-card-icon">' +
+      '<div class="admin-metric-icon-circle" style="background:' + bg + '; color:' + color + ';">' + icon + '</div>' +
+      '<div class="admin-metric-text">' +
+        '<p class="label">' + label + '</p>' +
+        '<p class="value admin-split-value">' + sareeVal + '<span class="admin-split-sep">|</span>' + otherVal + '</p>' +
+        '<p class="admin-split-sublabels"><span>Sarees</span><span>Jew/Acc</span></p>' +
+        (extraHtml || '') +
+      '</div>' +
+    '</div>'
+  );
+}
+
 function initSidebarNav() {
   var navItems = document.querySelectorAll('.admin-nav-item');
   var sidebar = document.getElementById('admin-sidebar');
@@ -383,7 +407,7 @@ function initSareeEditor(token) {
   var PAGE_SIZE = 80;
   var currentPage = 1;
   var searchQuery = '';
-  var hideSold = false;
+  var hideSold = true;
   var deptFilter = 'all'; // 'all' | 'saree' | 'jewellery' (jewellery bucket covers accessories too, matching the customer-facing page's single department grouping)
 
   // The form now slides in as a drawer (overlay + panel), matching the
@@ -540,11 +564,26 @@ function initSareeEditor(token) {
     renderPagination(filtered.length);
   }
 
+  var searchClearBtn = document.getElementById('admin-search-clear-btn');
+  function updateSearchClearBtn() {
+    if (searchClearBtn) searchClearBtn.style.display = searchInput.value ? 'flex' : 'none';
+  }
   searchInput.addEventListener('input', function () {
     searchQuery = searchInput.value;
     currentPage = 1;
+    updateSearchClearBtn();
     renderTable();
   });
+  if (searchClearBtn) {
+    searchClearBtn.addEventListener('click', function () {
+      searchInput.value = '';
+      searchQuery = '';
+      currentPage = 1;
+      updateSearchClearBtn();
+      renderTable();
+      searchInput.focus();
+    });
+  }
 
   var hideSoldToggle = document.getElementById('admin-hide-sold-toggle');
   if (hideSoldToggle) {
@@ -968,6 +1007,10 @@ function initSareeEditor(token) {
   departmentSelect.addEventListener('change', function () {
     try {
       updateDepartmentFieldVisibility();
+      if (isAddMode) {
+        var deptLabel = departmentSelect.value === 'saree' ? 'Saree' : departmentSelect.value === 'jewellery' ? 'Jewellery' : 'Accessory';
+        formTitle.textContent = 'Add New ' + deptLabel;
+      }
       if (departmentSelect.value === 'saree') { updateIdSuggestion(); }
       else { updateNonSareeIdSuggestion(); }
     } catch (err) {
@@ -1013,7 +1056,7 @@ function initSareeEditor(token) {
   function resetForm() {
     editingId = null;
     isAddMode = true;
-    formTitle.textContent = 'Add New Saree';
+    formTitle.textContent = 'Add New Item';
     form.reset();
     document.getElementById('admin-sale-preview').style.display = 'none';
     idField.readOnly = false;
@@ -2229,9 +2272,23 @@ function initStatsDashboard(token) {
       ? buildStatCardHtml('Revenue (AED)', orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }), 'wallet', 'gold', deltaHtml(orderStats.revenueDelta) + departmentBreakdownHtml(orderStats.departmentRevenue))
       : '';
 
+    var hasJewelleryOrAccessory = (window.PRODUCTS || []).some(function (p) { return p.department === 'jewellery' || p.department === 'accessory'; });
+    var inStockCard, soldOutCard;
+    if (hasJewelleryOrAccessory) {
+      var sareeInStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold && (p.department || 'saree') === 'saree'; }).length;
+      var jewAccInStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
+      var sareeSoldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold && (p.department || 'saree') === 'saree'; }).length;
+      var jewAccSoldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
+      inStockCard = buildSplitStatCardHtml('In stock', sareeInStock, jewAccInStock, 'hanger', 'green', stockDelta);
+      soldOutCard = buildSplitStatCardHtml('Sold out', sareeSoldOut, jewAccSoldOut, 'hangerX', 'red', soldDelta);
+    } else {
+      inStockCard = buildStatCardHtml('In stock', inStock, 'hanger', 'green', stockDelta);
+      soldOutCard = buildStatCardHtml('Sold out', soldOut, 'hangerX', 'red', soldDelta);
+    }
+
     metricGrid.innerHTML =
-      buildStatCardHtml('In stock', inStock, 'hanger', 'green', stockDelta) +
-      buildStatCardHtml('Sold out', soldOut, 'hangerX', 'red', soldDelta) +
+      inStockCard +
+      soldOutCard +
       orderCard + revenueCard +
       buildStatCardHtml('Verified visitors', data.totalVisitors, 'users', 'gold') +
       buildStatCardHtml('Saree views logged', data.totalViews, 'eye', 'gold');
@@ -4437,15 +4494,8 @@ function initManualOrderView(token) {
   });
   discountValueInput.addEventListener('input', renderTotals);
 
-  addBtn.addEventListener('click', function () {
-    var typed = searchInput.value.trim();
-    if (!typed) return;
-    var product = (window.PRODUCTS || []).find(function (p) { return typed.indexOf(p.id) !== -1; });
-    if (!product) {
-      showStatus('error', 'Could not match that to a saree — pick one from the suggestions list.');
-      return;
-    }
-    var qty = Math.max(1, parseInt(qtyInput.value, 10) || 1);
+  function addProductToOrder(product, qty) {
+    qty = Math.max(1, qty || 1);
     var existing = pickedItems.find(function (it) { return it.id === product.id; });
     if (existing) {
       existing.qty += qty;
@@ -4462,10 +4512,85 @@ function initManualOrderView(token) {
         image: product.image
       });
     }
+    renderPickedItems();
+  }
+
+  addBtn.addEventListener('click', function () {
+    var typed = searchInput.value.trim();
+    if (!typed) return;
+    var product = (window.PRODUCTS || []).find(function (p) { return typed.indexOf(p.id) !== -1; });
+    if (!product) {
+      showStatus('error', 'Could not match that to an item — pick one from the suggestions list.');
+      return;
+    }
+    addProductToOrder(product, parseInt(qtyInput.value, 10) || 1);
     searchInput.value = '';
     qtyInput.value = '1';
     showStatus('', '');
-    renderPickedItems();
+  });
+
+  // Browse Catalogue picker — same visual pattern as POS's own browse
+  // grid, adapted as a popup here since Manual Order's layout is a
+  // compact form rather than a dedicated browse panel.
+  var browseOverlay = document.getElementById('admin-mo-browse-overlay');
+  var browseGrid = document.getElementById('admin-mo-browse-grid');
+  var browseSearch = document.getElementById('admin-mo-browse-search');
+  var browseDeptRow = document.getElementById('admin-mo-browse-dept-row');
+  var browseDeptFilter = 'all';
+
+  function renderBrowseGrid() {
+    var q = browseSearch.value.trim().toLowerCase();
+    var products = (window.PRODUCTS || []).filter(function (p) {
+      if (browseDeptFilter === 'saree' && (p.department || 'saree') !== 'saree') return false;
+      if (browseDeptFilter === 'jewellery' && p.department !== 'jewellery' && p.department !== 'accessory') return false;
+      if (!q) return true;
+      var fields = ['id', 'material', 'design', 'type', 'colour', 'category', 'series'];
+      return fields.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
+    });
+    if (!products.length) {
+      browseGrid.innerHTML = '<p style="grid-column:1/-1; text-align:center; opacity:0.6; font-size:0.85rem; padding:20px;">No items match.</p>';
+      return;
+    }
+    browseGrid.innerHTML = products.map(function (p) {
+      var img = p.image ? '<img src="' + p.image + '" alt="">' : '<div class="mbt-noimg"></div>';
+      return '<div class="admin-mo-browse-tile' + (p.sold ? ' mbt-sold' : '') + '" data-browse-id="' + p.id + '">' +
+        img +
+        '<div class="mbt-info">' +
+          '<div class="mbt-code">' + p.id + '</div>' +
+          '<div class="mbt-name">' + itemDisplayName(p) + '</div>' +
+          (p.sold ? '<div class="mbt-sold-tag">Sold</div>' : '<div class="mbt-price">AED ' + effectivePrice(p).toFixed(0) + '</div>') +
+        '</div>' +
+      '</div>';
+    }).join('');
+    browseGrid.querySelectorAll('[data-browse-id]').forEach(function (tile) {
+      tile.addEventListener('click', function () {
+        var id = tile.getAttribute('data-browse-id');
+        var product = (window.PRODUCTS || []).find(function (p) { return p.id === id; });
+        if (!product || product.sold) return;
+        addProductToOrder(product, 1);
+        browseOverlay.classList.remove('is-open');
+      });
+    });
+  }
+
+  document.getElementById('admin-mo-browse-btn').addEventListener('click', function () {
+    browseOverlay.classList.add('is-open');
+    renderBrowseGrid();
+  });
+  document.getElementById('admin-mo-browse-close-btn').addEventListener('click', function () {
+    browseOverlay.classList.remove('is-open');
+  });
+  browseOverlay.addEventListener('click', function (e) {
+    if (e.target === browseOverlay) browseOverlay.classList.remove('is-open');
+  });
+  browseSearch.addEventListener('input', renderBrowseGrid);
+  browseDeptRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      browseDeptRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      browseDeptFilter = btn.getAttribute('data-dept');
+      renderBrowseGrid();
+    });
   });
 
   submitBtn.addEventListener('click', function () {

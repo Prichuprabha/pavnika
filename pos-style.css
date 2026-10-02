@@ -91,6 +91,8 @@ body { background: #EDE4DA; font-family: var(--body); color: var(--ink); font-si
 label { display: block; font-size: 0.72rem; color: #8a7266; margin: 8px 0 4px; font-weight: 600; }
 input, select, textarea { width: 100%; padding: 10px 11px; border: 1.5px solid var(--stone); border-radius: 8px; font-family: var(--body); font-size: 0.88rem; }
 textarea { min-height: 50px; resize: none; }
+input[readonly] { cursor: default; background: var(--ivory-deep, #F8ECE2); }
+input[readonly]:focus { outline: none; border-color: var(--stone); box-shadow: none; }
 .btn { padding: 12px 18px; border-radius: 10px; border: none; font-size: 0.82rem; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 0.03em; }
 .btn-primary { background: var(--green-deep); color: #fff; width: 100%; margin-top: 10px; flex-shrink: 0; }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
