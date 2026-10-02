@@ -2132,13 +2132,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-overlay.lightbox-theme-light { background: var(--ivory); }
 .lightbox-theme-light .lightbox-details { color: var(--ink); }
 .lightbox-theme-light .lightbox-details .p-title { color: var(--green-deep); }
-.lightbox-theme-light .lightbox-details .p-code { color: #B8142A; }
+.lightbox-theme-light .lightbox-details .p-code { color: var(--green); }
 .lightbox-theme-light .lightbox-details .p-subtitle { color: var(--ink); opacity: 0.7; }
 .lightbox-theme-light .lightbox-tags span {
   color: var(--ink); background: var(--ivory-deep); border-color: var(--stone);
 }
 .lightbox-theme-light .lightbox-description { color: var(--ink); opacity: 0.75; }
-.lightbox-theme-light .lightbox-price { color: #B8142A; }
+.lightbox-theme-light .lightbox-price { color: var(--green); }
 .lightbox-theme-light .lightbox-price-was { color: var(--ink); opacity: 0.6; }
 .lightbox-theme-light .lightbox-wishlist-pill { color: var(--ink); border-color: var(--stone); border-style: solid; }
 .lightbox-theme-light .lightbox-wishlist-pill-icon { border-color: var(--stone); }
@@ -2149,7 +2149,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    Add to Cart (previously outlined) becomes the filled, prominent
    action — same spirit as the dark theme's own contrast, inverted. */
 .lightbox-theme-light .lightbox-cart-actions .btn-add-cart { background: var(--green-deep); border-color: var(--green-deep); color: #fff; }
-.lightbox-theme-light .lightbox-cart-actions .btn-add-cart:hover { background: var(--green); }
+.lightbox-theme-light .lightbox-cart-actions .btn-add-cart:hover { background: var(--green); color: #fff; }
 .lightbox-theme-light .lightbox-cart-actions .btn-buy-now { background: #fff; border-color: var(--stone); color: var(--green-deep); }
 .lightbox-theme-light .lightbox-cart-actions .btn-buy-now:hover { background: var(--ivory-deep); }
 .lightbox-theme-light .trust-payment-label { color: var(--ink); opacity: 0.55; }
@@ -2166,6 +2166,62 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-theme-light .lightbox-size-picker .filter-btn.is-unavailable {
   color: var(--ink); opacity: 0.35; border-color: var(--stone);
 }
+/* "You May Also Like" cards -- missed in the first pass entirely.
+   Same ivory-on-light invisibility as the cart buttons had. */
+.lightbox-theme-light .related-saree-item .rs-name { color: var(--ink); }
+.lightbox-theme-light .related-saree-item .rs-price { color: var(--green); }
+/* Mobile orientation: the reference design is left-aligned even on
+   phone widths, but the existing text-align:left override only kicks
+   in at 720px+ (desktop/tablet) -- below that, both departments were
+   inheriting the saree convention of staying centered on mobile. This
+   applies unconditionally (no media query) since the higher
+   specificity here already matches the existing 720px+ value with
+   nothing to conflict with at that breakpoint. */
+.lightbox-theme-light .lightbox-details,
+.lightbox-theme-light .lightbox-tags,
+.lightbox-theme-light .lightbox-description,
+.lightbox-theme-light .lightbox-side { text-align: left; }
+.lightbox-theme-light .lightbox-tags { justify-content: flex-start; }
+.lightbox-theme-light .lightbox-price-row { justify-content: space-between; }
+.lightbox-theme-light .thumb-nav {
+  background: rgba(43, 18, 35, 0.06); border-color: var(--stone); color: var(--green-deep);
+}
+.lightbox-theme-light .thumb-nav:hover { background: rgba(43, 18, 35, 0.12); }
+.lightbox-theme-light .thumb-item { background: var(--ivory-deep); }
+.lightbox-theme-light .lightbox-size-picker .size-chip-row { justify-content: flex-start; }
+/* Price row: flex-start instead of space-between -- space-between
+   spreads EVERY child apart evenly, which looks fine with 2 children
+   (mobile: price, wishlist pill) but on desktop there's a 3rd child
+   (the share button), and spreading all 3 across the row pushes
+   wishlist and share far apart from each other instead of keeping
+   them grouped as a pair on the right, as in the reference. */
+.lightbox-theme-light .lightbox-price-row { justify-content: flex-start; }
+.lightbox-theme-light .lightbox-heart-wrap { margin-left: auto; }
+.lightbox-theme-light .lightbox-wishlist-pill { margin-left: auto; }
+/* Image fills its full box instead of letterboxing with empty space
+   on the sides when its natural ratio doesn't match the container. */
+.lightbox-theme-light .lightbox-stage img { object-fit: cover; }
+@media (min-width: 900px) {
+  .lightbox-theme-light .lightbox-main-grid {
+    grid-template-columns: 66px minmax(0, 1.3fr) minmax(0, 0.7fr);
+  }
+}
+/* Payment badges: one consistent light, neutral style instead of each
+   brand's own background colour (solid black for Apple Pay, bright
+   green for tabby, etc.), matching the reference's uniform look --
+   compound selectors needed since each brand class on its own (e.g.
+   .pay-apple) has equal specificity to a plain .pay-badge override and
+   would otherwise win on source order. */
+.lightbox-theme-light .pay-badge.pay-visa,
+.lightbox-theme-light .pay-badge.pay-apple,
+.lightbox-theme-light .pay-badge.pay-google,
+.lightbox-theme-light .pay-badge.pay-tabby,
+.lightbox-theme-light .pay-badge.pay-tamara {
+  background: var(--ivory-deep); color: var(--ink); border: 1px solid var(--stone);
+}
+.lightbox-theme-light .pay-badge.pay-visa { color: #1434CB; }
+.lightbox-theme-light .pay-badge.pay-apple { color: var(--ink); }
+.lightbox-theme-light .pay-badge.pay-apple svg path { fill: var(--ink) !important; }
 
 .lightbox-overlay.is-visible {
   opacity: 1;
