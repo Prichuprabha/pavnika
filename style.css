@@ -2204,6 +2204,15 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 @media (min-width: 900px) {
   .lightbox-theme-light .lightbox-main-grid {
     grid-template-columns: 66px minmax(0, 1.3fr) minmax(0, 0.7fr);
+    /* Stretch instead of start: lets the stage fill the row's actual
+       height (set by the side panel's real content) instead of being
+       capped at a fixed aspect-ratio that leaves dead space below it
+       whenever the side panel ends up taller than that ratio implies. */
+    align-items: stretch;
+  }
+  .lightbox-theme-light .lightbox-stage-wrap { height: 100%; }
+  .lightbox-theme-light .lightbox-stage {
+    aspect-ratio: unset; height: 100%; max-height: none;
   }
 }
 /* Payment badges: one consistent light, neutral style instead of each
@@ -2222,6 +2231,14 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-theme-light .pay-badge.pay-visa { color: #1434CB; }
 .lightbox-theme-light .pay-badge.pay-apple { color: var(--ink); }
 .lightbox-theme-light .pay-badge.pay-apple svg path { fill: var(--ink) !important; }
+/* Blanket fallback: anything inheriting .lightbox-side's own ivory
+   color without its own explicit override (like the interest badge
+   below) gets a sane dark default instead. */
+.lightbox-theme-light .lightbox-side { color: var(--ink); }
+.lightbox-theme-light .lightbox-side .interest-badge { color: var(--green); }
+.lightbox-theme-light .lightbox-cart-actions button:disabled {
+  border-color: var(--stone); color: var(--ink);
+}
 
 .lightbox-overlay.is-visible {
   opacity: 1;
