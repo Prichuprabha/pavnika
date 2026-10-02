@@ -486,6 +486,32 @@ function nonSareeCardHTML(p) {
 // non-grouped item, just itself) — the one place this "which sizes
 // belong together" logic lives, so the grid card, the lightbox size
 // picker, and the "from AED X" price all agree with each other.
+// The one place "what do we call this item" is decided — sarees use
+// material/design, Jewellery uses type (+ colour if set), Accessories
+// use their category. Used everywhere a product's name is shown or
+// sent: cards, lightbox, share messages, wishlist, cart, checkout.
+// Before this existed, several of these call sites independently wrote
+// `p.material || p.design`, which silently evaluates to the literal
+// text "undefined" for anything that isn't a saree.
+function itemDisplayName(p) {
+  if (!p) return '';
+  if (p.department === 'jewellery') return p.type + (p.colour ? ' — ' + p.colour : '');
+  if (p.department === 'accessory') return p.category || 'Accessory';
+  return p.material || p.design || p.id;
+}
+
+// Sarees show their series (Value Weaves, Pastel Poetry...); Jewellery
+// and Accessories have no series at all, so this falls back to
+// whatever grouping they do have instead of calling seriesTitleCase on
+// an undefined value, which would otherwise print the literal word
+// "Undefined".
+function itemGroupLabel(p) {
+  if (!p) return '';
+  if (p.department === 'jewellery') return p.type || 'Jewellery';
+  if (p.department === 'accessory') return p.category || 'Accessory';
+  return seriesTitleCase(p.series);
+}
+
 function jewelleryGroupSiblings(p) {
   if (!p.baseId) return [p];
   return (window.PRODUCTS || []).filter(function (x) { return x.baseId === p.baseId; });
@@ -520,7 +546,7 @@ function initHoverCycle(grid) {
         for (var i = 1; i < product.images.length; i++) {
           var extraImg = document.createElement('img');
           extraImg.src = product.images[i];
-          extraImg.alt = (product.material || product.design) + ' — view ' + (i + 1);
+          extraImg.alt = itemDisplayName(product) + ' — view ' + (i + 1);
           extraImg.loading = 'eager';
           extraImg.decoding = 'async';
           photoEl.appendChild(extraImg);
@@ -1574,8 +1600,12 @@ function initJewelleryAccessoriesPage() {
   // isUnfiltered() no longer gates row-filling (see updatePageSize()
   // below) — kept only to decide whether to show the live results
   // count, same reasoning as Collections' own version of this.
-  function isUnfiltered() {
-    return state.type === 'all' && !state.hideSold && !state.query.trim() &&
+  // ignoreHideSold: "Hide sold out" alone doesn't count as narrowing
+  // for the count-hint's purpose (per explicit request, matching
+  // Collections' identical behavior) — the hint only earns its place
+  // once a real filter (category/search/price) is active.
+  function isUnfiltered(ignoreHideSold) {
+    return state.type === 'all' && (ignoreHideSold || !state.hideSold) && !state.query.trim() &&
       (typeof dataMin === 'undefined' || (state.priceMin === dataMin && state.priceMax === dataMax));
   }
 
@@ -1653,12 +1683,22 @@ function initJewelleryAccessoriesPage() {
     noResultsEl.style.display = filtered.length ? 'none' : 'block';
 
     if (resultsCountEl) {
-      if (isUnfiltered()) {
+      if (isUnfiltered(true)) {
         resultsCountEl.style.display = 'none';
       } else {
         resultsCountEl.style.display = '';
         resultsCountEl.textContent = filtered.length + (filtered.length === 1 ? ' piece' : ' pieces');
       }
+    }
+
+    var jaNoteEl = document.getElementById('ja-active-filter-note');
+    if (jaNoteEl) {
+      var noteParts = [];
+      if (state.type !== 'all') noteParts.push(state.type);
+      if (state.query.trim()) noteParts.push('\u201C' + state.query.trim() + '\u201D');
+      var jaPriceIsFullRange = (typeof dataMin === 'undefined') || (state.priceMin === dataMin && state.priceMax === dataMax);
+      if (!jaPriceIsFullRange) noteParts.push('price range');
+      jaNoteEl.textContent = noteParts.length ? 'Filtered by: ' + noteParts.join(' \u00B7 ') : '';
     }
 
     renderPagination(filtered.length);
@@ -1844,7 +1884,32 @@ function initJewelleryAccessoriesPage() {
     });
   }
 
+  // Pre-set the category filter and/or open a specific item's lightbox
+  // if arriving from a link elsewhere on the site, e.g. the home page's
+  // category tiles (?type=Bangles%20%26%20Bracelets) or a shared
+  // product link (?open=JW001). Neither of these existed before, which
+  // meant a shared link landed on the page but never actually opened
+  // anything.
+  var jaUrlParams = new URLSearchParams(window.location.search);
+  var typeParam = jaUrlParams.get('type');
+  var openParam = jaUrlParams.get('open');
+  if (typeParam) {
+    var matchingChip = chipRow.querySelector('.filter-btn[data-value="' + typeParam.replace(/"/g, '') + '"]');
+    if (matchingChip) {
+      chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
+      matchingChip.classList.add('active');
+      state.type = typeParam;
+      if (jaSidebar) jaSidebar.classList.remove('collapsed');
+    }
+  }
+
   render();
+  buildLightbox();
+
+  if (openParam) {
+    var openProduct = (window.PRODUCTS || []).find(function (p) { return p.id === openParam; });
+    if (openProduct) window.openLightbox(openProduct);
+  }
 }
 
 /* ---------- Collections sidebar ad rotator ----------
@@ -2080,10 +2145,12 @@ function initShareButton(btnId, menuId, product) {
   var menu = document.getElementById(menuId);
   if (!btn || !menu) return;
 
-  var shareUrl = 'https://pavnika.ae/collections.html?open=' + encodeURIComponent(product.id);
-  var name = product.material || product.design;
+  var isSareeProduct = (product.department || 'saree') === 'saree';
+  var sharePage = isSareeProduct ? 'collections.html' : 'jewellery-accessories.html';
+  var shareUrl = 'https://pavnika.ae/' + sharePage + '?open=' + encodeURIComponent(product.id);
+  var name = itemDisplayName(product);
   var message =
-    'I thought you might like this saree!\n' +
+    'I thought you might like this ' + (isSareeProduct ? 'saree' : 'piece') + '!\n' +
     name + ' \u2014 ' + product.id + '\n' +
     'Take a look here:\n' + shareUrl + '\n' +
     'Pavnika by Saranya \u2014 Elegance that Defines You.';
@@ -2430,8 +2497,8 @@ window.openLightbox = function (product) {
         relatedScroll.innerHTML = related.map(function (p) {
           return (
             '<div class="related-saree-item" data-id="' + p.id + '">' +
-              '<img src="' + p.image + '" alt="' + (p.material || p.design) + '" loading="lazy">' +
-              '<p class="rs-name">' + (p.material || p.design) + '</p>' +
+              '<img src="' + p.image + '" alt="' + itemDisplayName(p) + '" loading="lazy">' +
+              '<p class="rs-name">' + itemDisplayName(p) + '</p>' +
               '<p class="rs-price">AED ' + formatAED(effectivePrice(p)) + '</p>' +
             '</div>'
           );
@@ -4308,13 +4375,13 @@ function renderWishlistDrawer() {
       : '<button type="button" class="wl-add-btn' + (inCart ? ' is-in-cart' : '') + '" data-id="' + p.id + '">' + (inCart ? 'View Cart' : 'Add to Cart') + '</button>';
     return (
       '<div class="wl-card">' +
-        '<img src="' + p.image + '" alt="' + p.design + '" class="wl-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + (p.material || p.design) + '">' +
+        '<img src="' + p.image + '" alt="' + itemDisplayName(p) + '" class="wl-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + itemDisplayName(p) + '">' +
         soldRibbon +
         '<button type="button" class="wl-trash" data-id="' + p.id + '" aria-label="Remove from wishlist">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>' +
         '</button>' +
         '<div class="wl-info">' +
-          '<span class="wl-name">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
+          '<span class="wl-name">' + itemDisplayName(p) + ' — ' + (p.baseId || p.id) + '</span>' +
           '<span class="wl-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
           addCartBtn +
         '</div>' +
@@ -4568,7 +4635,7 @@ function initCartDrawer() {
     var ids = cartGetItems();
     if (!ids.length) return;
     var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
-    var lines = products.map(function (p) { return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design); });
+    var lines = products.map(function (p) { return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p); });
     var total = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
     // Tabby/Tamara's own merchant fee (6.75%) plus a flat AED 1 is
     // folded into this total rather than charged at the normal
@@ -4577,7 +4644,7 @@ function initCartDrawer() {
     // formula itself is never shown to the customer, only the two
     // final totals.
     var installmentTotal = total * 1.0675 + 1;
-    var msg = 'Hi Pavnika by Saranya, I\u2019d like to pay in installments (Tabby/Tamara) for the following sarees from my cart:\n' + lines.join('\n');
+    var msg = 'Hi Pavnika by Saranya, I\u2019d like to pay in installments (Tabby/Tamara) for the following items from my cart:\n' + lines.join('\n');
     msg += '\n\nCart total: AED ' + formatAED(total);
     msg += '\n\nTotal for installment (incl. processing charges): *AED ' + formatAED(installmentTotal) + '*';
     msg += '\n\nCould you please send me a payment link to proceed?';
@@ -4618,12 +4685,12 @@ function initCheckoutPage() {
     return (
       '<div class="checkout-item" data-id="' + p.id + '">' +
         '<div class="checkout-item-photo">' +
-          '<img src="' + p.image + '" alt="' + p.design + '">' +
+          '<img src="' + p.image + '" alt="' + itemDisplayName(p) + '">' +
           '<div class="checkout-item-sold-ribbon" style="display:none;"><span>Sold Out</span></div>' +
         '</div>' +
         '<div class="item-info">' +
-          '<span class="item-design">' + (p.material || p.design) + ' — ' + p.id + '</span>' +
-          '<span class="item-series">' + seriesTitleCase(p.series) + '</span>' +
+          '<span class="item-design">' + itemDisplayName(p) + ' — ' + (p.baseId || p.id) + '</span>' +
+          '<span class="item-series">' + itemGroupLabel(p) + (p.size ? ' · Size: ' + p.size : '') + '</span>' +
         '</div>' +
         '<span class="item-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
       '</div>'
@@ -5146,9 +5213,9 @@ function initCheckoutPage() {
   // message above can still offer a working WhatsApp link inline.
   function buildOrderWhatsAppUrl() {
     var lines = products.map(function (p) {
-      return '- ' + seriesTitleCase(p.series) + ' (' + p.id + ') — ' + (p.material || p.design) + ' — AED ' + formatAED(effectivePrice(p));
+      return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p) + ' — AED ' + formatAED(effectivePrice(p));
     });
-    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following sarees:\n' + lines.join('\n');
+    var msg = 'Hi Pavnika by Saranya, I would like to purchase the following items:\n' + lines.join('\n');
     if (appliedCode) {
       msg += '\n\nPromo code applied: ' + appliedCode + ' (' + appliedDiscount + '% off)';
     }

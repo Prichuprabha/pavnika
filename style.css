@@ -4154,8 +4154,17 @@ body.login-page {
    either way (no separate "quick chips vs full drawer" split needed). */
 .ja-desktop-only { display: block; }
 .ja-mobile-only { display: none; }
+#ja-clear-all-filters { background: var(--green); border: none; border-radius: 999px; color: var(--ivory); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; cursor: pointer; padding: 8px 18px; transition: background 0.2s ease; font-family: var(--body); }
+#ja-clear-all-filters:hover { background: var(--green-deep); }
 @media (max-width: 900px) {
-  .ja-desktop-only { display: none; }
+  /* Compound selector (two classes) deliberately used here instead of
+     .ja-desktop-only alone: .sidebar-heading-row's own unconditional
+     "display: flex" rule sits later in this file and would otherwise
+     win on equal specificity, silently cancelling this hide and
+     leaving both the desktop header and the mobile collapsible row
+     visible at once. */
+  .sidebar-heading-row.ja-desktop-only,
+  .sidebar-sold-toggle-group.ja-desktop-only { display: none; }
   .ja-mobile-only {
     display: flex; align-items: center; gap: 6px; width: 100%;
     padding: 11px 14px; border: none; background: none;
@@ -4172,6 +4181,46 @@ body.login-page {
   }
   #ja-filters-body { padding: 0 14px 14px; }
   #ja-sidebar.collapsed #ja-filters-body { display: none; }
+}
+
+/* Named grid areas so the visual order (search, then filters, then
+   results on mobile; sidebar-left/content-right on desktop) can differ
+   per breakpoint without duplicating any controls in the DOM. */
+.ja-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  grid-template-areas: "filters searchrow" "filters results";
+  gap: 40px;
+  align-items: start;
+}
+.ja-search-area { grid-area: searchrow; }
+#ja-sidebar { grid-area: filters; min-width: 0; }
+.ja-results-area { grid-area: results; min-width: 0; }
+@media (max-width: 900px) {
+  .ja-layout {
+    grid-template-columns: 1fr;
+    grid-template-areas: "searchrow" "filters" "results";
+    gap: 0;
+  }
+  /* Category list reads like Sarees' quick-filter-chips once the
+     mobile Filters box is open: a horizontal scrolling pill row,
+     rather than the vertical list style desktop keeps. */
+  #ja-chip-row {
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: visible;
+    max-height: none;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  #ja-chip-row::-webkit-scrollbar { display: none; }
+  #ja-chip-row .filter-btn {
+    flex-shrink: 0;
+    background: var(--ivory);
+    border: 1px solid var(--stone);
+    text-align: center;
+  }
+  #ja-chip-row .filter-btn.active { background: var(--green); color: var(--ivory); border-color: var(--green); }
 }
 
 /* Contact: align content with the hero copy inset */
