@@ -2222,7 +2222,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
      height, and 122vh shrinks proportionally alongside it instead of
      staying needlessly wide -- which was the real mismatch causing
      dead space beside the image there. */
-  .lightbox-theme-light.lightbox-overlay .lightbox-body { max-width: min(1140px, 122vh); }
+  .lightbox-theme-light.lightbox-overlay .lightbox-body { max-width: min(1140px, 135vh); }
   .lightbox-theme-light .lightbox-main-grid {
     grid-template-columns: 66px minmax(0, 1.15fr) minmax(0, 0.85fr);
     /* Stretch instead of start: lets the stage fill the row's actual
