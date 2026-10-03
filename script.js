@@ -2256,7 +2256,14 @@ function initShareButton(btnId, menuId, product) {
     document.querySelectorAll('.lightbox-share-menu.is-open').forEach(function (m) {
       if (m !== menu) m.classList.remove('is-open');
     });
+    var willOpen = !menu.classList.contains('is-open');
     menu.classList.toggle('is-open');
+    if (willOpen) {
+      var rect = btn.getBoundingClientRect();
+      menu.style.position = 'fixed';
+      menu.style.top = (rect.bottom + 8) + 'px';
+      menu.style.left = rect.left + 'px';
+    }
   };
 
   menu.querySelectorAll('.lightbox-share-menu-item').forEach(function (item) {
@@ -2414,6 +2421,7 @@ function buildLightbox() {
 
   function renderStage() {
     stage.classList.remove('is-zoomed');
+    zoomEnabled = false;
     stage.querySelectorAll('img').forEach(function (img) { img.remove(); });
     state.images.forEach(function (src, i) {
       var img = document.createElement('img');
@@ -2514,6 +2522,8 @@ function buildLightbox() {
 window.openLightbox = function (product) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
+    var lightboxSideEl = document.querySelector('.lightbox-side');
+    if (lightboxSideEl) lightboxSideEl.scrollTop = 0;
     var isSaree = (product.department || 'saree') === 'saree';
     overlay.classList.toggle('lightbox-theme-light', !isSaree);
     document.getElementById('lightbox-design').textContent = isSaree
@@ -2809,7 +2819,14 @@ window.openLightbox = function (product) {
     stage.classList.remove('show-zoom-hint');
   });
   stage.addEventListener('click', function (e) {
-    if (hasTouch || zoomEnabled) return;
+    if (hasTouch) return;
+    if (zoomEnabled) {
+      // Second click on the same image: zoom back out, and hover
+      // alone won't re-zoom it again until clicked once more.
+      zoomEnabled = false;
+      stage.classList.remove('is-zoomed');
+      return;
+    }
     zoomEnabled = true;
     stage.classList.remove('show-zoom-hint');
     stage.classList.add('is-zoomed');

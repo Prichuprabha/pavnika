@@ -2248,7 +2248,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
      and a short one (no size picker, nothing else) both get the exact
      same popup size; the long one just gets its own small scrollbar. */
   .lightbox-theme-light .lightbox-side {
-    height: 100%; overflow-y: auto; padding-right: 10px; padding-top: 28px;
+    height: calc(100% - 28px); margin-top: 28px; overflow-y: auto; padding-right: 10px;
     /* scrollbar-width stays thin permanently -- never toggled -- so the
        reserved gutter width can never change. Only the colour (both
        here and in the webkit-specific rules below) toggles on hover. */
@@ -2277,7 +2277,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-theme-light .related-sarees-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
 .lightbox-theme-light .lightbox-side:hover .related-sarees-scroll::-webkit-scrollbar-thumb { background: var(--stone); }
 .lightbox-theme-light .related-sarees-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-  .lightbox-theme-light .lightbox-thumb-rail { height: 100%; }
+  .lightbox-theme-light .lightbox-thumb-rail { height: 100%; justify-content: flex-start; }
 }
 /* Payment badges: one consistent light, neutral style instead of each
    brand's own background colour (solid black for Apple Pay, bright
