@@ -2927,8 +2927,11 @@ window.PRODUCTS = [
     "price": 82,
     "salePrice": null,
     "sold": false,
-    "images": [],
-    "image": "",
+    "images": [
+      "https://pavnika.ae/assets/products/JW001-28-1.jpg",
+      "https://pavnika.ae/assets/products/JW001-28-2.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/JW001-28-1.jpg",
     "baseId": "JW001",
     "size": "2.8",
     "id": "JW001-28"
