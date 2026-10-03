@@ -2260,8 +2260,9 @@ function initShareButton(btnId, menuId, product) {
     menu.classList.toggle('is-open');
     if (willOpen) {
       var rect = btn.getBoundingClientRect();
+      var isMobileWidth = window.innerWidth < 900;
       menu.style.position = 'fixed';
-      menu.style.top = (rect.bottom + 8) + 'px';
+      menu.style.top = (rect.bottom + (isMobileWidth ? 50 : 8)) + 'px';
       menu.style.left = rect.left + 'px';
       menu.style.right = 'auto';
       // Now that it's positioned and rendered, check its actual width --

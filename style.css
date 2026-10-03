@@ -5945,6 +5945,7 @@ a.home-video-tile-link {
 .lightbox-saree-colors .lightbox-wishlist-pill-icon { border-color: var(--gold); }
 .lightbox-saree-colors .lightbox-wishlist-pill:hover { background: rgba(182, 138, 105, 0.12); }
 .lightbox-saree-colors .lightbox-heart-wrap .lightbox-wishlist-heart { color: var(--gold); border-color: var(--gold); }
+.lightbox-saree-colors .lightbox-heart-wrap .lightbox-wishlist-heart.is-active { color: var(--green-deep); }
 .lightbox-saree-colors .lightbox-cart-actions .btn-add-cart { background: none; border-color: var(--ivory); color: var(--ivory); }
 .lightbox-saree-colors .lightbox-cart-actions .btn-add-cart:hover { background: var(--gold); color: var(--green-deep); }
 .lightbox-saree-colors .lightbox-cart-actions .btn-buy-now { background: var(--gold-light); border-color: var(--gold-light); color: var(--green-deep); }
