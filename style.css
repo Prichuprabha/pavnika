@@ -2222,10 +2222,50 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
        whenever the side panel ends up taller than that ratio implies. */
     align-items: stretch;
   }
+  /* Fixed, consistent popup size for every item regardless of how much
+     content is on either side -- min() caps it sensibly on very tall
+     monitors too, not just shrinking it on short laptop screens. */
+  .lightbox-theme-light .lightbox-body {
+    height: min(88vh, 820px); max-height: min(88vh, 820px);
+    display: flex; flex-direction: column;
+  }
+  .lightbox-theme-light .lightbox-main-grid { flex: 1; min-height: 0; }
   .lightbox-theme-light .lightbox-stage-wrap { height: 100%; }
   .lightbox-theme-light .lightbox-stage {
-    aspect-ratio: unset; height: 100%; min-height: 62vh; max-height: none;
+    aspect-ratio: unset; height: 100%; max-height: none;
   }
+  /* Side panel scrolls internally rather than growing the popup past
+     its fixed height -- a long item (size picker + related products)
+     and a short one (no size picker, nothing else) both get the exact
+     same popup size; the long one just gets its own small scrollbar. */
+  .lightbox-theme-light .lightbox-side {
+    height: 100%; overflow-y: auto; padding-right: 10px;
+    scrollbar-width: none; scrollbar-color: transparent transparent;
+  }
+  /* Hidden by default, revealed only while hovering anywhere over this
+     panel -- both the vertical scrollbar here and the horizontal one
+     on "You May Also Like" below, since that row sits inside this
+     same panel and hovering it counts as hovering the panel. */
+  .lightbox-theme-light .lightbox-side:hover {
+    scrollbar-width: thin; scrollbar-color: var(--stone) transparent;
+  }
+  .lightbox-theme-light .lightbox-side::-webkit-scrollbar { width: 5px; }
+  .lightbox-theme-light .lightbox-side::-webkit-scrollbar-track { background: transparent; }
+  .lightbox-theme-light .lightbox-side::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+  .lightbox-theme-light .lightbox-side:hover::-webkit-scrollbar-thumb { background: var(--stone); }
+  .lightbox-theme-light .lightbox-side::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+.lightbox-theme-light .related-sarees-scroll {
+  scrollbar-width: none; scrollbar-color: transparent transparent; padding-bottom: 8px;
+}
+.lightbox-theme-light .lightbox-side:hover .related-sarees-scroll {
+  scrollbar-width: thin; scrollbar-color: var(--stone) transparent;
+}
+.lightbox-theme-light .related-sarees-scroll::-webkit-scrollbar { height: 5px; }
+.lightbox-theme-light .related-sarees-scroll::-webkit-scrollbar-track { background: transparent; }
+.lightbox-theme-light .related-sarees-scroll::-webkit-scrollbar-thumb { background: transparent; border-radius: 999px; }
+.lightbox-theme-light .lightbox-side:hover .related-sarees-scroll::-webkit-scrollbar-thumb { background: var(--stone); }
+.lightbox-theme-light .related-sarees-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+  .lightbox-theme-light .lightbox-thumb-rail { height: 100%; }
 }
 /* Payment badges: one consistent light, neutral style instead of each
    brand's own background colour (solid black for Apple Pay, bright
