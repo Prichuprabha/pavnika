@@ -2263,6 +2263,17 @@ function initShareButton(btnId, menuId, product) {
       menu.style.position = 'fixed';
       menu.style.top = (rect.bottom + 8) + 'px';
       menu.style.left = rect.left + 'px';
+      menu.style.right = 'auto';
+      // Now that it's positioned and rendered, check its actual width --
+      // if left-aligning it against the button would push it past the
+      // right edge of the screen (the mobile share button sits in the
+      // top-right corner, so this is the common case there), flip to
+      // right-aligning against the button instead, extending leftward.
+      var menuRect = menu.getBoundingClientRect();
+      if (menuRect.right > window.innerWidth) {
+        menu.style.left = 'auto';
+        menu.style.right = (window.innerWidth - rect.right) + 'px';
+      }
     }
   };
 
