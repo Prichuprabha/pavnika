@@ -2536,6 +2536,7 @@ window.openLightbox = function (product) {
     state.index = 0;
     var lightboxSideEl = document.querySelector('.lightbox-side');
     if (lightboxSideEl) lightboxSideEl.scrollTop = 0;
+    overlay.scrollTop = 0;
     var isSaree = (product.department || 'saree') === 'saree';
     overlay.classList.add('lightbox-theme-light');
     overlay.classList.toggle('lightbox-saree-colors', isSaree);
