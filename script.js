@@ -2729,15 +2729,6 @@ window.openLightbox = function (product) {
     zoomEnabled = false;
     stage.classList.remove('is-zoomed', 'show-zoom-hint');
     renderStage();
-    // Mobile Chrome specifically: when the address bar collapses mid-
-    // scroll, the usable viewport briefly grows before the fixed
-    // overlay's own background catches up to covering it, exposing
-    // whatever's underneath (the Collections page) for a frame or two.
-    // Matching the page's own background to the same dark colour means
-    // that brief gap shows the right colour regardless, even though
-    // the timing lag itself isn't something CSS positioning alone can
-    // prevent.
-    document.body.style.background = 'rgb(43, 13, 26)';
     overlay.classList.add('is-visible');
     updateBodyScrollLock();
     if (!lightboxHistoryActive) {
@@ -2752,7 +2743,6 @@ window.openLightbox = function (product) {
   function closeLightbox() {
     overlay.classList.remove('is-visible');
     updateBodyScrollLock();
-    document.body.style.background = '';
     if (lightboxHistoryActive) {
       // Cancels out the entry pushed on open, so browser history ends
       // up exactly where it would have been if the lightbox had never
@@ -2774,7 +2764,6 @@ window.openLightbox = function (product) {
       lightboxHistoryActive = false;
       overlay.classList.remove('is-visible');
       updateBodyScrollLock();
-      document.body.style.background = '';
       // No history.back() here — the back navigation already happened
       // natively; this just catches up the lightbox's own visible state.
     }
