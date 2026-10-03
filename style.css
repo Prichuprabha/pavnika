@@ -2104,9 +2104,9 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 /* ---------- Lightbox (saree image gallery) ---------- */
 .lightbox-overlay {
   position: fixed;
-  top: -150px;
+  top: -80px;
   right: 0;
-  bottom: -150px;
+  bottom: -80px;
   left: 0;
   padding: 100px 20px;
   background: rgb(43, 13, 26);
