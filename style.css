@@ -2300,6 +2300,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
    below) gets a sane dark default instead. */
 .lightbox-theme-light .lightbox-side { color: var(--ink); }
 .lightbox-theme-light .lightbox-side .interest-badge { color: var(--green); }
+/* Care accordion is saree-only, so this is the first time it's
+   actually rendered against the light theme -- its border, icon and
+   list text all previously assumed the dark background. */
+.lightbox-theme-light .care-accordion { border-top-color: var(--stone); }
+.lightbox-theme-light .care-accordion-toggle { color: var(--green-deep); }
+.lightbox-theme-light .care-accordion-icon { color: var(--gold); }
+.lightbox-theme-light .care-accordion-panel li { color: var(--ink); opacity: 0.78; }
 .lightbox-theme-light .lightbox-cart-actions button:disabled {
   border-color: var(--stone); color: var(--ink);
 }
@@ -5913,4 +5920,67 @@ a.home-video-tile-link {
   }
   .acct-back, .acct-receipt-actions, .acct-msg { display: none !important; }
   @page { margin: 14mm; }
+}
+/* ============================================================
+   Sarees: every structural fix from the light theme build
+   (popup size, scrollbar mechanism, grid ratio, thumb-rail
+   pinning, zoom/pan, share menu, text alignment) is kept via
+   .lightbox-theme-light, which now applies to every department.
+   This block reverts just the colors back to the original dark
+   theme for sarees specifically, per the final decision to keep
+   jewellery exactly as delivered and darken sarees back. Every
+   value below is copied verbatim from the real pre-redesign dark
+   CSS rules, not reconstructed from memory.
+   ============================================================ */
+.lightbox-overlay.lightbox-saree-colors { background: rgb(43, 13, 26); }
+.lightbox-saree-colors .lightbox-details { color: var(--ivory); }
+.lightbox-saree-colors .lightbox-details .p-title { color: var(--gold); }
+.lightbox-saree-colors .lightbox-details .p-code { color: var(--gold); }
+.lightbox-saree-colors .lightbox-details .p-subtitle { color: var(--gold-light); opacity: 0.85; }
+.lightbox-saree-colors .lightbox-tags span { color: var(--gold); background: var(--green-deep); border-color: var(--gold); }
+.lightbox-saree-colors .lightbox-description { color: var(--ivory); opacity: 0.85; }
+.lightbox-saree-colors .lightbox-price { color: var(--gold-light); }
+.lightbox-saree-colors .lightbox-price-was { color: var(--ivory); opacity: 0.5; }
+.lightbox-saree-colors .lightbox-wishlist-pill { background: transparent; border: 1.5px dashed var(--gold); color: var(--gold); }
+.lightbox-saree-colors .lightbox-wishlist-pill-icon { border-color: var(--gold); }
+.lightbox-saree-colors .lightbox-wishlist-pill:hover { background: rgba(182, 138, 105, 0.12); }
+.lightbox-saree-colors .lightbox-heart-wrap .lightbox-wishlist-heart { color: var(--gold); border-color: var(--gold); }
+.lightbox-saree-colors .lightbox-cart-actions .btn-add-cart { background: none; border-color: var(--ivory); color: var(--ivory); }
+.lightbox-saree-colors .lightbox-cart-actions .btn-add-cart:hover { background: var(--gold); color: var(--green-deep); }
+.lightbox-saree-colors .lightbox-cart-actions .btn-buy-now { background: var(--gold-light); border-color: var(--gold-light); color: var(--green-deep); }
+.lightbox-saree-colors .lightbox-cart-actions .btn-buy-now:hover { background: var(--gold); border-color: var(--gold); }
+.lightbox-saree-colors .trust-payment-label { color: var(--ivory); opacity: 0.6; }
+.lightbox-saree-colors .trust-delivery-row { color: var(--ivory); opacity: 0.9; }
+.lightbox-saree-colors .related-sarees-title { color: var(--gold-light); }
+.lightbox-saree-colors .related-saree-item .rs-name { color: var(--ivory); }
+.lightbox-saree-colors .related-saree-item .rs-price { color: var(--gold-light); }
+.lightbox-saree-colors .thumb-nav { background: rgba(250, 247, 239, 0.1); border-color: rgba(250, 247, 239, 0.3); color: var(--gold-light); }
+.lightbox-saree-colors .thumb-nav:hover { background: rgba(250, 247, 239, 0.18); }
+.lightbox-saree-colors .thumb-item { background: var(--green-deep); }
+.lightbox-saree-colors .lightbox-side .interest-badge { color: var(--gold-light); }
+.lightbox-saree-colors .care-accordion { border-top-color: rgba(250, 247, 239, 0.25); }
+.lightbox-saree-colors .care-accordion-toggle { color: var(--gold); }
+.lightbox-saree-colors .care-accordion-icon { color: var(--gold-light); }
+.lightbox-saree-colors .care-accordion-panel li { color: var(--ivory); opacity: 1; }
+.lightbox-saree-colors .lightbox-cart-actions button:disabled { border-color: rgba(250, 247, 239, 0.3); color: var(--ivory); }
+.lightbox-saree-colors .pay-badge { background: var(--ivory); color: var(--green-deep); border: none; }
+.lightbox-saree-colors .pay-badge.pay-visa { color: #1434CB; background: var(--ivory); border: none; }
+.lightbox-saree-colors .pay-badge.pay-apple { background: #000; color: #fff; border: none; }
+.lightbox-saree-colors .pay-badge.pay-apple svg path { fill: #fff !important; }
+.lightbox-saree-colors .pay-badge.pay-google { color: #3c4043; background: var(--ivory); border: none; }
+.lightbox-saree-colors .pay-badge.pay-tabby { background: #78D5B2; color: #0B3B33; border: none; }
+.lightbox-saree-colors .pay-badge.pay-tamara { background: #F4B99F; color: #6B2E1F; border: none; }
+.lightbox-saree-colors .lightbox-side { color: var(--ivory); }
+@media (min-width: 900px) {
+  .lightbox-overlay.lightbox-saree-colors { background: rgba(43, 13, 26, 0.90); }
+  .lightbox-saree-colors .lightbox-body { background: var(--green-deep); }
+  .lightbox-saree-colors .lightbox-side:hover { scrollbar-color: rgba(250, 247, 239, 0.35) transparent; }
+  .lightbox-saree-colors .related-sarees-scroll { scrollbar-color: transparent transparent; }
+  .lightbox-saree-colors .lightbox-side:hover .related-sarees-scroll { scrollbar-color: rgba(250, 247, 239, 0.35) transparent; }
+  .lightbox-saree-colors .lightbox-side::-webkit-scrollbar-thumb { background: transparent; }
+  .lightbox-saree-colors .lightbox-side:hover::-webkit-scrollbar-thumb { background: rgba(250, 247, 239, 0.35); }
+  .lightbox-saree-colors .lightbox-side::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+  .lightbox-saree-colors .related-sarees-scroll::-webkit-scrollbar-thumb { background: transparent; }
+  .lightbox-saree-colors .lightbox-side:hover .related-sarees-scroll::-webkit-scrollbar-thumb { background: rgba(250, 247, 239, 0.35); }
+  .lightbox-saree-colors .related-sarees-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 }
