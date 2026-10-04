@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#3C1223">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=229">
+<link rel="stylesheet" href="style.css?v=245">
 <style>
   body.admin-body { background: var(--ivory-deep); min-height: 100vh; }
   .admin-shell { display: flex; min-height: 100vh; }
@@ -1381,7 +1381,10 @@
               </div>
               <button type="button" class="btn btn-primary" id="admin-mo-add-saree-btn">+ Add</button>
             </div>
-            <button type="button" class="btn btn-ghost" id="admin-mo-browse-btn" style="margin-top:8px;">Browse Catalogue</button>
+            <div style="display:flex; gap:8px; margin-top:8px; flex-wrap:wrap;">
+              <button type="button" class="btn btn-ghost" id="admin-mo-browse-btn" style="margin-top:0;">Browse Catalogue</button>
+              <button type="button" class="btn btn-ghost" id="admin-mo-scan-btn" style="margin-top:0;">Scan Tag</button>
+            </div>
             <div id="admin-mo-picked-items"></div>
           </div>
 
@@ -1644,7 +1647,7 @@
   </div>
 </div>
 
-<script src="jsbarcode.min.js"></script>
+<script src="qrcode-generator.min.js"></script>
 <script src="products-data.js"></script>
 <script src="zxing.min.js"></script>
 <script>
@@ -1664,16 +1667,19 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=209"></script>
-<!-- Barcode scanner overlay, for scanning a customer receipt's barcode
-     from the Orders search bar (see admin-orders-scan-btn). Same
-     scanning engine as the /scan.html saree lookup app. -->
+<script src="admin.js?v=210"></script>
+<!-- Shared scanner overlay: a customer receipt's barcode from the
+     Orders search bar (see admin-orders-scan-btn), and a product's own
+     QR tag from Manual Order (see admin-mo-scan-btn), both reuse this
+     one overlay and camera feed via startTagScan()/stopTagScan(), only
+     the caption text and result handling differ. Same scanning engine
+     as the /scan.html saree lookup app. -->
 <div class="admin-scan-overlay" id="admin-scan-overlay" style="display:none;">
   <div class="admin-scan-frame">
     <video id="admin-scan-video" playsinline muted></video>
     <div class="admin-scan-line"></div>
   </div>
-  <p class="admin-scan-caption">Point the camera at the barcode on the receipt&hellip;</p>
+  <p class="admin-scan-caption" id="admin-scan-caption">Point the camera at the barcode on the receipt&hellip;</p>
   <p class="admin-scan-error" id="admin-scan-error" style="display:none;"></p>
   <button type="button" class="admin-scan-close" id="admin-scan-close">Cancel</button>
 </div>
