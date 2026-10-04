@@ -5240,7 +5240,7 @@ function buildJewelleryStickerSheetHtml(items) {
       return (
         '<div class="sticker">' +
           '<div class="top-row">' +
-            '<div class="sticker-logo"></div>' +
+            '<img class="sticker-logo" src="assets/circle-logo.png" alt="">' +
             '<div class="qr-code" id="jqr-' + globalIdx + '"></div>' +
           '</div>' +
           '<div class="sticker-id">' + item.id + '</div>' +
@@ -5260,10 +5260,10 @@ function buildJewelleryStickerSheetHtml(items) {
     '.print-btn{margin-top:10px;background:#3C1223;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}' +
     '.sheet{width:8.27in;height:11.69in;background:#fff;margin:0 auto 20px;padding:0.35in;box-shadow:0 10px 40px rgba(0,0,0,0.2)}' +
     '.grid{display:grid;grid-template-columns:repeat(' + STICKERS_PER_ROW + ',1fr);border-left:1px dashed #999;border-top:1px dashed #999}' +
-    '.sticker{height:0.94in;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.04in;padding:0.06in;overflow:hidden;border-right:1px dashed #999;border-bottom:1px dashed #999}' +
+    '.sticker{height:0.94in;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.02in;padding:0.06in;overflow:hidden;border-right:1px dashed #999;border-bottom:1px dashed #999}' +
     '.top-row{display:flex;align-items:center;justify-content:center;gap:0.08in}' +
-    '.sticker-logo{width:0.48in;height:0.48in;flex-shrink:0;background-image:url(assets/circle-logo.png);background-size:contain;background-repeat:no-repeat;background-position:center}' +
-    '.qr-code{width:0.58in;height:0.58in;flex-shrink:0}' +
+    '.sticker-logo{width:0.48in;height:0.48in;flex-shrink:0;object-fit:contain}' +
+    '.qr-code{width:0.63in;height:0.63in;flex-shrink:0}' +
     '.qr-code svg{width:100%;height:100%;display:block}' +
     '.sticker-id{font-family:"Courier New",monospace;font-size:11px;font-weight:bold;color:#2B0D1A;letter-spacing:0.3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}' +
     '@media print{@page{size:A4;margin:0}body{background:#fff;padding:0}.screen-note{display:none}.sheet{box-shadow:none;margin:0;page-break-after:always}.sheet:last-child{page-break-after:auto}}' +
