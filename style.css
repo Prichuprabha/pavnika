@@ -2253,6 +2253,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
        reserved gutter width can never change. Only the colour (both
        here and in the webkit-specific rules below) toggles on hover. */
     scrollbar-width: thin; scrollbar-color: transparent transparent;
+    /* overflow-y:auto only renders a scrollbar once content actually
+       overflows -- without this, the gutter space isn't reserved until
+       that first happens, so the available content width silently
+       shrinks right when a scrollbar appears, re-wrapping text. This
+       reserves it unconditionally, matching the same property already
+       used on .lightbox-overlay itself for the same reason. */
+    scrollbar-gutter: stable;
   }
   /* Hidden by default, revealed only while hovering anywhere over this
      panel -- both the vertical scrollbar here and the horizontal one

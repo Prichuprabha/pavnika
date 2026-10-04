@@ -2407,11 +2407,11 @@ function buildLightbox() {
           '</div>' +
           '<div class="care-accordion">' +
             '<button type="button" class="care-accordion-toggle" id="care-accordion-toggle" aria-expanded="false">' +
-              '<span>Saree Care &amp; Storage</span>' +
+              '<span id="care-accordion-title">Saree Care &amp; Storage</span>' +
               '<span class="care-accordion-icon" aria-hidden="true">+</span>' +
             '</button>' +
             '<div class="care-accordion-panel" id="care-accordion-panel" hidden>' +
-              '<ul>' +
+              '<ul id="care-accordion-list">' +
                 '<li>Dry clean recommended for the first few washes, especially for zari borders and heavily woven pallus.</li>' +
                 '<li>If hand-washing later, use a mild, pH-neutral detergent in cool water, and wash the saree alone the first two or three times to check for colour bleeding.</li>' +
                 '<li>Dry flat or on a padded hanger in the shade — direct sunlight can fade silk and dull the zari over time.</li>' +
@@ -2597,13 +2597,53 @@ window.openLightbox = function (product) {
       sizePickerEl.innerHTML = '';
     }
 
-    // The saree-specific care accordion (dry cleaning, zari, silk...)
-    // doesn't apply to jewellery or accessories — hidden for those
-    // rather than shown with misleading instructions. Department-
-    // specific care copy is a separate, deliberate step (needs its own
-    // review and approval), not invented here.
+    // Care notes: each department gets its own tailored copy, since a
+    // fashion-jewellery piece and an artificial flower garland have
+    // very different care needs from each other and from a saree.
     var careAccordionEl = document.querySelector('.care-accordion');
-    if (careAccordionEl) careAccordionEl.style.display = ((product.department || 'saree') === 'saree') ? 'block' : 'none';
+    var careTitleEl = document.getElementById('care-accordion-title');
+    var careListEl = document.getElementById('care-accordion-list');
+    if (careAccordionEl && careTitleEl && careListEl) {
+      careAccordionEl.style.display = 'block';
+      var careDept = product.department || 'saree';
+      var careContent = {
+        saree: {
+          title: 'Saree Care &amp; Storage',
+          items: [
+            'Dry clean recommended for the first few washes, especially for zari borders and heavily woven pallus.',
+            'If hand-washing later, use a mild, pH-neutral detergent in cool water, and wash the saree alone the first two or three times to check for colour bleeding.',
+            'Dry flat or on a padded hanger in the shade — direct sunlight can fade silk and dull the zari over time.',
+            'Iron on a low, silk-safe setting, ideally with a thin cotton cloth between the iron and the fabric, and avoid pressing directly over zari work.',
+            'Store folded in a breathable cotton or muslin cloth rather than plastic, and refold along different lines every few months to prevent permanent crease lines.',
+            'Keep away from direct moisture and humidity; a few neem leaves or silica packets in storage help deter pests without staining the fabric.'
+          ]
+        },
+        jewellery: {
+          title: 'Artificial Jewellery Care',
+          items: [
+            'This is artificial / imitation fashion jewellery, not precious metal — a little extra care goes a long way in keeping it looking its best.',
+            'Avoid direct contact with perfume, water, and cosmetics, as these can dull or discolour the plating over time.',
+            'Store in a dry, airtight pouch or box, away from direct sunlight and humidity, when not in use.',
+            'Wipe gently with a soft, dry cloth after each wear to remove sweat and natural oils.',
+            'Remove before swimming, bathing, or exercising to prevent tarnishing.',
+            'Avoid contact with hard surfaces to protect stones, beads, and plated finishes from scratches.'
+          ]
+        },
+        accessory: {
+          title: 'Accessory Care',
+          items: [
+            'Keep away from direct heat and excess humidity to help the piece hold its shape and colour longer.',
+            'Store flat or gently cushioned in a box to prevent crushing or bending.',
+            'Avoid spraying perfume or hairspray directly onto the piece, as this can cause discolouration.',
+            'Dust gently with a soft, dry brush or cloth rather than washing with water.',
+            'Keep away from direct sunlight for extended periods to prevent fading.'
+          ]
+        }
+      };
+      var chosen = careContent[careDept] || careContent.saree;
+      careTitleEl.innerHTML = chosen.title;
+      careListEl.innerHTML = chosen.items.map(function (item) { return '<li>' + item + '</li>'; }).join('');
+    }
 
     var addCartBtn = document.getElementById('lightbox-add-cart');
     var buyNowBtn = document.getElementById('lightbox-buy-now');
