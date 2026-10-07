@@ -476,6 +476,15 @@ function initSareeEditor(token) {
   document.getElementById('admin-f-sale-price').addEventListener('input', updateSalePreview);
   departmentSelect.addEventListener('change', updateSalePreview);
 
+  // Generic stock-quantity toggle -- available to any department, since
+  // sarees/jewellery/accessories can all potentially sell this way, not
+  // just Artificial Flowers.
+  document.getElementById('admin-f-has-qty').addEventListener('change', function () {
+    var on = this.checked;
+    document.getElementById('admin-qty-fields').style.display = on ? 'grid' : 'none';
+    document.getElementById('admin-qty-hint').style.display = on ? 'block' : 'none';
+  });
+
   Object.keys(SERIES_CODES).forEach(function (series) {
     var opt = document.createElement('option');
     opt.value = series;
@@ -1136,6 +1145,11 @@ function initSareeEditor(token) {
     document.getElementById('admin-upload-status').textContent = '';
     renderPendingPhotosGrid();
     uploadedForId = null;
+    // form.reset() above already unchecks admin-f-has-qty and clears its
+    // text fields, but it doesn't know about the show/hide toggling we
+    // do ourselves, so that has to be reset explicitly too.
+    document.getElementById('admin-qty-fields').style.display = 'none';
+    document.getElementById('admin-qty-hint').style.display = 'none';
     departmentSelect.value = 'saree';
     departmentSelect.disabled = false;
     updateDepartmentFieldVisibility();
@@ -1170,6 +1184,17 @@ function initSareeEditor(token) {
     document.getElementById('admin-f-sale-price').value = product.salePrice || '';
     updateSalePreview();
     document.getElementById('admin-f-sold').checked = !!product.sold;
+    // Generic stock-quantity fields (any department) -- a legacy
+    // one-of-a-kind item has no .quantity at all, so the checkbox and
+    // its fields stay off/blank for those, exactly as before this
+    // feature existed.
+    var hasQty = product.quantity !== null && product.quantity !== undefined;
+    document.getElementById('admin-f-has-qty').checked = hasQty;
+    document.getElementById('admin-qty-fields').style.display = hasQty ? 'grid' : 'none';
+    document.getElementById('admin-qty-hint').style.display = hasQty ? 'block' : 'none';
+    document.getElementById('admin-f-quantity').value = hasQty ? product.quantity : '';
+    document.getElementById('admin-f-qty-unit').value = hasQty ? (product.qtyUnit || '') : '';
+    document.getElementById('admin-f-max-per-order').value = (hasQty && product.maxPerOrder) ? product.maxPerOrder : '';
 
     if (dept === 'saree') {
       seriesSelect.value = product.series;
@@ -1678,6 +1703,12 @@ function initSareeEditor(token) {
       return;
     }
 
+    var hasQtyChecked = document.getElementById('admin-f-has-qty').checked;
+    if (hasQtyChecked && !document.getElementById('admin-f-quantity').value.trim()) {
+      showStatus('error', 'Please enter a quantity, or uncheck "Sold in limited quantity".');
+      return;
+    }
+
     if (isAddMode) {
       checkIdDuplicate();
       if (idWrap.classList.contains('has-duplicate')) {
@@ -1743,6 +1774,22 @@ function initSareeEditor(token) {
         images: images,
         image: images[0] || ''
       };
+    }
+
+    // Generic stock-quantity fields, applied the same way regardless of
+    // which department this item belongs to. Unchecking the box on an
+    // item that previously had a quantity explicitly clears these
+    // (rather than leaving stale numbers behind), reverting it back to
+    // a plain one-of-a-kind item controlled only by "Sold out" above.
+    if (hasQtyChecked) {
+      productData.quantity = parseInt(document.getElementById('admin-f-quantity').value, 10) || 0;
+      productData.qtyUnit = document.getElementById('admin-f-qty-unit').value.trim() || 'pcs';
+      var maxPerOrderRaw = document.getElementById('admin-f-max-per-order').value.trim();
+      productData.maxPerOrder = maxPerOrderRaw ? (parseInt(maxPerOrderRaw, 10) || null) : null;
+    } else {
+      productData.quantity = null;
+      productData.qtyUnit = null;
+      productData.maxPerOrder = null;
     }
 
     var action;

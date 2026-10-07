@@ -1091,6 +1091,30 @@
           <label for="admin-f-sold">Sold out</label>
         </div>
 
+        <div class="admin-checkbox-row" style="margin-top:4px;">
+          <input type="checkbox" id="admin-f-has-qty">
+          <label for="admin-f-has-qty">Sold in limited quantity (not a one-of-a-kind item)</label>
+        </div>
+        <!-- Generic stock-quantity support, usable by any department --
+             not just Artificial Flowers. Hidden unless the checkbox
+             above is on, since most items here (sarees, most jewellery)
+             are still one-of-a-kind pieces with no quantity at all. -->
+        <div class="admin-form-grid" id="admin-qty-fields" style="display:none;">
+          <div class="admin-field">
+            <label>Quantity in stock</label>
+            <input type="number" id="admin-f-quantity" min="0" step="1" placeholder="e.g. 20">
+          </div>
+          <div class="admin-field">
+            <label>Unit (shown to customers)</label>
+            <input type="text" id="admin-f-qty-unit" placeholder="e.g. Muzham, Pair, Set, Meter">
+          </div>
+          <div class="admin-field">
+            <label>Max per order (optional)</label>
+            <input type="number" id="admin-f-max-per-order" min="1" step="1" placeholder="e.g. 10">
+          </div>
+        </div>
+        <p class="admin-id-hint" id="admin-qty-hint" style="display:none;">Leave "Max per order" blank for no extra cap beyond what's in stock. "Sold out" above still works as a manual override, independent of quantity.</p>
+
         <div class="admin-field" style="margin-bottom:16px;" id="admin-f-occasions-wrap">
           <label>Occasions</label>
           <div class="admin-occasion-checks" id="admin-f-occasions">
@@ -1671,7 +1695,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=210"></script>
+<script src="admin.js?v=211"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
