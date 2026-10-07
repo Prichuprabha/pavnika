@@ -2907,19 +2907,6 @@ window.PRODUCTS = [
     "id": "JW003"
   },
   {
-    "department": "accessory",
-    "category": "Artificial Flowers",
-    "note": "Test note for Aritficial flower",
-    "price": 100,
-    "salePrice": null,
-    "sold": false,
-    "images": [
-      "https://pavnika.ae/assets/products/AC001-1.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
-    "id": "AC001"
-  },
-  {
     "department": "jewellery",
     "type": "Bangles & Bracelets",
     "colour": "Test color different size",
