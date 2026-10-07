@@ -2189,6 +2189,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-theme-light .thumb-nav:hover { background: rgba(43, 18, 35, 0.12); }
 .lightbox-theme-light .thumb-item { background: var(--ivory-deep); }
 .lightbox-theme-light .lightbox-size-picker .size-chip-row { justify-content: flex-start; }
+/* Single-size bangles: the one chip shown is informational only (there's
+   nothing else to pick), so it shouldn't look clickable. */
+.lightbox-theme-light .lightbox-size-picker .filter-btn.size-chip-fixed { cursor: default; }
+/* Shown when Add to Cart/Buy Now is tapped before a size is confirmed —
+   turns the label red as a brief, unmissable nudge rather than a modal
+   or alert(). Clears itself the moment any size chip is clicked. */
+.lightbox-size-picker.size-picker-error .size-picker-label { color: #B8142A; opacity: 1; font-weight: 600; }
 /* Price row: flex-start instead of space-between -- space-between
    spreads EVERY child apart evenly, which looks fine with 2 children
    (mobile: price, wishlist pill) but on desktop there's a 3rd child

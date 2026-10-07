@@ -2531,7 +2531,7 @@ function buildLightbox() {
   return sameSeries.concat(remaining).slice(0, 6);
 }
 
-window.openLightbox = function (product) {
+window.openLightbox = function (product, sizeAlreadyConfirmed) {
     state.images = (product.images && product.images.length) ? product.images : [product.image];
     state.index = 0;
     var lightboxSideEl = document.querySelector('.lightbox-side');
@@ -2579,19 +2579,45 @@ window.openLightbox = function (product) {
     // whichever size is now being looked at.
     var sizePickerEl = document.getElementById('lightbox-size-picker');
     var siblings = jewelleryGroupSiblings(product);
-    if (siblings.length > 1) {
-      sizePickerEl.innerHTML = '<span class="size-picker-label">Select size</span><div class="size-chip-row">' +
+    // Only bangles carry a .size value (see admin.js's bangle-only
+    // "size" field) — everything else (sarees, earrings, accessories)
+    // has no size concept at all and keeps the picker hidden, exactly
+    // as before. A bangle always shows the picker now, even when it's
+    // currently the only unsold size in its family, so size is visibly
+    // part of every bangle purchase rather than silently implied.
+    var isSizedItem = !!product.size || siblings.length > 1;
+    // A size is "confirmed" once the shopper has explicitly clicked a
+    // size chip (even the already-active one) during THIS viewing —
+    // the default chip shown on open (lowest-price sibling from the
+    // grid) must not count on its own, or someone could buy a size
+    // they never consciously picked. Single-size bangles and every
+    // non-bangle product have nothing to confirm, so they're exempt.
+    var sizeConfirmed = !isSizedItem || siblings.length <= 1 || !!sizeAlreadyConfirmed;
+    if (isSizedItem) {
+      var pickerLabel = siblings.length > 1 ? 'Select size' : 'Size';
+      sizePickerEl.innerHTML = '<span class="size-picker-label">' + pickerLabel + '</span><div class="size-chip-row">' +
         siblings.map(function (s) {
-          var cls = 'filter-btn' + (s.id === product.id ? ' active' : '') + (s.sold ? ' is-unavailable' : '');
+          var cls = 'filter-btn' + (s.id === product.id ? ' active' : '') + (s.sold ? ' is-unavailable' : '') + (siblings.length <= 1 ? ' size-chip-fixed' : '');
           return '<span class="' + cls + '" data-id="' + s.id + '">' + (s.size || s.id) + (s.sold ? ' (sold)' : '') + '</span>';
         }).join('') + '</div>';
       sizePickerEl.style.display = 'block';
-      sizePickerEl.querySelectorAll('.filter-btn:not(.is-unavailable):not(.active)').forEach(function (chip) {
-        chip.addEventListener('click', function () {
-          var sibling = siblings.find(function (s) { return s.id === chip.getAttribute('data-id'); });
-          if (sibling) window.openLightbox(sibling);
+      sizePickerEl.classList.remove('size-picker-error');
+      if (siblings.length > 1) {
+        // Includes the active chip (unlike before) — clicking the size
+        // that's already showing is itself a valid way to confirm it,
+        // not just switching to a different one.
+        sizePickerEl.querySelectorAll('.filter-btn:not(.is-unavailable)').forEach(function (chip) {
+          chip.addEventListener('click', function () {
+            sizeConfirmed = true;
+            sizePickerEl.classList.remove('size-picker-error');
+            var labelEl = sizePickerEl.querySelector('.size-picker-label');
+            if (labelEl) labelEl.textContent = 'Select size';
+            if (chip.classList.contains('active')) return;
+            var sibling = siblings.find(function (s) { return s.id === chip.getAttribute('data-id'); });
+            if (sibling) window.openLightbox(sibling, true);
+          });
         });
-      });
+      }
     } else {
       sizePickerEl.style.display = 'none';
       sizePickerEl.innerHTML = '';
@@ -2698,6 +2724,13 @@ window.openLightbox = function (product) {
       }
     }
 
+    function flagSizeNotConfirmed() {
+      sizePickerEl.classList.add('size-picker-error');
+      var labelEl = sizePickerEl.querySelector('.size-picker-label');
+      if (labelEl) labelEl.textContent = 'Please select a size';
+      sizePickerEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
     function renderCartActions() {
       var inCart = cartGetItems().indexOf(product.id) !== -1;
       actionsWrap.innerHTML =
@@ -2712,10 +2745,18 @@ window.openLightbox = function (product) {
           openCartDrawer();
           return;
         }
+        if (!sizeConfirmed) {
+          flagSizeNotConfirmed();
+          return;
+        }
         cartAddItem(product);
         renderCartActions();
       });
       document.getElementById('lightbox-buy-now').addEventListener('click', function () {
+        if (!sizeConfirmed) {
+          flagSizeNotConfirmed();
+          return;
+        }
         cartAddItem(product);
         closeLightbox();
         openCartDrawer();
