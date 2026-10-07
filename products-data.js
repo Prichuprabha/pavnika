@@ -2922,5 +2922,16 @@ window.PRODUCTS = [
     "baseId": "JW001",
     "size": "2.8",
     "id": "JW001-28"
+  },
+  {
+    "department": "accessory",
+    "category": "Artificial Flowers",
+    "note": "",
+    "price": 150,
+    "salePrice": null,
+    "sold": false,
+    "images": [],
+    "image": "",
+    "id": "AC001"
   }
 ];
