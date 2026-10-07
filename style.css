@@ -2686,15 +2686,6 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   text-decoration: line-through;
   margin-right: 8px;
 }
-.lightbox-pct-pill {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #1a7a3c;
-  background: #e3f6e9;
-  padding: 3px 9px;
-  border-radius: 999px;
-  white-space: nowrap;
-}
 .lightbox-size-picker {
   margin-bottom: 12px;
 }

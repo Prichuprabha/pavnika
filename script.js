@@ -2364,7 +2364,6 @@ function buildLightbox() {
           '<div class="lightbox-price-row">' +
             '<span class="lightbox-price-was" id="lightbox-price-was" style="display:none;"></span>' +
             '<p class="lightbox-price" id="lightbox-price"></p>' +
-            '<span class="lightbox-pct-pill" id="lightbox-pct-pill" style="display:none;"></span>' +
             '<span class="lightbox-heart-wrap">' +
               '<span class="lightbox-heart-tooltip" id="lightbox-heart-tooltip">Add to Wishlist</span>' +
               '<button type="button" class="lightbox-wishlist-heart" id="lightbox-wishlist-heart" aria-label="Add to wishlist">' +
@@ -2574,16 +2573,12 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
     document.getElementById('lightbox-description').textContent = buildDescription(product);
     var lbOnSale = effectivePrice(product) < Number(product.price);
     var lbWasEl = document.getElementById('lightbox-price-was');
-    var lbPctEl = document.getElementById('lightbox-pct-pill');
     document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(effectivePrice(product));
     if (lbOnSale) {
       lbWasEl.textContent = 'AED ' + formatAED(product.price);
       lbWasEl.style.display = 'inline';
-      lbPctEl.textContent = salePercentOff(product) + '% off';
-      lbPctEl.style.display = 'inline';
     } else {
       lbWasEl.style.display = 'none';
-      lbPctEl.style.display = 'none';
     }
 
     // Bangles & Bracelets: several sizes of one design, each its own
