@@ -399,6 +399,15 @@ function effectivePrice(p) {
   return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
 }
 
+// Same formula as the admin panel's own sale-price preview
+// (Math.round((1 - sale/regular) * 100)) — kept in sync here so the
+// percentage a customer sees always matches what the admin was shown
+// when they set the price.
+function salePercentOff(p) {
+  if (!p || !p.salePrice || !(Number(p.salePrice) > 0) || !(Number(p.salePrice) < Number(p.price))) return null;
+  return Math.round((1 - Number(p.salePrice) / Number(p.price)) * 100);
+}
+
 function seriesTitleCase(s) {
   return String(s).toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
 }
@@ -414,6 +423,7 @@ function productCardHTML(p) {
     ? '<span class="p-price-row">' +
         '<span class="p-price-was">AED ' + formatAED(p.price) + '</span>' +
         '<span class="p-price-now">AED ' + formatAED(p.salePrice) + '</span>' +
+        '<span class="pct-off-pill">' + salePercentOff(p) + '% off</span>' +
       '</span>'
     : '<span class="p-price">AED ' + formatAED(p.price) + '</span>';
   return (
@@ -461,6 +471,7 @@ function nonSareeCardHTML(p) {
     ? '<span class="p-price-row">' +
         '<span class="p-price-was">AED ' + formatAED(p.price) + '</span>' +
         '<span class="p-price-now">AED ' + formatAED(p.salePrice) + '</span>' +
+        '<span class="pct-off-pill">' + salePercentOff(p) + '% off</span>' +
       '</span>'
     : '<span class="p-price">' + (isGroup ? 'From ' : '') + 'AED ' + formatAED(displayPrice) + '</span>';
   return (
@@ -2353,6 +2364,7 @@ function buildLightbox() {
           '<div class="lightbox-price-row">' +
             '<span class="lightbox-price-was" id="lightbox-price-was" style="display:none;"></span>' +
             '<p class="lightbox-price" id="lightbox-price"></p>' +
+            '<span class="lightbox-pct-pill" id="lightbox-pct-pill" style="display:none;"></span>' +
             '<span class="lightbox-heart-wrap">' +
               '<span class="lightbox-heart-tooltip" id="lightbox-heart-tooltip">Add to Wishlist</span>' +
               '<button type="button" class="lightbox-wishlist-heart" id="lightbox-wishlist-heart" aria-label="Add to wishlist">' +
@@ -2562,12 +2574,16 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
     document.getElementById('lightbox-description').textContent = buildDescription(product);
     var lbOnSale = effectivePrice(product) < Number(product.price);
     var lbWasEl = document.getElementById('lightbox-price-was');
+    var lbPctEl = document.getElementById('lightbox-pct-pill');
     document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(effectivePrice(product));
     if (lbOnSale) {
       lbWasEl.textContent = 'AED ' + formatAED(product.price);
       lbWasEl.style.display = 'inline';
+      lbPctEl.textContent = salePercentOff(product) + '% off';
+      lbPctEl.style.display = 'inline';
     } else {
       lbWasEl.style.display = 'none';
+      lbPctEl.style.display = 'none';
     }
 
     // Bangles & Bracelets: several sizes of one design, each its own
