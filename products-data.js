@@ -2922,5 +2922,18 @@ window.PRODUCTS = [
     "baseId": "JW001",
     "size": "2.8",
     "id": "JW001-28"
+  },
+  {
+    "department": "accessory",
+    "category": "Artificial Flowers",
+    "note": "Per Muzham cost",
+    "price": 200,
+    "salePrice": null,
+    "sold": false,
+    "images": [
+      "https://pavnika.ae/assets/products/AC001-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
+    "id": "AC001"
   }
 ];
