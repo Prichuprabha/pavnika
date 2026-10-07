@@ -2928,7 +2928,7 @@ window.PRODUCTS = [
     "category": "Artificial Flowers",
     "note": "Per Muzham cost",
     "price": 200,
-    "salePrice": 180,
+    "salePrice": 100,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/AC001-1.jpg"
