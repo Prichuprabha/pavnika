@@ -2,7 +2,7 @@
 //
 // POST { adminToken, items, customer, billingAddress, shippingAddress,
 //        discountType, discountValue, subtotal, discountAmount, total,
-//        paymentMode }
+//        paymentMode, applyGiftCard? }
 // - For sales completed via bank transfer, cash, or a Nomod payment
 //   confirmed outside the website. Creates a real row in the same
 //   `orders` table used by online purchases (so it shows in the admin
@@ -20,6 +20,13 @@
 //   "Delivered (Direct Pay)" for genuine in-person hand-offs — that
 //   status still exists and still counts toward revenue/completed
 //   totals exactly as before, it's just no longer forced on by default.
+// - applyGiftCard: true opts this order into redeeming the customer's
+//   existing store credit. The *amount* is never taken from the
+//   client — it's always recomputed here as
+//   min(customer's real current balance, subtotal - discountAmount),
+//   deducted from pos_customers, and subtracted from the order's
+//   total. This is a pure safety net: when this flag is left off
+//   (the default), behavior is identical to before this existed.
 
 const { verifyAdminToken } = require('./_admin-auth');
 const { supabaseHeaders, generateOrderNumber, sendReceiptEmail, fulfillPurchasedItems } = require('./_order-shared');
@@ -69,8 +76,59 @@ exports.handler = async function (event) {
 
   const subtotal = Number(body.subtotal) || 0;
   const discountAmount = Number(body.discountAmount) || 0;
-  const total = Number(body.total) || (subtotal - discountAmount);
+  let total = Number(body.total) || (subtotal - discountAmount);
   const paymentMode = (body.paymentMode || 'Bank Transfer').trim();
+
+  // Store credit is opt-in and fully server-computed — the client
+  // only says "yes, apply it if there's any." The actual amount is
+  // never taken from the request body, so there's no way for a typo
+  // or a stale display value to apply more credit than the customer
+  // genuinely has, or more than this order actually costs. Matches by
+  // email OR phone (unlike the public checkout's email-only lookup) --
+  // this is a trusted staff member keying in the sale, not a visitor's
+  // own unverified request, so the looser match is an acceptable
+  // convenience here.
+  let giftCardApplied = 0;
+  let giftCardCustomerId = null;
+  let giftCardNote = null;
+
+  if (body.applyGiftCard) {
+    try {
+      let matched = null;
+      if (email) {
+        const byEmailRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?email=eq.${encodeURIComponent(email)}&select=id,gift_card_balance`, { headers: supabaseHeaders() });
+        const byEmail = await byEmailRes.json();
+        if (byEmail.length) matched = byEmail[0];
+      }
+      if (!matched && customer.phone) {
+        const digitsOnly = String(customer.phone).replace(/\D/g, '').slice(-9);
+        if (digitsOnly) {
+          const byPhoneRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?phone=ilike.${encodeURIComponent('%' + digitsOnly)}&select=id,gift_card_balance`, { headers: supabaseHeaders() });
+          const byPhone = await byPhoneRes.json();
+          if (byPhone.length) matched = byPhone[0];
+        }
+      }
+
+      if (matched) {
+        const realBalance = Number(matched.gift_card_balance) || 0;
+        const orderOwed = Math.max(0, subtotal - discountAmount);
+        giftCardApplied = Math.round(Math.min(realBalance, orderOwed) * 100) / 100;
+        giftCardCustomerId = matched.id;
+        if (giftCardApplied <= 0) {
+          giftCardNote = realBalance <= 0 ? 'This customer has no store credit balance — none was applied.' : null;
+        }
+      } else {
+        giftCardNote = 'No store credit record found for this customer — none was applied.';
+      }
+    } catch (err) {
+      console.error('Store credit lookup failed, proceeding without applying any:', err);
+      giftCardNote = 'Could not check store credit balance — none was applied.';
+    }
+  }
+
+  if (giftCardApplied > 0) {
+    total = Math.round((total - giftCardApplied) * 100) / 100;
+  }
 
   const orderItems = items.map(function (it) {
     return {
@@ -78,10 +136,14 @@ exports.handler = async function (event) {
       name: it.name,
       price: Number(it.price) || 0,
       qty: Number(it.qty) || 1,
+      department: it.department || '',
       series: it.series || '',
       type: it.type || '',
       sareeType: it.sareeType || '',
       pattern: it.pattern || '',
+      colour: it.colour || '',
+      category: it.category || '',
+      note: it.note || '',
       image: it.image || ''
     };
   });
@@ -98,6 +160,7 @@ exports.handler = async function (event) {
     subtotal: subtotal,
     discount_amount: discountAmount,
     total: total,
+    gift_card_applied: giftCardApplied,
     status: paymentMode === 'COD' ? 'cod_pending' : 'paid',
     payment_method: paymentMode,
     billing_address: JSON.stringify(billing),
@@ -128,9 +191,38 @@ exports.handler = async function (event) {
       console.error('fulfillPurchasedItems failed for manual order ' + inserted.order_number + ':', err);
     }
 
+    // Deduct the applied credit only now that the order itself is
+    // safely recorded — same ordering as fulfilling the items above,
+    // so a failure here doesn't cost the customer their confirmation
+    // email. If it does fail, the order's own gift_card_applied value
+    // stays as the record of what should have been deducted.
+    if (giftCardApplied > 0 && giftCardCustomerId) {
+      try {
+        const custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${giftCardCustomerId}&select=gift_card_balance`, { headers: supabaseHeaders() });
+        const custRows = await custRes.json();
+        const currentBalance = (custRows[0] && Number(custRows[0].gift_card_balance)) || 0;
+        const newBalance = Math.max(0, Math.round((currentBalance - giftCardApplied) * 100) / 100);
+        await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${giftCardCustomerId}`, {
+          method: 'PATCH',
+          headers: supabaseHeaders(),
+          body: JSON.stringify({ gift_card_balance: newBalance })
+        });
+      } catch (err) {
+        console.error('Order ' + inserted.order_number + ' applied AED ' + giftCardApplied + ' store credit, but deducting the balance failed — needs manual correction:', err);
+      }
+    }
+
     await sendReceiptEmail(inserted, paymentMode);
 
-    return { statusCode: 200, body: JSON.stringify({ success: true, orderNumber: inserted.order_number }) };
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        success: true,
+        orderNumber: inserted.order_number,
+        giftCardApplied: giftCardApplied,
+        giftCardNote: giftCardNote
+      })
+    };
   } catch (err) {
     console.error('admin-create-manual-order failed:', err);
     return { statusCode: 500, body: JSON.stringify({ error: 'Failed to create the order: ' + err.message }) };

@@ -5533,10 +5533,14 @@ function initCheckoutPage() {
             name: p.design + ' — ' + p.id,
             price: effectivePrice(p),
             qty: cartGetQty(p.id), // the server (create-nomod-checkout.js) re-validates and clamps this -- never trusted as-is for the actual charge
+            department: p.department, // lets the invoice email build a correct description per department, not just sarees
             series: p.series,
             type: p.type,
             sareeType: p.sareeType,
             pattern: p.pattern,
+            colour: p.colour,
+            category: p.category,
+            note: p.note,
             image: p.image
           };
         }),

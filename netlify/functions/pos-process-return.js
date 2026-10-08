@@ -10,7 +10,7 @@
 // or bank transfer (no balance change for those two, since the
 // money already changed hands outside the system).
 const { verifyPosToken } = require('./_pos-auth');
-const { restockReturnedItems } = require('./_order-shared');
+const { restockReturnedItems, sendReturnConfirmationEmail } = require('./_order-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -81,15 +81,29 @@ exports.handler = async function (event) {
       }
     }
 
-    if (refundMethod === 'gift_card') {
-      var custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${sale.customer_id}&select=gift_card_balance`, { headers: supabaseHeaders() });
+    // Looked up once regardless of refund method, both to credit a gift
+    // card balance (if that's the method) and to have a name/email to
+    // send the confirmation email to. No customer_id on the sale (a
+    // walk-in with no profile) just means no email goes out.
+    var customerName = null, customerEmail = null, newGiftCardBalance = null;
+    if (sale.customer_id) {
+      var custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${sale.customer_id}&select=name,email,gift_card_balance`, { headers: supabaseHeaders() });
       var custRows = await custRes.json();
-      var currentBalance = (custRows[0] && custRows[0].gift_card_balance) || 0;
-      await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${sale.customer_id}`, {
-        method: 'PATCH',
-        headers: supabaseHeaders(),
-        body: JSON.stringify({ gift_card_balance: currentBalance + refundAmount })
-      });
+      var custRow = custRows[0] || null;
+      if (custRow) {
+        customerName = custRow.name;
+        customerEmail = custRow.email;
+      }
+
+      if (refundMethod === 'gift_card') {
+        var currentBalance = (custRow && custRow.gift_card_balance) || 0;
+        newGiftCardBalance = currentBalance + refundAmount;
+        await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${sale.customer_id}`, {
+          method: 'PATCH',
+          headers: supabaseHeaders(),
+          body: JSON.stringify({ gift_card_balance: newGiftCardBalance })
+        });
+      }
     }
     // cash / bank_transfer: handled manually outside the system — no balance change, just recorded below.
 
@@ -109,6 +123,23 @@ exports.handler = async function (event) {
     });
     if (!returnRes.ok) throw new Error(`Supabase insert failed: ${returnRes.status}`);
     var returnRows = await returnRes.json();
+
+    try {
+      await sendReturnConfirmationEmail({
+        customerEmail: customerEmail,
+        customerName: customerName,
+        items: body.items,
+        refundAmount: refundAmount,
+        actionType: body.actionType,
+        isDamaged: !isExchange,
+        refundMethod: refundMethod,
+        newGiftCardBalance: newGiftCardBalance,
+        referenceLabel: 'Bill',
+        billNumber: sale.bill_number
+      });
+    } catch (emailErr) {
+      console.error('sendReturnConfirmationEmail failed (return was still recorded):', emailErr);
+    }
 
     return { statusCode: 200, body: JSON.stringify({ returnRecord: returnRows[0], refundAmount: refundAmount }) };
   } catch (e) {

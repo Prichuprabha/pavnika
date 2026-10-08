@@ -1,7 +1,7 @@
 // netlify/functions/create-nomod-checkout.js
 //
 // POST { items: [{id, name, price, qty}], customer: {name, email, phone},
-//        discountPercent, promoCode }
+//        discountPercent, promoCode, visitorToken?, applyGiftCard? }
 // - Creates a Nomod Hosted Checkout session for the given cart and
 //   redirects the customer there to actually pay.
 // - The amount charged is computed here, server-side, from the live
@@ -12,8 +12,32 @@
 // - Nomod's own session `status` (checked later via verify-nomod-order)
 //   is the real source of truth for whether payment succeeded, not
 //   anything returned directly to the browser here.
+// - applyGiftCard: true opts into redeeming the visitor's own store
+//   credit. The email used to look up that balance always comes from
+//   inside a genuine signed visitorToken (see _visitor-auth.js) — NEVER
+//   from body.customer.email, which is just typed into a form field and
+//   trivially fake. Without a valid token, applyGiftCard is silently
+//   ignored (checkout still proceeds normally) rather than blocking
+//   payment over it.
+// - The applied amount itself is always min(the visitor's real current
+//   balance, what's left owing after any promo code) — recomputed here,
+//   never taken from the browser.
+// - If credit alone covers the full amount, Nomod is skipped entirely
+//   (a $0 gateway checkout isn't meaningful) and the order is recorded
+//   as paid immediately, the same way a manual order is.
+// - Known limitation, stated plainly rather than hidden: if a visitor
+//   opens two checkouts in parallel and both end up paid, the second
+//   one to actually confirm only gets whatever balance is left at that
+//   moment, not double what they had — the discount already baked into
+//   its Nomod amount could then exceed what actually gets deducted.
+//   For this shop's actual (low, single-till) order volume this is an
+//   accepted, disclosed tradeoff rather than something worth building
+//   real distributed locking for — the same class of gap already
+//   exists for promo codes here (nothing stops two people redeeming a
+//   one-time code at the exact same moment either).
 
-const { fetchProductsFromGitHub } = require('./_order-shared');
+const { fetchProductsFromGitHub, supabaseHeaders, fulfillPurchasedItems, sendReceiptEmail } = require('./_order-shared');
+const { verifyVisitorToken } = require('./_visitor-auth');
 
 const NOMOD_API_KEY = process.env.NOMOD_API_KEY;
 const NOMOD_BASE = 'https://api.nomod.com/v1';
@@ -177,11 +201,116 @@ exports.handler = async function (event) {
 
   const finalAmountCents = subtotalCents - totalDiscountCents;
 
+  // Store credit is opt-in and fully server-computed. The client only
+  // says "yes, try to apply it" — the amount is always derived here
+  // from the visitor's real balance, looked up by the email inside a
+  // genuine signed visitorToken, never from anything else in the
+  // request. An invalid/missing token just means no credit is applied;
+  // it does not block checkout.
+  var giftCardAppliedCents = 0;
+  var giftCardEmail = null;
+  if (body.applyGiftCard) {
+    var visitorSession = verifyVisitorToken(body.visitorToken);
+    if (visitorSession && visitorSession.email) {
+      try {
+        const custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?email=eq.${encodeURIComponent(visitorSession.email)}&select=id,gift_card_balance`, { headers: supabaseHeaders() });
+        const custRows = await custRes.json();
+        if (custRows.length) {
+          const realBalanceCents = toCents(custRows[0].gift_card_balance);
+          giftCardAppliedCents = Math.max(0, Math.min(realBalanceCents, finalAmountCents));
+          giftCardEmail = visitorSession.email;
+        }
+      } catch (e) {
+        console.error('Gift card balance lookup failed, proceeding without applying any credit:', e);
+      }
+    }
+  }
+
+  const amountAfterGiftCardCents = finalAmountCents - giftCardAppliedCents;
+
   const referenceId = 'pavnika-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+
+  // Store credit alone covers the order — a $0 gateway checkout isn't
+  // meaningful to Nomod, so this is recorded and finalized directly,
+  // the same way admin-create-manual-order.js finalizes a manual sale:
+  // fulfill the items, deduct the balance, send the receipt, done. No
+  // "pending" status or payment confirmation step, since nothing is
+  // waiting to be confirmed.
+  if (amountAfterGiftCardCents <= 0) {
+    try {
+      const orderNumber = await generateOrderNumber();
+      const orderRow = {
+        order_number: orderNumber,
+        nomod_checkout_id: null,
+        reference_id: referenceId,
+        customer_email: customer.email || '',
+        customer_name: ((customer.firstName || '') + ' ' + (customer.lastName || '')).trim(),
+        customer_phone: customer.phone || '',
+        items: JSON.stringify(resolvedItems),
+        promo_code: body.promoCode || '',
+        subtotal: subtotalCents / 100,
+        discount_amount: totalDiscountCents / 100,
+        total: 0,
+        gift_card_applied: giftCardAppliedCents / 100,
+        status: 'paid',
+        billing_address: JSON.stringify(body.billingAddress || {}),
+        shipping_address: JSON.stringify(body.shippingAddress || {})
+      };
+
+      const insertRes = await fetch(`${SUPABASE_URL}/rest/v1/orders`, {
+        method: 'POST',
+        headers: Object.assign({}, supabaseHeaders(), { 'Prefer': 'return=representation' }),
+        body: JSON.stringify(orderRow)
+      });
+      if (!insertRes.ok) {
+        const errBody = await insertRes.text();
+        console.error(`Failed to record credit-covered order (Supabase ${insertRes.status}) for ${referenceId}:`, errBody);
+        return { statusCode: 500, body: JSON.stringify({ error: 'Could not register your order. Please try again in a moment, or use WhatsApp checkout.' }) };
+      }
+      const inserted = (await insertRes.json())[0];
+
+      try { await fulfillPurchasedItems(resolvedItems); } catch (e) { console.error('fulfillPurchasedItems failed for credit-covered order ' + orderNumber + ':', e); }
+
+      if (giftCardAppliedCents > 0 && giftCardEmail) {
+        try {
+          const custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?email=eq.${encodeURIComponent(giftCardEmail)}&select=id,gift_card_balance`, { headers: supabaseHeaders() });
+          const custRows = await custRes.json();
+          if (custRows.length) {
+            const currentBalance = Number(custRows[0].gift_card_balance) || 0;
+            const newBalance = Math.max(0, Math.round((currentBalance - giftCardAppliedCents / 100) * 100) / 100);
+            await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${custRows[0].id}`, {
+              method: 'PATCH',
+              headers: supabaseHeaders(),
+              body: JSON.stringify({ gift_card_balance: newBalance })
+            });
+          }
+        } catch (e) {
+          console.error('Credit-covered order ' + orderNumber + ' applied store credit, but deducting the balance failed — needs manual correction:', e);
+        }
+      }
+
+      if (body.promoCode) {
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(body.promoCode)}`, {
+            method: 'PATCH',
+            headers: supabaseHeaders(),
+            body: JSON.stringify({ used: true })
+          });
+        } catch (e) { console.error('Marking promo code used failed for ' + orderNumber + ':', e); }
+      }
+
+      try { await sendReceiptEmail(inserted, 'Store Credit'); } catch (e) { console.error('Receipt email failed for credit-covered order ' + orderNumber + ':', e); }
+
+      return { statusCode: 200, body: JSON.stringify({ directPaid: true, orderNumber: orderNumber, referenceId: referenceId }) };
+    } catch (err) {
+      console.error('create-nomod-checkout (credit-covered path) failed:', err);
+      return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong finishing your order. Please try again or use WhatsApp checkout.' }) };
+    }
+  }
 
   const payload = {
     reference_id: referenceId,
-    amount: centsToStr(finalAmountCents),
+    amount: centsToStr(amountAfterGiftCardCents),
     currency: 'AED',
     items: nomodItems,
     customer: {
@@ -195,9 +324,16 @@ exports.handler = async function (event) {
     cancelled_url: SITE_URL + '/checkout.html',
     metadata: {
       promo_code: body.promoCode || '',
-      saree_ids: items.map(function (it) { return it.id; }).join(',')
+      saree_ids: items.map(function (it) { return it.id; }).join(','),
+      gift_card_applied: giftCardAppliedCents > 0 ? centsToStr(giftCardAppliedCents) : '',
+      gift_card_email: giftCardAppliedCents > 0 ? giftCardEmail : ''
     }
   };
+  // Nomod's own `discount` field only ever represented the promo code's
+  // cut — store credit is applied separately (see gift_card_applied
+  // above and on the order row itself), not folded into this field, so
+  // Nomod's own reporting of "discount given" still means only "promo
+  // code discount," same as before this existed.
   if (totalDiscountCents > 0) {
     payload.discount = centsToStr(totalDiscountCents);
   }
@@ -245,7 +381,8 @@ exports.handler = async function (event) {
           promo_code: body.promoCode || '',
           subtotal: subtotalCents / 100,
           discount_amount: totalDiscountCents / 100,
-          total: finalAmountCents / 100,
+          total: amountAfterGiftCardCents / 100,
+          gift_card_applied: giftCardAppliedCents / 100,
           status: 'pending',
           billing_address: JSON.stringify(body.billingAddress || {}),
           shipping_address: JSON.stringify(body.shippingAddress || {})

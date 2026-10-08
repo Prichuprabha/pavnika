@@ -14,6 +14,7 @@ var posState = {
   cart: [],           // [{ id, name, price, qty, image }]
   selectedCustomer: null, // set once picked from the list, or created via Proceed to Billing
   currentQty: 1,
+  currentQtyCap: 1,   // highest qty the stepper will allow for whatever's currently selected -- see populateItemFields
   currentLookupItem: null,
   billNumber: null,     // fetched once per transaction, not re-fetched on revisiting the step
   discountType: 'percent', // 'percent' or 'amount'
@@ -1065,13 +1066,31 @@ function populateItemFields(match) {
     boxEl.innerHTML = '<div id="pos-item-noimg" class="pos-noimg">No image available</div>';
   }
 
+  // Same quantity-cap logic as the website lightbox (script.js's
+  // openLightbox/renderQtyStepper): only a quantity-tracked item with
+  // more than 1 unit of real headroom left gets a stepper at all --
+  // every one-of-a-kind saree/piece (the vast majority) stays fixed at
+  // qty 1, exactly as before this existed.
+  var hasQty = match.quantity !== null && match.quantity !== undefined && !isNaN(Number(match.quantity));
+  var stockQty = hasQty ? Number(match.quantity) : null;
+  var alreadyInCart = posState.cart.filter(function (c) { return c.id === match.id; }).reduce(function (sum, c) { return sum + c.qty; }, 0);
+  var availableToAdd = hasQty ? Math.max(0, stockQty - alreadyInCart) : 0;
+  var maxPerOrder = (hasQty && match.maxPerOrder) ? Number(match.maxPerOrder) : null;
+  var qtyCap = hasQty ? Math.max(1, maxPerOrder ? Math.min(availableToAdd, maxPerOrder) : availableToAdd) : 1;
+  var showQtyStepper = hasQty && stockQty > 1 && qtyCap > 1;
+
   posState.currentQty = 1;
+  posState.currentQtyCap = qtyCap;
   document.getElementById('pos-qty-num').textContent = '1';
+  document.getElementById('pos-qty-row').style.display = showQtyStepper ? 'flex' : 'none';
+  document.getElementById('pos-qty-minus').disabled = true; // already at the floor (qty 1)
+  document.getElementById('pos-qty-plus').disabled = qtyCap <= 1;
   document.getElementById('pos-add-to-cart-btn').disabled = false;
   showSelectedView();
 
   var errorEl = document.getElementById('pos-item-error');
-  errorEl.textContent = match.sold ? 'Warning: this item is already marked sold. Double-check before adding.' : '';
+  errorEl.textContent = match.sold ? 'Warning: this item is already marked sold. Double-check before adding.' :
+    (hasQty && availableToAdd <= 0) ? 'Warning: no more stock left for this item (' + stockQty + ' in stock, ' + alreadyInCart + ' already in this sale).' : '';
 }
 
 function clearItemFields() {
@@ -1089,7 +1108,9 @@ function clearItemFields() {
   document.getElementById('pos-add-to-cart-btn').disabled = true;
   posState.currentLookupItem = null;
   posState.currentQty = 1;
+  posState.currentQtyCap = 1;
   document.getElementById('pos-qty-num').textContent = '1';
+  document.getElementById('pos-qty-row').style.display = 'none';
   hideSuggestions();
   showBrowseView();
 }
@@ -1205,8 +1226,11 @@ function showSuggestions(query) {
 }
 
 function changeQty(delta) {
-  posState.currentQty = Math.max(1, posState.currentQty + delta);
+  var cap = posState.currentQtyCap || 1;
+  posState.currentQty = Math.min(cap, Math.max(1, posState.currentQty + delta));
   document.getElementById('pos-qty-num').textContent = String(posState.currentQty);
+  document.getElementById('pos-qty-minus').disabled = posState.currentQty <= 1;
+  document.getElementById('pos-qty-plus').disabled = posState.currentQty >= cap;
 }
 
 function addToCart() {

@@ -1929,6 +1929,19 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   color: var(--gold);
   font-size: 0.98rem;
 }
+.product-info .p-size-hint {
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 0.62rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--gold);
+  background: var(--ivory-deep);
+  border: 1px solid var(--stone);
+  border-radius: 999px;
+  padding: 3px 9px;
+}
 
 .no-results {
   text-align: center;
@@ -5855,9 +5868,30 @@ a.home-video-tile-link {
 }
 
 /* Gift card block */
-.acct-gift { background: var(--ivory-deep); border-color: var(--gold); padding: 18px; }
+.acct-gift {
+  background: linear-gradient(135deg, var(--ivory-deep) 0%, #fff 100%);
+  border-color: var(--gold);
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.acct-gift::before {
+  /* a soft decorative glow in the corner, purely cosmetic */
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--gold-light) 0%, rgba(246,223,213,0) 72%);
+  pointer-events: none;
+}
+.acct-gift-header { display: flex; align-items: center; gap: 9px; position: relative; z-index: 1; }
+.acct-gift-icon {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--gold-light);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--gold);
+}
 .acct-gift-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink); opacity: 0.65; margin: 0; }
-.acct-gift-amount { font-family: var(--body); font-size: 1.9rem; font-weight: 600; color: var(--green-deep); margin: 4px 0 0; letter-spacing: -0.5px; }
+.acct-gift-amount { font-family: var(--body); font-size: 1.9rem; font-weight: 600; color: var(--green-deep); margin: 6px 0 0; letter-spacing: -0.5px; position: relative; z-index: 1; }
 .acct-gift-history { margin-top: 14px; border-top: 1px solid var(--stone); padding-top: 12px; }
 .acct-gift-history .gh-title { font-size: 0.75rem; color: var(--ink); opacity: 0.6; margin: 0 0 6px; }
 .gh-row { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 7px 0; border-top: 1px solid rgba(222,208,199,0.6); }

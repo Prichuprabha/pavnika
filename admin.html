@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#3C1223">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=232">
+<link rel="stylesheet" href="style.css?v=250">
 <style>
   body.admin-body { background: var(--ivory-deep); min-height: 100vh; }
   .admin-shell { display: flex; min-height: 100vh; }
@@ -257,12 +257,34 @@
   }
   .admin-order-drawer-overlay.is-open .admin-saree-drawer { transform: translateX(0); }
   .admin-saree-drawer .admin-order-drawer-close { position: absolute; top: 16px; right: 16px; }
-  .admin-saree-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; font-size: 0.74rem; }
+
+  /* Desktop: the Add/Edit item form opens as a centered popup instead
+     of a slide-in side drawer, and (per admin.js) can only be
+     dismissed via its own Close/Cancel button, not by an accidental
+     click outside it — losing a half-filled form that way was the
+     complaint this was built to fix. Mobile keeps the original
+     slide-in-from-the-right behavior, outside-click-to-close included,
+     since there's no room for a centered popup on a small screen. */
+  @media (min-width: 900px) {
+    .admin-saree-drawer {
+      top: 50%; left: 50%; right: auto; bottom: auto;
+      width: 640px; max-width: 92vw; max-height: 85vh;
+      border-radius: 12px; box-shadow: 0 20px 60px rgba(43,13,26,0.25);
+      transform: translate(-50%, -48%) scale(0.97); opacity: 0;
+      transition: transform 0.25s ease, opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .admin-order-drawer-overlay.is-open .admin-saree-drawer {
+      transform: translate(-50%, -50%) scale(1); opacity: 1;
+      pointer-events: auto;
+    }
+  }
+  .admin-saree-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; font-size: 0.74rem; display: flex; flex-direction: column; }
   .admin-saree-card img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; }
-  .admin-saree-card-info { padding: 8px 10px; }
+  .admin-saree-card-info { padding: 8px 10px; display: flex; flex-direction: column; flex: 1; }
   .admin-saree-card-id { font-weight: 700; color: var(--green-deep); }
   .admin-saree-card-series { color: #8a7266; font-size: 0.68rem; margin: 2px 0 4px; }
-  .admin-saree-card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; font-size: 0.68rem; }
+  .admin-saree-card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 4px; font-size: 0.68rem; }
 
   .admin-review-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
   .admin-review-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
@@ -1695,7 +1717,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=211"></script>
+<script src="admin.js?v=212"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

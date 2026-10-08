@@ -186,7 +186,29 @@ function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
+// Builds the per-line description shown on the invoice email. Branches
+// by department, since jewellery and accessories don't have anything
+// resembling a saree's series/type/sareeType/pattern fields. `it` is
+// expected to already be enriched (see enrichItemsForReceipt below) --
+// this stays department-aware but doesn't itself go fetch anything.
 function buildItemDescription(it) {
+  var department = it.department || 'saree';
+
+  if (department === 'jewellery') {
+    // e.g. "Antique gold-tone Bangles & Bracelets (JW010-24)" + optional note
+    var jLine = (it.type || 'Jewellery') + ' (' + it.id + ')';
+    if (it.colour) jLine = it.colour + ' ' + jLine;
+    if (it.note) jLine += ' — ' + it.note;
+    return jLine;
+  }
+
+  if (department === 'accessory') {
+    // e.g. "Artificial Flowers (AC003)" + optional note
+    var aLine = (it.category || 'Accessory') + ' (' + it.id + ')';
+    if (it.note) aLine += ' — ' + it.note;
+    return aLine;
+  }
+
   // e.g. "VALUE WEAVES (VW001) Semi Silk Korvai saree in Yellow and Red & Golden Motif Pattern"
   var line = '';
   if (it.series) line += it.series + ' (' + it.id + ') ';
@@ -226,13 +248,53 @@ async function generateOrderNumber() {
   return hh + mm + dd + mo + yy + String(seq).padStart(2, '0');
 }
 
+// Fills in whichever description fields (department/series/type/
+// sareeType/pattern/colour/category/note) an order's stored item is
+// missing, by matching it against the live catalogue. Online checkout
+// already stores these directly (script.js sends them), but the
+// manual-order admin form only ever sends {id, name, price, qty} --
+// without this, every manual order's invoice would describe every
+// item as a generic "Saree" regardless of what was actually sold.
+// Fails soft: if the catalogue fetch itself fails, items are returned
+// unchanged (same behavior as before this existed) rather than
+// blocking the email from sending at all.
+async function enrichItemsForReceipt(items) {
+  var needsEnrichment = items.some(function (it) {
+    return !it.department && !it.series && !it.type && !it.category;
+  });
+  if (!needsEnrichment) return items;
+
+  try {
+    var catalog = (await fetchProductsFromGitHub()).products;
+    var byId = {};
+    catalog.forEach(function (p) { byId[p.id] = p; });
+    return items.map(function (it) {
+      var p = byId[it.id];
+      if (!p) return it;
+      return Object.assign({
+        department: p.department,
+        series: p.series,
+        type: p.type,
+        sareeType: p.sareeType,
+        pattern: p.pattern,
+        colour: p.colour,
+        category: p.category,
+        note: p.note
+      }, it); // `it`'s own fields (if present) always win over the catalogue's current values
+    });
+  } catch (e) {
+    console.error('enrichItemsForReceipt: could not fetch catalogue, sending invoice with whatever item detail was already stored:', e);
+    return items;
+  }
+}
+
 // paymentMethodLabel is a plain string (e.g. "Nomod", "Bank Transfer",
 // "Cash •••• 1234") — callers are responsible for deriving it from
 // whatever their own source is (Nomod's response shape for online
 // orders, or a straightforward admin-selected value for manual ones),
 // keeping this function itself agnostic to where the order came from.
 async function sendReceiptEmail(order, paymentMethodLabel) {
-  var items = JSON.parse(order.items || '[]');
+  var items = await enrichItemsForReceipt(JSON.parse(order.items || '[]'));
   var billing = JSON.parse(order.billing_address || '{}');
   var shipping = JSON.parse(order.shipping_address || '{}');
 
@@ -357,6 +419,10 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
             <td style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">${order.promo_code ? order.promo_code + ' discount' : 'Discount'} / <span dir="rtl" style="text-transform:none; font-weight:400;">الخصم</span></td>
             <td align="right" style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.discount_amount)}</td>
           </tr>` : ''}
+          ${(order.gift_card_applied && Number(order.gift_card_applied) > 0) ? `<tr>
+            <td style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">Store credit applied / <span dir="rtl" style="text-transform:none; font-weight:400;">الرصيد المستخدم</span></td>
+            <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.gift_card_applied)}</td>
+          </tr>` : ''}
         </table>
       </div>
       ${paymentStatusHtml}
@@ -414,12 +480,124 @@ async function markSareesAvailable(sareeIds) {
   );
 }
 
+// Sent whenever a POS return or exchange is processed, so the customer
+// always gets confirmation of what happened and how they were
+// refunded — regardless of refund method (gift card, cash, or bank
+// transfer). Deliberately a separate, lighter template from
+// sendReceiptEmail's full invoice: this isn't a tax/consumer-protection
+// invoice, just a plain-language confirmation.
+//   params.billNumber        — the original sale's bill number
+//   params.customerEmail     — required; caller skips sending if there's none
+//   params.customerName      — optional, used in the greeting
+//   params.items             — [{id, name, price, qty}] the items returned/exchanged
+//   params.refundAmount      — the AED amount refunded/credited
+//   params.actionType        — 'exchange' or 'return' (default 'return' — online
+//                               orders have no exchange concept, only POS does)
+//   params.isDamaged         — true for a damaged-goods return (item not restocked)
+//   params.refundMethod      — 'gift_card' | 'cash' | 'bank_transfer'
+//   params.newGiftCardBalance — only meaningful when refundMethod === 'gift_card'
+//   params.referenceLabel    — label before the reference number, default 'Bill'
+//                               (pass 'Order' for online-order returns)
+//   params.billNumber        — the bill/order number shown after referenceLabel
+//   params.isPartial         — true when this return covers only some of the
+//                              order's items, so the email should say so and
+//                              not read like the whole order was refunded
+async function sendReturnConfirmationEmail(params) {
+  if (!params.customerEmail) return; // nothing to send to — caller already decided this case is a no-op
+
+  var isExchange = params.actionType === 'exchange';
+  var referenceLabel = params.referenceLabel || 'Bill';
+  var itemRows = (params.items || []).map(function (it) {
+    var qty = Number(it.qty) || 1;
+    return `
+      <tr>
+        <td style="padding:8px 0; border-bottom:1px solid #DED0C7; font-size:13px; color:#3B2528;">
+          ${it.id ? it.id + ' — ' : ''}${it.name || 'Item'}
+          ${qty > 1 ? '<br><span style="font-size:11px; color:#a08b7f;">Qty: ' + qty + '</span>' : ''}
+        </td>
+        <td align="right" style="padding:8px 0; border-bottom:1px solid #DED0C7; font-size:13px; color:#3B2528; white-space:nowrap;">
+          AED ${formatAED((Number(it.price) || 0) * qty)}
+        </td>
+      </tr>`;
+  }).join('');
+
+  var refundMethodLabel = params.refundMethod === 'gift_card' ? 'Store credit'
+    : params.refundMethod === 'cash' ? 'Cash'
+    : 'Bank transfer';
+
+  var refundExplainHtml = params.refundMethod === 'gift_card'
+    ? `<p style="margin:0 0 4px; font-size:13px; color:#3B2528;">AED ${formatAED(params.refundAmount)} has been added to your store credit balance.</p>
+       ${(params.newGiftCardBalance !== undefined && params.newGiftCardBalance !== null) ? `<p style="margin:0; font-size:13px; color:#3B2528;">Your new store credit balance is <strong>AED ${formatAED(params.newGiftCardBalance)}</strong>, redeemable on your next order.</p>` : ''}`
+    : params.refundMethod === 'cash'
+    ? `<p style="margin:0; font-size:13px; color:#3B2528;">AED ${formatAED(params.refundAmount)} was refunded to you in cash at the time of your visit.</p>`
+    : `<p style="margin:0; font-size:13px; color:#3B2528;">AED ${formatAED(params.refundAmount)} will be refunded to you via bank transfer.</p>`;
+
+  var restockNote = (!isExchange && params.isDamaged)
+    ? '<p style="margin:10px 0 0; font-size:11.5px; color:#a08b7f;">Noted as damaged — this item will not be restocked or resold.</p>'
+    : '';
+
+  var partialNote = (!isExchange && params.isPartial)
+    ? '<p style="margin:10px 0 0; font-size:11.5px; color:#a08b7f;">This is a partial refund covering only the item(s) listed above — the rest of your order is unaffected.</p>'
+    : '';
+
+  var html = `
+    <div style="font-family:sans-serif; max-width:520px; margin:0 auto; background:#FCF5ED;">
+      <div style="background:#3C1223; padding:24px 22px; text-align:center; border-radius:6px 6px 0 0;">
+        <img src="https://pavnika.ae/assets/email-logo.png" alt="Pavnika by Saranya" width="80" height="76" style="display:block; margin:0 auto 10px;">
+        <p style="font-family:Georgia,serif; font-size:18px; color:#FCF5ED; margin:0 0 4px;">${isExchange ? 'Your exchange is confirmed' : (params.isPartial ? 'Your partial refund is confirmed' : 'Your return is confirmed')}</p>
+        <p style="font-size:11.5px; color:#F6DFD5; margin:0;">Reference: ${referenceLabel} ${params.billNumber || ''}</p>
+      </div>
+      <div style="padding:20px 22px; color:#3B2528;">
+        <p style="margin:0 0 14px; font-size:13.5px;">Hi ${params.customerName || 'there'}, here's a confirmation of your ${isExchange ? 'exchange' : 'return'} at Pavnika by Saranya.</p>
+
+        <table style="border-collapse:collapse; width:100%; margin:0 0 16px;">
+          <thead>
+            <tr style="text-align:left;">
+              <th style="padding:6px 0; border-bottom:1px solid #DED0C7; font-size:11px; text-transform:uppercase; color:#8a6f63;">${isExchange ? 'Exchanged' : 'Returned'}</th>
+              <th style="padding:6px 0; border-bottom:1px solid #DED0C7; font-size:11px; text-transform:uppercase; color:#8a6f63;" align="right">Value</th>
+            </tr>
+          </thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+
+        <div style="background:#F8ECE2; border-radius:6px; padding:14px 16px; margin:0 0 4px;">
+          <p style="margin:0 0 6px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Refunded via ${refundMethodLabel}</p>
+          ${refundExplainHtml}
+        </div>
+        ${restockNote}
+        ${partialNote}
+
+        <p style="font-size:11px; color:#a08b7f; line-height:1.7; margin:20px 0 0; border-top:1px solid #DED0C7; padding-top:14px;">
+          Questions about this ${isExchange ? 'exchange' : 'return'}? Contact support@pavnika.ae or WhatsApp +971 52 66 30307.
+        </p>
+      </div>
+    </div>
+  `;
+
+  await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${RESEND_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      from: FROM_EMAIL,
+      reply_to: 'support@pavnika.ae',
+      to: [params.customerEmail],
+      bcc: [ADMIN_EMAIL],
+      subject: `${isExchange ? 'Exchange' : (params.isPartial ? 'Partial refund' : 'Return')} confirmed — ${referenceLabel} ${params.billNumber || ''} — AED ${formatAED(params.refundAmount)} via ${refundMethodLabel}`,
+      html: html
+    })
+  });
+}
+
 module.exports = {
   supabaseHeaders: supabaseHeaders,
   formatAED: formatAED,
   buildItemDescription: buildItemDescription,
   generateOrderNumber: generateOrderNumber,
   sendReceiptEmail: sendReceiptEmail,
+  sendReturnConfirmationEmail: sendReturnConfirmationEmail,
   markSareesSold: markSareesSold,
   fulfillPurchasedItems: fulfillPurchasedItems,
   restockReturnedItems: restockReturnedItems,

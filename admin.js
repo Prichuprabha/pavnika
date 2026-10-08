@@ -10,6 +10,17 @@ function effectivePrice(p) {
   return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
 }
 
+// Same convention as script.js's isEffectivelySold: a quantity-tracked
+// item (jewellery/accessory) at 0 stock reads as sold out even though
+// its manual "sold" checkbox is never ticked for it -- that checkbox
+// is only how a one-of-a-kind saree/piece is marked sold. Used for the
+// Dashboard's sold-out stat, which previously only counted p.sold and
+// so always showed 0 for jewellery/accessory, no matter how depleted
+// their stock actually was.
+function isEffectivelySold(p) {
+  return !!(p && (p.sold || (p.quantity !== null && p.quantity !== undefined && Number(p.quantity) <= 0)));
+}
+
 // An order's revenue contribution, net of any cash/bank-transfer
 // return refunds recorded against it (see order_returns, attached as
 // o.returns by admin-get-orders.js). Gift-card refunds are
@@ -423,7 +434,14 @@ function initSareeEditor(token) {
   }
   document.getElementById('admin-saree-drawer-close').addEventListener('click', hideSareeDrawer);
   sareeDrawerOverlay.addEventListener('click', function (e) {
-    if (e.target === sareeDrawerOverlay) hideSareeDrawer();
+    // On desktop this form renders as a centered popup (see the
+    // min-width:900px rule in admin.html) specifically so an
+    // accidental click outside it can't discard a half-filled form --
+    // Close (✕) or Cancel are the only ways out there. Mobile keeps
+    // the original slide-in-drawer behavior, outside-click included,
+    // since a popup doesn't fit a small screen the same way.
+    var isDesktop = window.matchMedia('(min-width: 900px)').matches;
+    if (e.target === sareeDrawerOverlay && !isDesktop) hideSareeDrawer();
   });
 
   function seriesTitle(code) {
@@ -1248,7 +1266,7 @@ function initSareeEditor(token) {
   uploadSelectedBtn.addEventListener('click', uploadSelectedPendingPhotos);
 
   /* ----- CSV download ----- */
-  var CSV_COLUMNS = ['Unique ID', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sale Price AED', 'Sold',
+  var CSV_COLUMNS = ['Unique ID', 'Department', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sale Price AED', 'Sold',
     'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material', 'Shade', 'Occasions'];
 
   function csvEscape(val) {
@@ -1264,7 +1282,7 @@ function initSareeEditor(token) {
     (window.PRODUCTS || []).forEach(function (p) {
       var images = p.images || [];
       var row = [
-        p.id, p.series, p.category, p.type, p.sareeType, p.pattern, p.design, p.price,
+        p.id, p.department || 'saree', p.series, p.category, p.type, p.sareeType, p.pattern, p.design, p.price,
         p.salePrice || '',
         p.sold ? 'TRUE' : 'FALSE',
         images[0] || '', images[1] || '', images[2] || '', images[3] || '', images[4] || '', images[5] || '', images[6] || '',
@@ -1367,6 +1385,7 @@ function initSareeEditor(token) {
     var salePrice = (salePriceRaw > 0 && salePriceRaw < price) ? salePriceRaw : null;
     return {
       id: (row['Unique ID'] || '').trim().toUpperCase(),
+      department: (row['Department'] || 'saree').trim().toLowerCase() === 'saree' ? undefined : (row['Department'] || '').trim().toLowerCase(),
       series: row['Series'] || '',
       category: row['Category'] || '',
       type: row['Type'] || '',
@@ -2337,8 +2356,8 @@ function initStatsDashboard(token) {
 
   function renderStats(data, orderStats) {
     latestStats = data;
-    var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
-    var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
+    var inStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p); }).length;
+    var soldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p); }).length;
 
     if (data.filtered) {
       showStatus('success', 'Showing results for the selected date range.');
@@ -2391,10 +2410,10 @@ function initStatsDashboard(token) {
     var hasJewelleryOrAccessory = (window.PRODUCTS || []).some(function (p) { return p.department === 'jewellery' || p.department === 'accessory'; });
     var inStockCard, soldOutCard;
     if (hasJewelleryOrAccessory) {
-      var sareeInStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold && (p.department || 'saree') === 'saree'; }).length;
-      var jewAccInStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
-      var sareeSoldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold && (p.department || 'saree') === 'saree'; }).length;
-      var jewAccSoldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
+      var sareeInStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p) && (p.department || 'saree') === 'saree'; }).length;
+      var jewAccInStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p) && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
+      var sareeSoldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p) && (p.department || 'saree') === 'saree'; }).length;
+      var jewAccSoldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p) && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
       inStockCard = buildSplitStatCardHtml('In stock', sareeInStock, jewAccInStock, 'hanger', 'green', stockDelta);
       soldOutCard = buildSplitStatCardHtml('Sold out', sareeSoldOut, jewAccSoldOut, 'hangerX', 'red', soldDelta);
     } else {
@@ -2756,8 +2775,8 @@ function initStatsDashboard(token) {
 
   document.getElementById('admin-export-stats-btn').addEventListener('click', function () {
     if (!latestStats) { showStatus('error', 'Stats have not loaded yet.'); return; }
-    var inStock = (window.PRODUCTS || []).filter(function (p) { return !p.sold; }).length;
-    var soldOut = (window.PRODUCTS || []).filter(function (p) { return p.sold; }).length;
+    var inStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p); }).length;
+    var soldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p); }).length;
 
     var lines = [];
     lines.push('Pavnika by Saranya — Stats Export');

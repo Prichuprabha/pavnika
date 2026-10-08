@@ -66,6 +66,36 @@ async function markPromoCodeUsed(code) {
   });
 }
 
+// Deducts whatever store credit was applied at checkout time, but only
+// now that payment is genuinely confirmed — applying it any earlier
+// would deduct a customer's balance for an order that might still fail
+// or be abandoned. Re-reads the real current balance rather than
+// trusting order.gift_card_applied blindly, and caps the deduction at
+// whatever's actually left, in case it changed since checkout (a
+// disclosed, accepted limitation — see create-nomod-checkout.js's file
+// header for the parallel-checkout race this doesn't fully close).
+// Called from inside the same status !== 'paid' guard that already
+// makes the rest of this confirmation step run exactly once per order,
+// so this can't double-deduct on a repeat verification call.
+async function deductGiftCardIfApplied(order) {
+  var applied = Number(order.gift_card_applied) || 0;
+  if (applied <= 0 || !order.customer_email) return;
+  try {
+    var custRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?email=eq.${encodeURIComponent(order.customer_email)}&select=id,gift_card_balance`, { headers: supabaseHeaders() });
+    var custRows = await custRes.json();
+    if (!custRows.length) return; // balance already spent/moved elsewhere — nothing to deduct from
+    var currentBalance = Number(custRows[0].gift_card_balance) || 0;
+    var newBalance = Math.max(0, Math.round((currentBalance - Math.min(applied, currentBalance)) * 100) / 100);
+    await fetch(`${SUPABASE_URL}/rest/v1/pos_customers?id=eq.${custRows[0].id}`, {
+      method: 'PATCH',
+      headers: supabaseHeaders(),
+      body: JSON.stringify({ gift_card_balance: newBalance })
+    });
+  } catch (e) {
+    console.error('Order ' + (order.order_number || order.id) + ' confirmed paid with gift_card_applied set, but deducting the balance failed — needs manual correction:', e);
+  }
+}
+
 // Builds an order number like "131819072601": HH + MM + DD + Month + YY (UAE time)
 // + 2-digit same-day sequence. Same scheme as create-nomod-checkout.
 // RECOVERY: the pending order row is missing but the browser remembered
@@ -135,6 +165,7 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
   const cust = nomodData.customer || {};
   const total = Number(nomodData.amount) || 0;
   const discount = Number(nomodData.discount) || 0;
+  const giftCardApplied = Number(meta.gift_card_applied) || 0;
 
   const orderRow = {
     order_number: await generateOrderNumber(),
@@ -145,9 +176,10 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
     customer_phone: cust.phone_number || '',
     items: JSON.stringify(items),
     promo_code: meta.promo_code || '',
-    subtotal: total + discount,
+    subtotal: total + discount + giftCardApplied,
     discount_amount: discount,
     total: total,
+    gift_card_applied: giftCardApplied,
     status: 'pending',
     billing_address: '{}',
     shipping_address: '{}'
@@ -257,6 +289,7 @@ exports.handler = async function (event) {
     await fulfillPurchasedItems(items);
     if (order.id) await markOrderPaid(order.id, paymentMethodLabel);
     await markPromoCodeUsed(order.promo_code);
+    await deductGiftCardIfApplied(order);
     order.payment_method = paymentMethodLabel;
     await sendReceiptEmail(order, paymentMethodLabel);
 
