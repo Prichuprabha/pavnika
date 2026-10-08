@@ -499,7 +499,21 @@ function nonSareeCardHTML(p) {
         '<span class="p-design">' + namePart + '</span>' +
         '<span class="p-meta">' + (p.department === 'jewellery' ? 'Fashion jewellery' : '') + (p.note ? (p.department === 'jewellery' ? ' · ' : '') + p.note : '') + '</span>' +
         pricingHtml +
-        (isGroup ? '<span class="p-size-hint">Multiple sizes available</span>' : '') +
+        (isGroup ?
+          '<span class="p-size-hint">' +
+            '<span class="p-size-hint-icon">' +
+              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+                '<rect x="2.5" y="8" width="19" height="8" rx="1.5"></rect>' +
+                '<line x1="7" y1="8" x2="7" y2="11"></line>' +
+                '<line x1="11" y1="8" x2="11" y2="11"></line>' +
+                '<line x1="15" y1="8" x2="15" y2="11"></line>' +
+                '<line x1="19" y1="8" x2="19" y2="11"></line>' +
+              '</svg>' +
+            '</span>' +
+            '<span class="p-size-hint-text">Multiple sizes available</span>' +
+            '<span class="p-size-hint-chevron">&rsaquo;</span>' +
+          '</span>'
+          : '') +
       '</div>' +
     '</div>'
   );

@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#3C1223">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=250">
+<link rel="stylesheet" href="style.css?v=251">
 <style>
   body.admin-body { background: var(--ivory-deep); min-height: 100vh; }
   .admin-shell { display: flex; min-height: 100vh; }
@@ -284,7 +284,8 @@
   .admin-saree-card-info { padding: 8px 10px; display: flex; flex-direction: column; flex: 1; }
   .admin-saree-card-id { font-weight: 700; color: var(--green-deep); }
   .admin-saree-card-series { color: #8a7266; font-size: 0.68rem; margin: 2px 0 4px; }
-  .admin-saree-card-actions { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 4px; font-size: 0.68rem; }
+  .admin-saree-card-bottom { margin-top: auto; padding-top: 4px; }
+  .admin-saree-card-actions { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; }
 
   .admin-review-card { background: #fff; border: 1px solid var(--stone); border-radius: 8px; padding: 14px 16px; margin-bottom: 10px; }
   .admin-review-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
@@ -543,7 +544,7 @@
   .admin-saree-card.is-sold { opacity: 0.6; }
   .admin-edit-link { color: var(--gold); cursor: pointer; font-weight: 600; }
   .admin-delete-link { color: #B8142A; cursor: pointer; font-weight: 600; }
-  .admin-sold-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #f3e3e3; color: #a33; }
+  .admin-sold-badge { display: inline-block; margin-bottom: 6px; font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #f3e3e3; color: #a33; }
 
   .admin-price-row { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
   .admin-price-was { font-size: 0.72rem; color: var(--ink); opacity: 0.5; text-decoration: line-through; }
@@ -572,7 +573,6 @@
   .admin-bulk-seg button.active { background: #fff; color: var(--green-deep); opacity: 1; font-weight: 600; }
   .admin-bulk-input { width: 90px; padding: 7px 10px; border: none; border-radius: 5px; font-family: var(--body); font-size: 0.84rem; }
   .admin-bulk-clear { background: none; border: none; color: #fff; opacity: 0.7; font-size: 0.76rem; text-decoration: underline; cursor: pointer; font-family: var(--body); }
-  .admin-avail-badge { font-size: 0.68rem; padding: 2px 8px; border-radius: 999px; background: #e6efe2; color: var(--green); }
 
   .admin-form-card { border: 1px solid var(--green); border-radius: 6px; padding: 20px 24px; background: var(--ivory); margin-bottom: 20px; }
   .admin-form-card h3 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; }
@@ -606,6 +606,14 @@
   }
   .admin-field.readonly input { background: var(--ivory-deep); color: var(--green-deep); font-weight: 600; border-style: dashed; }
   .admin-id-hint { font-size: 0.7rem; color: var(--ink); opacity: 0.55; margin: -6px 0 12px; }
+  .admin-bangle-photo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .admin-bangle-photo-swatch { width: 56px; cursor: pointer; border: none; background: none; padding: 0; font-family: var(--body); text-align: center; }
+  .admin-bangle-photo-box { width: 56px; height: 56px; border-radius: 6px; border: 2px solid transparent; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .admin-bangle-photo-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .admin-bangle-photo-box.is-new { border: 2px dashed #ccc; font-size: 1.3rem; color: #999; }
+  .admin-bangle-photo-swatch.is-selected .admin-bangle-photo-box { border-color: var(--gold, #b68a4e); }
+  .admin-bangle-photo-swatch.is-selected .admin-bangle-photo-box.is-new { border-style: solid; color: var(--gold, #b68a4e); }
+  .admin-bangle-photo-swatch span { display: block; font-size: 0.6rem; opacity: 0.65; margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   /* .admin-id-hint's -6px top margin is tuned for a short one-line hint
      tucked snugly under a field (e.g. the ID suggestion) -- the sale
      preview ("Customers will see AED X struck through...") regularly
@@ -1064,6 +1072,7 @@
               <select id="admin-f-bangle-base">
                 <option value="">+ New design</option>
               </select>
+              <div class="admin-bangle-photo-grid" id="admin-bangle-photo-grid"></div>
             </div>
             <div class="admin-field">
               <label>Size (inches)</label>
@@ -1717,7 +1726,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=212"></script>
+<script src="admin.js?v=213"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

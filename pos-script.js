@@ -1075,8 +1075,10 @@ function populateItemFields(match) {
   var stockQty = hasQty ? Number(match.quantity) : null;
   var alreadyInCart = posState.cart.filter(function (c) { return c.id === match.id; }).reduce(function (sum, c) { return sum + c.qty; }, 0);
   var availableToAdd = hasQty ? Math.max(0, stockQty - alreadyInCart) : 0;
-  var maxPerOrder = (hasQty && match.maxPerOrder) ? Number(match.maxPerOrder) : null;
-  var qtyCap = hasQty ? Math.max(1, maxPerOrder ? Math.min(availableToAdd, maxPerOrder) : availableToAdd) : 1;
+  // POS staff can sell beyond the website's maxPerOrder limit (that cap
+  // is for online customers) -- in-store, the only real limit is what's
+  // actually left in stock.
+  var qtyCap = hasQty ? Math.max(1, availableToAdd) : 1;
   var showQtyStepper = hasQty && stockQty > 1 && qtyCap > 1;
 
   posState.currentQty = 1;

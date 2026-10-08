@@ -584,10 +584,12 @@ function initSareeEditor(token) {
             '<div class="admin-saree-card-id">' + p.id + '</div>' +
             '<div class="admin-saree-card-series">' + subtitleHtml(p) + '</div>' +
             priceHtml(p) +
-            (p.sold ? '<span class="admin-sold-badge">Sold out</span>' : '<span class="admin-avail-badge">Available</span>') +
-            '<div class="admin-saree-card-actions">' +
-              '<span class="admin-edit-link" data-id="' + p.id + '">Edit</span>' +
-              '<span class="admin-delete-link" data-id="' + p.id + '">Delete</span>' +
+            '<div class="admin-saree-card-bottom">' +
+              (p.sold ? '<span class="admin-sold-badge">Sold out</span>' : '') +
+              '<div class="admin-saree-card-actions">' +
+                '<span class="admin-edit-link" data-id="' + p.id + '">Edit</span>' +
+                '<span class="admin-delete-link" data-id="' + p.id + '">Delete</span>' +
+              '</div>' +
             '</div>' +
           '</div>' +
         '</div>'
@@ -984,12 +986,51 @@ function initSareeEditor(token) {
     return Object.keys(bases).sort();
   }
 
+  // The first product row found for a given bangle base -- used purely
+  // to show a representative photo for that design in the picker below,
+  // so admin staff can recognise a design by sight rather than having
+  // to remember what each ID looks like.
+  function bangleBaseImage(base) {
+    var match = (window.PRODUCTS || []).find(function (p) {
+      return p.department === 'jewellery' && p.type === 'Bangles & Bracelets' && p.id && p.id.indexOf(base + '-') === 0;
+    });
+    return match ? match.image : '';
+  }
+
   function refreshBangleBaseOptions() {
     var sel = document.getElementById('admin-f-bangle-base');
     var current = sel.value;
+    var bases = bangleBaseIds();
     sel.innerHTML = '<option value="">+ New design</option>' +
-      bangleBaseIds().map(function (b) { return '<option value="' + b + '">' + b + '</option>'; }).join('');
-    if (bangleBaseIds().indexOf(current) !== -1) sel.value = current;
+      bases.map(function (b) { return '<option value="' + b + '">' + b + '</option>'; }).join('');
+    if (bases.indexOf(current) !== -1) sel.value = current;
+
+    // Visual picker: a photo swatch per existing design (so staff can
+    // recognise it by sight) plus a "+ New design" tile, all driving
+    // the same underlying <select> so nothing downstream needs to
+    // change -- clicking a swatch just sets sel.value and fires change.
+    var grid = document.getElementById('admin-bangle-photo-grid');
+    if (!grid) return;
+    var selectedValue = sel.value;
+    var tilesHtml = '<button type="button" class="admin-bangle-photo-swatch' + (selectedValue === '' ? ' is-selected' : '') + '" data-base="">' +
+      '<span class="admin-bangle-photo-box is-new">+</span><span>New</span>' +
+      '</button>' +
+      bases.map(function (b) {
+        var img = bangleBaseImage(b);
+        return '<button type="button" class="admin-bangle-photo-swatch' + (selectedValue === b ? ' is-selected' : '') + '" data-base="' + b + '">' +
+          '<span class="admin-bangle-photo-box">' + (img ? '<img src="' + img + '" alt="' + b + '">' : '') + '</span>' +
+          '<span>' + b + '</span>' +
+          '</button>';
+      }).join('');
+    grid.innerHTML = tilesHtml;
+    grid.querySelectorAll('.admin-bangle-photo-swatch').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        sel.value = btn.getAttribute('data-base');
+        sel.dispatchEvent(new Event('change'));
+        grid.querySelectorAll('.admin-bangle-photo-swatch').forEach(function (b) { b.classList.remove('is-selected'); });
+        btn.classList.add('is-selected');
+      });
+    });
   }
 
   // Size used to be a free-text box, so a typo ("2.4" vs "2.5" vs "24")
