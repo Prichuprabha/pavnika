@@ -2890,7 +2890,10 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/JW002-26-1.jpg",
     "baseId": "JW002",
     "size": "2.6",
-    "id": "JW002-26"
+    "id": "JW002-26",
+    "quantity": 20,
+    "qtyUnit": "Pcs",
+    "maxPerOrder": 5
   },
   {
     "department": "jewellery",
