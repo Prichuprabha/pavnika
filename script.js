@@ -399,6 +399,17 @@ function effectivePrice(p) {
   return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
 }
 
+// Stage 3 of the quantity feature: a quantity-tracked item that's run
+// out (quantity: 0) reads as "Sold Out" everywhere a customer sees it,
+// exactly like the manual "Sold out" checkbox -- the two are
+// independent admin controls, but the same single customer-facing
+// state. Everything that currently checks p.sold for display purposes
+// should check this instead, so the grid, the lightbox, and "related
+// items" all agree.
+function isEffectivelySold(p) {
+  return !!(p && (p.sold || (p.quantity !== null && p.quantity !== undefined && Number(p.quantity) <= 0)));
+}
+
 // Same formula as the admin panel's own sale-price preview
 // (Math.round((1 - sale/regular) * 100)) — kept in sync here so the
 // percentage a customer sees always matches what the admin was shown
@@ -415,9 +426,10 @@ function seriesTitleCase(s) {
 function productCardHTML(p) {
   if (p.department === 'jewellery' || p.department === 'accessory') return nonSareeCardHTML(p);
 
-  var soldClass = p.sold ? ' is-sold' : '';
-  var soldRibbon = p.sold ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
-  var onSale = p.salePrice && p.salePrice < p.price && !p.sold;
+  var soldOut = isEffectivelySold(p);
+  var soldClass = soldOut ? ' is-sold' : '';
+  var soldRibbon = soldOut ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
+  var onSale = p.salePrice && p.salePrice < p.price && !soldOut;
   var saleBadge = onSale ? '<span class="sale-badge">Sale</span>' : '';
   var pricingHtml = onSale
     ? '<span class="p-price-row">' +
@@ -452,17 +464,17 @@ function productCardHTML(p) {
 // which sibling size they pick inside the lightbox.
 function nonSareeCardHTML(p) {
   var group = jewelleryGroupSiblings(p);
-  var availableSiblings = group.filter(function (s) { return !s.sold; });
+  var availableSiblings = group.filter(function (s) { return !isEffectivelySold(s); });
   // "Multiple sizes available" / "From AED X" only makes sense while a
   // customer genuinely has more than one size to choose from — once
   // only one size (or none) is left unsold, this should read exactly
   // like a plain single item, not advertise a choice that no longer
   // exists.
   var isGroup = availableSiblings.length > 1;
-  var allSoldInGroup = group.every(function (s) { return s.sold; });
+  var allSoldInGroup = group.every(function (s) { return isEffectivelySold(s); });
   var soldClass = allSoldInGroup ? ' is-sold' : '';
   var soldRibbon = allSoldInGroup ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
-  var onSale = p.salePrice && p.salePrice < p.price && !p.sold;
+  var onSale = p.salePrice && p.salePrice < p.price && !isEffectivelySold(p);
   var saleBadge = onSale ? '<span class="sale-badge">Sale</span>' : '';
   var badgeLabel = p.department === 'jewellery' ? p.type : p.category;
   var namePart = p.department === 'jewellery' ? (p.type + (p.colour ? ' — ' + p.colour : '')) : (p.category || 'Accessory');
@@ -2393,6 +2405,15 @@ function buildLightbox() {
             '</button>' +
           '</div>' +
           '<div class="lightbox-size-picker" id="lightbox-size-picker" style="display:none;"></div>' +
+          '<div class="lightbox-qty-picker" id="lightbox-qty-picker" style="display:none;">' +
+            '<span class="qty-picker-label">Quantity</span>' +
+            '<div class="qty-stepper">' +
+              '<button type="button" class="qty-step-btn" id="lightbox-qty-minus" aria-label="Decrease quantity">&minus;</button>' +
+              '<span class="qty-step-value" id="lightbox-qty-value">1</span>' +
+              '<button type="button" class="qty-step-btn" id="lightbox-qty-plus" aria-label="Increase quantity">+</button>' +
+            '</div>' +
+            '<span class="qty-picker-unit" id="lightbox-qty-unit"></span>' +
+          '</div>' +
           '<div class="lightbox-cart-actions" id="lightbox-cart-actions">' +
             '<button type="button" class="btn-add-cart" id="lightbox-add-cart">Add to Cart</button>' +
             '<button type="button" class="btn-buy-now" id="lightbox-buy-now">Buy Now</button>' +
@@ -2524,7 +2545,7 @@ function buildLightbox() {
 
   function getRelatedProducts(product) {
   var sameDept = function (p) { return (p.department || 'saree') === (product.department || 'saree'); };
-  var all = (window.PRODUCTS || []).filter(function (p) { return p.id !== product.id && !p.sold && sameDept(p); });
+  var all = (window.PRODUCTS || []).filter(function (p) { return p.id !== product.id && !isEffectivelySold(p) && sameDept(p); });
 
   var sameSeries = all.filter(function (p) { return p.series === product.series && product.series; });
   if (sameSeries.length >= 4) return sameSeries.slice(0, 6);
@@ -2555,9 +2576,10 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
       ? ((product.material || product.design) || '')
       : (product.department === 'jewellery' ? product.type : (product.category || 'Accessory'));
     document.getElementById('lightbox-code').textContent = 'Code: ' + (product.baseId || product.id);
+    var isOutOfStock = isEffectivelySold(product);
     document.getElementById('lightbox-meta').textContent = isSaree
-      ? ((product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (product.sold ? ' · Sold Out' : ''))
-      : ((product.department === 'jewellery' ? (product.colour || '') : (product.note || '')) + (product.sold ? ' · Sold Out' : ''));
+      ? ((product.design || '') + (product.sareeType ? ' · ' + product.sareeType : '') + (isOutOfStock ? ' · Sold Out' : ''))
+      : ((product.department === 'jewellery' ? (product.colour || '') : (product.note || '')) + (isOutOfStock ? ' · Sold Out' : ''));
 
     fetch('/.netlify/functions/log-view', {
       method: 'POST',
@@ -2571,15 +2593,65 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
     }).join('');
 
     document.getElementById('lightbox-description').textContent = buildDescription(product);
-    var lbOnSale = effectivePrice(product) < Number(product.price);
     var lbWasEl = document.getElementById('lightbox-price-was');
-    document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(effectivePrice(product));
-    if (lbOnSale) {
-      lbWasEl.textContent = 'AED ' + formatAED(product.price);
-      lbWasEl.style.display = 'inline';
-    } else {
-      lbWasEl.style.display = 'none';
+
+    // Stage 3 of the quantity feature: a stepper to pick how many units
+    // to add, shown only when this product tracks quantity AND there's
+    // genuinely more than one unit the customer could pick right now.
+    // At quantity 1 (or no quantity field at all -- every saree/piece
+    // today) this behaves exactly as it always has: implicit qty 1, no
+    // stepper, price shown is just the unit price.
+    var hasQty = product.quantity !== null && product.quantity !== undefined && !isNaN(Number(product.quantity));
+    var stockQty = hasQty ? Number(product.quantity) : null;
+    // The number shown to the customer is always the real stock figure
+    // -- this only limits what THIS customer can personally add on top
+    // of what they already have of it sitting in their own cart (the
+    // agreed "cheap middle-ground"; the real stock number itself is
+    // never reduced by anyone's cart contents).
+    var alreadyInOwnCart = cartGetQty(product.id);
+    var availableToAdd = hasQty ? Math.max(0, stockQty - alreadyInOwnCart) : 0;
+    var maxPerOrder = (hasQty && product.maxPerOrder) ? Number(product.maxPerOrder) : null;
+    var qtyCap = hasQty ? Math.max(1, maxPerOrder ? Math.min(availableToAdd, maxPerOrder) : availableToAdd) : 1;
+    var showQtyStepper = hasQty && stockQty > 1 && qtyCap > 1;
+    var selectedQty = 1;
+
+    var qtyPickerEl = document.getElementById('lightbox-qty-picker');
+    var qtyValueEl = document.getElementById('lightbox-qty-value');
+    var qtyUnitEl = document.getElementById('lightbox-qty-unit');
+    var qtyMinusBtn = document.getElementById('lightbox-qty-minus');
+    var qtyPlusBtn = document.getElementById('lightbox-qty-plus');
+    qtyPickerEl.style.display = 'none'; // renderCartActions() below turns it back on when appropriate
+
+    function renderLightboxPrice() {
+      var unitPrice = effectivePrice(product);
+      var onSale = unitPrice < Number(product.price);
+      document.getElementById('lightbox-price').textContent = 'AED ' + formatAED(unitPrice * selectedQty);
+      if (onSale) {
+        lbWasEl.textContent = 'AED ' + formatAED(Number(product.price) * selectedQty);
+        lbWasEl.style.display = 'inline';
+      } else {
+        lbWasEl.style.display = 'none';
+      }
     }
+
+    function renderQtyStepper() {
+      qtyValueEl.textContent = selectedQty;
+      qtyMinusBtn.disabled = selectedQty <= 1;
+      qtyPlusBtn.disabled = selectedQty >= qtyCap;
+    }
+
+    if (showQtyStepper) {
+      qtyUnitEl.textContent = product.qtyUnit || '';
+      renderQtyStepper();
+    }
+    renderLightboxPrice();
+
+    qtyMinusBtn.onclick = function () {
+      if (selectedQty > 1) { selectedQty--; renderQtyStepper(); renderLightboxPrice(); }
+    };
+    qtyPlusBtn.onclick = function () {
+      if (selectedQty < qtyCap) { selectedQty++; renderQtyStepper(); renderLightboxPrice(); }
+    };
 
     // Bangles & Bracelets: several sizes of one design, each its own
     // one-of-a-kind piece (see jewelleryGroupSiblings). Opening any one
@@ -2744,6 +2816,10 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
 
     function renderCartActions() {
       var inCart = cartGetItems().indexOf(product.id) !== -1;
+      // The qty picker only makes sense before the item is in the cart --
+      // once it's there, changing quantity is remove + re-add (per the
+      // agreed design), not a second pass through this stepper.
+      qtyPickerEl.style.display = (showQtyStepper && !inCart) ? 'flex' : 'none';
       actionsWrap.innerHTML =
         (inCart
           ? '<button type="button" class="btn-add-cart" id="lightbox-add-cart">View Cart</button>'
@@ -2760,7 +2836,7 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
           flagSizeNotConfirmed();
           return;
         }
-        cartAddItem(product);
+        cartAddItem(product, selectedQty);
         renderCartActions();
       });
       document.getElementById('lightbox-buy-now').addEventListener('click', function () {
@@ -2768,13 +2844,14 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
           flagSizeNotConfirmed();
           return;
         }
-        cartAddItem(product);
+        cartAddItem(product, selectedQty);
         closeLightbox();
         openCartDrawer();
       });
     }
 
-    if (product.sold) {
+    if (isEffectivelySold(product)) {
+      qtyPickerEl.style.display = 'none';
       actionsWrap.innerHTML = '<button type="button" disabled>Sold Out</button>';
     } else {
       renderCartActions();
@@ -4800,21 +4877,25 @@ function renderCartDrawer() {
   }
 
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
-  var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
+  // Stage 3: each line's total is unit price × its qty (1 for every
+  // existing one-of-a-kind product, same as always).
+  var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p) * cartGetQty(p.id); }, 0);
 
   itemsWrap.innerHTML = products.map(function (p) {
     var isSaree = (p.department || 'saree') === 'saree';
     var nameText = isSaree ? (p.material || p.design) : (p.department === 'jewellery' ? p.type : (p.category || 'Accessory'));
     var subText = isSaree ? seriesTitleCase(p.series) : (p.department === 'jewellery' ? (p.colour || '') : '');
+    var lineQty = cartGetQty(p.id);
+    var qtyText = lineQty > 1 ? ('Qty: ' + lineQty + (p.qtyUnit ? ' ' + p.qtyUnit : '')) : '';
     return (
       '<div class="cart-drawer-item">' +
         '<img src="' + p.image + '" alt="' + nameText + '" class="cart-item-img" data-id="' + p.id + '" role="button" tabindex="0" aria-label="View ' + nameText + '">' +
         '<div class="item-info">' +
           '<span class="item-design">' + nameText + ' — ' + (p.baseId || p.id) + '</span>' +
-          '<span class="item-series">' + subText + (p.size ? (subText ? ' · ' : '') + 'Size: ' + p.size : '') + '</span>' +
+          '<span class="item-series">' + subText + (p.size ? (subText ? ' · ' : '') + 'Size: ' + p.size : '') + (qtyText ? (subText || p.size ? ' · ' : '') + qtyText : '') + '</span>' +
           '<button type="button" class="item-remove" data-id="' + p.id + '">Remove</button>' +
         '</div>' +
-        '<span class="item-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
+        '<span class="item-price">AED ' + formatAED(effectivePrice(p) * lineQty) + '</span>' +
       '</div>'
     );
   }).join('') +
@@ -4917,8 +4998,11 @@ function initCartDrawer() {
     var ids = cartGetItems();
     if (!ids.length) return;
     var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
-    var lines = products.map(function (p) { return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p); });
-    var total = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
+    var lines = products.map(function (p) {
+      var qty = cartGetQty(p.id);
+      return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p) + (qty > 1 ? ' — Qty: ' + qty + (p.qtyUnit ? ' ' + p.qtyUnit : '') : '');
+    });
+    var total = products.reduce(function (sum, p) { return sum + effectivePrice(p) * cartGetQty(p.id); }, 0);
     // Tabby/Tamara's own merchant fee (6.75%) plus a flat AED 1 is
     // folded into this total rather than charged at the normal
     // checkout price — Nomod has no way to apply this only when
@@ -4961,9 +5045,13 @@ function initCheckoutPage() {
   emptyEl.style.display = 'none';
   contentEl.style.display = 'block';
 
-  var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p); }, 0);
+  // Stage 3: each line's total is unit price × its qty (1 for every
+  // existing one-of-a-kind product, same as always).
+  var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p) * cartGetQty(p.id); }, 0);
 
   itemsEl.innerHTML = products.map(function (p) {
+    var lineQty = cartGetQty(p.id);
+    var qtyText = lineQty > 1 ? ('Qty: ' + lineQty + (p.qtyUnit ? ' ' + p.qtyUnit : '')) : '';
     return (
       '<div class="checkout-item" data-id="' + p.id + '">' +
         '<div class="checkout-item-photo">' +
@@ -4972,9 +5060,9 @@ function initCheckoutPage() {
         '</div>' +
         '<div class="item-info">' +
           '<span class="item-design">' + itemDisplayName(p) + ' — ' + (p.baseId || p.id) + '</span>' +
-          '<span class="item-series">' + itemGroupLabel(p) + (p.size ? ' · Size: ' + p.size : '') + '</span>' +
+          '<span class="item-series">' + itemGroupLabel(p) + (p.size ? ' · Size: ' + p.size : '') + (qtyText ? ' · ' + qtyText : '') + '</span>' +
         '</div>' +
-        '<span class="item-price">AED ' + formatAED(effectivePrice(p)) + '</span>' +
+        '<span class="item-price">AED ' + formatAED(effectivePrice(p) * lineQty) + '</span>' +
       '</div>'
     );
   }).join('');
@@ -5429,6 +5517,7 @@ function initCheckoutPage() {
             id: p.id,
             name: p.design + ' — ' + p.id,
             price: effectivePrice(p),
+            qty: cartGetQty(p.id), // the server (create-nomod-checkout.js) re-validates and clamps this -- never trusted as-is for the actual charge
             series: p.series,
             type: p.type,
             sareeType: p.sareeType,
@@ -5495,7 +5584,9 @@ function initCheckoutPage() {
   // message above can still offer a working WhatsApp link inline.
   function buildOrderWhatsAppUrl() {
     var lines = products.map(function (p) {
-      return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p) + ' — AED ' + formatAED(effectivePrice(p));
+      var qty = cartGetQty(p.id);
+      var qtyPart = qty > 1 ? ' — Qty: ' + qty + (p.qtyUnit ? ' ' + p.qtyUnit : '') : '';
+      return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p) + qtyPart + ' — AED ' + formatAED(effectivePrice(p) * qty);
     });
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following items:\n' + lines.join('\n');
     if (appliedCode) {

@@ -2176,6 +2176,11 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 .lightbox-theme-light .lightbox-size-picker .filter-btn.is-unavailable {
   color: var(--ink); opacity: 0.35; border-color: var(--stone);
 }
+.lightbox-theme-light .lightbox-qty-picker .qty-picker-label,
+.lightbox-theme-light .lightbox-qty-picker .qty-picker-unit { color: var(--ink); opacity: 0.6; }
+.lightbox-theme-light .qty-stepper { border-color: var(--stone); }
+.lightbox-theme-light .qty-step-btn { color: var(--ink); }
+.lightbox-theme-light .qty-step-value { color: var(--ink); }
 /* "You May Also Like" cards -- missed in the first pass entirely.
    Same ivory-on-light invisibility as the cart buttons had. */
 .lightbox-theme-light .related-saree-item .rs-name { color: var(--ink); }
@@ -2711,6 +2716,35 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
 }
 .lightbox-size-picker .filter-btn.is-unavailable {
   color: rgba(252, 245, 237, 0.4); border-color: rgba(252, 245, 237, 0.2);
+}
+
+/* Stage 3 of the quantity feature: a stepper to pick how many units to
+   add, shown only for a quantity-tracked item with more than one real
+   choice. Same dark-background treatment as the size picker above. */
+.lightbox-qty-picker {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+}
+.lightbox-qty-picker .qty-picker-label {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ivory); opacity: 0.75;
+}
+.qty-stepper {
+  display: flex; align-items: center;
+  border: 1px solid rgba(252, 245, 237, 0.45);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.qty-step-btn {
+  background: transparent; color: var(--ivory); border: none;
+  width: 30px; height: 30px; font-size: 1rem; line-height: 1; cursor: pointer;
+}
+.qty-step-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.qty-step-value {
+  display: inline-block; min-width: 28px; text-align: center;
+  color: var(--ivory); font-size: 0.85rem; font-weight: 600;
+}
+.lightbox-qty-picker .qty-picker-unit {
+  font-size: 0.76rem; color: var(--ivory); opacity: 0.75;
 }
 
 .lightbox-cart-actions {

@@ -1,11 +1,14 @@
 // netlify/functions/create-nomod-checkout.js
 //
-// POST { items: [{id, name, price}], customer: {name, email, phone},
+// POST { items: [{id, name, price, qty}], customer: {name, email, phone},
 //        discountPercent, promoCode }
 // - Creates a Nomod Hosted Checkout session for the given cart and
 //   redirects the customer there to actually pay.
 // - The amount charged is computed here, server-side, from the live
 //   saree prices in products-data.js — never trusted from the browser.
+//   qty is the same: re-validated against the live catalogue (never
+//   trusted as-sent), and forced to 1 for anything that doesn't track
+//   quantity at all -- every saree/one-of-a-kind piece today.
 // - Nomod's own session `status` (checked later via verify-nomod-order)
 //   is the real source of truth for whether payment succeeded, not
 //   anything returned directly to the browser here.
@@ -115,19 +118,45 @@ exports.handler = async function (event) {
     return hasValidSale ? p.salePrice : p.price;
   }
 
+  // Stage 3 of the quantity feature: qty is re-derived here from the
+  // live catalogue, the same "never trust the browser" treatment price
+  // already gets. An item with no quantity field at all (every
+  // saree/one-of-a-kind piece today) is always exactly 1, regardless
+  // of whatever the browser sent -- preserving today's invariant even
+  // if a tampered request ever claimed otherwise. An item that DOES
+  // track quantity has whatever the browser sent clamped to a sane
+  // positive integer, then capped by live stock and any admin-set
+  // max-per-order -- a basic sanity check, not the full stock
+  // re-validation Stage 4 adds right before payment.
+  function resolveQty(catalogItem, requestedQty) {
+    if (catalogItem.quantity === null || catalogItem.quantity === undefined) return 1;
+    var raw = parseInt(requestedQty, 10);
+    var qty = (Number.isInteger(raw) && raw > 0) ? raw : 1;
+    qty = Math.min(qty, Math.max(0, Number(catalogItem.quantity)));
+    if (catalogItem.maxPerOrder) qty = Math.min(qty, Number(catalogItem.maxPerOrder));
+    // Can resolve to 0 in the rare race where stock hit 0 after the
+    // item was already sitting in someone's cart -- same accepted-
+    // tradeoff as the existing sold-flag check (this function doesn't
+    // reject already-sold sarees either). Stage 4's live stock
+    // re-check right before payment is the real fix for that window.
+    return qty;
+  }
+
   const nomodItems = items.map(function (it) {
     var catalogItem = catalogById[it.id];
-    var priceCents = toCents(effectivePrice(catalogItem));
-    var itemDiscountCents = Math.round(priceCents * discountPercent / 100);
+    var qty = resolveQty(catalogItem, it.qty);
+    var unitPriceCents = toCents(effectivePrice(catalogItem));
+    var lineTotalCents = unitPriceCents * qty;
+    var itemDiscountCents = Math.round(lineTotalCents * discountPercent / 100);
 
-    subtotalCents += priceCents;
+    subtotalCents += lineTotalCents;
     totalDiscountCents += itemDiscountCents;
 
     var item = {
       item_id: it.id,
       name: it.name || it.id,
-      quantity: 1,
-      unit_amount: centsToStr(priceCents)
+      quantity: qty,
+      unit_amount: centsToStr(unitPriceCents)
     };
     if (itemDiscountCents > 0) {
       item.discount_type = 'flat';
