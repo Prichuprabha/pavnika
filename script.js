@@ -5126,7 +5126,7 @@ function initCheckoutPage() {
           giftCardBalance = Number(data.balance);
           giftCardLabel.textContent = 'You have AED ' + formatAED(giftCardBalance) + ' in store credit';
           giftCardCheckboxLabel.textContent = 'Apply my store credit (up to AED ' + formatAED(giftCardBalance) + ')';
-          giftCardCard.style.display = 'block';
+          giftCardCard.style.display = 'flex';
         }
       })
       .catch(function () { /* no balance shown — checkout still works normally */ });

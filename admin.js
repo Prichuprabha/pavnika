@@ -997,38 +997,77 @@ function initSareeEditor(token) {
     return match ? match.image : '';
   }
 
+  var bangleBaseNewLabel = '+ New design';
+
   function refreshBangleBaseOptions() {
     var sel = document.getElementById('admin-f-bangle-base');
     var current = sel.value;
     var bases = bangleBaseIds();
-    sel.innerHTML = '<option value="">+ New design</option>' +
+    sel.innerHTML = '<option value="">' + bangleBaseNewLabel + '</option>' +
       bases.map(function (b) { return '<option value="' + b + '">' + b + '</option>'; }).join('');
     if (bases.indexOf(current) !== -1) sel.value = current;
 
-    // Visual picker: a photo swatch per existing design (so staff can
-    // recognise it by sight) plus a "+ New design" tile, all driving
-    // the same underlying <select> so nothing downstream needs to
-    // change -- clicking a swatch just sets sel.value and fires change.
-    var grid = document.getElementById('admin-bangle-photo-grid');
-    if (!grid) return;
-    var selectedValue = sel.value;
-    var tilesHtml = '<button type="button" class="admin-bangle-photo-swatch' + (selectedValue === '' ? ' is-selected' : '') + '" data-base="">' +
-      '<span class="admin-bangle-photo-box is-new">+</span><span>New</span>' +
+    renderBanglePickerBox();
+    renderBanglePickerPanel();
+  }
+
+  // Closed-state box: shows the currently-selected design's photo + ID
+  // (or the dashed "+ New design" placeholder), driven purely by the
+  // real <select>'s current value -- so anything that programmatically
+  // changes sel.value (restoring a saved product into edit mode, say)
+  // keeps the box in sync just by calling this again.
+  function renderBanglePickerBox() {
+    var sel = document.getElementById('admin-f-bangle-base');
+    var img = document.getElementById('admin-bangle-picker-box-img');
+    var ph = document.getElementById('admin-bangle-picker-box-ph');
+    var label = document.getElementById('admin-bangle-picker-box-label');
+    var base = sel.value;
+    if (!base) {
+      img.style.display = 'none';
+      ph.style.display = 'flex';
+      label.textContent = bangleBaseNewLabel;
+    } else {
+      var src = bangleBaseImage(base);
+      if (src) { img.src = src; img.style.display = 'block'; ph.style.display = 'none'; }
+      else { img.style.display = 'none'; ph.style.display = 'flex'; }
+      label.textContent = base;
+    }
+  }
+
+  // Dropdown panel content: one row per existing design (photo + ID)
+  // plus the "+ New design" row, rebuilt whenever the design list
+  // changes. Stays closed until the box is clicked (see the open/close
+  // wiring in initSareeEditor), and clicking a row sets the real
+  // <select>'s value and fires its existing 'change' listener, so the
+  // ID preview and everything else downstream behaves exactly as if
+  // the admin had picked the option from a plain dropdown.
+  function renderBanglePickerPanel() {
+    var sel = document.getElementById('admin-f-bangle-base');
+    var panel = document.getElementById('admin-bangle-picker-panel');
+    var picker = document.getElementById('admin-bangle-picker');
+    if (!panel) return;
+    var bases = bangleBaseIds();
+    var current = sel.value;
+    var rowsHtml = '<button type="button" class="admin-bangle-picker-option' + (current === '' ? ' is-current' : '') + '" data-base="">' +
+      '<span class="admin-bangle-ph-new">+</span>' +
+      '<span><span class="admin-bangle-picker-option-label">' + bangleBaseNewLabel + '</span></span>' +
       '</button>' +
       bases.map(function (b) {
         var img = bangleBaseImage(b);
-        return '<button type="button" class="admin-bangle-photo-swatch' + (selectedValue === b ? ' is-selected' : '') + '" data-base="' + b + '">' +
-          '<span class="admin-bangle-photo-box">' + (img ? '<img src="' + img + '" alt="' + b + '">' : '') + '</span>' +
-          '<span>' + b + '</span>' +
+        return '<button type="button" class="admin-bangle-picker-option' + (current === b ? ' is-current' : '') + '" data-base="' + b + '">' +
+          (img ? '<img src="' + img + '" alt="' + b + '">' : '<span class="admin-bangle-ph-new">?</span>') +
+          '<span><span class="admin-bangle-picker-option-label">' + b + '</span></span>' +
           '</button>';
       }).join('');
-    grid.innerHTML = tilesHtml;
-    grid.querySelectorAll('.admin-bangle-photo-swatch').forEach(function (btn) {
-      btn.addEventListener('click', function () {
+    panel.innerHTML = rowsHtml;
+    panel.querySelectorAll('.admin-bangle-picker-option').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
         sel.value = btn.getAttribute('data-base');
         sel.dispatchEvent(new Event('change'));
-        grid.querySelectorAll('.admin-bangle-photo-swatch').forEach(function (b) { b.classList.remove('is-selected'); });
-        btn.classList.add('is-selected');
+        renderBanglePickerBox();
+        renderBanglePickerPanel();
+        if (picker) picker.classList.remove('is-open');
       });
     });
   }
@@ -1148,6 +1187,23 @@ function initSareeEditor(token) {
     try { updateBangleIdPreview(); }
     catch (err) { alert('Error picking bangle design: ' + err.message); console.error(err); }
   });
+  // Bangle design picker: closed by default, opens on clicking the box,
+  // closes again on picking a design (handled in renderBanglePickerPanel)
+  // or on any click outside the picker.
+  (function () {
+    var picker = document.getElementById('admin-bangle-picker');
+    var box = document.getElementById('admin-bangle-picker-box');
+    if (!picker || !box) return;
+    box.addEventListener('click', function (e) {
+      e.stopPropagation();
+      picker.classList.toggle('is-open');
+    });
+    document.addEventListener('click', function (e) {
+      if (picker.classList.contains('is-open') && !picker.contains(e.target)) {
+        picker.classList.remove('is-open');
+      }
+    });
+  })();
   document.getElementById('admin-f-bangle-size').addEventListener('change', function () {
     try {
       var isNewSize = document.getElementById('admin-f-bangle-size').value === ADD_NEW_SIZE_VALUE;
