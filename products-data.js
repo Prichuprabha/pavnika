@@ -2941,5 +2941,21 @@ window.PRODUCTS = [
     "quantity": 5,
     "qtyUnit": "Muzham",
     "maxPerOrder": 2
+  },
+  {
+    "department": "accessory",
+    "category": "Artificial Flowers",
+    "note": "Fresh-style artificial jasmine strand",
+    "price": 2,
+    "salePrice": null,
+    "sold": false,
+    "images": [
+      "https://pavnika.ae/assets/products/AC002-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/AC002-1.jpg",
+    "quantity": 15,
+    "qtyUnit": "Muzham",
+    "maxPerOrder": 5,
+    "id": "AC002"
   }
 ];
