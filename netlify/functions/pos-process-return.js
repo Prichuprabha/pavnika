@@ -10,7 +10,7 @@
 // or bank transfer (no balance change for those two, since the
 // money already changed hands outside the system).
 const { verifyPosToken } = require('./_pos-auth');
-const { markSareesAvailable } = require('./_order-shared');
+const { restockReturnedItems } = require('./_order-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -70,12 +70,12 @@ exports.handler = async function (event) {
     var listValue = body.items.reduce(function (sum, it) { return sum + (it.price * it.qty); }, 0);
     var refundAmount = Math.round(listValue * effectiveRatio * 100) / 100;
 
-    var itemIds = body.items.map(function (it) { return it.id; });
-
     if (isExchange) {
       // Only Exchange restocks — a damaged Return item can't be resold.
+      // A quantity-tracked item gets its qty added back; a one-of-a-kind
+      // saree is marked available again, same as before.
       try {
-        await markSareesAvailable(itemIds);
+        await restockReturnedItems(body.items);
       } catch (e) {
         console.error('Exchange logged, but restocking items failed:', e);
       }

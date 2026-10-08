@@ -22,7 +22,7 @@
 //   totals exactly as before, it's just no longer forced on by default.
 
 const { verifyAdminToken } = require('./_admin-auth');
-const { supabaseHeaders, generateOrderNumber, sendReceiptEmail, markSareesSold } = require('./_order-shared');
+const { supabaseHeaders, generateOrderNumber, sendReceiptEmail, fulfillPurchasedItems } = require('./_order-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 
@@ -123,9 +123,9 @@ exports.handler = async function (event) {
     // Editor as a fallback, so this failure alone shouldn't block the
     // customer from getting their confirmation.
     try {
-      await markSareesSold(orderItems.map(function (it) { return it.id; }));
+      await fulfillPurchasedItems(orderItems);
     } catch (err) {
-      console.error('markSareesSold failed for manual order ' + inserted.order_number + ':', err);
+      console.error('fulfillPurchasedItems failed for manual order ' + inserted.order_number + ':', err);
     }
 
     await sendReceiptEmail(inserted, paymentMode);

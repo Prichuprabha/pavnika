@@ -5238,26 +5238,41 @@ function initCheckoutPage() {
   // trusting that in-memory copy.
   var soldWarningEl = document.getElementById('checkout-sold-warning');
   function checkSoldItems() {
+    // Stage 4 of the quantity feature: sends each line's qty along
+    // with its id, so a quantity-tracked item that's dropped below
+    // what's in this cart (but isn't fully at 0) gets caught too, not
+    // just the all-the-way-sold-out case check-item-availability.js
+    // already handled.
     return fetch('/.netlify/functions/check-item-availability', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sareeIds: ids })
+      body: JSON.stringify({ items: products.map(function (p) { return { id: p.id, qty: cartGetQty(p.id) }; }) })
     })
       .then(function (res) { return res.json(); })
       .then(function (data) {
         var soldIds = data.soldIds || [];
-        soldItemsBlocking = soldIds.length > 0;
+        var insufficientStockIds = data.insufficientStockIds || [];
+        soldItemsBlocking = soldIds.length > 0 || insufficientStockIds.length > 0;
 
         itemsEl.querySelectorAll('.checkout-item').forEach(function (card) {
-          var isSold = soldIds.indexOf(card.getAttribute('data-id')) !== -1;
-          card.classList.toggle('is-unavailable', isSold);
+          var id = card.getAttribute('data-id');
+          var isSold = soldIds.indexOf(id) !== -1;
+          var isShort = insufficientStockIds.indexOf(id) !== -1;
+          card.classList.toggle('is-unavailable', isSold || isShort);
           var ribbon = card.querySelector('.checkout-item-sold-ribbon');
-          if (ribbon) ribbon.style.display = isSold ? 'flex' : 'none';
+          if (ribbon) {
+            ribbon.querySelector('span').textContent = isSold ? 'Sold Out' : 'Limited Stock';
+            ribbon.style.display = (isSold || isShort) ? 'flex' : 'none';
+          }
         });
 
-        if (soldItemsBlocking) {
+        if (soldIds.length) {
           soldWarningEl.className = 'checkout-promo-msg error';
           soldWarningEl.textContent = 'One or more items in your order are no longer available and have been sold. Please open your cart and remove the sold item(s) to continue.';
+          soldWarningEl.style.display = 'block';
+        } else if (insufficientStockIds.length) {
+          soldWarningEl.className = 'checkout-promo-msg error';
+          soldWarningEl.textContent = 'One or more items in your order no longer have enough stock for the quantity you picked. Please open your cart, remove the affected item(s), and add them again at the quantity currently available.';
           soldWarningEl.style.display = 'block';
         } else {
           soldWarningEl.style.display = 'none';

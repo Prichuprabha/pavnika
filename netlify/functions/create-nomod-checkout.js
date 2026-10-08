@@ -142,6 +142,14 @@ exports.handler = async function (event) {
     return qty;
   }
 
+  // Kept alongside nomodItems (not just the raw client `items`) and
+  // saved to the order record below -- Stage 4's fulfillment step
+  // (fulfillPurchasedItems, run once payment is confirmed) decrements
+  // stock by whatever qty is on the order, so it must be this
+  // server-resolved, clamped figure, never the raw client-submitted
+  // one a tampered request could have inflated.
+  const resolvedItems = [];
+
   const nomodItems = items.map(function (it) {
     var catalogItem = catalogById[it.id];
     var qty = resolveQty(catalogItem, it.qty);
@@ -151,6 +159,8 @@ exports.handler = async function (event) {
 
     subtotalCents += lineTotalCents;
     totalDiscountCents += itemDiscountCents;
+
+    resolvedItems.push(Object.assign({}, it, { qty: qty, price: centsToStr(unitPriceCents) }));
 
     var item = {
       item_id: it.id,
@@ -231,7 +241,7 @@ exports.handler = async function (event) {
           customer_email: customer.email || '',
           customer_name: ((customer.firstName || '') + ' ' + (customer.lastName || '')).trim(),
           customer_phone: customer.phone || '',
-          items: JSON.stringify(items),
+          items: JSON.stringify(resolvedItems),
           promo_code: body.promoCode || '',
           subtotal: subtotalCents / 100,
           discount_amount: totalDiscountCents / 100,

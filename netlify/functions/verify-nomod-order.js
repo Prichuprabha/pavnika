@@ -27,7 +27,7 @@
 //   ever changes, this template needs a proper Tax Invoice layout
 //   (TRN, VAT rate, VAT amount shown separately) added.
 
-const { supabaseHeaders, formatAED, generateOrderNumber, sendReceiptEmail, markSareesSold, fetchProductsFromGitHub } = require('./_order-shared');
+const { supabaseHeaders, formatAED, generateOrderNumber, sendReceiptEmail, fulfillPurchasedItems, fetchProductsFromGitHub } = require('./_order-shared');
 
 const NOMOD_API_KEY = process.env.NOMOD_API_KEY;
 const NOMOD_BASE = 'https://api.nomod.com/v1';
@@ -247,10 +247,14 @@ exports.handler = async function (event) {
     }
 
     var items = JSON.parse(order.items || '[]');
-    var sareeIds = items.map(function (it) { return it.id; });
     var paymentMethodLabel = extractPaymentMethod(nomodData);
 
-    await markSareesSold(sareeIds);
+    // Stage 4 of the quantity feature: order.items was stored with the
+    // server-resolved qty for each line (see create-nomod-checkout.js),
+    // so this decrements real stock for a quantity-tracked item, or
+    // marks a one-of-a-kind item sold, exactly as markSareesSold always
+    // did for the latter.
+    await fulfillPurchasedItems(items);
     if (order.id) await markOrderPaid(order.id, paymentMethodLabel);
     await markPromoCodeUsed(order.promo_code);
     order.payment_method = paymentMethodLabel;

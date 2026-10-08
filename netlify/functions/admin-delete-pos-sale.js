@@ -19,7 +19,7 @@
 // old sale should never accidentally un-sell an item that's since
 // been legitimately sold to someone else.
 const { verifyAdminToken } = require('./_admin-auth');
-const { markSareesAvailable } = require('./_order-shared');
+const { restockReturnedItems } = require('./_order-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -80,6 +80,16 @@ exports.handler = async function (event) {
     // Only restore an item if no OTHER still-existing sale currently
     // includes it — otherwise it's legitimately sold to someone else
     // now, and this deletion shouldn't un-sell it out from under them.
+    // This "still referenced elsewhere" check is an existence check,
+    // appropriate for a one-of-a-kind item's binary sold flag. A
+    // quantity-tracked item's stock is a running total each sale
+    // independently decremented, so in principle deleting THIS sale
+    // should always add back exactly what THIS sale took, regardless
+    // of other unrelated sales of the same product -- but POS selling
+    // the same quantity-tracked item across multiple sales is edge
+    // territory nothing has exercised yet, so this keeps the existing,
+    // proven-safe dedup behavior for now rather than guessing at a
+    // more elaborate rule untested against real data.
     if (itemIds.length) {
       var otherSalesRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_sales?select=items`, { headers: supabaseHeaders() });
       var otherSales = otherSalesRes.ok ? await otherSalesRes.json() : [];
@@ -87,10 +97,10 @@ exports.handler = async function (event) {
       otherSales.forEach(function (s) {
         (s.items || []).forEach(function (it) { stillSoldIds[it.id] = true; });
       });
-      var toRestore = itemIds.filter(function (id) { return !stillSoldIds[id]; });
-      if (toRestore.length) {
+      var toRestoreItems = (saleRows[0].items || []).filter(function (it) { return !stillSoldIds[it.id]; });
+      if (toRestoreItems.length) {
         try {
-          await markSareesAvailable(toRestore);
+          await restockReturnedItems(toRestoreItems);
         } catch (e) {
           // The sale itself is already deleted at this point — log
           // but don't fail the whole request over a catalogue-commit

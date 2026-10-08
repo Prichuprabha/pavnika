@@ -1,5 +1,5 @@
 const { verifyPosToken } = require('./_pos-auth');
-const { markSareesSold } = require('./_order-shared');
+const { fulfillPurchasedItems } = require('./_order-shared');
 const { generateBillNumber } = require('./_pos-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -67,18 +67,19 @@ exports.handler = async function (event) {
     }
     var saleRows = await saleRes.json();
 
-    // Mark every sold item as sold in the shared catalogue (the same
+    // Fulfill every sold item in the shared catalogue (the same
     // GitHub-committed products-data.js the website itself reads from)
-    // — this is what keeps a saree sold in-store from still showing as
-    // available online afterward.
-    var itemIds = items.map(function (it) { return it.id; });
+    // — a quantity-tracked item (e.g. Artificial Flowers) has its
+    // stock decremented by qty; a one-of-a-kind saree is marked sold,
+    // same as before. This is what keeps an in-store sale from still
+    // showing as fully available online afterward.
     try {
-      await markSareesSold(itemIds);
+      await fulfillPurchasedItems(items);
     } catch (e) {
       // The sale itself already succeeded and is saved — a catalogue
       // sync failure here shouldn't block completing the transaction,
       // but it does need to be visible for manual follow-up.
-      console.error('Sale saved, but marking items sold in the catalogue failed:', e);
+      console.error('Sale saved, but fulfilling items in the catalogue failed:', e);
     }
 
     // Redeem loyalty points if requested — deduct from balance. Point

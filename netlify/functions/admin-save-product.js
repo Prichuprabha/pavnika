@@ -53,7 +53,11 @@ function githubHeaders() {
 
 async function githubApi(path, options) {
   const res = await fetch(`https://api.github.com${path}`, Object.assign({ headers: githubHeaders() }, options || {}));
-  if (!res.ok) throw new Error(`GitHub ${options && options.method || 'GET'} ${path} -> ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    const err = new Error(`GitHub ${options && options.method || 'GET'} ${path} -> ${res.status}: ${await res.text()}`);
+    err.status = res.status;
+    throw err;
+  }
   return res.json();
 }
 
@@ -66,6 +70,14 @@ async function getFile() {
   return { content, sha: data.sha };
 }
 
+// Stage 4 of the quantity feature (approved retry-on-conflict fix):
+// a stale `sha` (someone else committed in between) gets a 409 from
+// GitHub -- it never corrupts the file, but until now nothing here
+// checked for it, so a second concurrent admin save was silently
+// DROPPED (a lost update) rather than retried or even reported. The
+// caller re-reads the file, reapplies its own change against that
+// fresh copy, and calls this again; `err.status` is what lets it tell
+// a real conflict (worth retrying) apart from any other failure.
 async function putFile(newContent, sha, message) {
   const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}`;
   const res = await fetch(url, {
@@ -78,7 +90,11 @@ async function putFile(newContent, sha, message) {
       branch: GITHUB_BRANCH
     })
   });
-  if (!res.ok) throw new Error(`GitHub write error ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    const err = new Error(`GitHub write error ${res.status}: ${await res.text()}`);
+    err.status = res.status;
+    throw err;
+  }
   return res.json();
 }
 
@@ -187,18 +203,36 @@ exports.handler = async function (event) {
     if (!FILENAME_PATTERN.test(f)) return { statusCode: 400, body: JSON.stringify({ error: 'Invalid delete filename: ' + f }) };
   }
 
+  const MAX_ATTEMPTS = 4;
+
   try {
     const hasPhotoChanges = newImages.length > 0 || removedImages.length > 0;
 
     if (!hasPhotoChanges) {
       // The common case (editing text fields only) — same simple
-      // single-file path this function has always used.
-      const file = await getFile();
-      const products = parseProducts(file.content);
-      const result = applyAction(products, action, productInput);
-      if (result.error) return { statusCode: result.error.statusCode, body: JSON.stringify({ error: result.error.message }) };
+      // single-file path this function has always used. Stage 4's
+      // retry fix: on a 409 (someone else committed in between), this
+      // re-reads the file and reapplies the SAME add/edit/delete
+      // against that fresh copy, rather than the earlier attempt's
+      // change being silently dropped.
+      let commitResult, result;
+      for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        const file = await getFile();
+        const products = parseProducts(file.content);
+        result = applyAction(products, action, productInput);
+        if (result.error) return { statusCode: result.error.statusCode, body: JSON.stringify({ error: result.error.message }) };
 
-      const commitResult = await putFile(serializeProducts(products), file.sha, result.commitMessage);
+        try {
+          commitResult = await putFile(serializeProducts(products), file.sha, result.commitMessage);
+          break;
+        } catch (e) {
+          if (e.status === 409 && attempt < MAX_ATTEMPTS) {
+            console.warn(`admin-save-product: sha conflict on attempt ${attempt}, retrying against a fresh copy...`);
+            continue;
+          }
+          throw e;
+        }
+      }
       return {
         statusCode: 200,
         body: JSON.stringify({
@@ -212,53 +246,79 @@ exports.handler = async function (event) {
 
     // Photos are involved — bundle the file changes and the
     // products-data.js update into one commit via the Git Data API.
-    const ref = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/ref/heads/${GITHUB_BRANCH}`);
-    const baseCommitSha = ref.object.sha;
-    const baseCommit = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits/${baseCommitSha}`);
-    const baseTreeSha = baseCommit.tree.sha;
-
-    const dataFile = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}?ref=${baseCommitSha}`);
-    const products = parseProducts(Buffer.from(dataFile.content, 'base64').toString('utf-8'));
-    const result = applyAction(products, action, productInput);
-    if (result.error) return { statusCode: result.error.statusCode, body: JSON.stringify({ error: result.error.message }) };
-
-    const treeEntries = [];
+    // New image blobs are content-addressed (their sha depends only on
+    // their bytes, not on which base tree they end up attached to), so
+    // they're created once, outside the retry loop below — only the
+    // base ref/tree/commit and the final ref update need to be redone
+    // against a fresh base on a conflict.
+    const newImageBlobs = [];
     for (const u of newImages) {
       const base64Content = u.dataUrl.replace(/^data:image\/jpeg;base64,/, '');
       const blob = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/blobs`, {
         method: 'POST',
         body: JSON.stringify({ content: base64Content, encoding: 'base64' })
       });
-      treeEntries.push({ path: `assets/products/${u.filename}`, mode: '100644', type: 'blob', sha: blob.sha });
+      newImageBlobs.push({ filename: u.filename, sha: blob.sha });
     }
-    removedImages.forEach(function (filename) {
-      treeEntries.push({ path: `assets/products/${filename}`, mode: '100644', type: 'blob', sha: null });
-    });
 
-    const dataBlob = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/blobs`, {
-      method: 'POST',
-      body: JSON.stringify({ content: serializeProducts(products), encoding: 'utf-8' })
-    });
-    treeEntries.push({ path: FILE_PATH, mode: '100644', type: 'blob', sha: dataBlob.sha });
+    let result, newCommit;
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      const ref = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/ref/heads/${GITHUB_BRANCH}`);
+      const baseCommitSha = ref.object.sha;
+      const baseCommit = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits/${baseCommitSha}`);
+      const baseTreeSha = baseCommit.tree.sha;
 
-    const newTree = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees`, {
-      method: 'POST',
-      body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
-    });
+      const dataFile = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${FILE_PATH}?ref=${baseCommitSha}`);
+      const products = parseProducts(Buffer.from(dataFile.content, 'base64').toString('utf-8'));
+      result = applyAction(products, action, productInput);
+      if (result.error) return { statusCode: result.error.statusCode, body: JSON.stringify({ error: result.error.message }) };
 
-    const photoNote = [];
-    if (newImages.length) photoNote.push(`+${newImages.length} photo${newImages.length === 1 ? '' : 's'}`);
-    if (removedImages.length) photoNote.push(`-${removedImages.length} photo${removedImages.length === 1 ? '' : 's'}`);
-    const commitMessage = `${result.commitMessage} (${photoNote.join(', ')})`;
+      const treeEntries = newImageBlobs.map(function (b) {
+        return { path: `assets/products/${b.filename}`, mode: '100644', type: 'blob', sha: b.sha };
+      });
+      removedImages.forEach(function (filename) {
+        treeEntries.push({ path: `assets/products/${filename}`, mode: '100644', type: 'blob', sha: null });
+      });
 
-    const newCommit = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits`, {
-      method: 'POST',
-      body: JSON.stringify({ message: commitMessage, tree: newTree.sha, parents: [baseCommitSha] })
-    });
-    await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs/heads/${GITHUB_BRANCH}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ sha: newCommit.sha })
-    });
+      const dataBlob = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/blobs`, {
+        method: 'POST',
+        body: JSON.stringify({ content: serializeProducts(products), encoding: 'utf-8' })
+      });
+      treeEntries.push({ path: FILE_PATH, mode: '100644', type: 'blob', sha: dataBlob.sha });
+
+      const newTree = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees`, {
+        method: 'POST',
+        body: JSON.stringify({ base_tree: baseTreeSha, tree: treeEntries })
+      });
+
+      const photoNote = [];
+      if (newImages.length) photoNote.push(`+${newImages.length} photo${newImages.length === 1 ? '' : 's'}`);
+      if (removedImages.length) photoNote.push(`-${removedImages.length} photo${removedImages.length === 1 ? '' : 's'}`);
+      const commitMessage = `${result.commitMessage} (${photoNote.join(', ')})`;
+
+      newCommit = await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/commits`, {
+        method: 'POST',
+        body: JSON.stringify({ message: commitMessage, tree: newTree.sha, parents: [baseCommitSha] })
+      });
+
+      try {
+        await githubApi(`/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/refs/heads/${GITHUB_BRANCH}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ sha: newCommit.sha })
+        });
+        break; // success
+      } catch (e) {
+        // A non-fast-forward update (branch moved since this attempt's
+        // ref read) comes back as 422 from this endpoint, not 409 --
+        // same underlying race as the plain Contents API's 409, just a
+        // different status code for this particular endpoint.
+        if ((e.status === 409 || e.status === 422) && attempt < MAX_ATTEMPTS) {
+          console.warn(`admin-save-product: branch moved on attempt ${attempt} (photo commit), retrying against a fresh base...`);
+          continue;
+        }
+        throw e;
+      }
+    }
 
     return {
       statusCode: 200,

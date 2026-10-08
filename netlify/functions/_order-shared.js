@@ -41,37 +41,137 @@ async function fetchProductsFromGitHub() {
   return { products: JSON.parse(match[1]), fileData: fileData };
 }
 
+// Stage 4 of the quantity feature (approved retry-on-conflict fix):
+// GitHub's Contents API rejects a PUT whose `sha` is stale (someone
+// else committed in between) with a 409 -- it never silently
+// corrupts the file, but until now nothing here checked the response,
+// so a second concurrent write was silently DROPPED (a lost update)
+// rather than failing loudly or retrying. This re-reads the live
+// file, lets `mutate` recompute what to change against that fresh
+// copy, and commits; on a 409 it repeats the whole cycle against the
+// now-current file, up to a few times, closing that gap without any
+// new locking infrastructure. `mutate(products)` returns false if
+// there's nothing to change (including "nothing left to change" on a
+// retry), in which case this returns without committing at all.
+async function commitProductsChange(mutate, commitMessage) {
+  const MAX_ATTEMPTS = 4;
+  for (var attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const gh = await fetchProductsFromGitHub();
+    const products = gh.products;
+
+    if (!mutate(products)) return; // nothing to change, even on a retry
+
+    const newContent = 'window.PRODUCTS = ' + JSON.stringify(products, null, 2) + ';\n';
+    const putRes = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${PRODUCTS_PATH}`, {
+      method: 'PUT',
+      headers: githubHeaders(),
+      body: JSON.stringify({
+        message: commitMessage,
+        content: Buffer.from(newContent, 'utf-8').toString('base64'),
+        sha: gh.fileData.sha,
+        branch: GITHUB_BRANCH
+      })
+    });
+    if (putRes.ok) return;
+
+    if (putRes.status === 409 && attempt < MAX_ATTEMPTS) {
+      console.warn(`commitProductsChange: sha conflict on attempt ${attempt}, retrying against a fresh copy...`);
+      continue;
+    }
+    const errText = await putRes.text();
+    throw new Error(`GitHub commit failed (${putRes.status}): ${errText}`);
+  }
+}
+
+function applySoldFlag(products, sareeIds, soldValue) {
+  var changed = false;
+  products.forEach(function (p) {
+    if (sareeIds.indexOf(p.id) !== -1 && !!p.sold !== soldValue) {
+      p.sold = soldValue;
+      changed = true;
+    }
+  });
+  return changed;
+}
+
 // Marks the given saree IDs as sold in the live catalogue (a GitHub
 // commit, same mechanism the rest of the admin panel already uses).
 // Used both when an online Nomod payment is confirmed and when a
 // manual (bank transfer/cash) order is recorded — either way, a real
 // sale should stop that saree being purchasable again.
 async function markSareesSold(sareeIds) {
-  const gh = await fetchProductsFromGitHub();
-  const products = gh.products;
-  const fileData = gh.fileData;
+  await commitProductsChange(
+    function (products) { return applySoldFlag(products, sareeIds, true); },
+    `Order confirmed: mark ${sareeIds.join(', ')} as sold`
+  );
+}
 
-  var changed = false;
-  products.forEach(function (p) {
-    if (sareeIds.indexOf(p.id) !== -1 && !p.sold) {
-      p.sold = true;
-      changed = true;
-    }
+// Stage 4 of the quantity feature: fulfills a real sale (online order,
+// manual order, or in-store POS sale) across every item purchased.
+// Each item is handled according to what kind of item it is -- a
+// quantity-tracked item (has a `quantity` field) has the purchased qty
+// subtracted from its stock; everything else (every one-of-a-kind
+// saree/piece today) is marked sold exactly as markSareesSold always
+// did. Both kinds can be mixed in the same order and are committed
+// together as a single GitHub commit. `items` is [{id, qty}, ...] --
+// qty defaults to 1 if missing, and the same id appearing more than
+// once in one order is summed rather than overwritten.
+async function fulfillPurchasedItems(items) {
+  var qtyById = {};
+  (items || []).forEach(function (it) {
+    if (!it || !it.id) return;
+    var qty = Number(it.qty) || 1;
+    qtyById[it.id] = (qtyById[it.id] || 0) + qty;
   });
+  var ids = Object.keys(qtyById);
+  if (!ids.length) return;
 
-  if (!changed) return; // already marked sold, nothing to commit
+  await commitProductsChange(function (products) {
+    var changed = false;
+    products.forEach(function (p) {
+      var purchasedQty = qtyById[p.id];
+      if (purchasedQty === undefined) return;
+      if (p.quantity !== null && p.quantity !== undefined) {
+        var newQty = Math.max(0, Number(p.quantity) - purchasedQty);
+        if (newQty !== Number(p.quantity)) { p.quantity = newQty; changed = true; }
+      } else if (!p.sold) {
+        p.sold = true;
+        changed = true;
+      }
+    });
+    return changed;
+  }, `Order confirmed: fulfilled ${ids.join(', ')}`);
+}
 
-  const newContent = 'window.PRODUCTS = ' + JSON.stringify(products, null, 2) + ';\n';
-  await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${PRODUCTS_PATH}`, {
-    method: 'PUT',
-    headers: githubHeaders(),
-    body: JSON.stringify({
-      message: `Order confirmed: mark ${sareeIds.join(', ')} as sold`,
-      content: Buffer.from(newContent, 'utf-8').toString('base64'),
-      sha: fileData.sha,
-      branch: GITHUB_BRANCH
-    })
+// The reverse of fulfillPurchasedItems — adds the given qty back for a
+// quantity-tracked item, or clears the sold flag for a one-of-a-kind
+// item. Used when a POS sale is exchanged or deleted. Same [{id, qty}]
+// shape and same same-id-summing behavior as fulfillPurchasedItems.
+async function restockReturnedItems(items) {
+  var qtyById = {};
+  (items || []).forEach(function (it) {
+    if (!it || !it.id) return;
+    var qty = Number(it.qty) || 1;
+    qtyById[it.id] = (qtyById[it.id] || 0) + qty;
   });
+  var ids = Object.keys(qtyById);
+  if (!ids.length) return;
+
+  await commitProductsChange(function (products) {
+    var changed = false;
+    products.forEach(function (p) {
+      var restoredQty = qtyById[p.id];
+      if (restoredQty === undefined) return;
+      if (p.quantity !== null && p.quantity !== undefined) {
+        p.quantity = Number(p.quantity) + restoredQty;
+        changed = true;
+      } else if (p.sold) {
+        p.sold = false;
+        changed = true;
+      }
+    });
+    return changed;
+  }, `Return processed: restocked ${ids.join(', ')}`);
 }
 
 function supabaseHeaders() {
@@ -308,31 +408,10 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
 }
 
 async function markSareesAvailable(sareeIds) {
-  const gh = await fetchProductsFromGitHub();
-  const products = gh.products;
-  const fileData = gh.fileData;
-
-  var changed = false;
-  products.forEach(function (p) {
-    if (sareeIds.indexOf(p.id) !== -1 && p.sold) {
-      p.sold = false;
-      changed = true;
-    }
-  });
-
-  if (!changed) return; // already available, nothing to commit
-
-  const newContent = 'window.PRODUCTS = ' + JSON.stringify(products, null, 2) + ';\n';
-  await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${PRODUCTS_PATH}`, {
-    method: 'PUT',
-    headers: githubHeaders(),
-    body: JSON.stringify({
-      message: `Return processed: mark ${sareeIds.join(', ')} as available again`,
-      content: Buffer.from(newContent, 'utf-8').toString('base64'),
-      sha: fileData.sha,
-      branch: GITHUB_BRANCH
-    })
-  });
+  await commitProductsChange(
+    function (products) { return applySoldFlag(products, sareeIds, false); },
+    `Return processed: mark ${sareeIds.join(', ')} as available again`
+  );
 }
 
 module.exports = {
@@ -342,6 +421,8 @@ module.exports = {
   generateOrderNumber: generateOrderNumber,
   sendReceiptEmail: sendReceiptEmail,
   markSareesSold: markSareesSold,
+  fulfillPurchasedItems: fulfillPurchasedItems,
+  restockReturnedItems: restockReturnedItems,
   markSareesAvailable: markSareesAvailable,
   fetchProductsFromGitHub: fetchProductsFromGitHub
 };
