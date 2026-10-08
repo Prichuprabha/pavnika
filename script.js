@@ -4204,22 +4204,75 @@ var WISHLIST_STORAGE_KEY = 'pavnika_wishlist';
 var _cartCache = null;
 var _wishlistCache = null;
 
-function cartGetItems() {
+// Stage 2 of the general "quantity" capability: the cart now carries a
+// qty per line instead of being purely a set of IDs. This is a data-model
+// change only -- nothing customer-facing changes yet, because nothing
+// can set qty above 1 until the Stage 3 picker UI exists.
+//
+// Storage shape is now an array of {id, qty} objects, but this reads
+// an older plain array-of-ID-strings shape too (what every existing
+// cart in the wild already has), treating each bare string as qty 1 --
+// so nobody's cart is disturbed by this upgrade.
+function normalizeCartLines(raw) {
+  if (!Array.isArray(raw)) return [];
+  return raw.map(function (entry) {
+    if (typeof entry === 'string') return { id: entry, qty: 1 };
+    if (entry && typeof entry === 'object' && entry.id) {
+      var q = parseInt(entry.qty, 10);
+      return { id: entry.id, qty: (q > 0 ? q : 1) };
+    }
+    return null;
+  }).filter(Boolean);
+}
+
+// Returns the full [{id, qty}] cart. Nothing outside this file's own
+// cart functions needs this yet (Stage 3's picker UI will), but it's
+// the one true source cartGetItems()/cartSaveItems() are built on top
+// of below, so qty survives round-trips through the many existing
+// call sites that only deal in flat ID arrays.
+function cartGetLines() {
   if (_cartCache !== null) return _cartCache;
   try {
     var raw = localStorage.getItem(CART_STORAGE_KEY);
-    var ids = raw ? JSON.parse(raw) : [];
-    return Array.isArray(ids) ? ids : [];
+    _cartCache = normalizeCartLines(raw ? JSON.parse(raw) : []);
   } catch (e) {
-    return [];
+    _cartCache = [];
   }
+  return _cartCache;
 }
 
-function cartSaveItems(ids) {
-  _cartCache = ids;
+function cartSaveLines(lines) {
+  _cartCache = lines;
   try {
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(ids));
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(lines));
   } catch (e) { /* ignore storage errors (e.g. private browsing) */ }
+}
+
+// Returns the qty currently stored for an id, or 0 if it's not in the
+// cart at all. Not used by anything yet -- ready for Stage 3.
+function cartGetQty(id) {
+  var line = cartGetLines().filter(function (l) { return l.id === id; })[0];
+  return line ? line.qty : 0;
+}
+
+// Backward-compatible view: a flat array of IDs, exactly what every
+// existing call site (dozens of them, across this file) already
+// expects from cartGetItems().
+function cartGetItems() {
+  return cartGetLines().map(function (l) { return l.id; });
+}
+
+// Backward-compatible setter: existing call sites pass a flat array of
+// IDs (e.g. ids.concat([newId]) when adding, or ids.filter(...) when
+// removing). This preserves each id's already-known qty rather than
+// resetting it to 1 on every save that happens to go through the old
+// flat-array path.
+function cartSaveItems(ids) {
+  var existingQtyById = {};
+  cartGetLines().forEach(function (l) { existingQtyById[l.id] = l.qty; });
+  cartSaveLines(ids.map(function (id) {
+    return { id: id, qty: existingQtyById[id] || 1 };
+  }));
 }
 
 function wishlistGetItems() {
@@ -4289,18 +4342,33 @@ function syncCartFromServer(token) {
   })
     .then(function (res) { return res.json(); })
     .then(function (data) {
-      var serverItems = Array.isArray(data.items) ? data.items : [];
-      var currentLocal = cartGetItems();
+      // Stage 2: the server now returns [{id, qty}] lines instead of
+      // a flat array of IDs. Still accepts a plain array of ID
+      // strings too (normalizeCartLines treats those as qty 1), so
+      // this keeps working even if get-cart.js is ever rolled back.
+      var serverLines = normalizeCartLines(Array.isArray(data.items) ? data.items : []);
+      var currentLines = cartGetLines();
+      var currentLocal = currentLines.map(function (l) { return l.id; });
       var lastSynced = getLastSynced(CART_LAST_SYNCED_KEY);
 
+      // The "what's new on this device" diff is still decided purely
+      // by ID, exactly as before -- qty doesn't change which items
+      // count as added/removed, only what gets carried along with them.
       var addedByThisDevice = currentLocal.filter(function (id) { return lastSynced.indexOf(id) === -1; });
       var removedByThisDevice = lastSynced.filter(function (id) { return currentLocal.indexOf(id) === -1; });
 
-      var newTruth = serverItems.slice();
-      addedByThisDevice.forEach(function (id) { if (newTruth.indexOf(id) === -1) newTruth.push(id); });
-      newTruth = newTruth.filter(function (id) { return removedByThisDevice.indexOf(id) === -1; });
+      var qtyById = {};
+      currentLines.forEach(function (l) { qtyById[l.id] = l.qty; });
 
-      cartSaveItems(newTruth);
+      var newLines = serverLines.slice();
+      addedByThisDevice.forEach(function (id) {
+        if (newLines.filter(function (l) { return l.id === id; }).length === 0) {
+          newLines.push({ id: id, qty: qtyById[id] || 1 });
+        }
+      });
+      newLines = newLines.filter(function (l) { return removedByThisDevice.indexOf(l.id) === -1; });
+
+      cartSaveLines(newLines);
       renderCartDrawer();
       // Same reasoning as the cart drawer above — Checkout may have
       // already rendered from local cache before this sync finished
@@ -4322,7 +4390,7 @@ function syncCartFromServer(token) {
         return fetch('/.netlify/functions/add-to-cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visitorToken: token, sareeId: id })
+          body: JSON.stringify({ visitorToken: token, sareeId: id, qty: qtyById[id] || 1 })
         }).catch(function (e) { console.error('could not sync local cart item to server:', e); });
       }).concat(removedByThisDevice.map(function (id) {
         // Defensive re-push: this device's own removals should already
@@ -4337,7 +4405,7 @@ function syncCartFromServer(token) {
       }));
 
       return Promise.all(pushes).then(function () {
-        saveLastSynced(CART_LAST_SYNCED_KEY, newTruth);
+        saveLastSynced(CART_LAST_SYNCED_KEY, newLines.map(function (l) { return l.id; }));
       });
     })
     .catch(function (e) { console.error('get-cart failed:', e); });
@@ -4396,10 +4464,15 @@ function initCartWishlistSync() {
   return Promise.all([syncCartFromServer(token), syncWishlistFromServer(token)]);
 }
 
-function cartAddItem(product) {
+// qty is optional and defaults to 1 -- every existing call site still
+// calls this with just a product, so nothing about today's behavior
+// changes. It's here so Stage 3's picker UI has somewhere to pass the
+// quantity the customer actually chose.
+function cartAddItem(product, qty) {
+  qty = (parseInt(qty, 10) > 0) ? parseInt(qty, 10) : 1;
   var ids = cartGetItems();
   if (ids.indexOf(product.id) === -1) {
-    cartSaveItems(ids.concat([product.id]));
+    cartSaveLines(cartGetLines().concat([{ id: product.id, qty: qty }]));
     fetch('/.netlify/functions/log-cart-activity', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -4411,7 +4484,7 @@ function cartAddItem(product) {
       fetch('/.netlify/functions/add-to-cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visitorToken: token, sareeId: product.id })
+        body: JSON.stringify({ visitorToken: token, sareeId: product.id, qty: qty })
       }).catch(function (e) { console.error('add-to-cart failed:', e); });
     }
   }

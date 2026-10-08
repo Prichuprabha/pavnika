@@ -1,10 +1,13 @@
 // netlify/functions/add-to-cart.js
 //
-// POST { visitorToken, sareeId }
+// POST { visitorToken, sareeId, qty }
 // - Verifies the token, then upserts a row into cart_items for that
 //   email + saree. Relies on the unique (email, saree_id) constraint
-//   on the table so adding something already in the cart is a safe
-//   no-op rather than a duplicate row.
+//   on the table -- a resend for something already in the cart
+//   updates its qty (merge-duplicates) rather than erroring or
+//   creating a duplicate row.
+// - qty is optional and defaults to 1; nothing today sends anything
+//   else, this is here for the Stage 3 quantity picker to use.
 
 const { verifyVisitorToken } = require('./_visitor-auth');
 
@@ -33,6 +36,9 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'sareeId is required.' }) };
   }
 
+  const qtyNum = parseInt(body.qty, 10);
+  const qty = (Number.isInteger(qtyNum) && qtyNum > 0) ? qtyNum : 1;
+
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/cart_items?on_conflict=email,saree_id`, {
       method: 'POST',
@@ -40,12 +46,15 @@ exports.handler = async function (event) {
         'apikey': SUPABASE_SERVICE_ROLE_KEY,
         'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
         'Content-Type': 'application/json',
-        // Upsert on the unique (email, saree_id) constraint — adding
-        // an item already in the cart just does nothing, rather than
-        // erroring or creating a duplicate row.
-        'Prefer': 'resolution=ignore-duplicates'
+        // Upsert on the unique (email, saree_id) constraint. Changed
+        // from ignore-duplicates to merge-duplicates so that if this
+        // is ever called again for an item already in the cart (e.g.
+        // a future "change quantity" flow), it updates qty instead of
+        // silently doing nothing -- today nothing resends with a
+        // different qty, so this is a no-behavior-change-yet switch.
+        'Prefer': 'resolution=merge-duplicates'
       },
-      body: JSON.stringify({ email: payload.email, saree_id: sareeId })
+      body: JSON.stringify({ email: payload.email, saree_id: sareeId, qty: qty })
     });
     if (!res.ok) {
       const text = await res.text();
