@@ -2898,32 +2898,26 @@ window.PRODUCTS = [
     "colour": "Test Earring color",
     "note": "Test earring note",
     "price": 50,
-    "salePrice": 25,
+    "salePrice": null,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/JW003-1.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JW003-1.jpg",
-    "id": "JW003",
-    "quantity": 5,
-    "qtyUnit": "Pcs",
-    "maxPerOrder": 2
+    "id": "JW003"
   },
   {
     "department": "accessory",
-    "category": "Artificial Flowers",
+    "type": "Artificial Flowers",
     "note": "Test note for Aritficial flower",
     "price": 100,
-    "salePrice": 80,
+    "salePrice": null,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/AC001-1.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
-    "id": "AC001",
-    "quantity": 11,
-    "qtyUnit": "Muzham",
-    "maxPerOrder": 11
+    "id": "AC001"
   },
   {
     "department": "jewellery",

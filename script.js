@@ -476,8 +476,12 @@ function nonSareeCardHTML(p) {
   var soldRibbon = allSoldInGroup ? '<div class="sold-ribbon"><span>Sold Out</span></div>' : '';
   var onSale = p.salePrice && p.salePrice < p.price && !isEffectivelySold(p);
   var saleBadge = onSale ? '<span class="sale-badge">Sale</span>' : '';
-  var badgeLabel = p.department === 'jewellery' ? p.type : p.category;
-  var namePart = p.department === 'jewellery' ? (p.type + (p.colour ? ' — ' + p.colour : '')) : (p.category || 'Accessory');
+  // Jewellery and Accessories both key off p.type now (Accessory used
+  // to store its one option, "Artificial Flowers", under p.category --
+  // renamed so both departments share one field instead of two names
+  // for the same idea).
+  var badgeLabel = p.type;
+  var namePart = p.department === 'jewellery' ? (p.type + (p.colour ? ' — ' + p.colour : '')) : (p.type || 'Accessory');
   var displayPrice = isGroup ? Math.min.apply(null, availableSiblings.map(function (s) { return effectivePrice(s); })) : effectivePrice(p);
   var pricingHtml = onSale
     ? '<span class="p-price-row">' +
@@ -524,8 +528,8 @@ function nonSareeCardHTML(p) {
 // belong together" logic lives, so the grid card, the lightbox size
 // picker, and the "from AED X" price all agree with each other.
 // The one place "what do we call this item" is decided — sarees use
-// material/design, Jewellery uses type (+ colour if set), Accessories
-// use their category. Used everywhere a product's name is shown or
+// material/design, Jewellery and Accessories both use type (+ colour
+// for Jewellery, if set). Used everywhere a product's name is shown or
 // sent: cards, lightbox, share messages, wishlist, cart, checkout.
 // Before this existed, several of these call sites independently wrote
 // `p.material || p.design`, which silently evaluates to the literal
@@ -533,7 +537,7 @@ function nonSareeCardHTML(p) {
 function itemDisplayName(p) {
   if (!p) return '';
   if (p.department === 'jewellery') return p.type + (p.colour ? ' — ' + p.colour : '');
-  if (p.department === 'accessory') return p.category || 'Accessory';
+  if (p.department === 'accessory') return p.type || 'Accessory';
   return p.material || p.design || p.id;
 }
 
@@ -545,7 +549,7 @@ function itemDisplayName(p) {
 function itemGroupLabel(p) {
   if (!p) return '';
   if (p.department === 'jewellery') return p.type || 'Jewellery';
-  if (p.department === 'accessory') return p.category || 'Accessory';
+  if (p.department === 'accessory') return p.type || 'Accessory';
   return seriesTitleCase(p.series);
 }
 
@@ -1649,6 +1653,11 @@ function initJewelleryAccessoriesPage() {
   function getFiltered() {
     var q = state.query.trim().toLowerCase();
     return groupedCatalogue().filter(function (p) {
+      // Accessory used to store its one value ("Artificial Flowers")
+      // under p.category rather than p.type, so this used to also check
+      // p.category as a fallback -- no longer needed now that both
+      // departments share p.type, but kept as a fallback for an older
+      // catalogue export that still has it under category.
       var okType = state.type === 'all' || p.type === state.type || p.category === state.type;
       var okSold = !state.hideSold || !p.sold;
       var okQuery = !q || SEARCH_FIELDS.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
@@ -2520,7 +2529,11 @@ function buildLightbox() {
     var tags = [];
     if ((p.department || 'saree') !== 'saree') {
       if (p.department === 'jewellery') { tags.push('Fashion Jewellery'); if (p.colour) tags.push(p.colour); }
-      if (p.category) tags.push(p.category);
+      // Accessory's type (e.g. "Artificial Flowers") -- scoped to that
+      // department specifically, since Jewellery already has its own
+      // p.type ("Earrings" etc.) that isn't meant to show as an extra
+      // tag here on top of "Fashion Jewellery" + colour above.
+      if (p.department === 'accessory' && p.type) tags.push(p.type);
       return tags;
     }
     if (p.series) tags.push(seriesTitleCase(p.series) + ' Series');
@@ -2540,7 +2553,7 @@ function buildLightbox() {
         if (p.note) jBits.push(p.note);
         return jBits.join(', ') + '.';
       }
-      var aBits = [p.category || 'Accessory'];
+      var aBits = [p.type || 'Accessory'];
       if (p.note) aBits.push(p.note);
       return aBits.join(' — ') + '.';
     }
@@ -2588,7 +2601,7 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
     overlay.classList.toggle('lightbox-saree-colors', isSaree);
     document.getElementById('lightbox-design').textContent = isSaree
       ? ((product.material || product.design) || '')
-      : (product.department === 'jewellery' ? product.type : (product.category || 'Accessory'));
+      : (product.department === 'jewellery' ? product.type : (product.type || 'Accessory'));
     document.getElementById('lightbox-code').textContent = 'Code: ' + (product.baseId || product.id);
     var isOutOfStock = isEffectivelySold(product);
     document.getElementById('lightbox-meta').textContent = isSaree
@@ -4897,7 +4910,7 @@ function renderCartDrawer() {
 
   itemsWrap.innerHTML = products.map(function (p) {
     var isSaree = (p.department || 'saree') === 'saree';
-    var nameText = isSaree ? (p.material || p.design) : (p.department === 'jewellery' ? p.type : (p.category || 'Accessory'));
+    var nameText = isSaree ? (p.material || p.design) : (p.department === 'jewellery' ? p.type : (p.type || 'Accessory'));
     var subText = isSaree ? seriesTitleCase(p.series) : (p.department === 'jewellery' ? (p.colour || '') : '');
     var lineQty = cartGetQty(p.id);
     var qtyText = lineQty > 1 ? ('Qty: ' + lineQty + (p.qtyUnit ? ' ' + p.qtyUnit : '')) : '';

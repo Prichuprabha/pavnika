@@ -203,8 +203,12 @@ function buildItemDescription(it) {
   }
 
   if (department === 'accessory') {
-    // e.g. "Artificial Flowers (AC003)" + optional note
-    var aLine = (it.category || 'Accessory') + ' (' + it.id + ')';
+    // e.g. "Artificial Flowers (AC003)" + optional note. Was it.category
+    // -- Accessory's one option used to be stored there; now shares
+    // it.type with Jewellery instead (falls back to it.category too,
+    // for any order placed before this rename whose stored item still
+    // has it under the old field).
+    var aLine = (it.type || it.category || 'Accessory') + ' (' + it.id + ')';
     if (it.note) aLine += ' — ' + it.note;
     return aLine;
   }

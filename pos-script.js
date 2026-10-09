@@ -1034,6 +1034,16 @@ function itemDisplayName(item) {
   return (item.series ? item.series + ' \u2014 ' : '') + (item.type || item.material || '');
 }
 
+// Accessory's one option ("Artificial Flowers") used to live under
+// .category; it's been renamed to share .type with Jewellery instead
+// (Jewellery never had a .category at all, so that side is unchanged
+// here -- this only redirects Accessory, keeping this screen's
+// existing "Category" field and browse-by-category chips working the
+// same as before the rename).
+function itemCategoryValue(p) {
+  return p.department === 'accessory' ? p.type : p.category;
+}
+
 function showBrowseView() {
   document.getElementById('pos-preview-heading').textContent = 'Browse Items';
   document.getElementById('pos-browse-cats').style.display = 'flex';
@@ -1052,7 +1062,7 @@ function populateItemFields(match) {
   posState.currentLookupItem = match;
   document.getElementById('pos-item-matched-code').value = match.id;
   document.getElementById('pos-item-name').value = itemDisplayName(match);
-  document.getElementById('pos-item-category').value = match.category || '\u2014';
+  document.getElementById('pos-item-category').value = itemCategoryValue(match) || '\u2014';
   document.getElementById('pos-item-material').value = match.material || '\u2014';
   document.getElementById('pos-item-colour').value = match.shade || '\u2014';
   document.getElementById('pos-item-design').value = match.design || match.pattern || '\u2014';
@@ -1123,7 +1133,7 @@ function renderBrowseCats() {
   var products = window.PRODUCTS || [];
   var preferredOrder = ['Budget', 'Mid Range', 'Premium', 'Bridal'];
   var cats = [];
-  products.forEach(function (p) { if (p.category && cats.indexOf(p.category) === -1) cats.push(p.category); });
+  products.forEach(function (p) { var c = itemCategoryValue(p); if (c && cats.indexOf(c) === -1) cats.push(c); });
   cats.sort(function (a, b) {
     var ai = preferredOrder.indexOf(a), bi = preferredOrder.indexOf(b);
     if (ai === -1) ai = preferredOrder.length;
@@ -1144,7 +1154,7 @@ function renderBrowseCats() {
 
 function renderBrowseGrid(categoryFilter) {
   var products = window.PRODUCTS || [];
-  var filtered = (!categoryFilter || categoryFilter === 'All') ? products : products.filter(function (p) { return p.category === categoryFilter; });
+  var filtered = (!categoryFilter || categoryFilter === 'All') ? products : products.filter(function (p) { return itemCategoryValue(p) === categoryFilter; });
   if (posState.hideSoldInBrowse) filtered = filtered.filter(function (p) { return !p.sold; });
   var el = document.getElementById('pos-browse-grid');
   if (!filtered.length) {

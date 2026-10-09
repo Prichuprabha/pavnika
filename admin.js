@@ -51,7 +51,7 @@ function netOrderRevenue(o) {
 // line blank).
 function tagSubtitle(item) {
   if (item.department === 'jewellery') return item.type + (item.colour ? ' \u2014 ' + item.colour : '');
-  if (item.department === 'accessory') return item.category || 'Accessory';
+  if (item.department === 'accessory') return item.type || 'Accessory';
   var seriesTitleCase = function (s) { return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }); };
   return seriesTitleCase(item.series);
 }
@@ -63,7 +63,7 @@ function tagSubtitle(item) {
 // that showed before, since they have no material or series at all.
 function tagListSubtitle(item) {
   if (item.department === 'jewellery') return item.type + (item.colour ? ' \u2014 ' + item.colour : '');
-  if (item.department === 'accessory') return item.category || 'Accessory';
+  if (item.department === 'accessory') return item.type || 'Accessory';
   var seriesTitleCase = function (s) { return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); }); };
   return (item.material || item.design || '') + (item.series ? ' \u00B7 ' + seriesTitleCase(item.series) : '');
 }
@@ -568,7 +568,7 @@ function initSareeEditor(token) {
       return p.type + (p.colour ? ' — ' + p.colour : '');
     }
     if (p.department === 'accessory') {
-      return p.category || 'Accessory';
+      return p.type || 'Accessory';
     }
     return p.design + ' — ' + seriesTitle(p.series);
   }
@@ -1342,7 +1342,7 @@ function initSareeEditor(token) {
       document.getElementById('admin-bangle-size-fields').style.display = 'none'; // the base/size pickers are an add-mode-only convenience
       document.getElementById('admin-bangle-id-preview').style.display = 'none';
     } else {
-      document.getElementById('admin-f-acat').value = product.category || 'Artificial Flowers';
+      document.getElementById('admin-f-atype').value = product.type || 'Artificial Flowers';
       document.getElementById('admin-f-anote').value = product.note || '';
       document.getElementById('admin-f-aprice').value = product.price || '';
     }
@@ -1914,7 +1914,7 @@ function initSareeEditor(token) {
     } else {
       productData = {
         department: 'accessory',
-        category: document.getElementById('admin-f-acat').value,
+        type: document.getElementById('admin-f-atype').value,
         note: document.getElementById('admin-f-anote').value.trim(),
         price: parseInt(document.getElementById('admin-f-aprice').value, 10) || 0,
         salePrice: parseSalePriceInput(),
@@ -4598,7 +4598,7 @@ function initManualOrderView(token) {
   // name is what gets stored against the order).
   function itemDisplayName(p) {
     if (p.department === 'jewellery') return p.type + (p.colour ? ' — ' + p.colour : '');
-    if (p.department === 'accessory') return p.category || 'Accessory';
+    if (p.department === 'accessory') return p.type || 'Accessory';
     return p.material || p.design || p.id;
   }
 
