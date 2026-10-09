@@ -2904,7 +2904,10 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/JW003-1.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JW003-1.jpg",
-    "id": "JW003"
+    "id": "JW003",
+    "quantity": 5,
+    "qtyUnit": "Pcs",
+    "maxPerOrder": 2
   },
   {
     "department": "accessory",
