@@ -434,7 +434,7 @@ function initSareeEditor(token) {
   // this lets the saree grid use the page's full width. These two
   // helpers replace the old formCard.style.display toggling.
   function showSareeDrawer() {
-    formCard.style.display = 'block';
+    formCard.style.display = 'flex';
     sareeDrawerOverlay.classList.add('is-open');
   }
   function hideSareeDrawer() {
