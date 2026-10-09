@@ -2898,7 +2898,7 @@ window.PRODUCTS = [
     "colour": "Test Earring color",
     "note": "Test earring note",
     "price": 50,
-    "salePrice": null,
+    "salePrice": 25,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/JW003-1.jpg"
