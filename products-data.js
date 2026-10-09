@@ -2920,7 +2920,7 @@ window.PRODUCTS = [
     "id": "AC001",
     "quantity": 11,
     "qtyUnit": "Muzham",
-    "maxPerOrder": 11
+    "maxPerOrder": null
   },
   {
     "department": "jewellery",
