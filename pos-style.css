@@ -298,17 +298,29 @@ button:active, .pay-method:active, .seg-btn:active, .cust-list-item:active, .pos
 .pos-browse-cats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin-bottom: 10px; flex-shrink: 0; }
 .pos-browse-cat-btn { padding: 6px 12px; border: 1.5px solid var(--stone); border-radius: 999px; background: #fff; font-size: 0.7rem; font-weight: 600; cursor: pointer; color: var(--ink); }
 .pos-browse-cat-btn.active { background: var(--green-deep); color: #fff; border-color: var(--green-deep); }
-.pos-browse-dept-select {
-  padding: 6px 10px; border: 1.5px solid var(--stone); border-radius: 999px; background: #fff;
-  font-size: 0.7rem; font-weight: 600; cursor: pointer; color: var(--ink); max-width: 140px;
+
+/* One-line department picker: icon + tiny label, 4 buttons (All +
+   3 departments) side by side with no wrapping -- replaces the old
+   3-dropdown layout, which stacked vertically and ran off a 4:3 POS
+   screen. flex: 1 on each button keeps all 4 the same width and fills
+   the row evenly on any screen size without wrapping. */
+.pos-browse-cats { flex-wrap: nowrap; gap: 4px; }
+.pos-browse-dept-icon-btn {
+  flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 7px 2px 5px; border: 1.5px solid var(--stone); border-radius: 10px; background: #fff;
+  cursor: pointer; color: var(--ink);
 }
-.pos-browse-dept-select:focus { border-color: var(--green-deep); outline: none; }
-/* A dropdown with a non-placeholder value picked is the one live filter
-   -- the "is-active" class (toggled in JS on change, since a <select>'s
-   chosen value isn't reachable with a plain CSS attribute selector)
-   gives it the same treatment as the All button for a consistent visual
-   cue about which filter is currently applied. */
-.pos-browse-dept-select.is-active { background: var(--green-deep); color: #fff; border-color: var(--green-deep); }
+.pos-browse-dept-icon-btn.active { background: var(--green-deep); color: #fff; border-color: var(--green-deep); }
+.pos-browse-dept-icon { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; }
+.pos-browse-dept-icon svg { width: 100%; height: 100%; }
+.pos-browse-dept-label { font-size: 0.62rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+/* Category sub-row -- only shown once a department icon is picked, so
+   the default view stays a single icon row. Wraps/scrolls on its own;
+   it never needs to coexist with the dropdown layout it replaced. */
+.pos-browse-subcats { display: flex; gap: 6px; flex-wrap: wrap; justify-content: center; margin: 0 0 10px; flex-shrink: 0; }
+.pos-browse-subcat-chip { padding: 5px 10px; border: 1.5px solid var(--stone); border-radius: 999px; background: #fff; font-size: 0.68rem; font-weight: 600; cursor: pointer; color: var(--ink); }
+.pos-browse-subcat-chip.active { background: var(--gold); color: #fff; border-color: var(--gold); }
 .pos-browse-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(90px, calc(50% - 4px)), 1fr)); justify-content: center; grid-auto-rows: min-content; gap: 8px; flex: 1; min-height: 0; align-content: start; overflow-y: auto; }
 .pos-browse-tile { border: 1px solid var(--stone); border-radius: 8px; overflow: hidden; cursor: pointer; background: #fff; text-align: center; flex-shrink: 0; }
 .pos-browse-tile img { width: 100%; height: 68px; object-fit: cover; display: block; }

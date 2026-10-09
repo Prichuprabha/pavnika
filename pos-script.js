@@ -1049,6 +1049,10 @@ function itemCategoryValue(p) {
 function showBrowseView() {
   document.getElementById('pos-preview-heading').textContent = 'Browse Items';
   document.getElementById('pos-browse-cats').style.display = 'flex';
+  // Only show the category sub-row again if a department was actually
+  // picked -- otherwise it should stay hidden, same as right after
+  // renderBrowseCats() first runs.
+  document.getElementById('pos-browse-subcats').style.display = posState.browseDeptFilter ? 'flex' : 'none';
   document.getElementById('pos-browse-grid').style.display = 'grid';
   document.getElementById('pos-selected-preview').style.display = 'none';
 }
@@ -1056,6 +1060,7 @@ function showBrowseView() {
 function showSelectedView() {
   document.getElementById('pos-preview-heading').textContent = 'Preview';
   document.getElementById('pos-browse-cats').style.display = 'none';
+  document.getElementById('pos-browse-subcats').style.display = 'none';
   document.getElementById('pos-browse-grid').style.display = 'none';
   document.getElementById('pos-selected-preview').style.display = 'flex';
 }
@@ -1135,65 +1140,102 @@ function clearItemFields() {
 // -- which mixed Saree's price-tier categories, Jewellery's types and
 // Accessory's types into a single undifferentiated list (and, since
 // Jewellery has no .category at all, its items never even produced a
-// chip). Replaced with one dropdown per department, each listing that
-// department's own fixed category/type list, so staff can go straight to
-// "Jewellery > Earrings" instead of hunting through a jumbled chip row.
+// chip). First replaced with one dropdown per department -- but 3 full
+// dropdowns stacked vertically didn't fit a 4:3 POS screen without
+// wrapping. Now: one row of icon buttons (All + one per department,
+// always a single line, however narrow the screen) picks the
+// department, and a second row of small text chips -- shown only once a
+// department is picked -- narrows to that department's own
+// category/type list. Icons are plain SVGs, not photos, so there's
+// nothing to load or theme per department.
 var POS_BROWSE_DEPTS = [
-  { dept: 'saree', select: 'pos-browse-saree-select', label: 'Saree', options: ['Budget', 'Mid Range', 'Premium', 'Bridal'] },
-  { dept: 'jewellery', select: 'pos-browse-jewellery-select', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Haarams', 'Necklace'] },
-  { dept: 'accessory', select: 'pos-browse-accessory-select', label: 'Accessories', options: ['Artificial Flowers', 'Hair Adornments', 'Saree Essentials', 'Potli & Bags', 'Gift Collections'] }
+  {
+    dept: 'saree', label: 'Saree', options: ['Budget', 'Mid Range', 'Premium', 'Bridal'],
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7l8 5-1 2-7-3.5V15a1 1 0 0 1-2 0v-4.5L4 14l-1-2 8-5V5.73A2 2 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>'
+  },
+  {
+    dept: 'jewellery', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Haarams', 'Necklace'],
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg>'
+  },
+  {
+    dept: 'accessory', label: 'Accessories', options: ['Artificial Flowers', 'Hair Adornments', 'Saree Essentials', 'Potli & Bags', 'Gift Collections'],
+    icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>'
+  }
 ];
+
+// A product's department -- a blank/missing .department means Saree
+// (Saree products never got an explicit department value written to
+// them; only Jewellery and Accessory do). Every other department check
+// in this codebase (script.js, admin.js) already normalizes the same
+// way -- this filter needs to too, or every actual Saree product (which
+// has department === undefined, never the literal string 'saree')
+// silently fails p.department === 'saree' and the Saree dropdown shows
+// nothing.
+function productDept(p) {
+  return p.department || 'saree';
+}
 
 // A department's own category/type field -- Saree uses .category (its
 // Budget/Mid Range/Premium/Bridal price tier), Jewellery and Accessory
 // both use .type.
 function deptCategoryValue(p) {
-  return p.department === 'saree' ? p.category : p.type;
+  return productDept(p) === 'saree' ? p.category : p.type;
 }
 
 function renderBrowseCats() {
   var el = document.getElementById('pos-browse-cats');
-  var html = '<button type="button" class="pos-browse-cat-btn active" data-all="1">All</button>';
+  var html = '<button type="button" class="pos-browse-dept-icon-btn active" data-all="1" title="All">' +
+    '<span class="pos-browse-dept-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span>' +
+    '<span class="pos-browse-dept-label">All</span></button>';
   POS_BROWSE_DEPTS.forEach(function (d) {
-    html += '<select class="pos-browse-dept-select" id="' + d.select + '" data-dept="' + d.dept + '">' +
-      '<option value="" disabled selected>' + d.label + '</option>' +
-      '<option value="__all__">All ' + d.label + '</option>' +
-      d.options.map(function (o) { return '<option value="' + o + '">' + o + '</option>'; }).join('') +
-      '</select>';
+    html += '<button type="button" class="pos-browse-dept-icon-btn" data-dept="' + d.dept + '" title="' + d.label + '">' +
+      '<span class="pos-browse-dept-icon">' + d.icon + '</span>' +
+      '<span class="pos-browse-dept-label">' + d.label + '</span></button>';
   });
   el.innerHTML = html;
 
-  var allBtn = el.querySelector('.pos-browse-cat-btn');
-  allBtn.addEventListener('click', function () {
-    allBtn.classList.add('active');
-    POS_BROWSE_DEPTS.forEach(function (d) {
-      var sel = document.getElementById(d.select);
-      sel.selectedIndex = 0;
-      sel.classList.remove('is-active');
+  var subcatsEl = document.getElementById('pos-browse-subcats');
+  var allBtn = el.querySelector('[data-all="1"]');
+  var deptBtns = el.querySelectorAll('[data-dept]');
+
+  function setActiveDeptBtn(dept) {
+    allBtn.classList.toggle('active', !dept);
+    deptBtns.forEach(function (btn) { btn.classList.toggle('active', btn.getAttribute('data-dept') === dept); });
+  }
+
+  function renderSubcats(dept) {
+    var def = POS_BROWSE_DEPTS.filter(function (d) { return d.dept === dept; })[0];
+    if (!def) { subcatsEl.style.display = 'none'; subcatsEl.innerHTML = ''; return; }
+    subcatsEl.innerHTML = '<button type="button" class="pos-browse-subcat-chip active" data-cat="__all__">All ' + def.label + '</button>' +
+      def.options.map(function (o) { return '<button type="button" class="pos-browse-subcat-chip" data-cat="' + o + '">' + o + '</button>'; }).join('');
+    subcatsEl.style.display = 'flex';
+    subcatsEl.querySelectorAll('.pos-browse-subcat-chip').forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        subcatsEl.querySelectorAll('.pos-browse-subcat-chip').forEach(function (c) { c.classList.remove('active'); });
+        chip.classList.add('active');
+        var cat = chip.getAttribute('data-cat');
+        posState.browseCategoryFilter = cat === '__all__' ? null : cat;
+        renderBrowseGrid(posState.browseDeptFilter, posState.browseCategoryFilter);
+      });
     });
+  }
+
+  allBtn.addEventListener('click', function () {
+    setActiveDeptBtn(null);
     posState.browseDeptFilter = null;
     posState.browseCategoryFilter = null;
+    renderSubcats(null);
     renderBrowseGrid(null, null);
   });
 
-  POS_BROWSE_DEPTS.forEach(function (d) {
-    document.getElementById(d.select).addEventListener('change', function (e) {
-      allBtn.classList.remove('active');
-      e.target.classList.add('is-active');
-      // Only one department filter is active at a time -- picking a
-      // value in one dropdown resets the other two back to their
-      // placeholder, so it's always clear which single filter is live.
-      POS_BROWSE_DEPTS.forEach(function (other) {
-        if (other.dept !== d.dept) {
-          var sel = document.getElementById(other.select);
-          sel.selectedIndex = 0;
-          sel.classList.remove('is-active');
-        }
-      });
-      var val = e.target.value;
-      posState.browseDeptFilter = d.dept;
-      posState.browseCategoryFilter = val === '__all__' ? null : val;
-      renderBrowseGrid(posState.browseDeptFilter, posState.browseCategoryFilter);
+  deptBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var dept = btn.getAttribute('data-dept');
+      setActiveDeptBtn(dept);
+      posState.browseDeptFilter = dept;
+      posState.browseCategoryFilter = null;
+      renderSubcats(dept);
+      renderBrowseGrid(dept, null);
     });
   });
 }
@@ -1201,7 +1243,7 @@ function renderBrowseCats() {
 function renderBrowseGrid(deptFilter, categoryFilter) {
   var products = window.PRODUCTS || [];
   var filtered = !deptFilter ? products : products.filter(function (p) {
-    return p.department === deptFilter && (!categoryFilter || deptCategoryValue(p) === categoryFilter);
+    return productDept(p) === deptFilter && (!categoryFilter || deptCategoryValue(p) === categoryFilter);
   });
   if (posState.hideSoldInBrowse) filtered = filtered.filter(function (p) { return !p.sold; });
   var el = document.getElementById('pos-browse-grid');
