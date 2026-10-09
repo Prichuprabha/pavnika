@@ -4706,13 +4706,14 @@ function initManualOrderView(token) {
       pickedWrap.innerHTML = '<p style="font-size:0.82rem; opacity:0.6; margin:0;">No sarees added yet.</p>';
     } else {
       pickedWrap.innerHTML = pickedItems.map(function (it, i) {
+        var atStockCap = it.qty >= it.stockCap;
         return '<div style="display:flex; align-items:center; gap:10px; padding:8px 10px; border:1px solid var(--stone); border-radius:6px; margin-bottom:6px; font-size:0.82rem;">' +
           (it.image ? '<img src="' + it.image + '" style="width:34px; height:44px; object-fit:cover; border-radius:3px; flex-shrink:0;">' : '') +
           '<span style="flex:1; font-weight:600; color:var(--green-deep);">' + it.name + ' — ' + it.id + '</span>' +
           '<div class="admin-mo-qty-stepper">' +
             '<button type="button" class="admin-mo-qty-minus" data-i="' + i + '">&#8722;</button>' +
             '<span>' + it.qty + '</span>' +
-            '<button type="button" class="admin-mo-qty-plus" data-i="' + i + '">+</button>' +
+            '<button type="button" class="admin-mo-qty-plus" data-i="' + i + '"' + (atStockCap ? ' disabled title="Only ' + it.stockCap + ' in stock"' : '') + '>+</button>' +
           '</div>' +
           '<span style="color:var(--gold); font-weight:700; min-width:80px; text-align:right;">AED ' + formatAED(it.price) + '</span>' +
           '<button type="button" class="admin-mo-remove-item" data-i="' + i + '" style="background:none; border:none; color:#B8142A; cursor:pointer; font-size:0.95rem;">&#10005;</button>' +
@@ -4732,7 +4733,13 @@ function initManualOrderView(token) {
     }
     var plusBtn = e.target.closest('.admin-mo-qty-plus');
     if (plusBtn) {
-      pickedItems[Number(plusBtn.getAttribute('data-i'))].qty += 1;
+      var plusIdx = Number(plusBtn.getAttribute('data-i'));
+      var plusItem = pickedItems[plusIdx];
+      // Capped at stockCap (the item's real stock, captured when it was
+      // added -- see addProductToOrder) so staff can't quietly key in
+      // more units than actually exist, same limit the website and POS
+      // already enforce.
+      if (plusItem.qty < plusItem.stockCap) plusItem.qty += 1;
       renderPickedItems();
       return;
     }
@@ -4760,15 +4767,23 @@ function initManualOrderView(token) {
 
   function addProductToOrder(product, qty) {
     qty = Math.max(1, qty || 1);
+    // Stock cap -- same reasoning as POS's own item picker (admin staff
+    // can still sell beyond the website's maxPerOrder, but not beyond
+    // what's actually left in stock). A one-of-a-kind item (no
+    // .quantity field at all) is capped at 1, same as everywhere else
+    // on the site.
+    var hasQty = product.quantity !== null && product.quantity !== undefined && !isNaN(Number(product.quantity));
+    var stockCap = hasQty ? Math.max(0, Number(product.quantity)) : 1;
     var existing = pickedItems.find(function (it) { return it.id === product.id; });
     if (existing) {
-      existing.qty += qty;
+      existing.qty = Math.min(existing.qty + qty, existing.stockCap);
     } else {
       pickedItems.push({
         id: product.id,
         name: itemDisplayName(product),
         price: effectivePrice(product),
-        qty: qty,
+        qty: Math.min(qty, stockCap),
+        stockCap: stockCap,
         series: product.series,
         type: product.type,
         sareeType: product.sareeType,
