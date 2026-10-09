@@ -2911,7 +2911,7 @@ window.PRODUCTS = [
     "category": "Artificial Flowers",
     "note": "Test note for Aritficial flower",
     "price": 100,
-    "salePrice": null,
+    "salePrice": 80,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/AC001-1.jpg"
