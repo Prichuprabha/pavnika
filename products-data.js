@@ -2911,13 +2911,16 @@ window.PRODUCTS = [
     "type": "Artificial Flowers",
     "note": "Test note for Aritficial flower",
     "price": 100,
-    "salePrice": null,
+    "salePrice": 45,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/AC001-1.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
-    "id": "AC001"
+    "id": "AC001",
+    "quantity": 11,
+    "qtyUnit": "Muzham",
+    "maxPerOrder": 11
   },
   {
     "department": "jewellery",
