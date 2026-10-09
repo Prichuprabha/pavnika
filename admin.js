@@ -1,5 +1,13 @@
 var ADMIN_TOKEN_KEY = 'pavnika_admin_token';
 
+// Same formatting as the live site's own formatAED (script.js) --
+// thousands-separated with 2 decimals, e.g. 1234 -> "1,234.00". Used
+// everywhere a price is DISPLAYED (never for an editable form input's
+// raw value, which stays plain numeric).
+function formatAED(n) {
+  return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 // The price a customer actually pays for this saree right now — a
 // valid sale price if one is set, otherwise the regular price. Used
 // anywhere a saree's price is shown or auto-filled in admin, so a
@@ -110,7 +118,7 @@ function buildPendingFollowUpMessage(order, items) {
 
   var lines = shown.map(function (it) {
     var qty = it.qty && it.qty > 1 ? ' \u00d7 ' + it.qty : '';
-    var price = Number(it.price || 0).toFixed(2);
+    var price = formatAED(it.price || 0);
     return '\u2014 ' + (it.name || it.id || 'Item') + qty + ' (AED ' + price + ')';
   });
   if (extra > 0) lines.push('\u2014 +' + extra + ' more');
@@ -543,12 +551,12 @@ function initSareeEditor(token) {
     if (p.salePrice) {
       var pct = Math.round((1 - p.salePrice / p.price) * 100);
       return '<div class="admin-price-row">' +
-        '<span class="admin-price-was">AED ' + Number(p.price).toFixed(2) + '</span>' +
-        '<span class="admin-price-now">AED ' + Number(p.salePrice).toFixed(2) + '</span>' +
+        '<span class="admin-price-was">AED ' + formatAED(p.price) + '</span>' +
+        '<span class="admin-price-now">AED ' + formatAED(p.salePrice) + '</span>' +
         '<span class="admin-price-pct">' + pct + '% off</span>' +
       '</div>';
     }
-    return '<div style="color:var(--gold); font-weight:700; margin-bottom:4px;">AED ' + Number(p.price || 0).toFixed(2) + '</div>';
+    return '<div style="color:var(--gold); font-weight:700; margin-bottom:4px;">AED ' + formatAED(p.price || 0) + '</div>';
   }
 
   // Sarees identify themselves by design + series; Jewellery and
@@ -1363,8 +1371,15 @@ function initSareeEditor(token) {
   uploadSelectedBtn.addEventListener('click', uploadSelectedPendingPhotos);
 
   /* ----- CSV download ----- */
+  // Colour/Note/Quantity/Unit/Max Per Order were added to the product
+  // schema in an earlier (quantity-feature) round, but were never added
+  // to the CSV columns here -- meaning every CSV export/import round
+  // trip silently dropped them for ANY product that had them, not just
+  // the new jewellery department. Added at the end so existing column
+  // positions are unaffected (parseCsv reads by header name, not index).
   var CSV_COLUMNS = ['Unique ID', 'Department', 'Series', 'Category', 'Type', 'Saree Type', 'Pattern', 'Design', 'Cost AED', 'Sale Price AED', 'Sold',
-    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material', 'Shade', 'Occasions'];
+    'Image_1', 'Image_2', 'Image_3', 'Image_4', 'Image_5', 'Image_6', 'Image_7', 'Video', 'Material', 'Shade', 'Occasions',
+    'Colour', 'Note', 'Quantity', 'Unit', 'Max Per Order'];
 
   function csvEscape(val) {
     val = val === undefined || val === null ? '' : String(val);
@@ -1384,7 +1399,11 @@ function initSareeEditor(token) {
         p.sold ? 'TRUE' : 'FALSE',
         images[0] || '', images[1] || '', images[2] || '', images[3] || '', images[4] || '', images[5] || '', images[6] || '',
         '', p.material || '', p.shade || 'Others',
-        (p.occasions || []).join('|')
+        (p.occasions || []).join('|'),
+        p.colour || '', p.note || '',
+        (p.quantity !== null && p.quantity !== undefined) ? p.quantity : '',
+        p.qtyUnit || '',
+        p.maxPerOrder || ''
       ].map(csvEscape);
       rows.push(row.join(','));
     });
@@ -1480,6 +1499,13 @@ function initSareeEditor(token) {
     var price = parseInt(row['Cost AED'], 10) || 0;
     var salePriceRaw = parseInt(row['Sale Price AED'], 10);
     var salePrice = (salePriceRaw > 0 && salePriceRaw < price) ? salePriceRaw : null;
+    // Quantity is only set when the column has a real value -- an empty
+    // cell means "one-of-a-kind item, no quantity tracked at all",
+    // matching how the live form's "Sold in limited quantity" checkbox
+    // works (admin.js lines ~1909-1916: unchecked -> quantity: null).
+    var quantityRaw = (row['Quantity'] || '').trim();
+    var hasQuantity = quantityRaw !== '';
+    var maxPerOrderRaw = (row['Max Per Order'] || '').trim();
     return {
       id: (row['Unique ID'] || '').trim().toUpperCase(),
       department: (row['Department'] || 'saree').trim().toLowerCase() === 'saree' ? undefined : (row['Department'] || '').trim().toLowerCase(),
@@ -1491,11 +1517,16 @@ function initSareeEditor(token) {
       design: row['Design'] || '',
       material: row['Material'] || '',
       shade: row['Shade'] || 'Others',
+      colour: row['Colour'] || '',
+      note: row['Note'] || '',
       price: price,
       salePrice: salePrice,
       sold: soldRaw === 'true' || soldRaw === '1' || soldRaw === 'yes',
       occasions: occ.valid,
       _unknownOccasions: occ.unknown,
+      quantity: hasQuantity ? (parseInt(quantityRaw, 10) || 0) : null,
+      qtyUnit: hasQuantity ? (row['Unit'] || 'pcs') : null,
+      maxPerOrder: (hasQuantity && maxPerOrderRaw) ? (parseInt(maxPerOrderRaw, 10) || null) : null,
       images: images,
       image: images[0] || ''
     };
@@ -1528,7 +1559,8 @@ function initSareeEditor(token) {
       var invalidRows = [];
 
       function productsEqual(a, b) {
-        var fields = ['series', 'category', 'type', 'sareeType', 'pattern', 'design', 'price', 'sold', 'salePrice'];
+        var fields = ['series', 'category', 'type', 'sareeType', 'pattern', 'design', 'price', 'sold', 'salePrice',
+          'material', 'shade', 'colour', 'note', 'quantity', 'qtyUnit', 'maxPerOrder'];
         for (var i = 0; i < fields.length; i++) {
           if ((a[fields[i]] || '') !== (b[fields[i]] || '')) return false;
         }
@@ -2727,7 +2759,7 @@ function initStatsDashboard(token) {
           '<span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') +
             '<br><span style="font-size:0.7rem; opacity:0.6;">' + recentOrderStatusLabel(o.status) + ' &middot; ' + dateLabel + '</span>' +
           '</span>' +
-          '<span class="rank-value">AED ' + Number(o.total || 0).toFixed(2) + '</span>' +
+          '<span class="rank-value">AED ' + formatAED(o.total || 0) + '</span>' +
         '</div>';
       },
       'No orders yet.'
@@ -3611,7 +3643,7 @@ function initOrdersView(token) {
             '<p class="ome">' + (o.customer_email || '') + '</p>' +
           '</div>' +
           '<div class="admin-order-mobile-right">' +
-            '<p class="omt">AED ' + Number(o.total || 0).toFixed(2) + '</p>' +
+            '<p class="omt">AED ' + formatAED(o.total || 0) + '</p>' +
             '<p class="omp">' + (o.payment_method || '—') + '</p>' +
             '<span class="admin-order-mobile-badge status-' + (o.status || 'pending') + '">' + statusLabel(o.status) + '</span>' +
           '</div>' +
@@ -3668,13 +3700,13 @@ function initOrdersView(token) {
     var html =
       '<p style="margin:0 0 4px;"><strong>' + (order.order_number || order.id) + '</strong> \u2014 ' + (order.customer_name || 'Walk-in Customer') + '</p>' +
       '<p style="margin:0 0 4px; opacity:0.75;">Items: ' + itemsSummary + '</p>' +
-      '<p style="margin:0 0 12px; opacity:0.75;">Total: AED ' + Number(order.total || 0).toFixed(2) + '</p>';
+      '<p style="margin:0 0 12px; opacity:0.75;">Total: AED ' + formatAED(order.total || 0) + '</p>';
 
     if (order.gift_card_credit > 0) {
       html +=
         '<div style="background:#FBEAEA; border-radius:8px; padding:12px; margin-bottom:8px;">' +
           '<p style="margin:0 0 6px; font-weight:700; color:#B8142A;">This sale has an exchange/return on record</p>' +
-          '<p style="margin:0 0 6px;">It credited AED ' + Number(order.gift_card_credit).toFixed(2) + ' to this customer\u2019s gift card. Deleting this sale will also delete that return record (cascading automatically).</p>' +
+          '<p style="margin:0 0 6px;">It credited AED ' + formatAED(order.gift_card_credit) + ' to this customer\u2019s gift card. Deleting this sale will also delete that return record (cascading automatically).</p>' +
           '<p style="margin:0; font-weight:700;">Important: the customer\u2019s actual gift card balance will NOT be reversed. They keep the credit \u2014 only the record explaining where it came from will be gone.</p>' +
         '</div>';
     } else {
@@ -3756,7 +3788,7 @@ function initOrdersView(token) {
             '<p class="omc">' + (o.customer_name || '\u2014') + '</p>' +
           '</div>' +
           '<div class="admin-order-mobile-right">' +
-            '<p class="omt">AED ' + Number(o.total || 0).toFixed(2) + '</p>' +
+            '<p class="omt">AED ' + formatAED(o.total || 0) + '</p>' +
             '<span class="admin-order-mobile-badge" style="' + shopStatusBadgeColor(o.status) + '">' + o.status + '</span>' +
           '</div>' +
           '<span class="admin-order-mobile-chevron">&rsaquo;</span>' +
@@ -3968,7 +4000,7 @@ function initOrdersView(token) {
       return '<label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EADFD6; font-size:0.82rem; cursor:pointer;">' +
         '<input type="checkbox" class="admin-return-item-checkbox" data-item-id="' + it.id + '" data-item-price="' + (Number(it.price) || 0) + '">' +
         '<span style="flex:1;">' + (it.id || '') + ' \u2014 ' + (it.name || it.id || 'Item') + '</span>' +
-        '<span style="font-weight:600;">AED ' + Number(it.price || 0).toFixed(2) + '</span>' +
+        '<span style="font-weight:600;">AED ' + formatAED(it.price || 0) + '</span>' +
       '</label>';
     }).join('');
 
@@ -3978,7 +4010,7 @@ function initOrdersView(token) {
         order.returns.map(function (r) {
           var names = (r.items_returned || []).map(function (it) { return it.id || it.name; }).join(', ');
           return '<div style="font-size:0.72rem; opacity:0.75; padding:4px 0;">' +
-            new Date(r.created_at).toLocaleDateString() + ' \u2014 ' + names + ' \u2014 AED ' + Number(r.refund_amount || 0).toFixed(2) +
+            new Date(r.created_at).toLocaleDateString() + ' \u2014 ' + names + ' \u2014 AED ' + formatAED(r.refund_amount || 0) +
             ' via ' + (RETURN_METHOD_LABEL[r.refund_method] || r.refund_method) +
             (r.processed_by ? ' (' + r.processed_by + ')' : '') +
           '</div>';
@@ -4020,7 +4052,7 @@ function initOrdersView(token) {
     var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
     var ratio = subtotal > 0 ? (Number(order.total) || 0) / subtotal : 1;
     var estimate = Math.round(listValue * ratio * 100) / 100;
-    estimateEl.textContent = 'Estimated refund: AED ' + estimate.toFixed(2) + (ratio !== 1 ? ' (after order discount)' : '');
+    estimateEl.textContent = 'Estimated refund: AED ' + formatAED(estimate) + (ratio !== 1 ? ' (after order discount)' : '');
     submitBtn.disabled = false;
   }
 
@@ -4039,7 +4071,7 @@ function initOrdersView(token) {
       return '<div class="admin-order-drawer-item">' +
         (img ? '<img src="' + img + '">' : '') +
         '<span style="flex:1;">' + (it.id ? it.id + ' \u2014 ' : '') + (it.name || it.id || 'Item') + (it.qty && it.qty > 1 ? ' &times; ' + it.qty : '') + '</span>' +
-        '<span style="font-weight:600;">AED ' + Number(it.price || 0).toFixed(2) + '</span>' +
+        '<span style="font-weight:600;">AED ' + formatAED(it.price || 0) + '</span>' +
       '</div>';
     }).join('') || '<p style="opacity:0.6;">No items on record.</p>';
 
@@ -4055,9 +4087,9 @@ function initOrdersView(token) {
       '<h4>Items</h4>' + itemsHtml +
 
       '<h4>Order Summary</h4>' +
-      '<div class="admin-order-drawer-totals-row"><span>Subtotal</span><span>AED ' + subtotal.toFixed(2) + '</span></div>' +
-      (discount > 0 ? '<div class="admin-order-drawer-totals-row"><span>Discount' + (order.promo_code ? ' (' + order.promo_code + ')' : '') + '</span><span>-AED ' + discount.toFixed(2) + '</span></div>' : '') +
-      '<div class="admin-order-drawer-totals-row total"><span>Total</span><span>AED ' + Number(order.total || 0).toFixed(2) + '</span></div>' +
+      '<div class="admin-order-drawer-totals-row"><span>Subtotal</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
+      (discount > 0 ? '<div class="admin-order-drawer-totals-row"><span>Discount' + (order.promo_code ? ' (' + order.promo_code + ')' : '') + '</span><span>-AED ' + formatAED(discount) + '</span></div>' : '') +
+      '<div class="admin-order-drawer-totals-row total"><span>Total</span><span>AED ' + formatAED(order.total || 0) + '</span></div>' +
 
       '<h4>Payment Method</h4>' +
       (isShop
@@ -4163,7 +4195,7 @@ function initOrdersView(token) {
               liveOrder.returns = (liveOrder.returns || []).concat([result.data.returnRecord]);
               openOrderDrawer(liveOrder);
             }
-            showDrawerStatus('success', 'Return processed \u2014 AED ' + Number(result.data.refundAmount || 0).toFixed(2) + ' refunded via ' + RETURN_METHOD_LABEL[method] + '.');
+            showDrawerStatus('success', 'Return processed \u2014 AED ' + formatAED(result.data.refundAmount || 0) + ' refunded via ' + RETURN_METHOD_LABEL[method] + '.');
             renderSummary();
             renderTable();
           })
@@ -4453,8 +4485,8 @@ function initManualOrderView(token) {
         knownGiftCardBalance = (data.found && Number(data.balance) > 0) ? Number(data.balance) : 0;
         if (knownGiftCardBalance > 0) {
           giftCardCard.style.display = 'block';
-          giftCardBalanceText.textContent = 'This customer has AED ' + knownGiftCardBalance.toFixed(2) + ' in store credit.';
-          giftCardCheckboxLabel.textContent = 'Apply available store credit (up to AED ' + knownGiftCardBalance.toFixed(2) + ')';
+          giftCardBalanceText.textContent = 'This customer has AED ' + formatAED(knownGiftCardBalance) + ' in store credit.';
+          giftCardCheckboxLabel.textContent = 'Apply available store credit (up to AED ' + formatAED(knownGiftCardBalance) + ')';
         } else {
           giftCardCard.style.display = 'none';
           applyGiftCardCheckbox.checked = false;
@@ -4571,7 +4603,7 @@ function initManualOrderView(token) {
   }
 
   function sareeResultLabel(p) {
-    return itemDisplayName(p) + ' — ' + p.id + ' — AED ' + effectivePrice(p).toFixed(2);
+    return itemDisplayName(p) + ' — ' + p.id + ' — AED ' + formatAED(effectivePrice(p));
   }
 
   function renderSareeResults(query) {
@@ -4601,7 +4633,7 @@ function initManualOrderView(token) {
             '<div class="sname">' + itemDisplayName(p) + '</div>' +
             '<div class="smeta">' + p.id + (p.pattern ? ' · ' + p.pattern : '') + '</div>' +
           '</div>' +
-          '<span class="sprice">AED ' + effectivePrice(p).toFixed(2) + '</span>' +
+          '<span class="sprice">AED ' + formatAED(effectivePrice(p)) + '</span>' +
         '</div>';
       }).join('');
       sareeResultsEl.__matches = matches;
@@ -4663,10 +4695,10 @@ function initManualOrderView(token) {
   function renderTotals() {
     var t = computeTotals();
     totalPreview.innerHTML =
-      '<div style="display:flex; justify-content:space-between; padding:2px 0;"><span>Subtotal</span><span>AED ' + t.subtotal.toFixed(2) + '</span></div>' +
-      (t.discountAmount > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Discount</span><span>-AED ' + t.discountAmount.toFixed(2) + '</span></div>' : '') +
-      (t.giftCardEstimate > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Store credit</span><span>-AED ' + t.giftCardEstimate.toFixed(2) + '</span></div>' : '') +
-      '<div style="display:flex; justify-content:space-between; padding:6px 0 0; margin-top:4px; border-top:1px solid var(--stone); font-weight:700; color:var(--green-deep);"><span>Total</span><span>AED ' + t.total.toFixed(2) + '</span></div>';
+      '<div style="display:flex; justify-content:space-between; padding:2px 0;"><span>Subtotal</span><span>AED ' + formatAED(t.subtotal) + '</span></div>' +
+      (t.discountAmount > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Discount</span><span>-AED ' + formatAED(t.discountAmount) + '</span></div>' : '') +
+      (t.giftCardEstimate > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Store credit</span><span>-AED ' + formatAED(t.giftCardEstimate) + '</span></div>' : '') +
+      '<div style="display:flex; justify-content:space-between; padding:6px 0 0; margin-top:4px; border-top:1px solid var(--stone); font-weight:700; color:var(--green-deep);"><span>Total</span><span>AED ' + formatAED(t.total) + '</span></div>';
   }
 
   function renderPickedItems() {
@@ -4682,7 +4714,7 @@ function initManualOrderView(token) {
             '<span>' + it.qty + '</span>' +
             '<button type="button" class="admin-mo-qty-plus" data-i="' + i + '">+</button>' +
           '</div>' +
-          '<span style="color:var(--gold); font-weight:700; min-width:80px; text-align:right;">AED ' + Number(it.price).toFixed(2) + '</span>' +
+          '<span style="color:var(--gold); font-weight:700; min-width:80px; text-align:right;">AED ' + formatAED(it.price) + '</span>' +
           '<button type="button" class="admin-mo-remove-item" data-i="' + i + '" style="background:none; border:none; color:#B8142A; cursor:pointer; font-size:0.95rem;">&#10005;</button>' +
         '</div>';
       }).join('');
@@ -4790,7 +4822,7 @@ function initManualOrderView(token) {
         '<div class="mbt-info">' +
           '<div class="mbt-code">' + p.id + '</div>' +
           '<div class="mbt-name">' + itemDisplayName(p) + '</div>' +
-          (p.sold ? '<div class="mbt-sold-tag">Sold</div>' : '<div class="mbt-price">AED ' + effectivePrice(p).toFixed(0) + '</div>') +
+          (p.sold ? '<div class="mbt-sold-tag">Sold</div>' : '<div class="mbt-price">AED ' + Math.round(effectivePrice(p)).toLocaleString() + '</div>') +
         '</div>' +
       '</div>';
     }).join('');
@@ -4899,7 +4931,7 @@ function initManualOrderView(token) {
         }
         var successMsg = 'Order #' + result.data.orderNumber + ' created and confirmation email sent to ' + email + '.';
         if (result.data.giftCardApplied > 0) {
-          successMsg += ' AED ' + Number(result.data.giftCardApplied).toFixed(2) + ' store credit was applied.';
+          successMsg += ' AED ' + formatAED(result.data.giftCardApplied) + ' store credit was applied.';
         } else if (result.data.giftCardNote) {
           successMsg += ' Note: ' + result.data.giftCardNote;
         }

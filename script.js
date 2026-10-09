@@ -498,7 +498,6 @@ function nonSareeCardHTML(p) {
       '<div class="product-info">' +
         '<span class="p-design">' + namePart + '</span>' +
         '<span class="p-meta">' + (p.department === 'jewellery' ? 'Fashion jewellery' : '') + (p.note ? (p.department === 'jewellery' ? ' · ' : '') + p.note : '') + '</span>' +
-        pricingHtml +
         (isGroup ?
           '<span class="p-size-hint">' +
             '<span class="p-size-hint-icon">' +
@@ -514,6 +513,7 @@ function nonSareeCardHTML(p) {
             '<span class="p-size-hint-chevron">&rsaquo;</span>' +
           '</span>'
           : '') +
+        pricingHtml +
       '</div>' +
     '</div>'
   );

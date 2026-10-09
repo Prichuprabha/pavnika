@@ -505,6 +505,8 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
   border: 1px solid var(--stone);
   border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .wl-card img.wl-item-img { width: 100%; aspect-ratio: 3/4; object-fit: cover; display: block; cursor: pointer; }
 .wl-sold-ribbon {
@@ -543,9 +545,14 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
 }
 .wl-trash svg { width: 13px; height: 13px; }
 .wl-trash:hover { background: #B8142A; }
-.wl-info { padding: 10px 12px; }
+.wl-info { padding: 10px 12px; display: flex; flex-direction: column; flex: 1; }
 .wl-name { font-size: 0.82rem; font-weight: 600; color: var(--green-deep); display: block; }
-.wl-price { font-size: 0.82rem; color: var(--gold); font-weight: 700; margin-top: 3px; display: block; }
+.wl-price {
+  font-size: 0.82rem; color: var(--gold); font-weight: 700; margin-top: auto; display: block;
+  /* pushes price+Add to Cart to the bottom of the card, regardless of
+     how many lines the name wraps to -- keeps every card in a row level */
+  padding-top: 3px;
+}
 .wl-add-btn {
   display: block;
   width: 100%;
@@ -1934,12 +1941,25 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   align-items: center;
   gap: 8px;
   align-self: stretch;
-  margin-top: 8px;
+  /* The size hint now comes before the price in the markup (so it reads
+     above the price) but the pinned-to-bottom group is still "size hint
+     + price" together — the auto margin moves here, from .p-price, so
+     the whole group is pushed down as one unit regardless of how many
+     lines the title wraps to. */
+  margin-top: auto;
   padding: 7px 10px;
   background: var(--ivory-deep);
   border: 1px solid var(--stone);
   border-radius: 10px;
   color: var(--ink);
+}
+/* Cancel the price's own margin-top:auto when it directly follows the
+   size hint, so the two don't each grab separate auto-margin space
+   (which would add an uneven gap between them) — a small fixed gap
+   instead. */
+.product-info .p-size-hint + .p-price,
+.product-info .p-size-hint + .p-price-row {
+  margin-top: 8px;
 }
 .product-info .p-size-hint-icon {
   flex: none;

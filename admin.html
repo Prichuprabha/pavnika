@@ -11,7 +11,7 @@
 <meta name="theme-color" content="#3C1223">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=252">
+<link rel="stylesheet" href="style.css?v=253">
 <style>
   body.admin-body { background: var(--ivory-deep); min-height: 100vh; }
   .admin-shell { display: flex; min-height: 100vh; }
@@ -657,9 +657,76 @@
   .admin-photo-card .admin-photo-tag { font-size: 0.58rem; color: #a35b1f; display: block; margin-bottom: 2px; }
   .admin-checkbox-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
   .admin-checkbox-row label { font-size: 0.8rem; }
-  .admin-occasion-checks { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 0 2px; }
-  .admin-occasion-checks label { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-weight: 400; opacity: 1; cursor: pointer; }
-  .admin-occasion-checks input { width: auto; }
+  .admin-form-toggle-row { margin-bottom: 14px; }
+
+  /* Occasions -- toggle "chips" instead of plain checkboxes: a pill that
+     fills solid when tapped on, matching the toggle-switch styling used
+     elsewhere in this form rather than a bare checkbox + text. */
+  .admin-occasion-checks { display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0 2px; }
+  .admin-occasion-chip { display: inline-flex; cursor: pointer; }
+  .admin-occasion-chip input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .admin-occasion-chip-label {
+    display: inline-flex; align-items: center; padding: 7px 14px; border-radius: 999px;
+    border: 1px solid var(--stone); font-size: 0.78rem; font-weight: 500; color: var(--ink);
+    background: #fff; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .admin-occasion-chip input:checked + .admin-occasion-chip-label {
+    background: var(--green); border-color: var(--green); color: var(--ivory); font-weight: 600;
+  }
+  .admin-occasion-chip:hover .admin-occasion-chip-label { border-color: var(--gold); }
+
+  /* Per-field icons -- shown to the left of each label on mobile (the
+     small-screen Add/Edit form); hidden on desktop, where the section
+     headers below carry the icon instead. */
+  .admin-field-icon { display: none; }
+  .admin-field-icon svg { width: 15px; height: 15px; display: block; }
+  @media (max-width: 899px) {
+    .admin-field-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 20px; height: 20px; margin-right: 6px; flex: none;
+      color: var(--gold);
+    }
+    .admin-field label, #admin-f-occasions-wrap > label, #admin-sale-price-wrap label {
+      display: flex; align-items: center;
+    }
+  }
+
+  /* Add/Edit form layout: a fixed header (close + title), a scrollable
+     body holding every field, and a footer (Save to GitHub / Cancel)
+     that never scrolls out of view -- on mobile it's pinned to the
+     bottom of the slide-in drawer; on desktop, to the bottom-right of
+     the centered popup. */
+  .admin-saree-drawer { display: flex; flex-direction: column; overflow: hidden; padding-bottom: 0; }
+  .admin-saree-drawer > h3, .admin-saree-drawer > .admin-order-drawer-close { flex-shrink: 0; }
+  #admin-product-form { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  .admin-form-body { flex: 1; overflow-y: auto; padding-bottom: 4px; }
+  .admin-form-footer {
+    flex-shrink: 0; display: flex; gap: 10px; flex-wrap: wrap;
+    padding: 14px 0 2px; margin-top: 6px; border-top: 1px solid var(--stone);
+    background: var(--ivory);
+  }
+  @media (min-width: 900px) {
+    .admin-form-footer { justify-content: flex-end; padding: 16px 0 4px; }
+  }
+
+  /* Desktop-only: group the form into labeled, icon-headed cards so the
+     popup reads as organized sections rather than one long list of
+     fields. On mobile these collapse back to plain stacked fields (no
+     card chrome) -- the per-field icons above carry that role instead. */
+  .admin-form-section-header { display: none; }
+  @media (min-width: 900px) {
+    .admin-form-section {
+      border: 1px solid var(--stone); border-radius: 8px; padding: 14px 16px 4px;
+      margin-bottom: 16px; background: #fff;
+    }
+    .admin-form-section-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+      font-weight: 700; color: var(--green-deep);
+    }
+    .admin-form-section-header svg { width: 15px; height: 15px; color: var(--gold); }
+    .admin-photos-plain-label { display: none; } /* section header above already says "Photos" */
+  }
 
   .admin-status-msg { padding: 12px 16px; border-radius: 4px; font-size: 0.82rem; margin-bottom: 20px; display: none; }
   .admin-status-msg.success { background: #eaf3de; color: #27500a; display: block; }
@@ -992,9 +1059,15 @@
       <button type="button" class="admin-order-drawer-close" id="admin-saree-drawer-close">&#10005;</button>
       <h3 id="admin-form-title">Add New Item</h3>
       <form id="admin-product-form">
+        <div class="admin-form-body">
+        <div class="admin-form-section" id="admin-form-section-basics">
+        <div class="admin-form-section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-7h6v7"/></svg>
+          Basics
+        </div>
         <div class="admin-form-grid">
           <div class="admin-field">
-            <label>Department</label>
+            <label><span class="admin-field-icon" data-icon="building"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V8l8-5 8 5v13"/><path d="M9 21v-7h6v7"/></svg></span>Department</label>
             <select id="admin-f-department">
               <option value="saree">Saree</option>
               <option value="jewellery">Jewellery</option>
@@ -1005,11 +1078,11 @@
 
         <div class="admin-form-grid">
           <div class="admin-field" id="admin-f-series-field">
-            <label>Series</label>
+            <label><span class="admin-field-icon" data-icon="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 9.83a2 2 0 0 0 0 2.83l9.59 9.59a2 2 0 0 0 2.82 0l6.18-6.18a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" stroke="none"/></svg></span>Series</label>
             <select id="admin-f-series"></select>
           </div>
           <div class="admin-field" id="admin-f-id-wrap">
-            <label>ID</label>
+            <label><span class="admin-field-icon" data-icon="tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41 11 3.83A2 2 0 0 0 9.59 3.24L3 9.83a2 2 0 0 0 0 2.83l9.59 9.59a2 2 0 0 0 2.82 0l6.18-6.18a2 2 0 0 0 0-2.83z"/><circle cx="7.5" cy="7.5" r="1.5" fill="currentColor" stroke="none"/></svg></span>ID</label>
             <input type="text" id="admin-f-id" placeholder="Generated on save, or type your own">
           </div>
         </div>
@@ -1019,7 +1092,7 @@
         <div id="admin-saree-only-fields">
         <div class="admin-form-grid">
           <div class="admin-field">
-            <label>Category</label>
+            <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Category</label>
             <select id="admin-f-category">
               <option>Budget</option>
               <option>Mid Range</option>
@@ -1028,34 +1101,34 @@
             </select>
           </div>
           <div class="admin-field">
-            <label>Type (weave)</label>
+            <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Type (weave)</label>
             <input type="text" id="admin-f-type" placeholder="e.g. Kanchipuram">
           </div>
         </div>
 
         <div class="admin-form-grid">
           <div class="admin-field">
-            <label>Saree Type (colour)</label>
+            <label><span class="admin-field-icon" data-icon="palette"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.8-.1 2.6-.4-1-.5-1.6-1.5-1.6-2.6 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5C22.9 5.5 18 2 12 2z"/></svg></span>Saree Type (colour)</label>
             <input type="text" id="admin-f-sareeType" placeholder="e.g. Light Violet with red border">
           </div>
           <div class="admin-field">
-            <label>Pattern</label>
+            <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Pattern</label>
             <input type="text" id="admin-f-pattern" placeholder="e.g. Floral Pattern">
           </div>
         </div>
 
         <div class="admin-form-grid">
           <div class="admin-field">
-            <label>Design</label>
+            <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Design</label>
             <input type="text" id="admin-f-design" placeholder="e.g. Traditional">
           </div>
           <div class="admin-field">
-            <label>Material</label>
+            <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Material</label>
             <select id="admin-f-material"></select>
             <input type="text" id="admin-f-material-new" placeholder="Type the new material" style="display:none; margin-top:6px;">
           </div>
           <div class="admin-field">
-            <label>Shade</label>
+            <label><span class="admin-field-icon" data-icon="palette"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.8-.1 2.6-.4-1-.5-1.6-1.5-1.6-2.6 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5C22.9 5.5 18 2 12 2z"/></svg></span>Shade</label>
             <select id="admin-f-shade">
               <option value="Maroon / Red">Maroon / Red</option>
               <option value="Pink">Pink</option>
@@ -1072,7 +1145,7 @@
             </select>
           </div>
           <div class="admin-field">
-            <label>Price (AED, internal only)</label>
+            <label><span class="admin-field-icon" data-icon="coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg></span>Price (AED, internal only)</label>
             <input type="number" id="admin-f-price" placeholder="e.g. 990">
           </div>
         </div>
@@ -1081,7 +1154,7 @@
         <div id="admin-jewellery-only-fields" style="display:none;">
           <div class="admin-form-grid">
             <div class="admin-field">
-              <label>Type</label>
+              <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Type</label>
               <select id="admin-f-jtype">
                 <option>Bangles &amp; Bracelets</option>
                 <option>Earrings</option>
@@ -1090,13 +1163,13 @@
               </select>
             </div>
             <div class="admin-field">
-              <label>Colour</label>
+              <label><span class="admin-field-icon" data-icon="palette"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.8-.1 2.6-.4-1-.5-1.6-1.5-1.6-2.6 0-1.7 1.3-3 3-3h2c2.8 0 5-2.2 5-5C22.9 5.5 18 2 12 2z"/></svg></span>Colour</label>
               <input type="text" id="admin-f-jcolour" placeholder="e.g. Antique gold-tone">
             </div>
           </div>
           <div class="admin-form-grid" id="admin-bangle-size-fields" style="display:none;">
             <div class="admin-field">
-              <label>Bangle design</label>
+              <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Bangle design</label>
               <select id="admin-f-bangle-base" style="display:none;">
                 <option value="">+ New design</option>
               </select>
@@ -1113,18 +1186,18 @@
               </div>
             </div>
             <div class="admin-field">
-              <label>Size (inches)</label>
+              <label><span class="admin-field-icon" data-icon="ruler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="8" width="19" height="8" rx="1.5"/><line x1="7" y1="8" x2="7" y2="11"/><line x1="11" y1="8" x2="11" y2="11"/><line x1="15" y1="8" x2="15" y2="11"/><line x1="19" y1="8" x2="19" y2="11"/></svg></span>Size (inches)</label>
               <select id="admin-f-bangle-size"></select>
               <input type="text" id="admin-f-bangle-size-new" placeholder="Type the new size, e.g. 2.4" style="display:none; margin-top:6px;">
             </div>
           </div>
           <p class="admin-id-hint" id="admin-bangle-id-preview"></p>
           <div class="admin-field">
-            <label>Note (optional)</label>
+            <label><span class="admin-field-icon" data-icon="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span>Note (optional)</label>
             <input type="text" id="admin-f-jnote" placeholder="Any extra detail to show the customer">
           </div>
           <div class="admin-field">
-            <label>Price (AED, internal only)</label>
+            <label><span class="admin-field-icon" data-icon="coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg></span>Price (AED, internal only)</label>
             <input type="number" id="admin-f-jprice" placeholder="e.g. 185">
           </div>
           <p style="font-size:0.72rem; opacity:0.6; margin:4px 0 0;">Customers will see a "Fashion jewellery" label on this item automatically.</p>
@@ -1133,69 +1206,93 @@
         <div id="admin-accessory-only-fields" style="display:none;">
           <div class="admin-form-grid">
             <div class="admin-field">
-              <label>Category</label>
+              <label><span class="admin-field-icon" data-icon="gem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg></span>Category</label>
               <select id="admin-f-acat">
                 <option>Artificial Flowers</option>
               </select>
             </div>
             <div class="admin-field">
-              <label>Price (AED, internal only)</label>
+              <label><span class="admin-field-icon" data-icon="coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg></span>Price (AED, internal only)</label>
               <input type="number" id="admin-f-aprice" placeholder="e.g. 45">
             </div>
           </div>
           <div class="admin-field">
-            <label>Note (optional)</label>
+            <label><span class="admin-field-icon" data-icon="note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></svg></span>Note (optional)</label>
             <input type="text" id="admin-f-anote" placeholder="Any extra detail to show the customer">
           </div>
         </div>
+        </div><!-- /admin-form-section-basics -->
 
+        <div class="admin-form-section" id="admin-form-section-pricing">
+        <div class="admin-form-section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg>
+          Pricing
+        </div>
         <div class="admin-field" id="admin-sale-price-wrap">
-          <label>Sale price (AED) — leave blank for no offer</label>
+          <label><span class="admin-field-icon" data-icon="coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg></span>Sale price (AED) — leave blank for no offer</label>
           <input type="number" id="admin-f-sale-price" placeholder="e.g. 749">
           <p class="admin-id-hint" id="admin-sale-preview" style="display:none;"></p>
         </div>
+        </div><!-- /admin-form-section-pricing -->
 
-        <div class="admin-checkbox-row">
-          <input type="checkbox" id="admin-f-sold">
-          <label for="admin-f-sold">Sold out</label>
+        <div class="admin-form-section" id="admin-form-section-stock">
+        <div class="admin-form-section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+          Stock &amp; Availability
         </div>
+        <label class="admin-toggle-label admin-form-toggle-row">
+          <span class="admin-toggle-switch"><input type="checkbox" id="admin-f-sold"><span class="admin-toggle-slider"></span></span>
+          Sold out
+        </label>
 
-        <div class="admin-checkbox-row" style="margin-top:4px;">
-          <input type="checkbox" id="admin-f-has-qty">
-          <label for="admin-f-has-qty">Sold in limited quantity (not a one-of-a-kind item)</label>
-        </div>
+        <label class="admin-toggle-label admin-form-toggle-row" style="margin-top:4px;">
+          <span class="admin-toggle-switch"><input type="checkbox" id="admin-f-has-qty"><span class="admin-toggle-slider"></span></span>
+          Sold in limited quantity (not a one-of-a-kind item)
+        </label>
         <!-- Generic stock-quantity support, usable by any department --
              not just Artificial Flowers. Hidden unless the checkbox
              above is on, since most items here (sarees, most jewellery)
              are still one-of-a-kind pieces with no quantity at all. -->
         <div class="admin-form-grid" id="admin-qty-fields" style="display:none;">
           <div class="admin-field">
-            <label>Quantity in stock</label>
+            <label><span class="admin-field-icon" data-icon="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>Quantity in stock</label>
             <input type="number" id="admin-f-quantity" min="0" step="1" placeholder="e.g. 20">
           </div>
           <div class="admin-field">
-            <label>Unit (shown to customers)</label>
+            <label><span class="admin-field-icon" data-icon="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>Unit (shown to customers)</label>
             <input type="text" id="admin-f-qty-unit" placeholder="e.g. Muzham, Pair, Set, Meter">
           </div>
           <div class="admin-field">
-            <label>Max per order (optional)</label>
+            <label><span class="admin-field-icon" data-icon="box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></span>Max per order (optional)</label>
             <input type="number" id="admin-f-max-per-order" min="1" step="1" placeholder="e.g. 10">
           </div>
         </div>
         <p class="admin-id-hint" id="admin-qty-hint" style="display:none;">Leave "Max per order" blank for no extra cap beyond what's in stock. "Sold out" above still works as a manual override, independent of quantity.</p>
+        </div><!-- /admin-form-section-stock -->
 
+        <div class="admin-form-section" id="admin-form-section-occasions">
+        <div class="admin-form-section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Occasions
+        </div>
         <div class="admin-field" style="margin-bottom:16px;" id="admin-f-occasions-wrap">
-          <label>Occasions</label>
+          <label><span class="admin-field-icon" data-icon="calendar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>Occasions</label>
           <div class="admin-occasion-checks" id="admin-f-occasions">
-            <label><input type="checkbox" value="Bridal"> Bridal</label>
-            <label><input type="checkbox" value="Wedding Guest"> Wedding Guest</label>
-            <label><input type="checkbox" value="Festive"> Festive</label>
-            <label><input type="checkbox" value="Reception"> Reception</label>
-            <label><input type="checkbox" value="Everyday"> Everyday</label>
+            <label class="admin-occasion-chip"><input type="checkbox" value="Bridal"><span class="admin-occasion-chip-label">Bridal</span></label>
+            <label class="admin-occasion-chip"><input type="checkbox" value="Wedding Guest"><span class="admin-occasion-chip-label">Wedding Guest</span></label>
+            <label class="admin-occasion-chip"><input type="checkbox" value="Festive"><span class="admin-occasion-chip-label">Festive</span></label>
+            <label class="admin-occasion-chip"><input type="checkbox" value="Reception"><span class="admin-occasion-chip-label">Reception</span></label>
+            <label class="admin-occasion-chip"><input type="checkbox" value="Everyday"><span class="admin-occasion-chip-label">Everyday</span></label>
           </div>
         </div>
+        </div><!-- /admin-form-section-occasions -->
 
-        <label style="font-size:0.7rem; color:var(--ink); opacity:0.7; display:block; margin-bottom:6px;">Photos</label>
+        <div class="admin-form-section" id="admin-form-section-photos">
+        <div class="admin-form-section-header">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          Photos
+        </div>
+        <label class="admin-photos-plain-label" style="font-size:0.7rem; color:var(--ink); opacity:0.7; display:block; margin-bottom:6px;">Photos</label>
         <p class="admin-id-hint">Removing or uploading photos below takes effect on GitHub immediately, one batch at a time — separate from Save/Cancel at the bottom, which is only for the other fields.</p>
         <p class="admin-id-hint" id="admin-images-hint" style="margin-bottom:8px;">Pick a series and ID above first — photos are named after the saree's ID.</p>
 
@@ -1212,8 +1309,10 @@
           <button type="button" class="btn btn-primary" id="admin-upload-selected-btn" style="display:none;">Upload selected (0)</button>
           <span class="admin-id-hint" id="admin-upload-status"></span>
         </div>
+        </div><!-- /admin-form-section-photos -->
+        </div><!-- /admin-form-body -->
 
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <div class="admin-form-footer">
           <button type="submit" class="btn btn-primary" id="admin-save-btn">Save to GitHub</button>
           <button type="button" class="btn btn-ghost" id="admin-cancel-btn">Cancel</button>
         </div>
@@ -1764,7 +1863,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=214"></script>
+<script src="admin.js?v=215"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

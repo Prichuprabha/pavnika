@@ -2890,10 +2890,7 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/JW002-26-1.jpg",
     "baseId": "JW002",
     "size": "2.6",
-    "id": "JW002-26",
-    "quantity": 20,
-    "qtyUnit": "Pcs",
-    "maxPerOrder": 5
+    "id": "JW002-26"
   },
   {
     "department": "jewellery",
@@ -2908,6 +2905,19 @@ window.PRODUCTS = [
     ],
     "image": "https://pavnika.ae/assets/products/JW003-1.jpg",
     "id": "JW003"
+  },
+  {
+    "department": "accessory",
+    "category": "Artificial Flowers",
+    "note": "Test note for Aritficial flower",
+    "price": 100,
+    "salePrice": null,
+    "sold": false,
+    "images": [
+      "https://pavnika.ae/assets/products/AC001-1.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
+    "id": "AC001"
   },
   {
     "department": "jewellery",
@@ -2925,37 +2935,5 @@ window.PRODUCTS = [
     "baseId": "JW001",
     "size": "2.8",
     "id": "JW001-28"
-  },
-  {
-    "department": "accessory",
-    "category": "Artificial Flowers",
-    "note": "Per Muzham cost",
-    "price": 200,
-    "salePrice": 100,
-    "sold": false,
-    "images": [
-      "https://pavnika.ae/assets/products/AC001-1.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
-    "id": "AC001",
-    "quantity": 5,
-    "qtyUnit": "Muzham",
-    "maxPerOrder": 2
-  },
-  {
-    "department": "accessory",
-    "category": "Artificial Flowers",
-    "note": "Fresh-style artificial jasmine strand",
-    "price": 2,
-    "salePrice": null,
-    "sold": false,
-    "images": [
-      "https://pavnika.ae/assets/products/AC002-1.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/AC002-1.jpg",
-    "quantity": 11,
-    "qtyUnit": "Muzham",
-    "maxPerOrder": 5,
-    "id": "AC002"
   }
 ];
