@@ -2917,7 +2917,10 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/AC001-1.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
-    "id": "AC001"
+    "id": "AC001",
+    "quantity": 11,
+    "qtyUnit": "Muzham",
+    "maxPerOrder": 11
   },
   {
     "department": "jewellery",
