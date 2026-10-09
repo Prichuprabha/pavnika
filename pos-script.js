@@ -28,6 +28,8 @@ var posState = {
   // barcode scan results still surface sold items regardless, since
   // staff typing/scanning a specific code already know what they want.
   hideSoldInBrowse: true,
+  browseDeptFilter: null,     // 'saree' | 'jewellery' | 'accessory' | null (All) -- see renderBrowseCats
+  browseCategoryFilter: null, // the chosen department's own category/type value, or null for "All <Dept>"
   couponCode: null,
   couponDiscountPercent: 0,
   giftCardRedeemed: 0,
@@ -1129,32 +1131,78 @@ function clearItemFields() {
 
 // ---------- Visual browse grid ----------
 
+// Previously this was one flat row of chips built from itemCategoryValue()
+// -- which mixed Saree's price-tier categories, Jewellery's types and
+// Accessory's types into a single undifferentiated list (and, since
+// Jewellery has no .category at all, its items never even produced a
+// chip). Replaced with one dropdown per department, each listing that
+// department's own fixed category/type list, so staff can go straight to
+// "Jewellery > Earrings" instead of hunting through a jumbled chip row.
+var POS_BROWSE_DEPTS = [
+  { dept: 'saree', select: 'pos-browse-saree-select', label: 'Saree', options: ['Budget', 'Mid Range', 'Premium', 'Bridal'] },
+  { dept: 'jewellery', select: 'pos-browse-jewellery-select', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Haarams', 'Necklace'] },
+  { dept: 'accessory', select: 'pos-browse-accessory-select', label: 'Accessories', options: ['Artificial Flowers', 'Hair Adornments', 'Saree Essentials', 'Potli & Bags', 'Gift Collections'] }
+];
+
+// A department's own category/type field -- Saree uses .category (its
+// Budget/Mid Range/Premium/Bridal price tier), Jewellery and Accessory
+// both use .type.
+function deptCategoryValue(p) {
+  return p.department === 'saree' ? p.category : p.type;
+}
+
 function renderBrowseCats() {
-  var products = window.PRODUCTS || [];
-  var preferredOrder = ['Budget', 'Mid Range', 'Premium', 'Bridal'];
-  var cats = [];
-  products.forEach(function (p) { var c = itemCategoryValue(p); if (c && cats.indexOf(c) === -1) cats.push(c); });
-  cats.sort(function (a, b) {
-    var ai = preferredOrder.indexOf(a), bi = preferredOrder.indexOf(b);
-    if (ai === -1) ai = preferredOrder.length;
-    if (bi === -1) bi = preferredOrder.length;
-    return ai - bi;
-  });
   var el = document.getElementById('pos-browse-cats');
-  el.innerHTML = '<button type="button" class="pos-browse-cat-btn active" data-cat="All">All</button>' +
-    cats.map(function (c) { return '<button type="button" class="pos-browse-cat-btn" data-cat="' + c + '">' + c + '</button>'; }).join('');
-  el.querySelectorAll('.pos-browse-cat-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      el.querySelectorAll('.pos-browse-cat-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      renderBrowseGrid(btn.getAttribute('data-cat'));
+  var html = '<button type="button" class="pos-browse-cat-btn active" data-all="1">All</button>';
+  POS_BROWSE_DEPTS.forEach(function (d) {
+    html += '<select class="pos-browse-dept-select" id="' + d.select + '" data-dept="' + d.dept + '">' +
+      '<option value="" disabled selected>' + d.label + '</option>' +
+      '<option value="__all__">All ' + d.label + '</option>' +
+      d.options.map(function (o) { return '<option value="' + o + '">' + o + '</option>'; }).join('') +
+      '</select>';
+  });
+  el.innerHTML = html;
+
+  var allBtn = el.querySelector('.pos-browse-cat-btn');
+  allBtn.addEventListener('click', function () {
+    allBtn.classList.add('active');
+    POS_BROWSE_DEPTS.forEach(function (d) {
+      var sel = document.getElementById(d.select);
+      sel.selectedIndex = 0;
+      sel.classList.remove('is-active');
+    });
+    posState.browseDeptFilter = null;
+    posState.browseCategoryFilter = null;
+    renderBrowseGrid(null, null);
+  });
+
+  POS_BROWSE_DEPTS.forEach(function (d) {
+    document.getElementById(d.select).addEventListener('change', function (e) {
+      allBtn.classList.remove('active');
+      e.target.classList.add('is-active');
+      // Only one department filter is active at a time -- picking a
+      // value in one dropdown resets the other two back to their
+      // placeholder, so it's always clear which single filter is live.
+      POS_BROWSE_DEPTS.forEach(function (other) {
+        if (other.dept !== d.dept) {
+          var sel = document.getElementById(other.select);
+          sel.selectedIndex = 0;
+          sel.classList.remove('is-active');
+        }
+      });
+      var val = e.target.value;
+      posState.browseDeptFilter = d.dept;
+      posState.browseCategoryFilter = val === '__all__' ? null : val;
+      renderBrowseGrid(posState.browseDeptFilter, posState.browseCategoryFilter);
     });
   });
 }
 
-function renderBrowseGrid(categoryFilter) {
+function renderBrowseGrid(deptFilter, categoryFilter) {
   var products = window.PRODUCTS || [];
-  var filtered = (!categoryFilter || categoryFilter === 'All') ? products : products.filter(function (p) { return itemCategoryValue(p) === categoryFilter; });
+  var filtered = !deptFilter ? products : products.filter(function (p) {
+    return p.department === deptFilter && (!categoryFilter || deptCategoryValue(p) === categoryFilter);
+  });
   if (posState.hideSoldInBrowse) filtered = filtered.filter(function (p) { return !p.sold; });
   var el = document.getElementById('pos-browse-grid');
   if (!filtered.length) {
@@ -2543,11 +2591,10 @@ document.addEventListener('DOMContentLoaded', function () {
   document.getElementById('pos-clear-item-btn').addEventListener('click', clearItemFields);
   document.getElementById('pos-back-to-browse-btn').addEventListener('click', clearItemFields);
   renderBrowseCats();
-  renderBrowseGrid('All');
+  renderBrowseGrid(null, null);
   document.getElementById('pos-sold-visibility-toggle').addEventListener('change', function (e) {
     posState.hideSoldInBrowse = !e.target.checked; // checked = "Show sold" is on
-    var activeCat = document.querySelector('.pos-browse-cat-btn.active');
-    renderBrowseGrid(activeCat ? activeCat.getAttribute('data-cat') : 'All');
+    renderBrowseGrid(posState.browseDeptFilter, posState.browseCategoryFilter);
   });
   document.getElementById('pos-proceed-customer-btn').addEventListener('click', function () {
     if (!posState.cart.length) { alert('Add at least one item to the cart before proceeding.'); return; }

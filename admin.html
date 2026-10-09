@@ -712,8 +712,15 @@
   /* Desktop-only: group the form into labeled, icon-headed cards so the
      popup reads as organized sections rather than one long list of
      fields. On mobile these collapse back to plain stacked fields (no
-     card chrome) -- the per-field icons above carry that role instead. */
+     card chrome) -- the per-field icons above carry that role instead.
+     Mobile still needs *some* gap between sections, though -- without
+     the card border/header to mark where one section ends and the next
+     begins, adjacent fields from different sections (e.g. Sale price,
+     the last field of Pricing, and the Sold out toggle, the first field
+     of Stock & Availability) end up sitting right on top of each other. */
   .admin-form-section-header { display: none; }
+  .admin-form-section { margin-bottom: 18px; }
+  .admin-form-section:last-child { margin-bottom: 0; }
   @media (min-width: 900px) {
     .admin-form-section {
       border: 1px solid var(--stone); border-radius: 8px; padding: 14px 16px 4px;
