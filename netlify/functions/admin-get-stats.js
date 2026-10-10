@@ -90,6 +90,26 @@ exports.handler = async function (event) {
       .map(function (label) { return { country: label, count: regionCounts[label] }; })
       .sort(function (a, b) { return b.count - a.count; });
 
+    // Day-bucketed visitor counts, for the Dashboard's "Visitors" chart
+    // tab. Computed here (server-side) from the full `visitors` list
+    // this function already fetched (up to 200 rows), rather than on
+    // the client -- the client only ever receives the newest 50 of
+    // those (recentLogins, below), which isn't enough to chart a wider
+    // date range accurately.
+    function dayKey(iso) {
+      var d = new Date(iso);
+      return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
+    }
+    const dailyVisitorMap = {};
+    visitors.forEach(function (v) {
+      if (!v.verified_at) return;
+      var key = dayKey(v.verified_at);
+      dailyVisitorMap[key] = (dailyVisitorMap[key] || 0) + 1;
+    });
+    const dailyVisitors = Object.keys(dailyVisitorMap).sort().map(function (key) {
+      return { date: key, count: dailyVisitorMap[key] };
+    });
+
     return {
       statusCode: 200,
       body: JSON.stringify({
@@ -98,6 +118,7 @@ exports.handler = async function (event) {
         recentLogins: visitors.slice(0, 50),
         mostViewed: mostViewed,
         regions: regions,
+        dailyVisitors: dailyVisitors,
         filtered: !!(fromDate || toDate)
       })
     };

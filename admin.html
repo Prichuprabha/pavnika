@@ -24,11 +24,44 @@
     flex-direction: column;
   }
   .admin-shell .btn {
-    padding: 9px 18px;
+    padding: 10px 22px;
     font-size: 0.72rem;
     letter-spacing: 0.05em;
-    border-radius: 6px;
+    border-radius: 999px;
   }
+  /* Pill inputs: a tinted fill (one notch deeper than whatever card/
+     page background they sit on) is what reads as "a field" once the
+     border-radius goes full pill -- a plain white/ivory pill on an
+     ivory card nearly disappears. */
+  .admin-field input, .admin-field select, .admin-field textarea,
+  #admin-orders-status-filter, #admin-shop-status-filter, #admin-orders-search,
+  #admin-customers-search, #admin-customers-sort,
+  #admin-review-search, #admin-review-rating-filter,
+  #admin-clear-days,
+  .admin-pill-input {
+    border-radius: 999px !important;
+    background: var(--ivory-deep) !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .admin-field textarea { border-radius: 18px !important; }
+  /* A plain <select> keeps its native OS widget chrome (which ignores
+     border-radius) unless appearance is turned off -- that's why,
+     without this, every dropdown on the page looked like the one
+     un-pilled control left on an otherwise all-pill page. Turning
+     appearance off also drops the native arrow, so it's redrawn here
+     as a background image instead. */
+  .admin-field select, #admin-orders-status-filter, #admin-shop-status-filter, select.admin-pill-input {
+    appearance: none !important; -webkit-appearance: none !important;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233B2528' stroke-width='2'><polyline points='6 9 12 15 18 9'/></svg>") !important;
+    background-repeat: no-repeat !important; background-position: right 14px center !important; background-size: 11px !important;
+    padding-right: 36px !important;
+  }
+  /* A handful of fields are genuinely better as a soft rounded-rect
+     than a true pill -- multi-line textareas (above) and anything
+     wrapping a prefixed icon/affix where a full pill would clip the
+     icon circle. */
+  .admin-date-range-btn, .admin-date-preset-btn { border-radius: 999px; }
   .admin-brand-row { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
   .admin-brand-mark {
     width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;
@@ -99,7 +132,7 @@
     padding: 8px 10px; border: 1px solid var(--stone); border-radius: 3px;
     font-family: var(--body); font-size: 0.8rem; background: var(--ivory);
   }
-  #admin-customers-sort { width: 150px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #admin-customers-sort { width: 185px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #admin-review-search, #admin-review-rating-filter {
     padding: 8px 10px; border: 1px solid var(--stone); border-radius: 3px;
     font-family: var(--body); font-size: 0.8rem; background: var(--ivory);
@@ -425,6 +458,133 @@
     background: var(--ivory); border: 1px solid var(--stone); border-radius: 8px; padding: 18px 20px;
   }
   .admin-stats-subheading { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--gold); margin: 0 0 14px; font-weight: 600; }
+
+  /* ---- Sparklines inside stat cards ---- */
+  .admin-metric-card-icon { align-items: flex-start; }
+  .admin-stat-sparkline { width: 100%; height: 26px; margin-top: 6px; display: block; }
+
+  /* ---- Sales Overview chart tabs (Revenue / Orders / Visitors) ---- */
+  .admin-chart-tabs { display: inline-flex; background: var(--ivory-deep); border-radius: 999px; padding: 3px; gap: 2px; }
+  .admin-chart-tab {
+    border: none; background: none; padding: 6px 16px; border-radius: 999px; font-size: 0.72rem;
+    font-weight: 600; color: var(--ink); opacity: 0.6; cursor: pointer; font-family: var(--body);
+  }
+  .admin-chart-tab.active { background: var(--green-deep); color: var(--ivory); opacity: 1; }
+  .admin-stats-card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .admin-stats-card-header .admin-stats-subheading { margin: 0; }
+
+  /* ---- Scrollable list panels (Most Viewed / Recent Logins / Recent
+     Orders) -- replaces the old "Show N more" that kept expanding the
+     page's height. Capped height + scroll keeps the dashboard a fixed,
+     predictable size no matter how many rows there are; "View All"
+     opens the full list in a modal instead. ---- */
+  .admin-scroll-list {
+    max-height: 258px; overflow-y: auto; padding-right: 4px;
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 22px), transparent);
+    mask-image: linear-gradient(to bottom, black calc(100% - 22px), transparent);
+  }
+  /* Once scrolled to the very bottom there's nothing left to fade out
+     -- the last row would otherwise look like it's permanently fading
+     away even with nothing more below it. */
+  .admin-scroll-list.is-at-bottom { -webkit-mask-image: none; mask-image: none; }
+  .admin-scroll-list::-webkit-scrollbar { width: 6px; }
+  .admin-scroll-list::-webkit-scrollbar-thumb { background: var(--stone); border-radius: 999px; }
+  .admin-scroll-list::-webkit-scrollbar-track { background: transparent; }
+
+  /* ---- Generic "View All" modal ---- */
+  .admin-modal-overlay {
+    display: none; position: fixed; inset: 0; background: rgba(43,13,26,0.45); z-index: 500;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .admin-modal-overlay.is-open { display: flex; }
+  .admin-modal {
+    background: var(--ivory); border-radius: 18px; max-width: 480px; width: 100%; max-height: 80vh;
+    display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(43,13,26,0.25);
+  }
+  .admin-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 18px 22px; border-bottom: 1px solid var(--stone); flex-shrink: 0; }
+  .admin-modal-header h3 { margin: 0; font-size: 1rem; color: var(--green-deep); }
+  .admin-modal-close { background: var(--ivory-deep); border: none; width: 30px; height: 30px; border-radius: 50%; font-size: 1rem; cursor: pointer; color: var(--ink); flex-shrink: 0; }
+  .admin-modal-body { padding: 10px 22px 20px; overflow-y: auto; }
+
+  /* ---- Quick Actions panel (Orders page) ---- */
+  .admin-quickaction-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .admin-quickaction-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px;
+    background: var(--ivory-deep); border: 1px solid var(--stone); border-radius: 18px; cursor: pointer;
+    font-family: var(--body); font-size: 0.68rem; font-weight: 600; color: var(--green-deep); text-align: center;
+  }
+  .admin-quickaction-btn:hover { background: var(--gold-light); border-color: var(--gold); }
+  .admin-quickaction-icon {
+    width: 34px; height: 34px; border-radius: 50%; background: var(--green); color: var(--ivory);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .admin-quickaction-icon svg { width: 16px; height: 16px; }
+  @media (max-width: 1280px) { .admin-quickaction-grid { grid-template-columns: repeat(2, 1fr); } }
+
+  /* ---- Donut chart (shared: Visitor Regions + Order Status Overview) ---- */
+  .admin-donut-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .admin-donut {
+    width: 128px; height: 128px; border-radius: 50%; position: relative; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .admin-donut::before { content: ''; position: absolute; inset: 20px; background: var(--ivory); border-radius: 50%; }
+  .admin-donut-center { position: relative; text-align: center; z-index: 1; }
+  .admin-donut-center .n { font-size: 1.3rem; font-weight: 700; color: var(--green-deep); display: block; line-height: 1.1; }
+  .admin-donut-center .lbl { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); opacity: 0.6; }
+  .admin-donut-legend { width: 100%; }
+
+  /* ---- Orders page: desktop layout with a right-hand sidebar ---- */
+  .admin-orders-layout { display: grid; grid-template-columns: 1fr 300px; gap: 18px; align-items: start; }
+  .admin-orders-sidebar { display: flex; flex-direction: column; gap: 16px; }
+  @media (max-width: 1150px) { .admin-orders-layout { grid-template-columns: 1fr; } }
+
+  /* ---- Desktop status pills (the desktop orders table previously had
+     no colour-coded status indicator at all -- only the mobile cards
+     did via .admin-order-mobile-badge; reusing the same colour logic
+     here instead of inventing a second palette). ---- */
+  .admin-status-pill {
+    display: inline-block; font-size: 0.66rem; font-weight: 700; padding: 4px 12px; border-radius: 999px;
+    background: #FBE9E9; color: #B8142A; white-space: nowrap;
+  }
+  .admin-status-pill.status-paid, .admin-status-pill.status-shipped { background: #FDF0E0; color: #946B4A; }
+  .admin-status-pill.status-delivered, .admin-status-pill.status-delivered_direct_pay { background: #eaf3de; color: #3B6D11; }
+  .admin-status-pill.status-partially_refunded { background: #FAEEDA; color: #854F0B; }
+  .admin-status-pill.status-refunded, .admin-status-pill.status-refunded_giftcard { background: #eaf3de; color: #3B6D11; }
+
+  /* The desktop orders table's status control is a real <select> (so
+     status can still be changed inline) but styled to read as the same
+     colour-coded pill as everywhere else, instead of a plain dropdown. */
+  .admin-status-pill-select {
+    appearance: none; -webkit-appearance: none; border: none; border-radius: 999px;
+    font-size: 0.66rem; font-weight: 700; padding: 5px 24px 5px 12px; cursor: pointer;
+    background-color: #FBE9E9; color: #B8142A;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23B8142A' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>");
+    background-repeat: no-repeat; background-position: right 7px center; background-size: 9px;
+  }
+  .admin-status-pill-select.status-paid, .admin-status-pill-select.status-shipped { background-color: #FDF0E0; color: #946B4A; }
+  .admin-status-pill-select.status-delivered, .admin-status-pill-select.status-delivered_direct_pay { background-color: #eaf3de; color: #3B6D11; }
+  .admin-status-pill-select.status-partially_refunded { background-color: #FAEEDA; color: #854F0B; }
+  .admin-status-pill-select.status-refunded, .admin-status-pill-select.status-refunded_giftcard { background-color: #eaf3de; color: #3B6D11; }
+  .admin-status-pill-select.status-paid { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23946B4A' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>"); }
+  .admin-status-pill-select.status-shipped { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23946B4A' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>"); }
+  .admin-status-pill-select.status-delivered, .admin-status-pill-select.status-delivered_direct_pay { background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233B6D11' stroke-width='3'><polyline points='6 9 12 15 18 9'/></svg>"); }
+
+  /* ---- Mobile-only grouped summary cards (Overall / Online / In Shop) ---- */
+  .admin-orders-summary-mobile { display: none; }
+  .admin-summary-card { background: #fff; border: 1px solid var(--stone); border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+  .admin-summary-card h4 { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 0.82rem; color: var(--green-deep); }
+  .admin-summary-card-icon { width: 26px; height: 26px; border-radius: 8px; background: var(--gold-light); color: var(--gold); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .admin-summary-card-icon svg { width: 14px; height: 14px; }
+  .admin-summary-row { display: flex; gap: 10px; }
+  .admin-summary-stat { flex: 1; min-width: 0; }
+  .admin-summary-stat .lbl { font-size: 0.64rem; color: #8a7266; margin: 0 0 3px; }
+  .admin-summary-stat .val { font-size: 1.05rem; font-weight: 700; color: var(--green-deep); margin: 0; }
+  .admin-summary-revenue-row { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--ivory-deep); font-size: 0.78rem; color: var(--ink); }
+  .admin-summary-revenue-row .val { font-weight: 700; color: var(--green-deep); margin-left: auto; }
+  @media (max-width: 880px) {
+    .admin-orders-summary-unified { display: none; }
+    .admin-orders-summary-mobile { display: block; }
+  }
 
   .admin-rank-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--ivory-deep); font-size: 0.82rem; }
   .admin-rank-row:last-child { border-bottom: none; }
@@ -862,16 +1022,16 @@
       </div>
       <p class="admin-status-msg" id="admin-orders-status-msg"></p>
 
-      <p class="admin-orders-section-label">Overall Summary</p>
-      <div class="admin-metric-grid" id="admin-orders-summary-overall"></div>
+      <!-- Desktop: one unified row (Total Orders / Total Revenue / Processing / Completed / Cancelled). -->
+      <div class="admin-metric-grid admin-orders-summary-unified" id="admin-orders-summary-unified"></div>
 
-      <p class="admin-orders-section-label">Online Orders</p>
-      <div class="admin-metric-grid" id="admin-orders-summary-online"></div>
-
-      <p class="admin-orders-section-label">In Shop Orders</p>
-      <div class="admin-metric-grid" id="admin-orders-summary-shop"></div>
+      <!-- Mobile: the same numbers, grouped into Overall / Online / In Shop cards instead of a flat grid of tiles. -->
+      <div class="admin-orders-summary-mobile" id="admin-orders-summary-mobile"></div>
 
       <div id="admin-pending-list" style="margin-bottom:24px;"></div>
+
+      <div class="admin-orders-layout">
+      <div class="admin-orders-main">
 
       <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;">
         <select id="admin-orders-status-filter">
@@ -928,11 +1088,11 @@
       <div class="admin-channel-tabs">
         <button type="button" class="admin-channel-tab active" data-channel="online" id="admin-tab-online">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-          Online Orders (<span id="admin-tab-online-count">0</span>)
+          <span>Online Orders (<span id="admin-tab-online-count">0</span>)</span>
         </button>
         <button type="button" class="admin-channel-tab" data-channel="shop" id="admin-tab-shop">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l1-5h16l1 5"/><path d="M4 9h16v11H4z"/><path d="M9 21v-6h6v6"/></svg>
-          Shop Orders (<span id="admin-tab-shop-count">0</span>)
+          <span>Shop Orders (<span id="admin-tab-shop-count">0</span>)</span>
         </button>
       </div>
 
@@ -950,6 +1110,7 @@
         </thead>
         <tbody id="admin-orders-rows"></tbody>
       </table>
+      <div class="admin-pagination" id="admin-orders-pagination"></div>
 
       <table class="admin-table admin-orders-table-desktop admin-channel-hidden" id="admin-orders-table-shop">
         <thead>
@@ -966,8 +1127,47 @@
         <tbody id="admin-shop-orders-rows"></tbody>
       </table>
 
+      <div class="admin-pagination admin-channel-hidden" id="admin-shop-orders-pagination"></div>
+
       <div id="admin-orders-mobile-list" class="admin-orders-mobile-list"></div>
       <div id="admin-shop-orders-mobile-list" class="admin-orders-mobile-list admin-channel-hidden"></div>
+
+      </div><!-- /admin-orders-main -->
+
+      <div class="admin-orders-sidebar">
+        <div class="admin-stats-card">
+          <h3 class="admin-stats-subheading">Quick Actions</h3>
+          <div class="admin-quickaction-grid">
+            <div class="admin-quickaction-btn" data-view-jump="manual-order">
+              <span class="admin-quickaction-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg></span>
+              Create Order
+            </div>
+            <div class="admin-quickaction-btn" data-view-jump="customers">
+              <span class="admin-quickaction-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="16" y1="11" x2="22" y2="11"/></svg></span>
+              Add Customer
+            </div>
+            <div class="admin-quickaction-btn" data-view-jump="sarees">
+              <span class="admin-quickaction-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a2 2 0 1 0-2 2c0 1-1.2 1.7-2 2.3L2 12l3 2 7-4.5 7 4.5 3-2-6-4.7c-.8-.6-2-1.3-2-2.3"/><path d="M2 20h20"/></svg></span>
+              Add Product
+            </div>
+            <div class="admin-quickaction-btn" id="admin-orders-export-btn">
+              <span class="admin-quickaction-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+              Export Report
+            </div>
+          </div>
+        </div>
+        <div class="admin-stats-card">
+          <h3 class="admin-stats-subheading">Order Status Overview</h3>
+          <div class="admin-donut-wrap" id="admin-orders-status-donut"></div>
+        </div>
+        <div class="admin-stats-card">
+          <div class="admin-logins-header">
+            <h3 class="admin-stats-subheading" style="margin:0;">Recent Orders</h3>
+          </div>
+          <div id="admin-orders-page-recent-rows"></div>
+        </div>
+      </div>
+      </div><!-- /admin-orders-layout -->
     </div>
 
     <div class="admin-order-drawer-overlay" id="admin-order-drawer-overlay">
@@ -1569,7 +1769,7 @@
             <div class="admin-field checkout-field">
               <label>Phone</label>
               <div style="display:flex; gap:8px;">
-                <select id="admin-mo-phone-code" style="width:150px; flex-shrink:0;"></select>
+                <select id="admin-mo-phone-code" class="admin-pill-input" style="width:150px; flex-shrink:0;"></select>
                 <input type="tel" id="admin-mo-phone-number" placeholder="XX XXX XXXX" style="flex:1; min-width:0;">
               </div>
               <input type="hidden" id="admin-mo-phone">
@@ -1632,9 +1832,9 @@
           <div class="admin-form-card">
             <h3>Discount</h3>
             <div style="display:flex; gap:10px; align-items:flex-end;">
-              <div style="display:flex; border:1px solid var(--stone); border-radius:4px; overflow:hidden; flex-shrink:0;">
-                <span class="admin-mo-discount-type-btn active" data-type="percent" style="padding:9px 14px; font-size:0.76rem; cursor:pointer;">%</span>
-                <span class="admin-mo-discount-type-btn" data-type="flat" style="padding:9px 14px; font-size:0.76rem; cursor:pointer;">AED flat</span>
+              <div style="display:flex; border:1px solid var(--stone); border-radius:999px; overflow:hidden; flex-shrink:0;">
+                <span class="admin-mo-discount-type-btn active" data-type="percent" style="padding:9px 16px; font-size:0.76rem; cursor:pointer;">%</span>
+                <span class="admin-mo-discount-type-btn" data-type="flat" style="padding:9px 16px; font-size:0.76rem; cursor:pointer;">AED flat</span>
               </div>
               <div class="admin-field" style="max-width:120px;">
                 <label>Amount</label>
@@ -1779,19 +1979,30 @@
       <p class="admin-status-msg" id="admin-stats-status-msg"></p>
 
       <div class="admin-metric-grid" id="admin-metric-grid"></div>
+      <div class="admin-metric-grid" id="admin-metric-grid-secondary" style="margin-top:-14px;"></div>
 
       <div class="admin-dash-row">
         <div class="admin-stats-card">
-          <h3 class="admin-stats-subheading">Revenue Overview</h3>
+          <div class="admin-stats-card-header">
+            <h3 class="admin-stats-subheading">Sales Overview</h3>
+            <div class="admin-chart-tabs">
+              <button type="button" class="admin-chart-tab active" data-chart-series="revenue">Revenue</button>
+              <button type="button" class="admin-chart-tab" data-chart-series="orders">Orders</button>
+              <button type="button" class="admin-chart-tab" data-chart-series="visitors">Visitors</button>
+            </div>
+          </div>
           <div id="admin-revenue-chart"></div>
         </div>
         <div class="admin-stats-card">
-          <h3 class="admin-stats-subheading">Most viewed sarees</h3>
+          <div class="admin-stats-card-header">
+            <h3 class="admin-stats-subheading">Most viewed sarees</h3>
+            <span class="admin-view-all-link" id="admin-most-viewed-rows-viewall">View All</span>
+          </div>
           <div id="admin-most-viewed-rows"></div>
         </div>
         <div class="admin-stats-card">
           <h3 class="admin-stats-subheading">Visitor regions</h3>
-          <div id="admin-regions-rows"></div>
+          <div class="admin-donut-wrap" id="admin-regions-rows"></div>
         </div>
       </div>
 
@@ -1809,25 +2020,28 @@
             <label class="admin-email-toggle"><input type="checkbox" id="admin-show-emails-toggle"> Show full emails</label>
           </div>
           <div id="admin-logins-rows"></div>
+          <span class="admin-view-all-link" id="admin-logins-rows-viewall" style="display:block; text-align:center; margin-top:8px;">View All</span>
         </div>
       </div>
 
-      <div class="admin-form-card">
-        <h3>Track sheet — view changes made on GitHub</h3>
-        <div class="admin-form-grid">
-          <div class="admin-field"><label>From</label><input type="date" id="admin-track-from"></div>
-          <div class="admin-field"><label>To</label><input type="date" id="admin-track-to"></div>
+      <div class="admin-dash-row admin-dash-row-2">
+        <div class="admin-form-card">
+          <h3>Track &amp; Trace — view changes made on GitHub</h3>
+          <div class="admin-form-grid">
+            <div class="admin-field"><label>From</label><input type="date" id="admin-track-from"></div>
+            <div class="admin-field"><label>To</label><input type="date" id="admin-track-to"></div>
+          </div>
+          <button type="button" class="btn btn-primary" id="admin-track-btn">View Changes on GitHub</button>
         </div>
-        <button type="button" class="btn btn-primary" id="admin-track-btn">View changes on GitHub</button>
-      </div>
 
-      <div class="admin-form-card">
-        <h3>Keep the view log tidy</h3>
-        <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin-bottom:12px;">Not required at your current traffic — purely optional housekeeping.</p>
-        <div style="display:flex; gap:10px; align-items:center;">
-          <input type="number" id="admin-clear-days" value="180" min="1" style="width:90px; padding:8px 10px; border:1px solid var(--stone); border-radius:3px;">
-          <span style="font-size:0.82rem;">days and older</span>
-          <button type="button" class="btn btn-ghost" id="admin-clear-views-btn">Clear old view logs</button>
+        <div class="admin-form-card">
+          <h3>Keep the View Log Tidy</h3>
+          <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin-bottom:12px;">Not required for your current traffic — purely optional housekeeping.</p>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="number" id="admin-clear-days" value="180" min="1" style="width:90px;">
+            <span style="font-size:0.82rem;">days and older</span>
+            <button type="button" class="btn btn-ghost" id="admin-clear-views-btn">Clear Old View Logs</button>
+          </div>
         </div>
       </div>
 
@@ -1874,7 +2088,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=215"></script>
+<script src="admin.js?v=216"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
@@ -1886,6 +2100,20 @@
   <p class="admin-scan-caption">Point the camera at the barcode on the receipt&hellip;</p>
   <p class="admin-scan-error" id="admin-scan-error" style="display:none;"></p>
   <button type="button" class="admin-scan-close" id="admin-scan-close">Cancel</button>
+</div>
+
+<!-- Generic "View All" list modal -- reused by any dashboard/orders
+     panel whose scrollable preview (Most Viewed Sarees, Recent Logins,
+     etc.) needs a roomier full-list view. One shared modal, filled in
+     by whichever panel's "View All" link was clicked. -->
+<div class="admin-modal-overlay" id="admin-list-modal-overlay">
+  <div class="admin-modal">
+    <div class="admin-modal-header">
+      <h3 id="admin-list-modal-title"></h3>
+      <button type="button" class="admin-modal-close" id="admin-list-modal-close">&#10005;</button>
+    </div>
+    <div class="admin-modal-body" id="admin-list-modal-body"></div>
+  </div>
 </div>
 
 </body>

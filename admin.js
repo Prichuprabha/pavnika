@@ -354,6 +354,108 @@ function buildSplitStatCardHtml(label, sareeVal, otherVal, iconKey, colorKey, ex
   );
 }
 
+// Shared donut-chart builder (conic-gradient ring + legend) -- used by
+// both the Orders page's "Order Status Overview" and the Dashboard's
+// "Visitor Regions" panel, so there's one donut implementation instead
+// of two slightly-different ones.
+function buildDonutHtml(segments, centerLabel) {
+  var total = segments.reduce(function (sum, s) { return sum + s.count; }, 0);
+  if (!total) return '<p style="font-size:0.82rem; opacity:0.6;">No data yet.</p>';
+  var cumulative = 0;
+  var gradientStops = segments.filter(function (s) { return s.count > 0; }).map(function (s) {
+    var start = (cumulative / total) * 100;
+    cumulative += s.count;
+    var end = (cumulative / total) * 100;
+    return s.color + ' ' + start + '% ' + end + '%';
+  }).join(', ');
+  var legend = segments.map(function (s) {
+    return '<div style="display:flex; align-items:center; gap:7px; font-size:0.78rem; padding:3px 0;">' +
+      '<span style="width:9px; height:9px; border-radius:50%; background:' + s.color + '; flex-shrink:0;"></span>' +
+      '<span style="flex:1;">' + s.label + '</span><span style="font-weight:600; color:var(--green-deep);">' + s.count + '</span>' +
+    '</div>';
+  }).join('');
+  return (
+    '<div class="admin-donut" style="background:conic-gradient(' + gradientStops + ');">' +
+      '<div class="admin-donut-center"><span class="n">' + total + '</span>' + (centerLabel ? '<span class="lbl">' + centerLabel + '</span>' : '') + '</div>' +
+    '</div>' +
+    '<div class="admin-donut-legend">' + legend + '</div>'
+  );
+}
+
+// Tiny inline SVG sparkline for a stat card -- draws the series as a
+// single polyline, no axes/labels (the card's own number is the
+// label). Returns '' when there's nothing meaningful to plot so a
+// card just shows its number with no trailing empty chart.
+function buildSparklineSvg(series, color) {
+  if (!series || series.length < 2) return '';
+  var max = Math.max.apply(null, series);
+  var min = Math.min.apply(null, series);
+  if (max === min) max = min + 1; // flat series -- still draw a flat-ish line rather than divide by zero
+  var w = 100, h = 26;
+  var stepX = w / (series.length - 1);
+  var coords = series.map(function (v, i) {
+    var x = i * stepX;
+    var y = h - ((v - min) / (max - min)) * (h - 4) - 2;
+    return x + ',' + y;
+  });
+  return '<svg class="admin-stat-sparkline" viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none">' +
+    '<polyline points="' + coords.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="1.6" vector-effect="non-scaling-stroke"/>' +
+  '</svg>';
+}
+
+// Generic "View All" list modal -- fills the one shared modal markup
+// (see admin.html) with whichever panel's full item list was asked
+// for, reusing that panel's own rowBuilder so the modal's rows look
+// identical to the scrollable preview, just roomier.
+function openListModal(title, items, rowBuilder, emptyMessage) {
+  document.getElementById('admin-list-modal-title').textContent = title;
+  document.getElementById('admin-list-modal-body').innerHTML = items.length
+    ? items.map(rowBuilder).join('')
+    : '<p style="font-size:0.82rem; opacity:0.6;">' + (emptyMessage || 'Nothing here yet.') + '</p>';
+  document.getElementById('admin-list-modal-overlay').classList.add('is-open');
+}
+(function initListModalClose() {
+  document.addEventListener('DOMContentLoaded', function () {
+    var overlay = document.getElementById('admin-list-modal-overlay');
+    var closeBtn = document.getElementById('admin-list-modal-close');
+    if (!overlay || !closeBtn) return;
+    closeBtn.addEventListener('click', function () { overlay.classList.remove('is-open'); });
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) overlay.classList.remove('is-open'); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') overlay.classList.remove('is-open'); });
+  });
+})();
+
+// Scrollable panel (replaces the old click-to-expand "Show N more"
+// pattern, which kept growing the page's height): the preview shows
+// every item inside a fixed-height, internally-scrolling list, and a
+// persistent "View All" link (already present in each panel's own
+// header markup, id="<containerId>-viewall") opens the same items in
+// the larger shared modal.
+function renderScrollablePanel(container, items, rowBuilder, emptyMessage, modalTitle) {
+  if (!container) return;
+  if (!items.length) {
+    container.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">' + emptyMessage + '</p>';
+  } else {
+    container.innerHTML = '<div class="admin-scroll-list">' + items.map(rowBuilder).join('') + '</div>';
+    var scrollEl = container.querySelector('.admin-scroll-list');
+    // The bottom fade (CSS, above) signals "there's more below, scroll"
+    // -- drop it once scrolled all the way down (or if there's nothing
+    // to scroll at all) so the last row doesn't look like it's
+    // permanently fading away.
+    function updateFade() {
+      var atBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 4;
+      scrollEl.classList.toggle('is-at-bottom', atBottom);
+    }
+    scrollEl.addEventListener('scroll', updateFade);
+    updateFade();
+  }
+  var viewAllLink = document.getElementById(container.id + '-viewall');
+  if (viewAllLink) {
+    viewAllLink.style.display = items.length ? '' : 'none';
+    viewAllLink.onclick = function () { openListModal(modalTitle, items, rowBuilder, emptyMessage); };
+  }
+}
+
 function initSidebarNav() {
   var navItems = document.querySelectorAll('.admin-nav-item');
   var sidebar = document.getElementById('admin-sidebar');
@@ -2421,6 +2523,8 @@ function initStatsDashboard(token) {
   var regionsRows = document.getElementById('admin-regions-rows');
   var loginsRows = document.getElementById('admin-logins-rows');
   var latestStats = null;
+  var latestOrderStats = null;
+  var activeChartSeries = 'revenue';
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
@@ -2430,7 +2534,13 @@ function initStatsDashboard(token) {
 
   function findProductLabel(id) {
     var p = (window.PRODUCTS || []).find(function (x) { return x.id === id; });
-    return p ? (p.design + ' — ' + id) : id;
+    if (!p) return id;
+    // Jewellery/accessories don't have a "design" field (only sarees
+    // do) -- falling through to .type (and finally the bare id) avoids
+    // showing a literal "undefined — AC001" for those rows, which is
+    // what the plain `p.design` lookup used to produce.
+    var name = p.design || p.type || '';
+    return name ? (name + ' — ' + id) : id;
   }
 
   function maskEmail(email) {
@@ -2453,38 +2563,9 @@ function initStatsDashboard(token) {
     return days + ' day' + (days === 1 ? '' : 's') + ' ago';
   }
 
-  // Shared "show 5, then Show More" pattern — used for Most Viewed,
-  // Recent Orders, and Recent Logins, so all three behave identically
-  // instead of each having its own limit/scroll logic.
-  function renderExpandable(container, items, rowBuilder, emptyMessage) {
-    if (!items.length) {
-      container.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">' + emptyMessage + '</p>';
-      return;
-    }
-    var collapsedCount = 5;
-    var expanded = false;
-    function draw() {
-      var visible = expanded ? items : items.slice(0, collapsedCount);
-      var rowsHtml = visible.map(rowBuilder).join('');
-      var toggleHtml = items.length > collapsedCount
-        ? '<p class="admin-view-all-link" style="margin-top:8px; text-align:center;" id="' + container.id + '-toggle">' +
-            (expanded ? 'Show less' : 'Show ' + (items.length - collapsedCount) + ' more') +
-          '</p>'
-        : '';
-      container.innerHTML = rowsHtml + toggleHtml;
-      var toggleEl = document.getElementById(container.id + '-toggle');
-      if (toggleEl) {
-        toggleEl.addEventListener('click', function () {
-          expanded = !expanded;
-          draw();
-        });
-      }
-    }
-    draw();
-  }
-
   function renderStats(data, orderStats) {
     latestStats = data;
+    latestOrderStats = orderStats;
     var inStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p); }).length;
     var soldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p); }).length;
 
@@ -2529,36 +2610,42 @@ function initStatsDashboard(token) {
         ' &middot; Accessories AED ' + fmt(split.accessory) + '</p>';
     }
 
-    var orderCard = orderStats
-      ? buildStatCardHtml('Orders', orderStats.orderCount, 'box', 'gold', deltaHtml(orderStats.orderCountDelta))
-      : '';
-    var revenueCard = orderStats
-      ? buildStatCardHtml('Revenue (AED)', orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }), 'wallet', 'gold', deltaHtml(orderStats.revenueDelta) + departmentBreakdownHtml(orderStats.departmentRevenue))
-      : '';
-
     var hasJewelleryOrAccessory = (window.PRODUCTS || []).some(function (p) { return p.department === 'jewellery' || p.department === 'accessory'; });
-    var inStockCard, soldOutCard;
-    if (hasJewelleryOrAccessory) {
-      var sareeInStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p) && (p.department || 'saree') === 'saree'; }).length;
-      var jewAccInStock = (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p) && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
-      var sareeSoldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p) && (p.department || 'saree') === 'saree'; }).length;
-      var jewAccSoldOut = (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p) && (p.department === 'jewellery' || p.department === 'accessory'); }).length;
-      inStockCard = buildSplitStatCardHtml('In stock', sareeInStock, jewAccInStock, 'hanger', 'green', stockDelta);
-      soldOutCard = buildSplitStatCardHtml('Sold out', sareeSoldOut, jewAccSoldOut, 'hangerX', 'red', soldDelta);
-    } else {
-      inStockCard = buildStatCardHtml('In stock', inStock, 'hanger', 'green', stockDelta);
-      soldOutCard = buildStatCardHtml('Sold out', soldOut, 'hangerX', 'red', soldDelta);
-    }
 
-    metricGrid.innerHTML =
+    // ---- Primary 6-card row: Total Orders / Sold Out / Total Revenue /
+    // Processing / Completed / Cancelled. Per-card sparklines were tried
+    // and then deliberately dropped -- the trend line belongs to the
+    // Sales Overview chart below (which already covers Revenue/Orders/
+    // Visitors), not repeated on every card. ----
+    var totalOrdersCard = buildStatCardHtml('Total Orders', orderStats ? orderStats.orderCount : 0, 'box', 'gold',
+      orderStats ? deltaHtml(orderStats.orderCountDelta) : '');
+    var soldOutCard = hasJewelleryOrAccessory
+      ? buildSplitStatCardHtml('Sold Out', (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p) && (p.department || 'saree') === 'saree'; }).length,
+          (window.PRODUCTS || []).filter(function (p) { return isEffectivelySold(p) && (p.department === 'jewellery' || p.department === 'accessory'); }).length, 'hangerX', 'red', soldDelta)
+      : buildStatCardHtml('Sold Out', soldOut, 'hangerX', 'red', soldDelta);
+    var totalRevenueCard = buildStatCardHtml('Total Revenue (AED)', orderStats ? orderStats.revenue.toLocaleString(undefined, { maximumFractionDigits: 0 }) : 0, 'wallet', 'gold',
+      (orderStats ? deltaHtml(orderStats.revenueDelta) : '') + (orderStats ? departmentBreakdownHtml(orderStats.departmentRevenue) : ''));
+    var processingCard = buildStatCardHtml('Processing', orderStats ? orderStats.processingCount : 0, 'clock', 'orange');
+    var completedCard = buildStatCardHtml('Completed', orderStats ? orderStats.completedCount : 0, 'check', 'green');
+    var cancelledCard = buildStatCardHtml('Cancelled', orderStats ? orderStats.cancelledCount : 0, 'cross', 'red');
+
+    metricGrid.innerHTML = totalOrdersCard + soldOutCard + totalRevenueCard + processingCard + completedCard + cancelledCard;
+
+    // ---- Secondary row: the data that used to headline the dashboard
+    // (In stock / Verified visitors / Saree views logged) still matters,
+    // just not at the same visual priority as the order-flow numbers
+    // above -- it stays one scroll away, not gone. ----
+    var inStockCard = hasJewelleryOrAccessory
+      ? buildSplitStatCardHtml('In stock', (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p) && (p.department || 'saree') === 'saree'; }).length,
+          (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p) && (p.department === 'jewellery' || p.department === 'accessory'); }).length, 'hanger', 'green', stockDelta)
+      : buildStatCardHtml('In stock', inStock, 'hanger', 'green', stockDelta);
+    document.getElementById('admin-metric-grid-secondary').innerHTML =
       inStockCard +
-      soldOutCard +
-      orderCard + revenueCard +
       buildStatCardHtml('Verified visitors', data.totalVisitors, 'users', 'gold') +
       buildStatCardHtml('Saree views logged', data.totalViews, 'eye', 'gold');
 
     if (orderStats) {
-      renderRevenueChart(orderStats.dailyPoints);
+      renderSalesChart();
       renderRecentOrders(orderStats.recentOrders);
     }
 
@@ -2566,7 +2653,7 @@ function initStatsDashboard(token) {
       var p = (window.PRODUCTS || []).find(function (x) { return x.id === id; });
       return p ? p.image : '';
     }
-    renderExpandable(
+    renderScrollablePanel(
       mostViewedRows,
       data.mostViewed,
       function (v) {
@@ -2579,33 +2666,17 @@ function initStatsDashboard(token) {
           '<span class="rank-value">' + v.views + ' view' + (v.views === 1 ? '' : 's') + '</span>' +
         '</div>';
       },
-      'No views logged yet.'
+      'No views logged yet.',
+      'Most viewed sarees'
     );
 
-    var totalRegionCount = data.regions.reduce(function (sum, r) { return sum + r.count; }, 0);
-    var pieColors = ['var(--green)', 'var(--gold)', 'var(--stone)', '#946B4A', '#8a6f63', '#c9b8a8'];
-    if (data.regions.length && totalRegionCount > 0) {
-      var cumulative = 0;
-      var gradientStops = data.regions.map(function (r, i) {
-        var start = (cumulative / totalRegionCount) * 100;
-        cumulative += r.count;
-        var end = (cumulative / totalRegionCount) * 100;
-        var color = pieColors[i % pieColors.length];
-        return color + ' ' + start + '% ' + end + '%';
-      }).join(', ');
-      var legend = data.regions.map(function (r, i) {
-        var color = pieColors[i % pieColors.length];
-        return '<div style="display:flex; align-items:center; gap:6px; font-size:0.78rem; padding:3px 0;">' +
-          '<span style="width:9px; height:9px; border-radius:50%; background:' + color + '; flex-shrink:0;"></span>' +
-          '<span style="flex:1;">' + r.country + '</span><span style="font-weight:600; color:var(--green-deep);">' + r.count + '</span>' +
-        '</div>';
-      }).join('');
-      regionsRows.innerHTML =
-        '<div style="width:110px; height:110px; border-radius:50%; background:conic-gradient(' + gradientStops + '); margin:0 auto 14px;"></div>' +
-        legend;
-    } else {
-      regionsRows.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">No data yet.</p>';
-    }
+    regionsRows.innerHTML = buildDonutHtml(
+      data.regions.map(function (r, i) {
+        var pieColors = ['#3C1223', '#B68A69', '#DED0C7', '#946B4A', '#8a6f63', '#c9b8a8'];
+        return { label: r.country, count: r.count, color: pieColors[i % pieColors.length] };
+      }),
+      'Visitors'
+    );
 
     renderLoginsList();
   }
@@ -2613,7 +2684,7 @@ function initStatsDashboard(token) {
   function renderLoginsList() {
     if (!latestStats) return;
     var showFull = document.getElementById('admin-show-emails-toggle').checked;
-    renderExpandable(
+    renderScrollablePanel(
       loginsRows,
       latestStats.recentLogins,
       function (v) {
@@ -2621,11 +2692,21 @@ function initStatsDashboard(token) {
         var location = v.country ? (v.region ? v.region + ', ' + v.country : v.country) : 'Unknown';
         return '<div class="admin-rank-row"><span>' + emailDisplay + '<br><span style="font-size:0.7rem; opacity:0.6;">' + location + '</span></span><span style="color:var(--ink); opacity:0.6; font-weight:400;">' + timeAgo(v.verified_at) + '</span></div>';
       },
-      'No logins yet.'
+      'No logins yet.',
+      'Recent logins'
     );
   }
 
   document.getElementById('admin-show-emails-toggle').addEventListener('change', renderLoginsList);
+
+  document.querySelectorAll('.admin-chart-tab').forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      document.querySelectorAll('.admin-chart-tab').forEach(function (t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      activeChartSeries = tab.getAttribute('data-chart-series');
+      renderSalesChart();
+    });
+  });
 
   document.querySelectorAll('[data-view-jump]').forEach(function (link) {
     link.addEventListener('click', function () {
@@ -2644,12 +2725,16 @@ function initStatsDashboard(token) {
   // revenue, since the money never actually left the business).
   var REVENUE_STATUSES = ['paid', 'shipped', 'delivered', 'delivered_direct_pay', 'partially_refunded'];
 
+  // UTC-based deliberately (not local time) -- matches the day-bucketing
+  // admin-get-stats.js does server-side for dailyVisitors, so the two
+  // line up when visitorsSeries below is read from that lookup instead
+  // of computed fresh from a (truncated, max-50) client-side list.
   function dayKey(iso) {
     var d = new Date(iso);
-    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0');
   }
 
-  function computeOrderStats(allOrders, fromDate, toDate) {
+  function computeOrderStats(allOrders, fromDate, toDate, dailyVisitorsRaw) {
     var isAllTime = fromDate === 'ALL_TIME';
     var now = new Date();
     var rangeEnd = toDate ? new Date(toDate + 'T23:59:59') : now;
@@ -2687,11 +2772,40 @@ function initStatsDashboard(token) {
       var key = dayKey(o.created_at);
       dailyMap[key] = (dailyMap[key] || 0) + netOrderRevenue(o);
     });
-    var dailyPoints = [];
+
+    // Same day-bucketing, but over ALL orders in range (any status) --
+    // feeds both the "Orders" tab of the Sales Overview chart and the
+    // per-card sparklines on the stat row (Processing/Completed/
+    // Cancelled), so every card's trend line is a genuine day-by-day
+    // count rather than a single current-vs-previous-period number.
+    var allInRange = allOrders.filter(function (o) { return withinRange(o, rangeStart, rangeEnd); });
+    var ordersCountMap = {}, processingMap = {}, completedMap = {}, cancelledMap = {};
+    allInRange.forEach(function (o) {
+      var key = dayKey(o.created_at);
+      ordersCountMap[key] = (ordersCountMap[key] || 0) + 1;
+      if (o.status === 'paid' || o.status === 'shipped') processingMap[key] = (processingMap[key] || 0) + 1;
+      if (o.status === 'delivered' || o.status === 'delivered_direct_pay') completedMap[key] = (completedMap[key] || 0) + 1;
+      if (['cancelled', 'refunded', 'refunded_giftcard', 'payment_error'].indexOf(o.status) !== -1) cancelledMap[key] = (cancelledMap[key] || 0) + 1;
+    });
+
+    // dailyVisitorsRaw comes from admin-get-stats.js, already bucketed
+    // server-side as [{date: 'YYYY-MM-DD', count}] (UTC day keys) -- turn
+    // it into a lookup so it can be walked with the exact same
+    // rangeStart/rangeEnd cursor as everything else below, rather than
+    // trusting its own (possibly sparse, gap-y) day list to line up.
+    var visitorsByDay = {};
+    (dailyVisitorsRaw || []).forEach(function (d) { visitorsByDay[d.date] = d.count; });
+
+    var dailyPoints = [], ordersSeries = [], processingSeries = [], completedSeries = [], cancelledSeries = [], visitorsSeries = [];
     var cursor = new Date(rangeStart);
     while (cursor <= rangeEnd) {
       var key = dayKey(cursor.toISOString());
       dailyPoints.push({ date: cursor.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), revenue: dailyMap[key] || 0 });
+      ordersSeries.push(ordersCountMap[key] || 0);
+      processingSeries.push(processingMap[key] || 0);
+      completedSeries.push(completedMap[key] || 0);
+      cancelledSeries.push(cancelledMap[key] || 0);
+      visitorsSeries.push(visitorsByDay[key] || 0);
       cursor.setDate(cursor.getDate() + 1);
     }
 
@@ -2711,32 +2825,69 @@ function initStatsDashboard(token) {
       isDefaultWeek: !fromDate && !toDate,
       isAllTime: isAllTime,
       dailyPoints: dailyPoints,
-      recentOrders: allOrders.slice(0, 20) // "recent" is always just the newest, independent of the date filter — renderExpandable shows 5 at a time
+      ordersSeries: ordersSeries,
+      visitorsSeries: visitorsSeries,
+      processingCount: allOrders.filter(function (o) { return o.status === 'paid' || o.status === 'shipped'; }).length,
+      processingSeries: processingSeries,
+      completedCount: allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length,
+      completedSeries: completedSeries,
+      cancelledCount: allOrders.filter(function (o) { return ['cancelled', 'refunded', 'refunded_giftcard', 'payment_error'].indexOf(o.status) !== -1; }).length,
+      cancelledSeries: cancelledSeries,
+      recentOrders: allOrders.slice(0, 20) // "recent" is always just the newest, independent of the date filter
     };
   }
 
-  function renderRevenueChart(points) {
+  // One chart, three tabs. "Revenue" plots orderStats.dailyPoints (AED);
+  // "Orders" plots orderStats.ordersSeries (a plain count, any status,
+  // computed client-side from the same order list the Orders tab
+  // already fetches); "Visitors" plots orderStats.visitorsSeries, which
+  // is re-aligned (in computeOrderStats, above) from dailyVisitors --
+  // bucketed server-side by admin-get-stats.js from the full
+  // verified-visitor list for the selected range, since the client only
+  // ever receives the newest 50 of those (recentLogins) -- not enough
+  // to chart a 30-day range accurately on its own.
+  function renderSalesChart() {
     var chartEl = document.getElementById('admin-revenue-chart');
-    if (!chartEl) return;
-    if (!points.length || points.every(function (p) { return p.revenue === 0; })) {
-      chartEl.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">No revenue in this range yet.</p>';
+    if (!chartEl || !latestOrderStats) return;
+
+    var dates = latestOrderStats.dailyPoints.map(function (p) { return p.date; });
+    var values, emptyMessage, color, formatValue;
+    if (activeChartSeries === 'orders') {
+      values = latestOrderStats.ordersSeries;
+      emptyMessage = 'No orders in this range yet.';
+      color = '#3C1223';
+      formatValue = function (v) { return v; };
+    } else if (activeChartSeries === 'visitors') {
+      values = latestOrderStats.visitorsSeries;
+      emptyMessage = 'No verified visitors in this range yet.';
+      color = '#946B4A';
+      formatValue = function (v) { return v; };
+    } else {
+      values = latestOrderStats.dailyPoints.map(function (p) { return p.revenue; });
+      emptyMessage = 'No revenue in this range yet.';
+      color = '#B68A69';
+      formatValue = function (v) { return 'AED ' + Math.round(v).toLocaleString(); };
+    }
+
+    if (!values.length || values.every(function (v) { return v === 0; })) {
+      chartEl.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">' + emptyMessage + '</p>';
       return;
     }
-    var max = Math.max.apply(null, points.map(function (p) { return p.revenue; })) || 1;
+    var max = Math.max.apply(null, values) || 1;
     var w = 100, h = 40;
-    var stepX = points.length > 1 ? w / (points.length - 1) : 0;
-    var coords = points.map(function (p, i) {
-      var x = points.length > 1 ? i * stepX : w / 2;
-      var y = h - (p.revenue / max) * (h - 4) - 2;
+    var stepX = values.length > 1 ? w / (values.length - 1) : 0;
+    var coords = values.map(function (v, i) {
+      var x = values.length > 1 ? i * stepX : w / 2;
+      var y = h - (v / max) * (h - 4) - 2;
       return x + ',' + y;
     });
     var svg =
       '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%; height:90px;">' +
-        '<polyline points="' + coords.join(' ') + '" fill="none" stroke="#B68A69" stroke-width="1.4" vector-effect="non-scaling-stroke"/>' +
+        '<polyline points="' + coords.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="1.4" vector-effect="non-scaling-stroke"/>' +
       '</svg>';
     var labels =
       '<div style="display:flex; justify-content:space-between; font-size:0.62rem; color:#8a7266; margin-top:4px;">' +
-        '<span>' + points[0].date + '</span><span>' + points[points.length - 1].date + '</span>' +
+        '<span>' + dates[0] + '</span><span>' + dates[dates.length - 1] + '</span>' +
       '</div>';
     chartEl.innerHTML = svg + labels;
   }
@@ -2750,7 +2901,7 @@ function initStatsDashboard(token) {
   function renderRecentOrders(orders) {
     var el = document.getElementById('admin-recent-orders-rows');
     if (!el) return;
-    renderExpandable(
+    renderScrollablePanel(
       el,
       orders,
       function (o) {
@@ -2762,7 +2913,8 @@ function initStatsDashboard(token) {
           '<span class="rank-value">AED ' + formatAED(o.total || 0) + '</span>' +
         '</div>';
       },
-      'No orders yet.'
+      'No orders yet.',
+      'Recent Orders'
     );
   }
 
@@ -2794,7 +2946,7 @@ function initStatsDashboard(token) {
         var statsResult = results[0];
         var ordersResult = results[1];
         if (!statsResult.ok) { showStatus('error', statsResult.data.error || 'Could not load stats.'); return; }
-        var orderStats = ordersResult.ok ? computeOrderStats(ordersResult.data.orders || [], fromDate, toDate) : null;
+        var orderStats = ordersResult.ok ? computeOrderStats(ordersResult.data.orders || [], fromDate, toDate, statsResult.data.dailyVisitors) : null;
         renderStats(statsResult.data, orderStats);
       })
       .catch(function () { showStatus('error', 'Network error loading stats.'); });
@@ -3488,6 +3640,35 @@ function initOrdersView(token) {
   var activeChannel = 'online';
   var sortKey = 'created_at';
   var sortDir = 'desc';
+  var ordersPage = 1;
+  var shopOrdersPage = 1;
+  var ORDERS_PAGE_SIZE = 15;
+
+  // Shared page-button renderer for the Orders tables -- same button
+  // markup/CSS (.admin-pagination/.admin-page-btn) as the Sarees &
+  // Jewellery catalog's pager, just parameterised so both the online
+  // and shop tables (two independent page counters) can use it.
+  function renderPager(containerEl, totalItems, page, pageSize, onPageChange) {
+    var totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+    if (page > totalPages) page = totalPages;
+    if (!containerEl) return page;
+    if (totalPages <= 1) { containerEl.innerHTML = ''; return page; }
+    var buttons = [];
+    buttons.push('<button type="button" class="admin-page-btn" data-page="' + (page - 1) + '"' + (page === 1 ? ' disabled' : '') + '>&lsaquo;</button>');
+    for (var i = 1; i <= totalPages; i++) {
+      buttons.push('<button type="button" class="admin-page-btn' + (i === page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>');
+    }
+    buttons.push('<button type="button" class="admin-page-btn" data-page="' + (page + 1) + '"' + (page === totalPages ? ' disabled' : '') + '>&rsaquo;</button>');
+    containerEl.innerHTML = buttons.join('');
+    containerEl.querySelectorAll('.admin-page-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var p = parseInt(btn.getAttribute('data-page'), 10);
+        if (!p || p < 1 || p > totalPages) return;
+        onPageChange(p);
+      });
+    });
+    return page;
+  }
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
@@ -3513,6 +3694,13 @@ function initOrdersView(token) {
     return (s || 'pending').replace(/_/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
 
+  function recentOrderRowHtml(o, channel) {
+    var label = channel === 'shop' ? (o.status || '—') : statusLabel(o.status);
+    return '<div class="admin-rank-row"><span>' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Unknown') +
+      '<br><span style="font-size:0.7rem; opacity:0.6;">' + new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + '</span></span>' +
+      '<span class="rank-value">AED ' + formatAED(o.total || 0) + '<br><span style="font-size:0.66rem; opacity:0.7; font-weight:400;">' + label + '</span></span></div>';
+  }
+
   function renderSummary() {
     var pendingDispatch = allOrders.filter(function (o) { return o.status === 'paid'; });
 
@@ -3522,27 +3710,78 @@ function initOrdersView(token) {
       .reduce(function (sum, o) { return sum + netOrderRevenue(o); }, 0);
     var shopRevenue = allShopOrders.filter(function (o) { return o.status !== 'Returned'; })
       .reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
-    document.getElementById('admin-orders-summary-overall').innerHTML =
-      buildStatCardHtml('All Orders', allOrdersCount, 'box', 'gold') +
-      buildStatCardHtml('Total Revenue (AED)', Math.round(onlineRevenue + shopRevenue).toLocaleString(), 'wallet', 'red');
+    var totalRevenue = onlineRevenue + shopRevenue;
 
     // Online
+    var pending = allOrders.filter(function (o) { return (o.status || 'pending') === 'pending' || o.status === 'cod_pending'; }).length;
     var processing = allOrders.filter(function (o) { return o.status === 'paid' || o.status === 'shipped'; }).length;
-    var completed = allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length;
-    var cancelled = allOrders.filter(function (o) { return ['cancelled', 'refunded', 'refunded_giftcard', 'payment_error'].indexOf(o.status) !== -1; }).length;
-    document.getElementById('admin-orders-summary-online').innerHTML =
-      buildStatCardHtml('Orders', allOrders.length, 'box', 'gold') +
-      buildStatCardHtml('Processing', processing, 'clock', 'orange') +
-      buildStatCardHtml('Completed', completed, 'check', 'green') +
-      buildStatCardHtml('Cancelled', cancelled, 'cross', 'red') +
-      buildStatCardHtml('Revenue (AED)', Math.round(onlineRevenue).toLocaleString(), 'wallet', 'orange');
+    var onlineCompleted = allOrders.filter(function (o) { return o.status === 'delivered' || o.status === 'delivered_direct_pay'; }).length;
+    var onlineCancelled = allOrders.filter(function (o) { return ['cancelled', 'refunded', 'refunded_giftcard', 'payment_error'].indexOf(o.status) !== -1; }).length;
 
     // Shop
+    var shopCompleted = allShopOrders.filter(function (o) { return o.status === 'Completed'; }).length;
     var shopReturned = allShopOrders.filter(function (o) { return o.status !== 'Completed'; }).length;
-    document.getElementById('admin-orders-summary-shop').innerHTML =
-      buildStatCardHtml('Orders', allShopOrders.length, 'box', 'gold') +
-      buildStatCardHtml('Returned / Exchanged', shopReturned, 'cross', 'red') +
-      buildStatCardHtml('Revenue (AED)', Math.round(shopRevenue).toLocaleString(), 'wallet', 'green');
+
+    // Combined (channel-agnostic) counts -- used for the single unified
+    // top row that mirrors the reference layout, rather than three
+    // separate Overall/Online/Shop rows.
+    var completed = onlineCompleted + shopCompleted;
+    var cancelled = onlineCancelled + shopReturned;
+
+    document.getElementById('admin-orders-summary-unified').innerHTML =
+      buildStatCardHtml('Total Orders', allOrdersCount, 'box', 'gold') +
+      buildStatCardHtml('Total Revenue (AED)', Math.round(totalRevenue).toLocaleString(), 'wallet', 'gold') +
+      buildStatCardHtml('Processing', processing, 'clock', 'orange') +
+      buildStatCardHtml('Completed', completed, 'check', 'green') +
+      buildStatCardHtml('Cancelled', cancelled, 'cross', 'red');
+
+    document.getElementById('admin-orders-summary-mobile').innerHTML =
+      '<div class="admin-summary-card">' +
+        '<h4><span class="admin-summary-card-icon">' + ADMIN_STAT_ICONS.box + '</span>Overall Summary</h4>' +
+        '<div class="admin-summary-row">' +
+          '<div class="admin-summary-stat"><p class="lbl">All Orders</p><p class="val">' + allOrdersCount + '</p></div>' +
+          '<div class="admin-summary-stat"><p class="lbl">Total Revenue</p><p class="val">AED ' + Math.round(totalRevenue).toLocaleString() + '</p></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="admin-summary-card">' +
+        '<h4><span class="admin-summary-card-icon" style="background:#FAECE7; color:#B8142A;">' + ADMIN_STAT_ICONS.box + '</span>Online Orders</h4>' +
+        '<div class="admin-summary-row">' +
+          '<div class="admin-summary-stat"><p class="lbl">Orders</p><p class="val">' + allOrders.length + '</p></div>' +
+          '<div class="admin-summary-stat"><p class="lbl">Processing</p><p class="val">' + processing + '</p></div>' +
+          '<div class="admin-summary-stat"><p class="lbl">Completed</p><p class="val">' + onlineCompleted + '</p></div>' +
+          '<div class="admin-summary-stat"><p class="lbl">Cancelled</p><p class="val">' + onlineCancelled + '</p></div>' +
+        '</div>' +
+        '<div class="admin-summary-revenue-row">Revenue <span class="val">AED ' + Math.round(onlineRevenue).toLocaleString() + '</span></div>' +
+      '</div>' +
+      '<div class="admin-summary-card">' +
+        '<h4><span class="admin-summary-card-icon" style="background:#F8ECE2; color:#B68A69;">' + ADMIN_STAT_ICONS.box + '</span>In Shop Orders</h4>' +
+        '<div class="admin-summary-row">' +
+          '<div class="admin-summary-stat"><p class="lbl">Orders</p><p class="val">' + allShopOrders.length + '</p></div>' +
+          '<div class="admin-summary-stat"><p class="lbl">Returned / Exchanged</p><p class="val">' + shopReturned + '</p></div>' +
+        '</div>' +
+        '<div class="admin-summary-revenue-row">Revenue <span class="val">AED ' + Math.round(shopRevenue).toLocaleString() + '</span></div>' +
+      '</div>';
+
+    var statusDonutEl = document.getElementById('admin-orders-status-donut');
+    if (statusDonutEl) {
+      statusDonutEl.innerHTML = buildDonutHtml([
+        { label: 'Pending', count: pending, color: '#DED0C7' },
+        { label: 'Processing', count: processing, color: '#E69E42' },
+        { label: 'Completed', count: completed, color: '#3B6D11' },
+        { label: 'Cancelled', count: cancelled, color: '#B8142A' }
+      ], 'Orders');
+    }
+
+    var recentPanelEl = document.getElementById('admin-orders-page-recent-rows');
+    if (recentPanelEl) {
+      var combinedRecent = allOrders.map(function (o) { return { o: o, channel: 'online' }; })
+        .concat(allShopOrders.map(function (o) { return { o: o, channel: 'shop' }; }))
+        .sort(function (a, b) { return new Date(b.o.created_at) - new Date(a.o.created_at); })
+        .slice(0, 5);
+      recentPanelEl.innerHTML = combinedRecent.length
+        ? combinedRecent.map(function (x) { return recentOrderRowHtml(x.o, x.channel); }).join('')
+        : '<p style="font-size:0.82rem; opacity:0.6;">No orders yet.</p>';
+    }
 
     if (pendingDispatch.length) {
       pendingListEl.innerHTML =
@@ -3612,7 +3851,10 @@ function initOrdersView(token) {
 
   function renderTable() {
     var filtered = getFilteredSorted();
-    rowsEl.innerHTML = filtered.length ? filtered.map(function (o) {
+    ordersPage = renderPager(document.getElementById('admin-orders-pagination'), filtered.length, ordersPage, ORDERS_PAGE_SIZE, function (p) { ordersPage = p; renderTable(); });
+    var pageStart = (ordersPage - 1) * ORDERS_PAGE_SIZE;
+    var pageItems = filtered.slice(pageStart, pageStart + ORDERS_PAGE_SIZE);
+    rowsEl.innerHTML = pageItems.length ? pageItems.map(function (o) {
       var items = [];
       try { items = JSON.parse(o.items || '[]'); } catch (e) {}
       var itemsSummary = items.map(function (it) { return it.id; }).join(', ');
@@ -3631,7 +3873,7 @@ function initOrdersView(token) {
     }).join('') : '<tr><td colspan="7">No orders match.</td></tr>';
 
     var mobileListEl = document.getElementById('admin-orders-mobile-list');
-    mobileListEl.innerHTML = filtered.length ? filtered.map(function (o) {
+    mobileListEl.innerHTML = pageItems.length ? pageItems.map(function (o) {
       var dateLabel = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       return (
         '<div class="admin-order-mobile-card admin-orders-clickable-row" data-id="' + o.id + '">' +
@@ -3757,8 +3999,11 @@ function initOrdersView(token) {
 
   function renderShopTable() {
     var filtered = getFilteredSortedShop();
+    shopOrdersPage = renderPager(document.getElementById('admin-shop-orders-pagination'), filtered.length, shopOrdersPage, ORDERS_PAGE_SIZE, function (p) { shopOrdersPage = p; renderShopTable(); });
+    var shopPageStart = (shopOrdersPage - 1) * ORDERS_PAGE_SIZE;
+    var pageItems = filtered.slice(shopPageStart, shopPageStart + ORDERS_PAGE_SIZE);
     var shopRowsEl = document.getElementById('admin-shop-orders-rows');
-    shopRowsEl.innerHTML = filtered.length ? filtered.map(function (o) {
+    shopRowsEl.innerHTML = pageItems.length ? pageItems.map(function (o) {
       var items = [];
       try { items = JSON.parse(o.items || '[]'); } catch (e) {}
       var itemsSummary = items.map(function (it) { return it.id; }).join(', ');
@@ -3777,7 +4022,7 @@ function initOrdersView(token) {
     }).join('') : '<tr><td colspan="7">No shop orders match.</td></tr>';
 
     var mobileListEl = document.getElementById('admin-shop-orders-mobile-list');
-    mobileListEl.innerHTML = filtered.length ? filtered.map(function (o) {
+    mobileListEl.innerHTML = pageItems.length ? pageItems.map(function (o) {
       var dateLabel = new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       return (
         '<div class="admin-order-mobile-card admin-orders-clickable-row" data-channel="shop" data-id="' + o.id + '">' +
@@ -3851,7 +4096,7 @@ function initOrdersView(token) {
     if (currentIsLegacyRefundStatus) {
       options = '<option value="' + o.status + '" selected disabled>' + statusLabel(o.status) + ' (use Process Return to change this)</option>' + options;
     }
-    return '<select class="admin-order-status-select" data-id="' + o.id + '">' + options + '</select>';
+    return '<select class="admin-order-status-select admin-status-pill-select status-' + (o.status || 'pending') + '" data-id="' + o.id + '">' + options + '</select>';
   }
 
   rowsEl.addEventListener('change', function (e) {
@@ -3872,6 +4117,7 @@ function initOrdersView(token) {
           if (order) order.status = newStatus;
           showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
           renderSummary();
+          renderTable(); // re-render so the status pill's colour matches the new status
         })
         .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
       return;
@@ -4365,10 +4611,51 @@ function initOrdersView(token) {
       document.getElementById('admin-orders-table-shop').classList.toggle('admin-channel-hidden', isOnline);
       document.getElementById('admin-orders-mobile-list').classList.toggle('admin-channel-hidden', !isOnline);
       document.getElementById('admin-shop-orders-mobile-list').classList.toggle('admin-channel-hidden', isOnline);
+      document.getElementById('admin-orders-pagination').classList.toggle('admin-channel-hidden', !isOnline);
+      document.getElementById('admin-shop-orders-pagination').classList.toggle('admin-channel-hidden', isOnline);
       document.getElementById('admin-orders-status-filter').style.display = isOnline ? '' : 'none';
       document.getElementById('admin-shop-status-filter').style.display = isOnline ? 'none' : '';
     });
   });
+
+  // Quick Actions -> Export Report: downloads whatever the currently
+  // active channel/filters/search/date-range show right now (same
+  // getFilteredSorted()/getFilteredSortedShop() the table itself uses,
+  // so the export always matches what's on screen) as a CSV.
+  var exportBtn = document.getElementById('admin-orders-export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', function () {
+      function esc(val) {
+        val = val === undefined || val === null ? '' : String(val);
+        if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1 || val.indexOf('\n') !== -1) return '"' + val.replace(/"/g, '""') + '"';
+        return val;
+      }
+      var rows, header;
+      if (activeChannel === 'shop') {
+        header = ['Bill No.', 'Date', 'Customer', 'Email', 'Items', 'Total (AED)', 'Sales Person', 'Status'];
+        rows = getFilteredSortedShop().map(function (o) {
+          var items = [];
+          try { items = JSON.parse(o.items || '[]'); } catch (e) {}
+          return [o.order_number || o.id, new Date(o.created_at).toLocaleString(), o.customer_name || '', o.customer_email || '',
+            items.map(function (it) { return it.id; }).join('|'), Number(o.total || 0).toFixed(2), o.sales_person || '', o.status || ''].map(esc).join(',');
+        });
+      } else {
+        header = ['Order #', 'Date', 'Customer', 'Email', 'Items', 'Total (AED)', 'Payment', 'Status'];
+        rows = getFilteredSorted().map(function (o) {
+          var items = [];
+          try { items = JSON.parse(o.items || '[]'); } catch (e) {}
+          return [o.order_number || o.id, new Date(o.created_at).toLocaleString(), o.customer_name || '', o.customer_email || '',
+            items.map(function (it) { return it.id; }).join('|'), Number(o.total || 0).toFixed(2), o.payment_method || '', statusLabel(o.status)].map(esc).join(',');
+        });
+      }
+      var csv = [header.map(esc).join(',')].concat(rows).join('\n');
+      var blob = new Blob([csv], { type: 'text/csv' });
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'pavnika-orders-' + activeChannel + '-' + new Date().toISOString().slice(0, 10) + '.csv';
+      a.click();
+    });
+  }
 
   loadOrders();
   window.__refreshOrders = loadOrders;
@@ -5227,13 +5514,21 @@ function initCustomersView(token) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ adminToken: token, customerId: c.customerId, newBalance: newBalance, reason: reason })
         })
-          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (res) {
+            return res.text().then(function (text) {
+              var parsed;
+              try { parsed = JSON.parse(text); } catch (e) {
+                throw new Error('Server did not return JSON (status ' + res.status + '): ' + text.slice(0, 300));
+              }
+              return { ok: res.ok, status: res.status, data: parsed };
+            });
+          })
           .then(function (result) {
             btn.disabled = false;
             btn.textContent = 'Adjust Store Credit';
             if (!result.ok) {
               drawerMsg.className = 'admin-status-msg admin-status-error';
-              drawerMsg.textContent = result.data.error || 'Could not adjust the balance.';
+              drawerMsg.textContent = result.data.error || ('Could not adjust the balance (status ' + result.status + ').');
               drawerMsg.style.display = 'block';
               return;
             }
@@ -5245,11 +5540,11 @@ function initCustomersView(token) {
             renderSummary();
             renderRows();
           })
-          .catch(function () {
+          .catch(function (e) {
             btn.disabled = false;
             btn.textContent = 'Adjust Store Credit';
             drawerMsg.className = 'admin-status-msg admin-status-error';
-            drawerMsg.textContent = 'Network error. Please try again.';
+            drawerMsg.textContent = 'Network error: ' + e.message;
             drawerMsg.style.display = 'block';
           });
       });
