@@ -5147,8 +5147,14 @@ function initCustomersView(token) {
       '<div class="admin-field"><label>Name</label><input type="text" id="admin-cust-name" value="' + (c.name || '').replace(/"/g, '&quot;') + '"></div>' +
       '<div class="admin-field"><label>Email</label><input type="text" id="admin-cust-email" value="' + (c.email || '').replace(/"/g, '&quot;') + '"></div>' +
       '<div class="admin-field"><label>Phone</label><input type="text" id="admin-cust-phone" value="' + (c.phone || '').replace(/"/g, '&quot;') + '"></div>' +
-      '<p style="font-size:0.72rem; opacity:0.6; margin:6px 0 14px;">Store credit can only change through a return or a checkout redemption, never edited directly here.</p>' +
-      '<button type="button" class="btn btn-primary" id="admin-cust-save-btn" style="width:100%;">Save Changes</button>';
+      '<button type="button" class="btn btn-primary" id="admin-cust-save-btn" style="width:100%;">Save Changes</button>' +
+      '<h4 style="margin-top:22px;">Store Credit</h4>' +
+      (c.customerId
+        ? ('<p style="font-size:0.76rem; opacity:0.7; margin:0 0 10px;">Store credit normally only changes through a return or a checkout redemption. Use this only to correct a balance that’s wrong (e.g. fixing a past error) — every change here is logged with a reason.</p>' +
+          '<div class="admin-field"><label>Current balance (AED)</label><input type="text" id="admin-cust-giftcard-balance" value="' + formatAED(c.giftCardBalance || 0) + '"></div>' +
+          '<div class="admin-field"><label>Reason for this change</label><input type="text" id="admin-cust-giftcard-reason" placeholder="e.g. correcting an over-credit from order #PV-1234"></div>' +
+          '<button type="button" class="btn" id="admin-cust-giftcard-save-btn" style="width:100%; color:#B8142A; border-color:#B8142A;">Adjust Store Credit</button>')
+        : '<p style="font-size:0.76rem; opacity:0.7; margin:0;">This customer has only ever bought online and has no store-credit record yet — save their contact details above first, then this balance can be adjusted.</p>');
 
     document.getElementById('admin-cust-save-btn').addEventListener('click', function () {
       var btn = this;
@@ -5189,6 +5195,65 @@ function initCustomersView(token) {
           drawerMsg.style.display = 'block';
         });
     });
+
+    var giftCardSaveBtn = document.getElementById('admin-cust-giftcard-save-btn');
+    if (giftCardSaveBtn) {
+      giftCardSaveBtn.addEventListener('click', function () {
+        var btn = this;
+        var newBalance = parseFloat(document.getElementById('admin-cust-giftcard-balance').value);
+        var reason = document.getElementById('admin-cust-giftcard-reason').value.trim();
+        drawerMsg.style.display = 'none';
+
+        if (!isFinite(newBalance) || newBalance < 0) {
+          drawerMsg.className = 'admin-status-msg admin-status-error';
+          drawerMsg.textContent = 'Enter a valid balance of 0 or more.';
+          drawerMsg.style.display = 'block';
+          return;
+        }
+        if (!reason) {
+          drawerMsg.className = 'admin-status-msg admin-status-error';
+          drawerMsg.textContent = 'A reason is required for this change.';
+          drawerMsg.style.display = 'block';
+          return;
+        }
+        if (!confirm('Set store credit to AED ' + formatAED(newBalance) + ' (currently AED ' + formatAED(c.giftCardBalance || 0) + ')?\n\nThis bypasses the normal return/redemption flow and is logged with the reason you gave.')) {
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Saving…';
+        fetch('/.netlify/functions/admin-adjust-gift-card-balance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, customerId: c.customerId, newBalance: newBalance, reason: reason })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            btn.disabled = false;
+            btn.textContent = 'Adjust Store Credit';
+            if (!result.ok) {
+              drawerMsg.className = 'admin-status-msg admin-status-error';
+              drawerMsg.textContent = result.data.error || 'Could not adjust the balance.';
+              drawerMsg.style.display = 'block';
+              return;
+            }
+            c.giftCardBalance = result.data.newBalance;
+            drawerMsg.className = 'admin-status-msg admin-status-success';
+            drawerMsg.textContent = 'Store credit updated to AED ' + formatAED(result.data.newBalance) + '.';
+            drawerMsg.style.display = 'block';
+            document.getElementById('admin-cust-giftcard-reason').value = '';
+            renderSummary();
+            renderRows();
+          })
+          .catch(function () {
+            btn.disabled = false;
+            btn.textContent = 'Adjust Store Credit';
+            drawerMsg.className = 'admin-status-msg admin-status-error';
+            drawerMsg.textContent = 'Network error. Please try again.';
+            drawerMsg.style.display = 'block';
+          });
+      });
+    }
 
     drawerOverlay.classList.add('is-open');
   }

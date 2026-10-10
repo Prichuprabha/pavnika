@@ -554,6 +554,19 @@ function updateReturnRefundPreview() {
 
 var customerDbCache = [];
 var customerDbSelectedId = null;
+var customerDbLoadedGiftCardBalance = 0;
+
+// Shows the "reason" field only once the balance actually differs
+// from what was loaded -- re-saving contact details without touching
+// the balance shouldn't force a reason to be typed.
+function updateCustomerDbGiftCardReasonVisibility() {
+  var input = document.getElementById('pos-cdb-summary-giftcard');
+  var wrap = document.getElementById('pos-cdb-giftcard-reason-wrap');
+  if (!input || !wrap) return;
+  var current = parseFloat(input.value);
+  var changed = !isNaN(current) && Math.round(current * 100) !== Math.round(customerDbLoadedGiftCardBalance * 100);
+  wrap.style.display = changed ? 'block' : 'none';
+}
 
 function loadCustomerDbList(query) {
   var listEl = document.getElementById('pos-cdb-list');
@@ -616,6 +629,9 @@ function selectCustomerDb(customer) {
   document.getElementById('pos-cdb-summary-giftcard').value = '';
   document.getElementById('pos-cdb-summary-points').placeholder = 'Loading...';
   document.getElementById('pos-cdb-summary-giftcard').placeholder = 'Loading...';
+  document.getElementById('pos-cdb-giftcard-reason').value = '';
+  document.getElementById('pos-cdb-giftcard-reason-wrap').style.display = 'none';
+  customerDbLoadedGiftCardBalance = 0;
 
   fetch('/.netlify/functions/pos-customer-summary', {
     method: 'POST',
@@ -629,6 +645,8 @@ function selectCustomerDb(customer) {
       document.getElementById('pos-cdb-summary-visit').textContent = data.lastVisit ? new Date(data.lastVisit).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '\u2014';
       document.getElementById('pos-cdb-summary-points').value = data.loyaltyPoints || 0;
       document.getElementById('pos-cdb-summary-giftcard').value = data.giftCardBalance || 0;
+      customerDbLoadedGiftCardBalance = data.giftCardBalance || 0;
+      updateCustomerDbGiftCardReasonVisibility();
     })
     .catch(function (e) { console.error('customer db summary error:', e); });
 }
@@ -639,6 +657,8 @@ function saveCustomerDb() {
   var phone = document.getElementById('pos-cdb-phone').value.trim();
   var loyaltyPoints = parseInt(document.getElementById('pos-cdb-summary-points').value, 10);
   var giftCardBalance = parseFloat(document.getElementById('pos-cdb-summary-giftcard').value);
+  var giftCardReason = document.getElementById('pos-cdb-giftcard-reason').value.trim();
+  var giftCardBalanceChanged = !isNaN(giftCardBalance) && Math.round(giftCardBalance * 100) !== Math.round(customerDbLoadedGiftCardBalance * 100);
   var errorEl = document.getElementById('pos-cdb-error');
   errorEl.textContent = '';
 
@@ -652,6 +672,13 @@ function saveCustomerDb() {
   }
   if (isNaN(giftCardBalance) || giftCardBalance < 0) {
     errorEl.textContent = 'Gift card balance must be a valid amount, 0 or more.';
+    return;
+  }
+  if (giftCardBalanceChanged && !giftCardReason) {
+    errorEl.textContent = 'A reason is required when changing the gift card balance.';
+    return;
+  }
+  if (giftCardBalanceChanged && !confirm('Change gift card balance from AED ' + formatAED(customerDbLoadedGiftCardBalance) + ' to AED ' + formatAED(giftCardBalance) + '?\n\nThis is logged with the reason you gave.')) {
     return;
   }
 
@@ -673,7 +700,8 @@ function saveCustomerDb() {
       emirate: emirateBtn ? emirateBtn.getAttribute('data-v') : null,
       address: document.getElementById('pos-cdb-address').value.trim(),
       loyaltyPoints: loyaltyPoints,
-      giftCardBalance: giftCardBalance
+      giftCardBalance: giftCardBalance,
+      giftCardReason: giftCardReason
     })
   })
     .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
@@ -698,6 +726,9 @@ function saveCustomerDb() {
       if (posState.selectedCustomer && posState.selectedCustomer.id === customerDbSelectedId) {
         posState.selectedCustomer = result.data.customer;
       }
+      customerDbLoadedGiftCardBalance = Number(result.data.customer.gift_card_balance) || 0;
+      document.getElementById('pos-cdb-giftcard-reason').value = '';
+      updateCustomerDbGiftCardReasonVisibility();
     })
     .catch(function (e) {
       btn.disabled = false;
@@ -2856,6 +2887,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
   document.getElementById('pos-cdb-save-btn').addEventListener('click', saveCustomerDb);
+  document.getElementById('pos-cdb-summary-giftcard').addEventListener('input', updateCustomerDbGiftCardReasonVisibility);
 
   document.getElementById('pos-cdb-delete-btn').addEventListener('click', function () {
     if (!customerDbSelectedId) return;
