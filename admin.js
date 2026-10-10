@@ -5227,21 +5227,13 @@ function initCustomersView(token) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ adminToken: token, customerId: c.customerId, newBalance: newBalance, reason: reason })
         })
-          .then(function (res) {
-            return res.text().then(function (text) {
-              var parsed;
-              try { parsed = JSON.parse(text); } catch (e) {
-                throw new Error('Server did not return JSON (status ' + res.status + '): ' + text.slice(0, 300));
-              }
-              return { ok: res.ok, status: res.status, data: parsed };
-            });
-          })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
           .then(function (result) {
             btn.disabled = false;
             btn.textContent = 'Adjust Store Credit';
             if (!result.ok) {
               drawerMsg.className = 'admin-status-msg admin-status-error';
-              drawerMsg.textContent = result.data.error || ('Could not adjust the balance (status ' + result.status + ').');
+              drawerMsg.textContent = result.data.error || 'Could not adjust the balance.';
               drawerMsg.style.display = 'block';
               return;
             }
@@ -5253,11 +5245,11 @@ function initCustomersView(token) {
             renderSummary();
             renderRows();
           })
-          .catch(function (e) {
+          .catch(function () {
             btn.disabled = false;
             btn.textContent = 'Adjust Store Credit';
             drawerMsg.className = 'admin-status-msg admin-status-error';
-            drawerMsg.textContent = 'Network error: ' + e.message;
+            drawerMsg.textContent = 'Network error. Please try again.';
             drawerMsg.style.display = 'block';
           });
       });
