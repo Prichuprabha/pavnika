@@ -2,11 +2,13 @@
 //
 // POST { adminToken, customerId?, originalEmail?, name, email, phone }
 // - Updates a customer's name/email/phone only — gift_card_balance is
-//   deliberately never accepted here. It can only ever change through
-//   an actual return or redemption (see admin-process-order-return.js,
-//   create-nomod-checkout.js, resume-nomod-checkout.js), each of which
-//   keeps its own record of why the balance moved; a free-text edit
-//   here would bypass that trail entirely.
+//   deliberately never accepted here, since this endpoint has no
+//   reason field. Balance changes through an actual return or
+//   redemption (see admin-process-order-return.js, create-nomod-checkout.js,
+//   resume-nomod-checkout.js) are self-explanatory; a deliberate
+//   manual correction goes through admin-adjust-gift-card-balance.js
+//   or pos-update-customer.js instead, both of which require a reason
+//   and log it to gift_card_adjustments.
 // - customerId present -> updates that existing pos_customers row.
 // - customerId absent -> this is a customer who has only ever bought
 //   online and has no pos_customers row yet (see admin-list-customers.js);
