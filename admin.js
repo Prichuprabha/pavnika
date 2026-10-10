@@ -3822,11 +3822,35 @@ function initOrdersView(token) {
     return '<select class="admin-order-payment-select" data-id="' + o.id + '" title="Raw value on file: ' + (o.payment_method ? o.payment_method.replace(/"/g, '&quot;') : 'none') + '">' + options + '</select>';
   }
 
+  // Refunded / Refunded (To Gift Card) / Partially Refunded are
+  // deliberately NOT settable from this dropdown -- all three used to
+  // be here, but none of them went through the item-level, qty-aware,
+  // discount-prorated math "Process Return" now handles, and could be
+  // picked independently of it. That's how an order could end up
+  // refunded twice (once via this dropdown, once via Process Return)
+  // with two different amounts -- exactly what happened to prompt this
+  // change. "Partially Refunded" additionally never worked at all when
+  // picked here (the backend doesn't accept it as a settable status).
+  // Any refund now goes through Process Return only.
+  //
+  // An order that already carries one of these three statuses (set
+  // before this change, or by Process Return itself) still needs to
+  // show that truthfully -- it's added back in as a disabled option so
+  // it displays and stays selected, without being re-selectable. The
+  // admin can still move an order OFF one of these statuses (e.g. to
+  // correct a mistaken entry) by picking any of the normal statuses.
+  var SETTABLE_ORDER_STATUSES = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled'];
+  var LEGACY_REFUND_STATUSES = ['refunded', 'refunded_giftcard', 'partially_refunded'];
+
   function buildStatusSelect(o) {
-    var statuses = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled', 'refunded', 'refunded_giftcard', 'partially_refunded'];
+    var statuses = SETTABLE_ORDER_STATUSES.slice();
+    var currentIsLegacyRefundStatus = LEGACY_REFUND_STATUSES.indexOf(o.status) !== -1;
     var options = statuses.map(function (s) {
       return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
     }).join('');
+    if (currentIsLegacyRefundStatus) {
+      options = '<option value="' + o.status + '" selected disabled>' + statusLabel(o.status) + ' (use Process Return to change this)</option>' + options;
+    }
     return '<select class="admin-order-status-select" data-id="' + o.id + '">' + options + '</select>';
   }
 
@@ -3997,10 +4021,12 @@ function initOrdersView(token) {
           '<span style="font-size:0.68rem; color:#B8142A; font-weight:700; text-transform:uppercase;">Already returned</span>' +
         '</div>';
       }
+      var itQty = Number(it.qty) || 1;
+      var itLineValue = (Number(it.price) || 0) * itQty;
       return '<label style="display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid #EADFD6; font-size:0.82rem; cursor:pointer;">' +
-        '<input type="checkbox" class="admin-return-item-checkbox" data-item-id="' + it.id + '" data-item-price="' + (Number(it.price) || 0) + '">' +
-        '<span style="flex:1;">' + (it.id || '') + ' \u2014 ' + (it.name || it.id || 'Item') + '</span>' +
-        '<span style="font-weight:600;">AED ' + formatAED(it.price || 0) + '</span>' +
+        '<input type="checkbox" class="admin-return-item-checkbox" data-item-id="' + it.id + '" data-item-price="' + itLineValue + '">' +
+        '<span style="flex:1;">' + (it.id || '') + ' \u2014 ' + (it.name || it.id || 'Item') + (itQty > 1 ? ' (Qty: ' + itQty + ')' : '') + '</span>' +
+        '<span style="font-weight:600;">AED ' + formatAED(itLineValue) + '</span>' +
       '</label>';
     }).join('');
 
