@@ -1551,15 +1551,23 @@ function initCollectionsPage() {
     });
   }
 
-  // Pre-set the category/series/search filter if arriving from a link
-  // elsewhere on the site, e.g. collections.html?series=SUMANGALI or
-  // collections.html?q=floral&open=SU003
+  // Pre-set the category/series/shade/occasion/price/sort/search filter
+  // if arriving from a link elsewhere on the site, e.g.
+  // collections.html?series=SUMANGALI or collections.html?q=floral&open=SU003
+  // -- or a curated admin-built link (see admin's "Send Filtered List"
+  // tool), which can set any combination of these at once, plus
+  // hideSold=1 to only ever show items actually available to buy.
   var params = new URLSearchParams(window.location.search);
   var catParam = params.get('category');
   var seriesParam = params.get('series');
+  var shadeParam = params.get('shade');
   var occasionParam = params.get('occasion');
   var queryParam = params.get('q');
   var openParam = params.get('open');
+  var priceMinParam = params.get('priceMin');
+  var priceMaxParam = params.get('priceMax');
+  var sortParam = params.get('sort');
+  var hideSoldParam = params.get('hideSold');
 
   if (occasionParam && occasionGroup && occasionGroup.querySelector('.filter-btn[data-value="' + occasionParam.replace(/"/g, '') + '"]')) {
     state.occasion = occasionParam;
@@ -1580,16 +1588,45 @@ function initCollectionsPage() {
     }
   }
 
+  if (shadeParam && shadeGroup && shadeGroup.querySelector('.swatch-btn[data-value="' + shadeParam.replace(/"/g, '') + '"]')) {
+    state.shade = shadeParam;
+    shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-value') === shadeParam);
+    });
+  }
+
   if (queryParam && searchInput) {
     state.query = queryParam;
     searchInput.value = queryParam;
   }
 
+  if (priceMinInput && priceMaxInput && priceMinParam !== null && priceMaxParam !== null) {
+    var pMinFromUrl = Number(priceMinParam);
+    var pMaxFromUrl = Number(priceMaxParam);
+    if (!isNaN(pMinFromUrl) && !isNaN(pMaxFromUrl)) {
+      priceMinInput.value = pMinFromUrl;
+      priceMaxInput.value = pMaxFromUrl;
+      state.priceMin = pMinFromUrl;
+      state.priceMax = pMaxFromUrl;
+      updatePriceUI();
+    }
+  }
+
+  if (sortParam && sortSelect && ['default', 'price-asc', 'price-desc', 'newest'].indexOf(sortParam) !== -1) {
+    state.sort = sortParam;
+    sortSelect.value = sortParam;
+  }
+
+  if (hideSoldParam === '1') {
+    state.hideSold = true;
+    if (hideSoldToggle) hideSoldToggle.checked = true;
+  }
+
   // Arriving with a filter already applied (e.g. a home page occasion
-  // tile) should show that immediately, not hide it behind a collapsed
-  // "Filters" heading — a normal visit with nothing pre-applied still
-  // starts collapsed as usual.
-  if (filtersBox && (state.occasion !== 'all' || state.category !== 'all' || state.series !== 'all' || queryParam)) {
+  // tile, or an admin-built shared link) should show that immediately,
+  // not hide it behind a collapsed "Filters" heading — a normal visit
+  // with nothing pre-applied still starts collapsed as usual.
+  if (filtersBox && (state.occasion !== 'all' || state.category !== 'all' || state.series !== 'all' || state.shade !== 'all' || state.hideSold || queryParam)) {
     filtersBox.classList.remove('collapsed');
   }
 
@@ -2071,15 +2108,21 @@ function initJewelleryAccessoriesPage() {
     });
   }
 
-  // Pre-set the category filter and/or open a specific item's lightbox
-  // if arriving from a link elsewhere on the site, e.g. the home page's
-  // category tiles (?type=Bangles%20%26%20Bracelets) or a shared
-  // product link (?open=JW001). Neither of these existed before, which
-  // meant a shared link landed on the page but never actually opened
-  // anything.
+  // Pre-set the category/search/price/sort filter and/or open a specific
+  // item's lightbox if arriving from a link elsewhere on the site, e.g.
+  // the home page's category tiles (?type=Bangles%20%26%20Bracelets) or
+  // a shared product link (?open=JW001) -- or a curated admin-built link
+  // (see admin's "Send Filtered List" tool), which can set any
+  // combination of these at once, plus hideSold=1 to only ever show
+  // items actually available to buy.
   var jaUrlParams = new URLSearchParams(window.location.search);
   var typeParam = jaUrlParams.get('type');
   var openParam = jaUrlParams.get('open');
+  var jaQueryParam = jaUrlParams.get('q');
+  var jaPriceMinParam = jaUrlParams.get('priceMin');
+  var jaPriceMaxParam = jaUrlParams.get('priceMax');
+  var jaSortParam = jaUrlParams.get('sort');
+  var jaHideSoldParam = jaUrlParams.get('hideSold');
   if (typeParam) {
     var matchingChip = chipRow.querySelector('.filter-btn[data-value="' + typeParam.replace(/"/g, '') + '"]');
     if (matchingChip) {
@@ -2088,6 +2131,38 @@ function initJewelleryAccessoriesPage() {
       state.type = typeParam;
       if (jaSidebar) jaSidebar.classList.remove('collapsed');
     }
+  }
+
+  if (jaQueryParam && searchInput) {
+    state.query = jaQueryParam;
+    searchInput.value = jaQueryParam;
+  }
+
+  if (priceMinInput && priceMaxInput && jaPriceMinParam !== null && jaPriceMaxParam !== null) {
+    var jaPMinFromUrl = Number(jaPriceMinParam);
+    var jaPMaxFromUrl = Number(jaPriceMaxParam);
+    if (!isNaN(jaPMinFromUrl) && !isNaN(jaPMaxFromUrl)) {
+      priceMinInput.value = jaPMinFromUrl;
+      priceMaxInput.value = jaPMaxFromUrl;
+      state.priceMin = jaPMinFromUrl;
+      state.priceMax = jaPMaxFromUrl;
+      updatePriceUI();
+    }
+  }
+
+  if (jaSortParam && sortSelect && ['default', 'price-asc', 'price-desc', 'newest'].indexOf(jaSortParam) !== -1) {
+    state.sort = jaSortParam;
+    sortSelect.value = jaSortParam;
+  }
+
+  if (jaHideSoldParam === '1') {
+    state.hideSold = true;
+    if (hideSoldToggle) hideSoldToggle.checked = true;
+    if (hideSoldMobileBtn) hideSoldMobileBtn.classList.add('checked');
+  }
+
+  if (jaSidebar && (state.type !== 'all' || jaQueryParam || state.hideSold)) {
+    jaSidebar.classList.remove('collapsed');
   }
 
   render();
