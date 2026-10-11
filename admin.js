@@ -1,5 +1,108 @@
 var ADMIN_TOKEN_KEY = 'pavnika_admin_token';
 
+// ---------------------------------------------------------------
+/* ---------- Shared: body scroll lock while any popup/drawer is open ----------
+   Every full modal/slide-in in this app shares one of these three
+   overlay classes. Rather than hand-editing every single place that
+   opens/closes one of them (dozens of call sites, easy to miss one),
+   a MutationObserver just watches all of them for "is-open" and keeps
+   the page body non-scrollable for as long as at least one is open.
+   Small inline popovers (search-result dropdowns, the date-range
+   popover) deliberately do NOT use these classes, so they're
+   unaffected -- only real full-page popups/drawers lock the page. */
+(function initScrollLock() {
+  var LOCK_SELECTOR = '.admin-order-drawer-overlay, .admin-simple-modal-overlay, .admin-modal-overlay';
+  function refreshScrollLock() {
+    var anyOpen = Array.prototype.some.call(document.querySelectorAll(LOCK_SELECTOR), function (el) {
+      return el.classList.contains('is-open');
+    });
+    document.body.style.overflow = anyOpen ? 'hidden' : '';
+  }
+  function observeAll() {
+    var observer = new MutationObserver(refreshScrollLock);
+    document.querySelectorAll(LOCK_SELECTOR).forEach(function (el) {
+      observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+    });
+    refreshScrollLock();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', observeAll);
+  } else {
+    observeAll();
+  }
+})();
+
+// ---------------------------------------------------------------
+/* ---------- Shared: confirmation popup ----------
+   A small styled replacement for the browser's native confirm() --
+   used wherever a change should be double-checked before it's sent
+   (order status, payment method, processing a return). Reuses the
+   existing .admin-simple-modal-overlay look so it matches the rest of
+   the admin panel instead of looking like a browser alert. */
+function showConfirmPopup(message, onConfirm, onCancel) {
+  var overlay = document.getElementById('admin-confirm-overlay');
+  var textEl = document.getElementById('admin-confirm-text');
+  var yesBtn = document.getElementById('admin-confirm-yes-btn');
+  var noBtn = document.getElementById('admin-confirm-no-btn');
+  if (!overlay) { if (onConfirm) onConfirm(); return; } // safety net if markup is ever missing
+  textEl.textContent = message;
+  overlay.classList.add('is-open');
+
+  function cleanup() {
+    overlay.classList.remove('is-open');
+    yesBtn.removeEventListener('click', onYes);
+    noBtn.removeEventListener('click', onNo);
+    overlay.removeEventListener('click', onOverlayClick);
+  }
+  function onYes() { cleanup(); if (onConfirm) onConfirm(); }
+  function onNo() { cleanup(); if (onCancel) onCancel(); }
+  function onOverlayClick(e) { if (e.target === overlay) onNo(); }
+  yesBtn.addEventListener('click', onYes);
+  noBtn.addEventListener('click', onNo);
+  overlay.addEventListener('click', onOverlayClick);
+}
+
+// ---------------------------------------------------------------
+/* ---------- Shared: session-expired popup ----------
+   Every admin-* function returns 401 + "Not authorized..." the same
+   way when the signed token has expired or been invalidated. Before
+   this, each view handled that failure differently (most just showed
+   it as a small inline error, easy to miss) -- this patches window.fetch
+   once so ANY call to a netlify function in this app that comes back
+   401 with that message shows one unmissable "session ended" popup
+   with a button back to the login screen, regardless of which view
+   triggered it. */
+(function initSessionExpiryWatcher() {
+  var shown = false;
+  function showSessionExpired() {
+    if (shown) return;
+    shown = true;
+    var overlay = document.getElementById('admin-session-expired-overlay');
+    if (!overlay) { window.location.reload(); return; }
+    overlay.classList.add('is-open');
+  }
+  var originalFetch = window.fetch;
+  window.fetch = function () {
+    var args = arguments;
+    return originalFetch.apply(window, args).then(function (res) {
+      var url = (args[0] && args[0].url) || args[0] || '';
+      if (res.status === 401 && String(url).indexOf('/.netlify/functions/') !== -1 && String(url).indexOf('admin-login') === -1) {
+        res.clone().json().then(function (data) {
+          if (data && /not authorized/i.test(data.error || '')) showSessionExpired();
+        }).catch(function () {});
+      }
+      return res;
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function () {
+    var goBtn = document.getElementById('admin-session-expired-login-btn');
+    if (goBtn) goBtn.addEventListener('click', function () {
+      localStorage.removeItem(ADMIN_TOKEN_KEY);
+      window.location.reload();
+    });
+  });
+})();
+
 // Same formatting as the live site's own formatAED (script.js) --
 // thousands-separated with 2 decimals, e.g. 1234 -> "1,234.00". Used
 // everywhere a price is DISPLAYED (never for an editable form input's
@@ -436,8 +539,18 @@ function renderScrollablePanel(container, items, rowBuilder, emptyMessage, modal
   if (!items.length) {
     container.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">' + emptyMessage + '</p>';
   } else {
-    container.innerHTML = '<div class="admin-scroll-list">' + items.map(rowBuilder).join('') + '</div>';
+    // On mobile, a touch scroll that starts over this list gets
+    // captured by it instead of continuing to scroll the page -- the
+    // list looked like it had "grabbed" the page's scroll the moment
+    // you reached it. Below 880px the list opens pinned to its
+    // collapsed height (no internal scroll) and a "Show more" link
+    // switches it into a scrollable state on demand; "Show less"
+    // switches it back. Desktop is unaffected (always scrollable, as
+    // before).
+    container.innerHTML = '<div class="admin-scroll-list">' + items.map(rowBuilder).join('') + '</div>' +
+      '<div class="admin-scroll-more-link" tabindex="0">Show more <span class="admin-scroll-more-arrow">&darr;</span></div>';
     var scrollEl = container.querySelector('.admin-scroll-list');
+    var moreLink = container.querySelector('.admin-scroll-more-link');
     // The bottom fade (CSS, above) signals "there's more below, scroll"
     // -- drop it once scrolled all the way down (or if there's nothing
     // to scroll at all) so the last row doesn't look like it's
@@ -448,11 +561,96 @@ function renderScrollablePanel(container, items, rowBuilder, emptyMessage, modal
     }
     scrollEl.addEventListener('scroll', updateFade);
     updateFade();
+
+    function collapseList() {
+      if (!scrollEl.classList.contains('is-expanded')) return;
+      scrollEl.classList.remove('is-expanded');
+      moreLink.innerHTML = 'Show more <span class="admin-scroll-more-arrow">&darr;</span>';
+      scrollEl.scrollTop = 0;
+    }
+
+    moreLink.addEventListener('click', function () {
+      var expanding = !scrollEl.classList.contains('is-expanded');
+      if (expanding) {
+        scrollEl.classList.add('is-expanded');
+        moreLink.innerHTML = 'Show less <span class="admin-scroll-more-arrow">&uarr;</span>';
+      } else {
+        collapseList();
+      }
+    });
+
+    // "...and once i scroll past it, it goes back to the fixed state" --
+    // once the panel has scrolled up out of view (the page has moved
+    // on past it), drop it back to the fixed/collapsed state so it's
+    // not left expanded the next time it scrolls back into view.
+    if (window.IntersectionObserver) {
+      var pastObserver = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
+            collapseList();
+          }
+        });
+      }, { threshold: 0 });
+      pastObserver.observe(container);
+    }
   }
   var viewAllLink = document.getElementById(container.id + '-viewall');
   if (viewAllLink) {
     viewAllLink.style.display = items.length ? '' : 'none';
     viewAllLink.onclick = function () { openListModal(modalTitle, items, rowBuilder, emptyMessage); };
+  }
+}
+
+// Same fixed-height / "Show more" / collapse-on-scroll-past behavior as
+// renderScrollablePanel above, for a list whose rows are already
+// rendered (e.g. the Orders page's mobile card list), rather than
+// built from a rowBuilder here. Call this right after setting the
+// container's innerHTML to the row markup, before attaching any
+// per-row click handlers via container.querySelectorAll(...) -- the
+// rows themselves are reparented, not recreated, so handlers attached
+// afterward still work normally.
+function wireMobileScrollList(container) {
+  if (!container) return;
+  var rows = container.innerHTML;
+  if (!rows) return; // empty-state message -- nothing to wrap
+  container.innerHTML = '<div class="admin-scroll-list">' + rows + '</div>' +
+    '<div class="admin-scroll-more-link" tabindex="0">Show more <span class="admin-scroll-more-arrow">&darr;</span></div>';
+  var scrollEl = container.querySelector('.admin-scroll-list');
+  var moreLink = container.querySelector('.admin-scroll-more-link');
+
+  function updateFade() {
+    var atBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 4;
+    scrollEl.classList.toggle('is-at-bottom', atBottom);
+  }
+  scrollEl.addEventListener('scroll', updateFade);
+  updateFade();
+
+  function collapseList() {
+    if (!scrollEl.classList.contains('is-expanded')) return;
+    scrollEl.classList.remove('is-expanded');
+    moreLink.innerHTML = 'Show more <span class="admin-scroll-more-arrow">&darr;</span>';
+    scrollEl.scrollTop = 0;
+  }
+
+  moreLink.addEventListener('click', function () {
+    var expanding = !scrollEl.classList.contains('is-expanded');
+    if (expanding) {
+      scrollEl.classList.add('is-expanded');
+      moreLink.innerHTML = 'Show less <span class="admin-scroll-more-arrow">&uarr;</span>';
+    } else {
+      collapseList();
+    }
+  });
+
+  if (window.IntersectionObserver) {
+    var pastObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting && entry.boundingClientRect.bottom < 0) {
+          collapseList();
+        }
+      });
+    }, { threshold: 0 });
+    pastObserver.observe(container);
   }
 }
 
@@ -485,6 +683,13 @@ function initSidebarNav() {
       document.querySelectorAll('.admin-view').forEach(function (v) { v.style.display = 'none'; });
       var target = document.getElementById('admin-view-' + view);
       if (target) target.style.display = 'block';
+      // Switching views only toggles display:none/block -- it doesn't
+      // touch scroll position, so a page left scrolled down (e.g. deep
+      // in the Orders list) made the newly-shown view (Manual Order,
+      // Add Product, ...) look like it opened pre-scrolled to the
+      // bottom. Every view switch should land at the top.
+      window.scrollTo(0, 0);
+      if (target) target.scrollTop = 0;
       if (view === 'stats' && window.__refreshStats) window.__refreshStats();
       if (mobileTitle) mobileTitle.textContent = item.textContent.trim();
       bottomNavItems.forEach(function (b) {
@@ -603,6 +808,16 @@ function initSareeEditor(token) {
   document.getElementById('admin-f-aprice').addEventListener('input', updateSalePreview);
   document.getElementById('admin-f-sale-price').addEventListener('input', updateSalePreview);
   departmentSelect.addEventListener('change', updateSalePreview);
+
+  // "Sale Price" section is collapsed by default (most items have no
+  // offer) -- the toggle just shows/hides the entry field; the value
+  // itself is untouched either way, so flipping it off after typing a
+  // price doesn't clear it, it's just tucked away again.
+  var salePriceToggle = document.getElementById('admin-sale-price-toggle');
+  var salePriceWrap = document.getElementById('admin-sale-price-wrap');
+  salePriceToggle.addEventListener('change', function () {
+    salePriceWrap.style.display = salePriceToggle.checked ? 'block' : 'none';
+  });
 
   // Generic stock-quantity toggle -- available to any department, since
   // sarees/jewellery/accessories can all potentially sell this way, not
@@ -1356,6 +1571,8 @@ function initSareeEditor(token) {
     formTitle.textContent = 'Add New Item';
     form.reset();
     document.getElementById('admin-sale-preview').style.display = 'none';
+    document.getElementById('admin-sale-price-toggle').checked = false;
+    document.getElementById('admin-sale-price-wrap').style.display = 'none';
     idField.readOnly = false;
     idWrap.classList.remove('readonly');
     idWarning.style.display = 'none';
@@ -1408,6 +1625,8 @@ function initSareeEditor(token) {
     idHint.textContent = 'Editing an existing item — ID stays fixed.';
     document.getElementById('admin-f-sale-price').value = product.salePrice || '';
     updateSalePreview();
+    document.getElementById('admin-sale-price-toggle').checked = !!product.salePrice;
+    document.getElementById('admin-sale-price-wrap').style.display = product.salePrice ? 'block' : 'none';
     document.getElementById('admin-f-sold').checked = !!product.sold;
     // Generic stock-quantity fields (any department) -- a legacy
     // one-of-a-kind item has no .quantity at all, so the checkbox and
@@ -2667,7 +2886,7 @@ function initStatsDashboard(token) {
         '</div>';
       },
       'No views logged yet.',
-      'Most viewed sarees'
+      'Most Viewed Items'
     );
 
     regionsRows.innerHTML = buildDonutHtml(
@@ -2885,9 +3104,18 @@ function initStatsDashboard(token) {
       '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%; height:90px;">' +
         '<polyline points="' + coords.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="1.4" vector-effect="non-scaling-stroke"/>' +
       '</svg>';
+    // Up to 6 evenly-spaced date labels along the x-axis (previously
+    // only the first/last date showed, leaving a long unlabeled stretch
+    // for anything wider than a week).
+    var maxLabels = Math.min(6, dates.length);
+    var labelIndices = [];
+    for (var li = 0; li < maxLabels; li++) {
+      var idx = maxLabels > 1 ? Math.round(li * (dates.length - 1) / (maxLabels - 1)) : 0;
+      if (labelIndices.indexOf(idx) === -1) labelIndices.push(idx);
+    }
     var labels =
       '<div style="display:flex; justify-content:space-between; font-size:0.62rem; color:#8a7266; margin-top:4px;">' +
-        '<span>' + dates[0] + '</span><span>' + dates[dates.length - 1] + '</span>' +
+        labelIndices.map(function (idx) { return '<span>' + dates[idx] + '</span>'; }).join('') +
       '</div>';
     chartEl.innerHTML = svg + labels;
   }
@@ -3387,7 +3615,7 @@ function initPosUsersEditor(token) {
     rowsEl.innerHTML = users.map(function (u) {
       var created = new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       return '<tr><td>' + u.username + '</td><td>' + u.display_name + '</td><td>' + created + '</td>' +
-        '<td><input type="checkbox" data-toggle-admin="' + u.id + '"' + (u.is_admin ? ' checked' : '') + '></td>' +
+        '<td><span class="admin-toggle-switch"><input type="checkbox" data-toggle-admin="' + u.id + '"' + (u.is_admin ? ' checked' : '') + '><span class="admin-toggle-slider"></span></span></td>' +
         '<td><button type="button" class="admin-btn-secondary" data-delete-user="' + u.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
     }).join('');
 
@@ -3893,6 +4121,11 @@ function initOrdersView(token) {
         '</div>'
       );
     }).join('') : '<p style="font-size:0.85rem; opacity:0.6; padding:16px;">No orders match.</p>';
+    // Delegated click handling (below, in this view's setup) uses
+    // .closest('.admin-orders-clickable-row'), so it keeps working
+    // through the extra wrapper div this adds -- no per-row rebinding
+    // needed here.
+    if (pageItems.length) wireMobileScrollList(mobileListEl);
   }
 
   function getFilteredSortedShop() {
@@ -4040,6 +4273,7 @@ function initOrdersView(token) {
         '</div>'
       );
     }).join('') : '<p style="font-size:0.85rem; opacity:0.6; padding:16px;">No shop orders match.</p>';
+    if (pageItems.length) wireMobileScrollList(mobileListEl);
   }
 
   // Reduces whatever's actually sitting in payment_method — a raw
@@ -4175,6 +4409,9 @@ function initOrdersView(token) {
     e.stopPropagation();
     ordersDatePopover.classList.toggle('is-open');
   });
+  window.addEventListener('scroll', function () {
+    ordersDatePopover.classList.remove('is-open');
+  }, true);
   document.addEventListener('click', function (e) {
     if (!ordersDatePopover.contains(e.target) && e.target !== ordersDateBtn) {
       ordersDatePopover.classList.remove('is-open');
@@ -4294,19 +4531,27 @@ function initOrdersView(token) {
         '<p style="font-size:0.82rem; opacity:0.6;">Every item on this order has already been returned.</p>' + historyHtml;
     }
 
-    return '<h4 style="margin-top:20px;">Process Return</h4>' +
-      '<div id="admin-return-items">' + itemsHtml + '</div>' +
-      '<div style="margin-top:10px;">' +
-        '<label style="font-size:0.76rem; opacity:0.7; display:block; margin-bottom:4px;">Refund via</label>' +
-        '<select id="admin-return-method" style="width:100%;">' +
-          '<option value="cash">Cash</option>' +
-          '<option value="bank_transfer">Bank transfer</option>' +
-          '<option value="gift_card">Store credit (Gift Card)</option>' +
-        '</select>' +
+    return '<div style="margin-top:20px; display:flex; align-items:center; justify-content:space-between;">' +
+        '<h4 style="margin:0;">Process Return</h4>' +
+        '<span class="admin-toggle-switch"><input type="checkbox" id="admin-return-toggle"><span class="admin-toggle-slider"></span></span>' +
       '</div>' +
-      '<p id="admin-return-estimate" style="font-size:0.82rem; font-weight:600; margin:10px 0 0;">Select at least one item</p>' +
-      '<button type="button" class="btn btn-primary" id="admin-return-submit-btn" style="width:100%; margin-top:10px;" disabled>Process Return</button>' +
-      '<p id="admin-return-msg" class="admin-status-msg" style="display:none; margin-top:8px;"></p>' +
+      '<div id="admin-return-section-body" style="display:none; margin-top:10px;">' +
+        '<div id="admin-return-items">' + itemsHtml + '</div>' +
+        '<div style="margin-top:10px;" class="admin-field">' +
+          '<label style="font-size:0.76rem; opacity:0.7; display:block; margin-bottom:4px;">Refund via</label>' +
+          '<select id="admin-return-method" class="admin-pill-input" style="width:100%;">' +
+            '<option value="cash">Cash</option>' +
+            '<option value="bank_transfer">Bank transfer</option>' +
+            '<option value="gift_card">Store credit (Gift Card)</option>' +
+          '</select>' +
+        '</div>' +
+        '<p id="admin-return-estimate" style="font-size:0.82rem; font-weight:600; margin:10px 0 0;">Select at least one item</p>' +
+        '<div style="display:flex; gap:10px; margin-top:10px;">' +
+          '<button type="button" class="btn btn-primary" id="admin-return-submit-btn" style="flex:1;" disabled>Process Return</button>' +
+          '<button type="button" class="btn btn-ghost" id="admin-return-cancel-btn" style="flex:1;">Cancel</button>' +
+        '</div>' +
+        '<p id="admin-return-msg" class="admin-status-msg" style="display:none; margin-top:8px;"></p>' +
+      '</div>' +
       historyHtml;
   }
 
@@ -4431,6 +4676,23 @@ function initOrdersView(token) {
       });
     }
 
+    var returnToggle = document.getElementById('admin-return-toggle');
+    var returnSectionBody = document.getElementById('admin-return-section-body');
+    if (returnToggle && returnSectionBody) {
+      returnToggle.addEventListener('change', function () {
+        returnSectionBody.style.display = returnToggle.checked ? 'block' : 'none';
+      });
+    }
+    var returnCancelBtn = document.getElementById('admin-return-cancel-btn');
+    if (returnCancelBtn && returnToggle) {
+      returnCancelBtn.addEventListener('click', function () {
+        drawerBody.querySelectorAll('.admin-return-item-checkbox:checked').forEach(function (cb) { cb.checked = false; });
+        updateReturnEstimate(order);
+        returnToggle.checked = false;
+        returnSectionBody.style.display = 'none';
+      });
+    }
+
     var returnSubmitBtn = document.getElementById('admin-return-submit-btn');
     if (returnSubmitBtn) {
       returnSubmitBtn.addEventListener('click', function () {
@@ -4440,8 +4702,7 @@ function initOrdersView(token) {
         var method = document.getElementById('admin-return-method').value;
         var returnMsgEl = document.getElementById('admin-return-msg');
 
-        if (!confirm('Process a return for ' + itemIds.length + ' item(s) via ' + RETURN_METHOD_LABEL[method] + '? This cannot be undone here.')) return;
-
+        showConfirmPopup('Process a return for ' + itemIds.length + ' item(s) via ' + RETURN_METHOD_LABEL[method] + '? This cannot be undone here.', function () {
         returnSubmitBtn.disabled = true;
         returnSubmitBtn.textContent = 'Processing...';
         returnMsgEl.style.display = 'none';
@@ -4478,6 +4739,7 @@ function initOrdersView(token) {
             returnSubmitBtn.disabled = false;
             returnSubmitBtn.textContent = 'Process Return';
           });
+        });
       });
     }
   }
@@ -4527,24 +4789,31 @@ function initOrdersView(token) {
     if (select) {
       var orderId = select.getAttribute('data-id');
       var newStatus = select.value;
-      showDrawerStatus('success', 'Saving...');
+      var orderForStatus = allOrders.find(function (o) { return String(o.id) === String(orderId); });
+      var prevStatus = orderForStatus ? orderForStatus.status : select.value;
+      select.value = prevStatus; // hold the visible value until confirmed
 
-      fetch('/.netlify/functions/admin-update-order-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
-      })
-        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-        .then(function (result) {
-          if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); return; }
-          var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
-          if (order) order.status = newStatus;
-          drawerStatusBadge.textContent = statusLabel(newStatus);
-          showDrawerStatus('success', 'Updated to ' + statusLabel(newStatus) + '.');
-          renderSummary();
-          renderTable();
+      showConfirmPopup('Change this order’s status to “' + statusLabel(newStatus) + '”?', function () {
+        select.value = newStatus;
+        showDrawerStatus('success', 'Saving...');
+
+        fetch('/.netlify/functions/admin-update-order-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
         })
-        .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); });
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); select.value = prevStatus; return; }
+            var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
+            if (order) order.status = newStatus;
+            drawerStatusBadge.textContent = statusLabel(newStatus);
+            showDrawerStatus('success', 'Updated to ' + statusLabel(newStatus) + '.');
+            renderSummary();
+            renderTable();
+          })
+          .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); select.value = prevStatus; });
+      });
       return;
     }
 
@@ -4553,22 +4822,29 @@ function initOrdersView(token) {
       var payOrderId = paymentSelect.getAttribute('data-id');
       var newPaymentMethod = paymentSelect.value;
       if (!newPaymentMethod) return; // the disabled "Not recorded" placeholder — nothing to save
-      showDrawerStatus('success', 'Saving...');
+      var orderForPayment = allOrders.find(function (o) { return String(o.id) === String(payOrderId); });
+      var prevPaymentMethod = orderForPayment ? orderForPayment.payment_method : newPaymentMethod;
+      paymentSelect.value = prevPaymentMethod || newPaymentMethod;
 
-      fetch('/.netlify/functions/admin-update-order-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminToken: token, orderId: payOrderId, paymentMethod: newPaymentMethod })
-      })
-        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
-        .then(function (result) {
-          if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update payment method.'); return; }
-          var order = allOrders.find(function (o) { return String(o.id) === String(payOrderId); });
-          if (order) order.payment_method = newPaymentMethod;
-          showDrawerStatus('success', 'Payment method set to ' + newPaymentMethod + '.');
-          renderTable();
+      showConfirmPopup('Change this order’s payment method to “' + newPaymentMethod + '”?', function () {
+        paymentSelect.value = newPaymentMethod;
+        showDrawerStatus('success', 'Saving...');
+
+        fetch('/.netlify/functions/admin-update-order-status', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, orderId: payOrderId, paymentMethod: newPaymentMethod })
         })
-        .catch(function () { showDrawerStatus('error', 'Network error — payment method was not updated.'); });
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update payment method.'); paymentSelect.value = prevPaymentMethod; return; }
+            var order = allOrders.find(function (o) { return String(o.id) === String(payOrderId); });
+            if (order) order.payment_method = newPaymentMethod;
+            showDrawerStatus('success', 'Payment method set to ' + newPaymentMethod + '.');
+            renderTable();
+          })
+          .catch(function () { showDrawerStatus('error', 'Network error — payment method was not updated.'); paymentSelect.value = prevPaymentMethod; });
+      });
     }
   });
 
@@ -5129,10 +5405,12 @@ function initManualOrderView(token) {
   var browseSearch = document.getElementById('admin-mo-browse-search');
   var browseDeptRow = document.getElementById('admin-mo-browse-dept-row');
   var browseDeptFilter = 'all';
+  var browseHideSoldToggle = document.getElementById('admin-mo-browse-hide-sold');
 
   function renderBrowseGrid() {
     var q = browseSearch.value.trim().toLowerCase();
     var products = (window.PRODUCTS || []).filter(function (p) {
+      if (browseHideSoldToggle.checked && p.sold) return false;
       if (browseDeptFilter === 'saree' && (p.department || 'saree') !== 'saree') return false;
       if (browseDeptFilter === 'jewellery' && p.department !== 'jewellery' && p.department !== 'accessory') return false;
       if (!q) return true;
@@ -5176,6 +5454,7 @@ function initManualOrderView(token) {
     if (e.target === browseOverlay) browseOverlay.classList.remove('is-open');
   });
   browseSearch.addEventListener('input', renderBrowseGrid);
+  browseHideSoldToggle.addEventListener('change', renderBrowseGrid);
   browseDeptRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       browseDeptRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (b) { b.classList.remove('active'); });
@@ -5287,6 +5566,51 @@ function initManualOrderView(token) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create Order & Send Confirmation Email';
       });
+  });
+
+  // "Clear Fields" -- a manual reset the admin can hit any time (not
+  // just after a successful submit), for when they've started filling
+  // the form and want to bail out and start over. Mirrors the
+  // after-submit reset above, plus the fields that reset doesn't touch
+  // (address, payment mode, customer search, discount type).
+  document.getElementById('admin-mo-clear-btn').addEventListener('click', function () {
+    showStatus('', '');
+    customerSearchInput.value = '';
+    customerResultsEl.classList.remove('is-open');
+    document.getElementById('admin-mo-first-name').value = '';
+    document.getElementById('admin-mo-last-name').value = '';
+    document.getElementById('admin-mo-email').value = '';
+    phoneCodeSelect.value = '971';
+    phoneNumberInput.value = '';
+    phoneNote.style.display = 'none';
+    phoneNumberInput.classList.remove('field-invalid');
+    syncManualOrderPhone();
+
+    searchInput.value = '';
+    qtyInput.value = '1';
+    pickedItems = [];
+    renderPickedItems();
+
+    ['admin-mo-billing-building', 'admin-mo-billing-street', 'admin-mo-billing-city', 'admin-mo-billing-state', 'admin-mo-billing-pincode',
+     'admin-mo-shipping-building', 'admin-mo-shipping-street', 'admin-mo-shipping-city', 'admin-mo-shipping-state', 'admin-mo-shipping-pincode'
+    ].forEach(function (id) { document.getElementById(id).value = ''; });
+    billingCountrySelect.selectedIndex = 0;
+    shippingCountrySelect.selectedIndex = 0;
+    sameAddressBox.checked = true;
+    shippingCard.style.display = 'none';
+
+    discountTypeBtns.forEach(function (b) { b.classList.remove('active'); });
+    document.querySelector('.admin-mo-discount-type-btn[data-type="percent"]').classList.add('active');
+    discountType = 'percent';
+    discountValueInput.value = '0';
+
+    applyGiftCardCheckbox.checked = false;
+    giftCardCard.style.display = 'none';
+    knownGiftCardBalance = 0;
+
+    document.getElementById('admin-mo-payment-mode').selectedIndex = 0;
+
+    renderTotals();
   });
 }
 
@@ -5434,7 +5758,7 @@ function initCustomersView(token) {
       '<div class="admin-field"><label>Name</label><input type="text" id="admin-cust-name" value="' + (c.name || '').replace(/"/g, '&quot;') + '"></div>' +
       '<div class="admin-field"><label>Email</label><input type="text" id="admin-cust-email" value="' + (c.email || '').replace(/"/g, '&quot;') + '"></div>' +
       '<div class="admin-field"><label>Phone</label><input type="text" id="admin-cust-phone" value="' + (c.phone || '').replace(/"/g, '&quot;') + '"></div>' +
-      '<button type="button" class="btn btn-primary" id="admin-cust-save-btn" style="width:100%;">Save Changes</button>' +
+      '<button type="button" class="btn btn-primary" id="admin-cust-save-btn" style="width:100%; margin-top:14px;">Save Changes</button>' +
       '<h4 style="margin-top:22px;">Store Credit</h4>' +
       (c.customerId
         ? ('<p style="font-size:0.76rem; opacity:0.7; margin:0 0 10px;">Store credit normally only changes through a return or a checkout redemption. Use this only to correct a balance that’s wrong (e.g. fixing a past error) — every change here is logged with a reason.</p>' +
