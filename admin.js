@@ -693,6 +693,25 @@ function wireMobileScrollList(container) {
 // Always restricts both this preview and the generated link
 // (hideSold=1) to currently available items, so a customer never lands
 // on a filtered page showing something already sold.
+//
+// Same fixed shade palette + swatch markup as the live site's own
+// Shade filter (collections.html's #shade-filter), so a shade reads as
+// an actual color here too, not just a name in a dropdown.
+var ADMIN_SL_SHADES = [
+  { value: 'Maroon / Red', hex: '#6B1420' },
+  { value: 'Pink', hex: '#E88CA8' },
+  { value: 'Orange / Brown', hex: '#E07A2C' },
+  { value: 'Yellow / Gold', hex: '#D9A628' },
+  { value: 'Green', hex: '#3C6B35' },
+  { value: 'Blue', hex: '#2E5FA3' },
+  { value: 'Purple / Violet', hex: '#6B3FA0' },
+  { value: 'Black', hex: '#171313' },
+  { value: 'White / Off-white', swatchClass: 'swatch-white' },
+  { value: 'Grey', hex: '#9C9690' },
+  { value: 'Beige / Mauve', hex: '#E3D2B4' },
+  { value: 'Others', swatchClass: 'swatch-others' }
+];
+
 function initShareLinkTool() {
   var view = document.getElementById('admin-view-share-link');
   if (!view) return;
@@ -704,13 +723,17 @@ function initShareLinkTool() {
 
   var materialSelect = document.getElementById('admin-sl-material');
   var seriesSelect = document.getElementById('admin-sl-series');
-  var shadeSelect = document.getElementById('admin-sl-shade');
+  var shadeSwatchesEl = document.getElementById('admin-sl-shade-swatches');
   var occasionSelect = document.getElementById('admin-sl-occasion');
   var typeSelect = document.getElementById('admin-sl-type');
+  var sortSareeSelect = document.getElementById('admin-sl-sort-saree');
+  var sortJaSelect = document.getElementById('admin-sl-sort-ja');
   var queryInput = document.getElementById('admin-sl-query');
   var priceMinInput = document.getElementById('admin-sl-price-min');
   var priceMaxInput = document.getElementById('admin-sl-price-max');
-  var sortSelect = document.getElementById('admin-sl-sort');
+  var priceMinLabel = document.getElementById('admin-sl-price-min-label');
+  var priceMaxLabel = document.getElementById('admin-sl-price-max-label');
+  var priceTrackFill = document.getElementById('admin-sl-price-track-fill');
   var resetBtn = document.getElementById('admin-sl-reset-btn');
 
   var countEl = document.getElementById('admin-sl-count');
@@ -724,6 +747,10 @@ function initShareLinkTool() {
   // 'saree' | 'jewellery' -- the jewellery bucket also covers
   // accessories, same single grouping the live site itself uses.
   var dept = 'saree';
+  var selectedShade = 'all';
+  var dataMin = 0, dataMax = 0;
+
+  function sortSelect() { return dept === 'saree' ? sortSareeSelect : sortJaSelect; }
 
   function allAvailable() {
     return (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p); });
@@ -747,63 +774,146 @@ function initShareLinkTool() {
     return out;
   }
 
-  function populateSelect(select, values) {
+  // Whether product p passes the filter named by `key`, using its OWN
+  // current UI value -- used below to compute "how many items would I
+  // get if I picked each OTHER value of this group", i.e. every active
+  // filter except the one being counted.
+  function passesOwnFilter(p, key) {
+    if (key === 'material') return materialSelect.value === 'all' || p.material === materialSelect.value;
+    if (key === 'series') return seriesSelect.value === 'all' || p.series === seriesSelect.value;
+    if (key === 'shade') return selectedShade === 'all' || p.shade === selectedShade;
+    if (key === 'occasion') return occasionSelect.value === 'all' || (!!p.occasions && p.occasions.indexOf(occasionSelect.value) !== -1);
+    if (key === 'type') return typeSelect.value === 'all' || p.type === typeSelect.value;
+    return true;
+  }
+  function passesPrice(p) {
+    var price = effectivePrice(p);
+    var pMin = priceMinInput.value !== '' ? Number(priceMinInput.value) : null;
+    var pMax = priceMaxInput.value !== '' ? Number(priceMaxInput.value) : null;
+    if (pMin !== null && price < pMin) return false;
+    if (pMax !== null && price > pMax) return false;
+    return true;
+  }
+  function passesQuery(p) {
+    var q = (queryInput.value || '').trim().toLowerCase();
+    if (!q) return true;
+    var fields = dept === 'saree'
+      ? ['id', 'material', 'design', 'type', 'sareeType', 'pattern', 'series', 'category']
+      : ['id', 'baseId', 'type', 'colour', 'category', 'note'];
+    return fields.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
+  }
+
+  // Counts, per possible value of `groupKey`, of how many available
+  // items would match if that value were picked -- holding every OTHER
+  // active filter (including price and search) fixed. counts.__all is
+  // the count for "All" (i.e. every other filter, none of this group's
+  // own constraint) -- same cross-filter logic the live site uses to
+  // grey out impossible combinations, but surfaced as a number instead.
+  function facetCounts(groupKey) {
+    var relevantKeys = dept === 'saree' ? ['material', 'series', 'shade', 'occasion'] : ['type'];
+    var counts = {};
+    var allCount = 0;
+    poolForDept().forEach(function (p) {
+      var ok = passesPrice(p) && passesQuery(p);
+      if (ok) {
+        relevantKeys.forEach(function (k) {
+          if (k === groupKey) return;
+          if (!passesOwnFilter(p, k)) ok = false;
+        });
+      }
+      if (!ok) return;
+      allCount++;
+      if (groupKey === 'occasion') {
+        (p.occasions || []).forEach(function (o) { counts[o] = (counts[o] || 0) + 1; });
+      } else {
+        var val = groupKey === 'material' ? p.material : groupKey === 'series' ? p.series : groupKey === 'shade' ? p.shade : groupKey === 'type' ? p.type : null;
+        if (val) counts[val] = (counts[val] || 0) + 1;
+      }
+    });
+    counts.__all = allCount;
+    return counts;
+  }
+
+  function populateSelect(select, values, counts) {
     var current = select.value;
-    select.innerHTML = '<option value="all">All</option>' + values.map(function (v) {
-      return '<option value="' + String(v).replace(/"/g, '&quot;') + '">' + v + '</option>';
+    select.innerHTML = '<option value="all">All (' + (counts.__all || 0) + ')</option>' + values.map(function (v) {
+      return '<option value="' + String(v).replace(/"/g, '&quot;') + '">' + v + ' (' + (counts[v] || 0) + ')</option>';
     }).join('');
     select.value = values.indexOf(current) !== -1 ? current : 'all';
   }
 
+  function renderShadeSwatches(counts) {
+    var allCount = counts.__all || 0;
+    var html = '<button type="button" class="swatch-btn' + (selectedShade === 'all' ? ' active' : '') + '" data-value="all" title="All Shades">' +
+      '<span class="swatch-circle swatch-all"></span><span class="swatch-label">All<span class="swatch-count">(' + allCount + ')</span></span></button>';
+    html += ADMIN_SL_SHADES.map(function (s) {
+      var n = counts[s.value] || 0;
+      var circleStyle = s.hex ? ' style="background:' + s.hex + ';"' : '';
+      var circleClass = 'swatch-circle' + (s.swatchClass ? ' ' + s.swatchClass : '');
+      return '<button type="button" class="swatch-btn' + (selectedShade === s.value ? ' active' : '') + '" data-value="' + s.value.replace(/"/g, '&quot;') + '" title="' + s.value + '">' +
+        '<span class="' + circleClass + '"' + circleStyle + '></span><span class="swatch-label">' + s.value + '<span class="swatch-count">(' + n + ')</span></span></button>';
+    }).join('');
+    shadeSwatchesEl.innerHTML = html;
+    shadeSwatchesEl.querySelectorAll('.swatch-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        selectedShade = btn.getAttribute('data-value');
+        render();
+      });
+    });
+  }
+
   function refreshFilterOptions() {
-    var pool = poolForDept();
     if (dept === 'saree') {
-      populateSelect(materialSelect, uniqueSorted(pool.map(function (p) { return p.material; })));
-      populateSelect(seriesSelect, uniqueSorted(pool.map(function (p) { return p.series; })));
-      populateSelect(shadeSelect, uniqueSorted(pool.map(function (p) { return p.shade; })));
+      populateSelect(materialSelect, uniqueSorted(poolForDept().map(function (p) { return p.material; })), facetCounts('material'));
+      populateSelect(seriesSelect, uniqueSorted(poolForDept().map(function (p) { return p.series; })), facetCounts('series'));
       var allOccasions = [];
-      pool.forEach(function (p) { (p.occasions || []).forEach(function (o) { allOccasions.push(o); }); });
-      populateSelect(occasionSelect, uniqueSorted(allOccasions));
+      poolForDept().forEach(function (p) { (p.occasions || []).forEach(function (o) { allOccasions.push(o); }); });
+      populateSelect(occasionSelect, uniqueSorted(allOccasions), facetCounts('occasion'));
+      renderShadeSwatches(facetCounts('shade'));
     } else {
-      populateSelect(typeSelect, uniqueSorted(pool.map(function (p) { return p.type; })));
+      populateSelect(typeSelect, uniqueSorted(poolForDept().map(function (p) { return p.type; })), facetCounts('type'));
     }
   }
 
   // Re-applied only on department switch / reset, not on every
   // keystroke -- the two catalogues have very different price ranges,
-  // and an admin adjusting the fields manually shouldn't get snapped
-  // back to the full range on every render.
+  // and an admin dragging the slider shouldn't get snapped back to the
+  // full range on every render. Same rounding convention as the live
+  // site's own price slider for each department.
   function resetPriceBounds() {
     var prices = poolForDept().map(function (p) { return effectivePrice(p); });
-    if (!prices.length) { priceMinInput.value = ''; priceMaxInput.value = ''; return; }
-    priceMinInput.value = Math.floor(Math.min.apply(null, prices));
-    priceMaxInput.value = Math.ceil(Math.max.apply(null, prices));
+    var step = dept === 'saree' ? 50 : 5;
+    if (!prices.length) { dataMin = 0; dataMax = 0; }
+    else {
+      dataMin = Math.floor(Math.min.apply(null, prices) / step) * step;
+      dataMax = Math.ceil(Math.max.apply(null, prices) / step) * step;
+    }
+    [priceMinInput, priceMaxInput].forEach(function (input) { input.min = dataMin; input.max = dataMax; });
+    priceMinInput.value = dataMin;
+    priceMaxInput.value = dataMax;
+    updatePriceUI();
+  }
+
+  function updatePriceUI() {
+    var lo = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+    var hi = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+    priceMinLabel.textContent = lo.toLocaleString();
+    priceMaxLabel.textContent = hi.toLocaleString();
+    var range = (dataMax - dataMin) || 1;
+    var pctLo = ((lo - dataMin) / range) * 100;
+    var pctHi = ((hi - dataMin) / range) * 100;
+    priceTrackFill.style.left = pctLo + '%';
+    priceTrackFill.style.width = (pctHi - pctLo) + '%';
   }
 
   function getFilteredPreview() {
-    var q = (queryInput.value || '').trim().toLowerCase();
-    var pMin = priceMinInput.value !== '' ? Number(priceMinInput.value) : null;
-    var pMax = priceMaxInput.value !== '' ? Number(priceMaxInput.value) : null;
-
     return poolForDept().filter(function (p) {
       if (dept === 'saree') {
-        if (materialSelect.value !== 'all' && p.material !== materialSelect.value) return false;
-        if (seriesSelect.value !== 'all' && p.series !== seriesSelect.value) return false;
-        if (shadeSelect.value !== 'all' && p.shade !== shadeSelect.value) return false;
-        if (occasionSelect.value !== 'all' && (!p.occasions || p.occasions.indexOf(occasionSelect.value) === -1)) return false;
+        if (!passesOwnFilter(p, 'material') || !passesOwnFilter(p, 'series') || !passesOwnFilter(p, 'shade') || !passesOwnFilter(p, 'occasion')) return false;
       } else {
-        if (typeSelect.value !== 'all' && p.type !== typeSelect.value) return false;
+        if (!passesOwnFilter(p, 'type')) return false;
       }
-      if (q) {
-        var fields = dept === 'saree'
-          ? ['id', 'material', 'design', 'type', 'sareeType', 'pattern', 'series', 'category']
-          : ['id', 'baseId', 'type', 'colour', 'category', 'note'];
-        if (!fields.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; })) return false;
-      }
-      var price = effectivePrice(p);
-      if (pMin !== null && price < pMin) return false;
-      if (pMax !== null && price > pMax) return false;
-      return true;
+      return passesQuery(p) && passesPrice(p);
     });
   }
 
@@ -813,15 +923,23 @@ function initShareLinkTool() {
     if (dept === 'saree') {
       if (materialSelect.value !== 'all') params.set('category', materialSelect.value);
       if (seriesSelect.value !== 'all') params.set('series', seriesSelect.value);
-      if (shadeSelect.value !== 'all') params.set('shade', shadeSelect.value);
+      if (selectedShade !== 'all') params.set('shade', selectedShade);
       if (occasionSelect.value !== 'all') params.set('occasion', occasionSelect.value);
     } else {
       if (typeSelect.value !== 'all') params.set('type', typeSelect.value);
     }
     if ((queryInput.value || '').trim()) params.set('q', queryInput.value.trim());
-    if (priceMinInput.value !== '') params.set('priceMin', priceMinInput.value);
-    if (priceMaxInput.value !== '') params.set('priceMax', priceMaxInput.value);
-    if (sortSelect.value !== 'default') params.set('sort', sortSelect.value);
+    // script.js only honors a price filter from the URL when BOTH
+    // bounds are present together, so these two are always set as a
+    // pair -- never just one -- whenever either differs from the full
+    // data-driven range.
+    var priceMinChanged = priceMinInput.value !== '' && Number(priceMinInput.value) !== dataMin;
+    var priceMaxChanged = priceMaxInput.value !== '' && Number(priceMaxInput.value) !== dataMax;
+    if (priceMinChanged || priceMaxChanged) {
+      params.set('priceMin', priceMinInput.value);
+      params.set('priceMax', priceMaxInput.value);
+    }
+    if (sortSelect().value !== 'default') params.set('sort', sortSelect().value);
     // Always on: a link sent to a customer should only ever show items
     // they can actually buy, regardless of how the admin building it
     // last left the catalogue's "Hide sold out" state in their head.
@@ -831,6 +949,7 @@ function initShareLinkTool() {
   }
 
   function render() {
+    refreshFilterOptions();
     var matched = getFilteredPreview();
     countEl.textContent = matched.length;
     if (!matched.length) {
@@ -841,7 +960,7 @@ function initShareLinkTool() {
         var thumb = p.image || (p.images && p.images[0]) || '';
         return '<div style="display:flex; align-items:center; gap:10px; padding:6px 4px; border-bottom:1px solid var(--stone);">' +
           (thumb ? '<img src="' + thumb + '" style="width:34px; height:34px; object-fit:cover; border-radius:4px; flex-shrink:0;">' : '<span style="width:34px; height:34px; flex-shrink:0;"></span>') +
-          '<span style="font-size:0.8rem; flex:1;">' + name + ' <span style="opacity:0.6;">— ' + p.id + '</span></span>' +
+          '<span style="font-size:0.8rem; flex:1; min-width:0; overflow-wrap:break-word;">' + name + ' <span style="opacity:0.6;">— ' + p.id + '</span></span>' +
           '<span style="font-size:0.78rem; font-weight:600;">AED ' + Math.round(effectivePrice(p)).toLocaleString() + '</span>' +
         '</div>';
       }).join('');
@@ -852,11 +971,14 @@ function initShareLinkTool() {
 
   function switchDept(next) {
     dept = next;
+    selectedShade = 'all';
     deptSareeBtn.className = 'btn ' + (dept === 'saree' ? 'btn-primary' : 'btn-ghost');
     deptJewelleryBtn.className = 'btn ' + (dept === 'jewellery' ? 'btn-primary' : 'btn-ghost');
     sareeFiltersEl.style.display = dept === 'saree' ? 'block' : 'none';
     jewelleryFiltersEl.style.display = dept === 'jewellery' ? 'block' : 'none';
-    refreshFilterOptions();
+    materialSelect.value = 'all'; seriesSelect.value = 'all'; occasionSelect.value = 'all'; typeSelect.value = 'all';
+    queryInput.value = '';
+    sortSareeSelect.value = 'default'; sortJaSelect.value = 'default';
     resetPriceBounds();
     render();
   }
@@ -864,17 +986,22 @@ function initShareLinkTool() {
   deptSareeBtn.addEventListener('click', function () { switchDept('saree'); });
   deptJewelleryBtn.addEventListener('click', function () { switchDept('jewellery'); });
 
-  [materialSelect, seriesSelect, shadeSelect, occasionSelect, typeSelect, sortSelect].forEach(function (el) {
+  [materialSelect, seriesSelect, occasionSelect, typeSelect, sortSareeSelect, sortJaSelect].forEach(function (el) {
     el.addEventListener('change', render);
   });
   queryInput.addEventListener('input', render);
-  priceMinInput.addEventListener('input', render);
-  priceMaxInput.addEventListener('input', render);
+  function onPriceChange() {
+    updatePriceUI();
+    render();
+  }
+  priceMinInput.addEventListener('input', onPriceChange);
+  priceMaxInput.addEventListener('input', onPriceChange);
 
   resetBtn.addEventListener('click', function () {
-    materialSelect.value = 'all'; seriesSelect.value = 'all'; shadeSelect.value = 'all'; occasionSelect.value = 'all'; typeSelect.value = 'all';
+    materialSelect.value = 'all'; seriesSelect.value = 'all'; occasionSelect.value = 'all'; typeSelect.value = 'all';
+    selectedShade = 'all';
     queryInput.value = '';
-    sortSelect.value = 'default';
+    sortSareeSelect.value = 'default'; sortJaSelect.value = 'default';
     resetPriceBounds();
     render();
   });
