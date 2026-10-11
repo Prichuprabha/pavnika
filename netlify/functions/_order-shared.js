@@ -88,6 +88,12 @@ function applySoldFlag(products, sareeIds, soldValue) {
   products.forEach(function (p) {
     if (sareeIds.indexOf(p.id) !== -1 && !!p.sold !== soldValue) {
       p.sold = soldValue;
+      // soldAt records exactly when this happened -- the live site uses
+      // it to keep a sold-out item visible (with its "Sold Out" badge)
+      // for only a limited, admin-configurable window after the sale,
+      // rather than forever. Cleared on restock since it's no longer
+      // "recently sold" at all.
+      p.soldAt = soldValue ? new Date().toISOString() : null;
       changed = true;
     }
   });
@@ -133,9 +139,14 @@ async function fulfillPurchasedItems(items) {
       if (purchasedQty === undefined) return;
       if (p.quantity !== null && p.quantity !== undefined) {
         var newQty = Math.max(0, Number(p.quantity) - purchasedQty);
-        if (newQty !== Number(p.quantity)) { p.quantity = newQty; changed = true; }
+        if (newQty !== Number(p.quantity)) {
+          p.quantity = newQty;
+          if (newQty <= 0) p.soldAt = new Date().toISOString(); // just ran out -- starts the sold-out visibility window
+          changed = true;
+        }
       } else if (!p.sold) {
         p.sold = true;
+        p.soldAt = new Date().toISOString();
         changed = true;
       }
     });
@@ -163,10 +174,13 @@ async function restockReturnedItems(items) {
       var restoredQty = qtyById[p.id];
       if (restoredQty === undefined) return;
       if (p.quantity !== null && p.quantity !== undefined) {
+        var wasOut = Number(p.quantity) <= 0;
         p.quantity = Number(p.quantity) + restoredQty;
+        if (wasOut && Number(p.quantity) > 0) p.soldAt = null; // back in stock -- no longer "recently sold"
         changed = true;
       } else if (p.sold) {
         p.sold = false;
+        p.soldAt = null;
         changed = true;
       }
     });

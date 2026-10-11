@@ -11,6 +11,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 227,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW001-1.jpg"
     ],
@@ -31,6 +32,7 @@ window.PRODUCTS = [
     "shade": "Blue",
     "price": 247,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW002-1.jpg"
     ],
@@ -51,6 +53,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 206,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW003-1.jpg"
     ],
@@ -71,6 +74,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 186,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW004-1.jpg"
     ],
@@ -91,6 +95,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 257,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW005-1.jpg"
     ],
@@ -266,6 +271,7 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 974,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SU001-1.jpg"
     ],
@@ -286,6 +292,7 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 1015,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SU003-1.jpg"
     ],
@@ -384,6 +391,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 754,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SU007-1.jpg"
     ],
@@ -404,6 +412,7 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 720,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SU008-1.jpg",
       "https://pavnika.ae/assets/products/SU008-2.jpg",
@@ -503,6 +512,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 685,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SA005-1.jpg"
     ],
@@ -524,6 +534,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 715,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SA006-1.jpg"
     ],
@@ -597,6 +608,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 690,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SA002-1.jpg",
       "https://pavnika.ae/assets/products/SA002-2.jpg",
@@ -804,6 +816,7 @@ window.PRODUCTS = [
     "shade": "Pink",
     "price": 195,
     "sold": true,
+    "soldAt": "2026-09-18T15:10:01Z",
     "images": [
       "https://pavnika.ae/assets/products/SS002-1.jpg",
       "https://pavnika.ae/assets/products/SS002-2.jpg",
@@ -829,6 +842,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 257,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW007-1.jpg"
     ],
@@ -849,6 +863,7 @@ window.PRODUCTS = [
     "shade": "Pink",
     "price": 283,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SS003-1.jpg"
     ],
@@ -869,6 +884,7 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 201,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SO001-1.jpg",
       "https://pavnika.ae/assets/products/SO001-2.jpg",
@@ -986,6 +1002,7 @@ window.PRODUCTS = [
     "shade": "Maroon / Red",
     "price": 201,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SO002-1.jpg",
       "https://pavnika.ae/assets/products/SO002-2.jpg",
@@ -1010,6 +1027,7 @@ window.PRODUCTS = [
     "shade": "Maroon / Red",
     "price": 257,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW010-1.jpg",
       "https://pavnika.ae/assets/products/VW010-2.jpg",
@@ -1055,6 +1073,7 @@ window.PRODUCTS = [
     "shade": "Blue",
     "price": 267,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW011-1.jpg"
     ],
@@ -1101,6 +1120,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 401,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/GG004-1.jpg",
       "https://pavnika.ae/assets/products/GG004-2.jpg",
@@ -1181,6 +1201,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 503,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SA009-1.jpg"
     ],
@@ -1201,6 +1222,7 @@ window.PRODUCTS = [
     "shade": "Black",
     "price": 221,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/FV001-1.jpg"
     ],
@@ -1222,6 +1244,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 221,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/FV002-1.jpg",
       "https://pavnika.ae/assets/products/FV002-2.jpg",
@@ -1245,6 +1268,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 242,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/FV003-1.jpg",
       "https://pavnika.ae/assets/products/FV003-2.jpg",
@@ -1437,6 +1461,7 @@ window.PRODUCTS = [
     "shade": "Purple / Violet",
     "price": 298,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW014-1.jpg"
     ],
@@ -1457,6 +1482,7 @@ window.PRODUCTS = [
     "shade": "Pink",
     "price": 293,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW015-1.jpg",
       "https://pavnika.ae/assets/products/VW015-2.jpg",
@@ -1577,6 +1603,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 257,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW018-1.jpg",
       "https://pavnika.ae/assets/products/VW018-2.jpg",
@@ -1601,6 +1628,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 257,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW019-1.jpg"
     ],
@@ -1621,6 +1649,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 165,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW020-1.jpg",
       "https://pavnika.ae/assets/products/VW020-2.jpg",
@@ -1701,6 +1730,7 @@ window.PRODUCTS = [
     "shade": "White / Off-white",
     "price": 242,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW023-1.jpg",
       "https://pavnika.ae/assets/products/VW023-2.jpg",
@@ -1727,6 +1757,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 278,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW024-1.jpg",
       "https://pavnika.ae/assets/products/VW024-2.jpg",
@@ -1753,6 +1784,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 252,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW025-1.jpg"
     ],
@@ -1796,6 +1828,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 285,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SA014-1.jpg",
       "https://pavnika.ae/assets/products/SA014-2.jpg",
@@ -1823,6 +1856,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 349,
     "sold": true,
+    "soldAt": "2026-09-25T17:09:46Z",
     "images": [
       "https://pavnika.ae/assets/products/SO003-1.jpg",
       "https://pavnika.ae/assets/products/SO003-2.jpg",
@@ -1851,6 +1885,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 641,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SA015-1.jpg"
     ],
@@ -1871,6 +1906,7 @@ window.PRODUCTS = [
     "shade": "Blue",
     "price": 360,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SO004-1.jpg",
       "https://pavnika.ae/assets/products/SO004-2.jpg",
@@ -1948,6 +1984,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 275,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW027-1.jpg",
       "https://pavnika.ae/assets/products/VW027-2.jpg",
@@ -2001,6 +2038,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 225,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW029-1.jpg",
       "https://pavnika.ae/assets/products/VW029-2.jpg",
@@ -2025,6 +2063,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 247,
     "sold": true,
+    "soldAt": "2026-09-15T09:00:02Z",
     "images": [
       "https://pavnika.ae/assets/products/VW030-1.jpg",
       "https://pavnika.ae/assets/products/VW030-2.jpg",
@@ -2208,6 +2247,7 @@ window.PRODUCTS = [
     "shade": "Maroon / Red",
     "price": 330,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/BB001-1.jpg",
       "https://pavnika.ae/assets/products/BB001-2.jpg",
@@ -2233,6 +2273,7 @@ window.PRODUCTS = [
     "shade": "Yellow / Gold",
     "price": 349,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/BB002-1.jpg",
       "https://pavnika.ae/assets/products/BB002-2.jpg",
@@ -2312,6 +2353,7 @@ window.PRODUCTS = [
     "shade": "White / Off-white",
     "price": 349,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/BB005-1.jpg",
       "https://pavnika.ae/assets/products/BB005-2.jpg",
@@ -2339,6 +2381,7 @@ window.PRODUCTS = [
     "shade": "Maroon / Red",
     "price": 940,
     "sold": true,
+    "soldAt": "2026-09-15T16:26:04Z",
     "images": [
       "https://pavnika.ae/assets/products/SU013-1.jpg",
       "https://pavnika.ae/assets/products/SU013-2.jpg",
@@ -2366,6 +2409,7 @@ window.PRODUCTS = [
     "shade": "Black",
     "price": 164,
     "sold": true,
+    "soldAt": "2026-09-20T00:54:55Z",
     "images": [
       "https://pavnika.ae/assets/products/FV009-1.jpg",
       "https://pavnika.ae/assets/products/FV009-2.jpg",
@@ -2470,6 +2514,7 @@ window.PRODUCTS = [
     "shade": "Green",
     "price": 907,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/SU014-1.jpg",
       "https://pavnika.ae/assets/products/SU014-2.jpg",
@@ -2546,6 +2591,7 @@ window.PRODUCTS = [
     "shade": "Orange / Brown",
     "price": 359,
     "sold": true,
+    "soldAt": "2026-10-04T13:58:45Z",
     "images": [
       "https://pavnika.ae/assets/products/SO007-1.jpg",
       "https://pavnika.ae/assets/products/SO007-2.jpg",
@@ -2599,6 +2645,7 @@ window.PRODUCTS = [
     "shade": "White / Off-white",
     "price": 370,
     "sold": true,
+    "soldAt": "2026-09-18T15:10:01Z",
     "images": [
       "https://pavnika.ae/assets/products/BB008-1.jpg",
       "https://pavnika.ae/assets/products/BB008-2.jpg",
@@ -2709,6 +2756,7 @@ window.PRODUCTS = [
     "shade": "White / Off-white",
     "price": 325,
     "sold": true,
+    "soldAt": "2026-09-24T17:40:09Z",
     "images": [
       "https://pavnika.ae/assets/products/BB011-1.jpg",
       "https://pavnika.ae/assets/products/BB011-2.jpg",
@@ -2814,6 +2862,7 @@ window.PRODUCTS = [
     "shade": "Maroon / Red",
     "price": 247,
     "sold": true,
+    "soldAt": "2026-08-02T16:27:00Z",
     "images": [
       "https://pavnika.ae/assets/products/VW036-1.jpg",
       "https://pavnika.ae/assets/products/VW036-2.jpg",
@@ -2911,16 +2960,13 @@ window.PRODUCTS = [
     "type": "Artificial Flowers",
     "note": "Test note for Aritficial flower",
     "price": 100,
-    "salePrice": 45,
+    "salePrice": null,
     "sold": false,
     "images": [
       "https://pavnika.ae/assets/products/AC001-1.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/AC001-1.jpg",
-    "id": "AC001",
-    "quantity": 11,
-    "qtyUnit": "Muzham",
-    "maxPerOrder": null
+    "id": "AC001"
   },
   {
     "department": "jewellery",

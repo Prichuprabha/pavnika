@@ -461,7 +461,7 @@ function buildSplitStatCardHtml(label, sareeVal, otherVal, iconKey, colorKey, ex
 // both the Orders page's "Order Status Overview" and the Dashboard's
 // "Visitor Regions" panel, so there's one donut implementation instead
 // of two slightly-different ones.
-function buildDonutHtml(segments, centerLabel) {
+function buildDonutHtml(segments, centerLabel, scrollableLegend) {
   var total = segments.reduce(function (sum, s) { return sum + s.count; }, 0);
   if (!total) return '<p style="font-size:0.82rem; opacity:0.6;">No data yet.</p>';
   var cumulative = 0;
@@ -477,12 +477,38 @@ function buildDonutHtml(segments, centerLabel) {
       '<span style="flex:1;">' + s.label + '</span><span style="font-weight:600; color:var(--green-deep);">' + s.count + '</span>' +
     '</div>';
   }).join('');
+  // Opt-in: a legend that can run long (e.g. Visitor Regions, one row
+  // per country seen) gets capped to the same height as the other
+  // dashboard panels (.admin-scroll-list, shared with Most Viewed
+  // Items etc.) and scrolls internally, instead of growing the whole
+  // card taller than its row-mates. Short, fixed-length legends (e.g.
+  // the 4-status Order Status Overview donut) don't opt in, since
+  // there's nothing to gain from capping a list that's never long.
+  var legendHtml = scrollableLegend
+    ? '<div class="admin-donut-legend admin-donut-legend-scrollable"><div class="admin-scroll-list">' + legend + '</div></div>'
+    : '<div class="admin-donut-legend">' + legend + '</div>';
   return (
     '<div class="admin-donut" style="background:conic-gradient(' + gradientStops + ');">' +
       '<div class="admin-donut-center"><span class="n">' + total + '</span>' + (centerLabel ? '<span class="lbl">' + centerLabel + '</span>' : '') + '</div>' +
     '</div>' +
-    '<div class="admin-donut-legend">' + legend + '</div>'
+    legendHtml
   );
+}
+
+// Wires the scroll-fade/is-at-bottom behavior (shared with
+// renderScrollablePanel) onto a .admin-scroll-list that was built
+// directly into an innerHTML string (buildDonutHtml's scrollable
+// legend) rather than rendered row-by-row through that function.
+function wireDonutLegendScroll(container) {
+  var scrollEl = container && container.querySelector('.admin-donut-legend-scrollable .admin-scroll-list');
+  if (!scrollEl) return;
+  scrollEl.scrollTop = 0;
+  function updateFade() {
+    var atBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 4;
+    scrollEl.classList.toggle('is-at-bottom', atBottom);
+  }
+  scrollEl.addEventListener('scroll', updateFade);
+  updateFade();
 }
 
 // Tiny inline SVG sparkline for a stat card -- draws the series as a
@@ -2922,8 +2948,10 @@ function initStatsDashboard(token) {
         var pieColors = ['#3C1223', '#B68A69', '#DED0C7', '#946B4A', '#8a6f63', '#c9b8a8'];
         return { label: r.country, count: r.count, color: pieColors[i % pieColors.length] };
       }),
-      'Visitors'
+      'Visitors',
+      true // scrollable legend -- caps Visitor Regions to the same height as Most Viewed Items alongside it
     );
+    wireDonutLegendScroll(regionsRows);
 
     renderLoginsList();
   }

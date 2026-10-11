@@ -410,6 +410,38 @@ function isEffectivelySold(p) {
   return !!(p && (p.sold || (p.quantity !== null && p.quantity !== undefined && Number(p.quantity) <= 0)));
 }
 
+// Admin-configurable: how many days a sold-out item keeps appearing in
+// the live collection grids (with its "Sold Out" badge) after it was
+// marked sold / ran out of stock, before it's dropped from the listing
+// entirely. Edited from the Dashboard's "Sold-Out Visibility" section;
+// read directly from the committed JSON file, the same way the
+// homepage banners are (assets/banners/banners.json) -- no database
+// involved. Defaults to 60 days until the real value loads (and if it
+// never loads at all), matching the seeded default in that file.
+window.SITE_SETTINGS = { soldOutVisibleDays: 60 };
+fetch('assets/settings/site-settings.json')
+  .then(function (res) { return res.ok ? res.json() : null; })
+  .then(function (s) {
+    if (s && s.soldOutVisibleDays) window.SITE_SETTINGS.soldOutVisibleDays = Number(s.soldOutVisibleDays) || 60;
+  })
+  .catch(function () {})
+  .then(function () { document.dispatchEvent(new Event('site-settings-ready')); });
+
+// An item that's been sold-out longer than the configured window should
+// no longer appear in the grid at all — independent of the "Hide Sold
+// Out" toggle, which only ever shows/hides items that ARE still within
+// that window. An item with no soldAt on record (sold before this
+// feature existed, so there's no way to know when) is treated as
+// already expired rather than shown forever by default; it picks up a
+// real soldAt, and starts a fresh window, the next time it's resaved
+// from the admin panel or goes through a sale/return.
+function isSoldOutExpired(p) {
+  if (!isEffectivelySold(p)) return false;
+  if (!p.soldAt) return true;
+  var ageDays = (Date.now() - new Date(p.soldAt).getTime()) / 86400000;
+  return ageDays > (window.SITE_SETTINGS.soldOutVisibleDays || 60);
+}
+
 // Same formula as the admin panel's own sale-price preview
 // (Math.round((1 - sale/regular) * 100)) — kept in sync here so the
 // percentage a customer sees always matches what the admin was shown
@@ -850,7 +882,10 @@ function initCollectionsPage() {
       var price = effectivePrice(p);
       var okMinPrice = state.priceMin === null || price >= state.priceMin;
       var okMaxPrice = state.priceMax === null || price <= state.priceMax;
-      return okCat && okSeries && okShade && okOccasion && okSold && okQuery && okMinPrice && okMaxPrice;
+      // Expired sold-out items never show, regardless of the Hide Sold
+      // Out toggle -- that toggle only affects items still within the
+      // visibility window.
+      return okCat && okSeries && okShade && okOccasion && okSold && okQuery && okMinPrice && okMaxPrice && !isSoldOutExpired(p);
     });
   }
 
@@ -1561,6 +1596,13 @@ function initCollectionsPage() {
   render();
   buildLightbox();
 
+  // The sold-out visibility window (site-settings.json) usually hasn't
+  // finished loading yet by the time this first render() runs -- it
+  // renders once more against the real value once it arrives, rather
+  // than leaving the page stuck on the 60-day default until next
+  // reload. Harmless no-op re-render if the value turned out to match.
+  document.addEventListener('site-settings-ready', render);
+
   // Re-check page size on resize (debounced) — only actually re-renders
   // if the number of columns that fit has genuinely changed, not on
   // every pixel of dragging.
@@ -1664,7 +1706,10 @@ function initJewelleryAccessoriesPage() {
       var price = effectivePrice(p);
       var okMinPrice = state.priceMin === null || price >= state.priceMin;
       var okMaxPrice = state.priceMax === null || price <= state.priceMax;
-      return okType && okSold && okQuery && okMinPrice && okMaxPrice;
+      // Expired sold-out items never show, regardless of the Hide Sold
+      // Out toggle -- that toggle only affects items still within the
+      // visibility window.
+      return okType && okSold && okQuery && okMinPrice && okMaxPrice && !isSoldOutExpired(p);
     });
   }
 
@@ -2047,6 +2092,11 @@ function initJewelleryAccessoriesPage() {
 
   render();
   buildLightbox();
+
+  // See the matching comment in initCollectionsPage — re-renders once
+  // the real sold-out visibility window loads, instead of being stuck
+  // on the 60-day default until the next reload.
+  document.addEventListener('site-settings-ready', render);
 
   if (openParam) {
     var openProduct = (window.PRODUCTS || []).find(function (p) { return p.id === openParam; });
