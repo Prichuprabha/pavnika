@@ -384,6 +384,7 @@ function showAdminPanel(token, displayName) {
   initManualOrderView(token);
   initCustomersView(token);
   initSareeTagsView(token);
+  initShareLinkTool();
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -680,6 +681,225 @@ function wireMobileScrollList(container) {
     }, { threshold: 0 });
     pastObserver.observe(container);
   }
+}
+
+/* ---------- Send Filtered List (admin -> WhatsApp) ---------- */
+// Lets an admin build a link to the live Collections (Sarees) or
+// Jewellery & Accessories page with a specific combination of filters
+// pre-applied -- read back out of the URL by script.js's own
+// initCollectionsPage/initJewelleryAccessoriesPage (see the param-
+// reading blocks added there) -- then send that link straight to a
+// customer over WhatsApp with a custom message, or just copy it.
+// Always restricts both this preview and the generated link
+// (hideSold=1) to currently available items, so a customer never lands
+// on a filtered page showing something already sold.
+function initShareLinkTool() {
+  var view = document.getElementById('admin-view-share-link');
+  if (!view) return;
+
+  var deptSareeBtn = document.getElementById('admin-sl-dept-saree');
+  var deptJewelleryBtn = document.getElementById('admin-sl-dept-jewellery');
+  var sareeFiltersEl = document.getElementById('admin-sl-saree-filters');
+  var jewelleryFiltersEl = document.getElementById('admin-sl-jewellery-filters');
+
+  var materialSelect = document.getElementById('admin-sl-material');
+  var seriesSelect = document.getElementById('admin-sl-series');
+  var shadeSelect = document.getElementById('admin-sl-shade');
+  var occasionSelect = document.getElementById('admin-sl-occasion');
+  var typeSelect = document.getElementById('admin-sl-type');
+  var queryInput = document.getElementById('admin-sl-query');
+  var priceMinInput = document.getElementById('admin-sl-price-min');
+  var priceMaxInput = document.getElementById('admin-sl-price-max');
+  var sortSelect = document.getElementById('admin-sl-sort');
+  var resetBtn = document.getElementById('admin-sl-reset-btn');
+
+  var countEl = document.getElementById('admin-sl-count');
+  var previewListEl = document.getElementById('admin-sl-preview-list');
+  var linkInput = document.getElementById('admin-sl-link');
+  var messageInput = document.getElementById('admin-sl-message');
+  var whatsappBtn = document.getElementById('admin-sl-whatsapp-btn');
+  var copyBtn = document.getElementById('admin-sl-copy-btn');
+  var msgEl = document.getElementById('admin-sl-msg');
+
+  // 'saree' | 'jewellery' -- the jewellery bucket also covers
+  // accessories, same single grouping the live site itself uses.
+  var dept = 'saree';
+
+  function allAvailable() {
+    return (window.PRODUCTS || []).filter(function (p) { return !isEffectivelySold(p); });
+  }
+  function poolForDept() {
+    return allAvailable().filter(function (p) {
+      return dept === 'saree' ? (p.department || 'saree') === 'saree' : (p.department === 'jewellery' || p.department === 'accessory');
+    });
+  }
+  function sareeName(p) { return p.material || p.design || p.id; }
+  function jaName(p) { return (p.type || (p.department === 'accessory' ? 'Accessory' : 'Jewellery')) + (p.colour ? ' — ' + p.colour : ''); }
+
+  function uniqueSorted(list) {
+    var seen = {};
+    var out = [];
+    list.forEach(function (v) {
+      if (v === undefined || v === null || v === '') return;
+      if (!seen[v]) { seen[v] = true; out.push(v); }
+    });
+    out.sort();
+    return out;
+  }
+
+  function populateSelect(select, values) {
+    var current = select.value;
+    select.innerHTML = '<option value="all">All</option>' + values.map(function (v) {
+      return '<option value="' + String(v).replace(/"/g, '&quot;') + '">' + v + '</option>';
+    }).join('');
+    select.value = values.indexOf(current) !== -1 ? current : 'all';
+  }
+
+  function refreshFilterOptions() {
+    var pool = poolForDept();
+    if (dept === 'saree') {
+      populateSelect(materialSelect, uniqueSorted(pool.map(function (p) { return p.material; })));
+      populateSelect(seriesSelect, uniqueSorted(pool.map(function (p) { return p.series; })));
+      populateSelect(shadeSelect, uniqueSorted(pool.map(function (p) { return p.shade; })));
+      var allOccasions = [];
+      pool.forEach(function (p) { (p.occasions || []).forEach(function (o) { allOccasions.push(o); }); });
+      populateSelect(occasionSelect, uniqueSorted(allOccasions));
+    } else {
+      populateSelect(typeSelect, uniqueSorted(pool.map(function (p) { return p.type; })));
+    }
+  }
+
+  // Re-applied only on department switch / reset, not on every
+  // keystroke -- the two catalogues have very different price ranges,
+  // and an admin adjusting the fields manually shouldn't get snapped
+  // back to the full range on every render.
+  function resetPriceBounds() {
+    var prices = poolForDept().map(function (p) { return effectivePrice(p); });
+    if (!prices.length) { priceMinInput.value = ''; priceMaxInput.value = ''; return; }
+    priceMinInput.value = Math.floor(Math.min.apply(null, prices));
+    priceMaxInput.value = Math.ceil(Math.max.apply(null, prices));
+  }
+
+  function getFilteredPreview() {
+    var q = (queryInput.value || '').trim().toLowerCase();
+    var pMin = priceMinInput.value !== '' ? Number(priceMinInput.value) : null;
+    var pMax = priceMaxInput.value !== '' ? Number(priceMaxInput.value) : null;
+
+    return poolForDept().filter(function (p) {
+      if (dept === 'saree') {
+        if (materialSelect.value !== 'all' && p.material !== materialSelect.value) return false;
+        if (seriesSelect.value !== 'all' && p.series !== seriesSelect.value) return false;
+        if (shadeSelect.value !== 'all' && p.shade !== shadeSelect.value) return false;
+        if (occasionSelect.value !== 'all' && (!p.occasions || p.occasions.indexOf(occasionSelect.value) === -1)) return false;
+      } else {
+        if (typeSelect.value !== 'all' && p.type !== typeSelect.value) return false;
+      }
+      if (q) {
+        var fields = dept === 'saree'
+          ? ['id', 'material', 'design', 'type', 'sareeType', 'pattern', 'series', 'category']
+          : ['id', 'baseId', 'type', 'colour', 'category', 'note'];
+        if (!fields.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; })) return false;
+      }
+      var price = effectivePrice(p);
+      if (pMin !== null && price < pMin) return false;
+      if (pMax !== null && price > pMax) return false;
+      return true;
+    });
+  }
+
+  function buildLink() {
+    var page = dept === 'saree' ? 'collections.html' : 'jewellery-accessories.html';
+    var params = new URLSearchParams();
+    if (dept === 'saree') {
+      if (materialSelect.value !== 'all') params.set('category', materialSelect.value);
+      if (seriesSelect.value !== 'all') params.set('series', seriesSelect.value);
+      if (shadeSelect.value !== 'all') params.set('shade', shadeSelect.value);
+      if (occasionSelect.value !== 'all') params.set('occasion', occasionSelect.value);
+    } else {
+      if (typeSelect.value !== 'all') params.set('type', typeSelect.value);
+    }
+    if ((queryInput.value || '').trim()) params.set('q', queryInput.value.trim());
+    if (priceMinInput.value !== '') params.set('priceMin', priceMinInput.value);
+    if (priceMaxInput.value !== '') params.set('priceMax', priceMaxInput.value);
+    if (sortSelect.value !== 'default') params.set('sort', sortSelect.value);
+    // Always on: a link sent to a customer should only ever show items
+    // they can actually buy, regardless of how the admin building it
+    // last left the catalogue's "Hide sold out" state in their head.
+    params.set('hideSold', '1');
+    var qs = params.toString();
+    return 'https://pavnika.ae/' + page + (qs ? '?' + qs : '');
+  }
+
+  function render() {
+    var matched = getFilteredPreview();
+    countEl.textContent = matched.length;
+    if (!matched.length) {
+      previewListEl.innerHTML = '<p style="font-size:0.82rem; opacity:0.7; padding:10px;">No available items match these filters.</p>';
+    } else {
+      previewListEl.innerHTML = matched.slice(0, 200).map(function (p) {
+        var name = dept === 'saree' ? sareeName(p) : jaName(p);
+        var thumb = p.image || (p.images && p.images[0]) || '';
+        return '<div style="display:flex; align-items:center; gap:10px; padding:6px 4px; border-bottom:1px solid var(--stone);">' +
+          (thumb ? '<img src="' + thumb + '" style="width:34px; height:34px; object-fit:cover; border-radius:4px; flex-shrink:0;">' : '<span style="width:34px; height:34px; flex-shrink:0;"></span>') +
+          '<span style="font-size:0.8rem; flex:1;">' + name + ' <span style="opacity:0.6;">— ' + p.id + '</span></span>' +
+          '<span style="font-size:0.78rem; font-weight:600;">AED ' + Math.round(effectivePrice(p)).toLocaleString() + '</span>' +
+        '</div>';
+      }).join('');
+    }
+    previewListEl.scrollTop = 0;
+    linkInput.value = buildLink();
+  }
+
+  function switchDept(next) {
+    dept = next;
+    deptSareeBtn.className = 'btn ' + (dept === 'saree' ? 'btn-primary' : 'btn-ghost');
+    deptJewelleryBtn.className = 'btn ' + (dept === 'jewellery' ? 'btn-primary' : 'btn-ghost');
+    sareeFiltersEl.style.display = dept === 'saree' ? 'block' : 'none';
+    jewelleryFiltersEl.style.display = dept === 'jewellery' ? 'block' : 'none';
+    refreshFilterOptions();
+    resetPriceBounds();
+    render();
+  }
+
+  deptSareeBtn.addEventListener('click', function () { switchDept('saree'); });
+  deptJewelleryBtn.addEventListener('click', function () { switchDept('jewellery'); });
+
+  [materialSelect, seriesSelect, shadeSelect, occasionSelect, typeSelect, sortSelect].forEach(function (el) {
+    el.addEventListener('change', render);
+  });
+  queryInput.addEventListener('input', render);
+  priceMinInput.addEventListener('input', render);
+  priceMaxInput.addEventListener('input', render);
+
+  resetBtn.addEventListener('click', function () {
+    materialSelect.value = 'all'; seriesSelect.value = 'all'; shadeSelect.value = 'all'; occasionSelect.value = 'all'; typeSelect.value = 'all';
+    queryInput.value = '';
+    sortSelect.value = 'default';
+    resetPriceBounds();
+    render();
+  });
+
+  copyBtn.addEventListener('click', function () {
+    var textarea = document.createElement('textarea');
+    textarea.value = linkInput.value;
+    textarea.style.position = 'fixed';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    try { document.execCommand('copy'); } catch (e) { /* nothing more we can do */ }
+    document.body.removeChild(textarea);
+    msgEl.textContent = 'Link copied.';
+    msgEl.className = 'admin-status-msg success';
+    setTimeout(function () { msgEl.className = 'admin-status-msg'; }, 2500);
+  });
+
+  whatsappBtn.addEventListener('click', function () {
+    var text = (messageInput.value || '').trim();
+    var fullMessage = (text ? text + '\n\n' : '') + linkInput.value;
+    window.open('https://wa.me/?text=' + encodeURIComponent(fullMessage), '_blank', 'noopener');
+  });
+
+  switchDept('saree');
 }
 
 function initSidebarNav() {
