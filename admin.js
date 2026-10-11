@@ -551,6 +551,7 @@ function renderScrollablePanel(container, items, rowBuilder, emptyMessage, modal
       '<div class="admin-scroll-more-link" tabindex="0">Show more <span class="admin-scroll-more-arrow">&darr;</span></div>';
     var scrollEl = container.querySelector('.admin-scroll-list');
     var moreLink = container.querySelector('.admin-scroll-more-link');
+    scrollEl.scrollTop = 0; // always open at the top, never wherever a previous render happened to leave it
     // The bottom fade (CSS, above) signals "there's more below, scroll"
     // -- drop it once scrolled all the way down (or if there's nothing
     // to scroll at all) so the last row doesn't look like it's
@@ -617,6 +618,7 @@ function wireMobileScrollList(container) {
     '<div class="admin-scroll-more-link" tabindex="0">Show more <span class="admin-scroll-more-arrow">&darr;</span></div>';
   var scrollEl = container.querySelector('.admin-scroll-list');
   var moreLink = container.querySelector('.admin-scroll-more-link');
+  scrollEl.scrollTop = 0; // always open at the top, never wherever a previous render happened to leave it
 
   function updateFade() {
     var atBottom = scrollEl.scrollHeight - scrollEl.scrollTop - scrollEl.clientHeight < 4;
@@ -779,6 +781,18 @@ function initSareeEditor(token) {
     if (dept === 'jewellery') return 'admin-f-jprice';
     if (dept === 'accessory') return 'admin-f-aprice';
     return 'admin-f-price';
+  }
+
+  // Mirrors the server-side logic in _order-shared.js's applySoldFlag --
+  // soldAt is only (re)stamped the moment an item actually BECOMES sold.
+  // Saving unrelated edits to an item that was already sold must not
+  // reset its sold-out visibility window back to the full duration each
+  // time, or it would never age out; unchecking "Sold out" clears it.
+  function computeSoldAtForSave(isSoldNow) {
+    if (!isSoldNow) return null;
+    var existing = editingId ? (window.PRODUCTS || []).find(function (p) { return p.id === editingId; }) : null;
+    if (existing && existing.sold && existing.soldAt) return existing.soldAt;
+    return new Date().toISOString();
   }
 
   function parseSalePriceInput() {
@@ -2212,6 +2226,7 @@ function initSareeEditor(token) {
         price: parseInt(document.getElementById('admin-f-price').value, 10) || 0,
         salePrice: parseSalePriceInput(),
         sold: document.getElementById('admin-f-sold').checked,
+        soldAt: computeSoldAtForSave(document.getElementById('admin-f-sold').checked),
         occasions: Array.from(document.querySelectorAll('#admin-f-occasions input:checked')).map(function (cb) { return cb.value; }),
         images: images,
         image: images[0] || ''
@@ -2225,6 +2240,7 @@ function initSareeEditor(token) {
         price: parseInt(document.getElementById('admin-f-jprice').value, 10) || 0,
         salePrice: parseSalePriceInput(),
         sold: document.getElementById('admin-f-sold').checked,
+        soldAt: computeSoldAtForSave(document.getElementById('admin-f-sold').checked),
         images: images,
         image: images[0] || ''
       };
@@ -2240,6 +2256,7 @@ function initSareeEditor(token) {
         price: parseInt(document.getElementById('admin-f-aprice').value, 10) || 0,
         salePrice: parseSalePriceInput(),
         sold: document.getElementById('admin-f-sold').checked,
+        soldAt: computeSoldAtForSave(document.getElementById('admin-f-sold').checked),
         images: images,
         image: images[0] || ''
       };
@@ -2255,6 +2272,17 @@ function initSareeEditor(token) {
       productData.qtyUnit = document.getElementById('admin-f-qty-unit').value.trim() || 'pcs';
       var maxPerOrderRaw = document.getElementById('admin-f-max-per-order').value.trim();
       productData.maxPerOrder = maxPerOrderRaw ? (parseInt(maxPerOrderRaw, 10) || null) : null;
+      // A quantity-tracked item counts as sold-out once it hits 0, same
+      // as the manual checkbox -- stamp/clear soldAt the same way so
+      // the sold-out visibility window applies to it too.
+      var existingForQty = editingId ? (window.PRODUCTS || []).find(function (p) { return p.id === editingId; }) : null;
+      if (productData.quantity <= 0) {
+        productData.soldAt = (existingForQty && Number(existingForQty.quantity) <= 0 && existingForQty.soldAt)
+          ? existingForQty.soldAt
+          : new Date().toISOString();
+      } else {
+        productData.soldAt = null;
+      }
     } else {
       productData.quantity = null;
       productData.qtyUnit = null;
@@ -3312,6 +3340,58 @@ function initStatsDashboard(token) {
     a.click();
   });
 
+  // Sold-Out Item Visibility (live site) -- reads straight from the
+  // committed JSON file (same mechanism as banners), no auth needed
+  // for that; saving goes through admin-save-settings.js, which does
+  // require the admin token, same as every other admin-save-*.js.
+  var soldVisibilityInput = document.getElementById('admin-sold-visibility-days');
+  var soldVisibilityMsg = document.getElementById('admin-sold-visibility-msg');
+  var soldVisibilitySaveBtn = document.getElementById('admin-sold-visibility-save-btn');
+  if (soldVisibilityInput) {
+    fetch('/assets/settings/site-settings.json')
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (s) { soldVisibilityInput.value = (s && s.soldOutVisibleDays) || 60; })
+      .catch(function () { soldVisibilityInput.value = 60; });
+
+    soldVisibilitySaveBtn.addEventListener('click', function () {
+      var days = parseInt(soldVisibilityInput.value, 10);
+      if (!days || days < 1 || days > 3650) {
+        soldVisibilityMsg.className = 'admin-status-msg admin-status-error';
+        soldVisibilityMsg.textContent = 'Please enter a number of days between 1 and 3650.';
+        soldVisibilityMsg.style.display = 'block';
+        return;
+      }
+      soldVisibilitySaveBtn.disabled = true;
+      soldVisibilitySaveBtn.textContent = 'Saving…';
+      fetch('/.netlify/functions/admin-save-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminToken: token, soldOutVisibleDays: days })
+      })
+        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        .then(function (result) {
+          soldVisibilitySaveBtn.disabled = false;
+          soldVisibilitySaveBtn.textContent = 'Save';
+          if (!result.ok) {
+            soldVisibilityMsg.className = 'admin-status-msg admin-status-error';
+            soldVisibilityMsg.textContent = result.data.error || 'Could not save.';
+            soldVisibilityMsg.style.display = 'block';
+            return;
+          }
+          soldVisibilityMsg.className = 'admin-status-msg admin-status-success';
+          soldVisibilityMsg.textContent = 'Saved — sold-out items now stay visible on the live site for ' + days + ' day(s) after they sell out.';
+          soldVisibilityMsg.style.display = 'block';
+        })
+        .catch(function () {
+          soldVisibilitySaveBtn.disabled = false;
+          soldVisibilitySaveBtn.textContent = 'Save';
+          soldVisibilityMsg.className = 'admin-status-msg admin-status-error';
+          soldVisibilityMsg.textContent = 'Network error saving.';
+          soldVisibilityMsg.style.display = 'block';
+        });
+    });
+  }
+
   window.__refreshStats = loadStats;
   loadStats();
 }
@@ -3615,7 +3695,7 @@ function initPosUsersEditor(token) {
     rowsEl.innerHTML = users.map(function (u) {
       var created = new Date(u.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
       return '<tr><td>' + u.username + '</td><td>' + u.display_name + '</td><td>' + created + '</td>' +
-        '<td><span class="admin-toggle-switch"><input type="checkbox" data-toggle-admin="' + u.id + '"' + (u.is_admin ? ' checked' : '') + '><span class="admin-toggle-slider"></span></span></td>' +
+        '<td><label class="admin-toggle-switch"><input type="checkbox" data-toggle-admin="' + u.id + '"' + (u.is_admin ? ' checked' : '') + '><span class="admin-toggle-slider"></span></label></td>' +
         '<td><button type="button" class="admin-btn-secondary" data-delete-user="' + u.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
     }).join('');
 
@@ -4321,14 +4401,31 @@ function initOrdersView(token) {
   var SETTABLE_ORDER_STATUSES = ['pending', 'paid', 'shipped', 'delivered', 'delivered_direct_pay', 'cod_pending', 'payment_error', 'cancelled'];
   var LEGACY_REFUND_STATUSES = ['refunded', 'refunded_giftcard', 'partially_refunded'];
 
+  // Same per-status colors as the .admin-status-pill-select CSS classes
+  // (admin.html) -- applied inline to each <option> below because the
+  // <select>'s own background/color (its colored "pill" look when
+  // closed) otherwise gets inherited by every option in the native
+  // open dropdown list, since un-styled <option>s pick up the select's
+  // computed colors. Giving each option its own explicit colors keeps
+  // the open list readable, status by status, instead of the whole
+  // list flooding to whichever color happens to be currently selected.
+  function statusOptionColors(s) {
+    if (s === 'paid' || s === 'shipped') return { bg: '#FDF0E0', color: '#946B4A' };
+    if (s === 'delivered' || s === 'delivered_direct_pay' || s === 'refunded' || s === 'refunded_giftcard') return { bg: '#eaf3de', color: '#3B6D11' };
+    if (s === 'partially_refunded') return { bg: '#FAEEDA', color: '#854F0B' };
+    return { bg: '#FBE9E9', color: '#B8142A' }; // pending, cancelled, payment_error, cod_pending
+  }
+
   function buildStatusSelect(o) {
     var statuses = SETTABLE_ORDER_STATUSES.slice();
     var currentIsLegacyRefundStatus = LEGACY_REFUND_STATUSES.indexOf(o.status) !== -1;
     var options = statuses.map(function (s) {
-      return '<option value="' + s + '"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
+      var c = statusOptionColors(s);
+      return '<option value="' + s + '" style="background-color:' + c.bg + '; color:' + c.color + ';"' + (o.status === s ? ' selected' : '') + '>' + statusLabel(s) + '</option>';
     }).join('');
     if (currentIsLegacyRefundStatus) {
-      options = '<option value="' + o.status + '" selected disabled>' + statusLabel(o.status) + ' (use Process Return to change this)</option>' + options;
+      var lc = statusOptionColors(o.status);
+      options = '<option value="' + o.status + '" style="background-color:' + lc.bg + '; color:' + lc.color + ';" selected disabled>' + statusLabel(o.status) + ' (use Process Return to change this)</option>' + options;
     }
     return '<select class="admin-order-status-select admin-status-pill-select status-' + (o.status || 'pending') + '" data-id="' + o.id + '">' + options + '</select>';
   }
@@ -4533,7 +4630,7 @@ function initOrdersView(token) {
 
     return '<div style="margin-top:20px; display:flex; align-items:center; justify-content:space-between;">' +
         '<h4 style="margin:0;">Process Return</h4>' +
-        '<span class="admin-toggle-switch"><input type="checkbox" id="admin-return-toggle"><span class="admin-toggle-slider"></span></span>' +
+        '<label class="admin-toggle-switch" for="admin-return-toggle"><input type="checkbox" id="admin-return-toggle"><span class="admin-toggle-slider"></span></label>' +
       '</div>' +
       '<div id="admin-return-section-body" style="display:none; margin-top:10px;">' +
         '<div id="admin-return-items">' + itemsHtml + '</div>' +

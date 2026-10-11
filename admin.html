@@ -479,6 +479,14 @@
     max-height: 258px; overflow-y: auto; padding-right: 4px;
     -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 22px), transparent);
     mask-image: linear-gradient(to bottom, black calc(100% - 22px), transparent);
+    /* The browser's scroll-anchoring was nudging this list's scroll
+       position down on its own whenever the data above it re-rendered
+       (e.g. the stats finishing their async load right after the
+       placeholder paint) -- it looked like the panel opened already
+       scrolled partway down, hiding its first rows. This list is
+       small and always reset to the top in JS anyway, so anchoring
+       has nothing useful to do here. */
+    overflow-anchor: none;
   }
   /* Once scrolled to the very bottom there's nothing left to fade out
      -- the last row would otherwise look like it's permanently fading
@@ -1479,7 +1487,7 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg>
             Sale Price
           </span>
-          <span class="admin-toggle-switch"><input type="checkbox" id="admin-sale-price-toggle"><span class="admin-toggle-slider"></span></span>
+          <label class="admin-toggle-switch" for="admin-sale-price-toggle"><input type="checkbox" id="admin-sale-price-toggle"><span class="admin-toggle-slider"></span></label>
         </div>
         <div class="admin-field" id="admin-sale-price-wrap" style="display:none;">
           <label><span class="admin-field-icon" data-icon="coin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5a2.5 2.5 0 0 1 2.5-1 2 2 0 0 1 0 4h-1a2 2 0 0 0 0 4 2.5 2.5 0 0 0 2.5-1"/></svg></span>Sale price (AED) — leave blank for no offer</label>
@@ -2118,6 +2126,21 @@
       </div>
 
       <button type="button" class="btn btn-ghost" id="admin-export-stats-btn">Export all stats as text file</button>
+
+      <div class="admin-dash-row" style="margin-top:20px;">
+        <div class="admin-form-card">
+          <h3>Sold-Out Item Visibility (Live Site)</h3>
+          <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin-bottom:12px;">
+            A sold-out saree or jewellery/accessory item keeps showing on the live Collections pages — with its "Sold Out" badge — for this many days after it's marked sold or runs out of stock, then it's dropped from the listing automatically. Applies to both the Sarees and Jewellery &amp; Accessories pages.
+          </p>
+          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+            <input type="number" id="admin-sold-visibility-days" min="1" max="3650" style="width:90px;">
+            <span style="font-size:0.82rem;">days (e.g. 60 &#8776; 2 months)</span>
+            <button type="button" class="btn btn-primary" id="admin-sold-visibility-save-btn">Save</button>
+          </div>
+          <p class="admin-status-msg" id="admin-sold-visibility-msg" style="display:none; margin-top:10px;"></p>
+        </div>
+      </div>
     </div>
   </div>
   <div class="admin-mobile-bottom-nav">
