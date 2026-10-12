@@ -314,18 +314,24 @@ window.PRODUCTS = [
     "price": 1295,
     "sold": false,
     "images": [
-      "https://pavnika.ae/assets/products/SU004-1.jpg",
-      "https://pavnika.ae/assets/products/SU004-2.jpg",
-      "https://pavnika.ae/assets/products/SU004-3.jpg",
-      "https://pavnika.ae/assets/products/SU004-4.jpg",
-      "https://pavnika.ae/assets/products/SU004-5.jpg",
-      "https://pavnika.ae/assets/products/SU004-6.jpg"
+      "https://pavnika.ae/assets/products/SU004-7.jpg",
+      "https://pavnika.ae/assets/products/SU004-8.jpg",
+      "https://pavnika.ae/assets/products/SU004-9.jpg",
+      "https://pavnika.ae/assets/products/SU004-10.jpg",
+      "https://pavnika.ae/assets/products/SU004-11.jpg",
+      "https://pavnika.ae/assets/products/SU004-12.jpg",
+      "https://pavnika.ae/assets/products/SU004-13.jpg",
+      "https://pavnika.ae/assets/products/SU004-14.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/SU004-1.jpg",
+    "image": "https://pavnika.ae/assets/products/SU004-7.jpg",
     "salePrice": null,
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "soldAt": null,
+    "quantity": null,
+    "qtyUnit": null,
+    "maxPerOrder": null
   },
   {
     "id": "SU005",
