@@ -5429,6 +5429,10 @@ function initManualOrderView(token) {
   var giftCardCheckboxLabel = document.getElementById('admin-mo-giftcard-checkbox-label');
   var applyGiftCardCheckbox = document.getElementById('admin-mo-apply-giftcard');
   var knownGiftCardBalance = 0;
+  var moConfirmOverlay = document.getElementById('admin-mo-confirm-overlay');
+  var moConfirmDetails = document.getElementById('admin-mo-confirm-details');
+  var moConfirmCancelBtn = document.getElementById('admin-mo-confirm-cancel-btn');
+  var moConfirmSubmitBtn = document.getElementById('admin-mo-confirm-submit-btn');
 
   // Same country list and reconstruction logic as checkout.html's phone
   // field, duplicated here rather than shared — admin.js and script.js
@@ -5994,6 +5998,99 @@ function initManualOrderView(token) {
       paymentMode: document.getElementById('admin-mo-payment-mode').value
     };
 
+    // Show a summary of exactly what's about to be created/charged/
+    // emailed before actually doing any of it -- a manual order can't
+    // be undone from here once the confirmation email is sent, so this
+    // is the last chance to catch a wrong item, a typo'd email, or a
+    // discount that isn't what was meant.
+    openManualOrderConfirm(payload, email);
+  });
+
+  function openManualOrderConfirm(payload, email) {
+    var t = computeTotals();
+    var itemsHtml = pickedItems.map(function (it) {
+      return '<div style="display:flex; justify-content:space-between; gap:10px; padding:3px 0;">' +
+        '<span>' + it.name + ' — ' + it.id + (it.qty > 1 ? ' &times; ' + it.qty : '') + '</span>' +
+        '<span style="white-space:nowrap;">AED ' + formatAED(it.price * it.qty) + '</span>' +
+      '</div>';
+    }).join('');
+
+    var totalsHtml =
+      '<div style="display:flex; justify-content:space-between; padding:2px 0;"><span>Subtotal</span><span>AED ' + formatAED(t.subtotal) + '</span></div>' +
+      (t.discountAmount > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Discount</span><span>-AED ' + formatAED(t.discountAmount) + '</span></div>' : '') +
+      (t.giftCardEstimate > 0 ? '<div style="display:flex; justify-content:space-between; padding:2px 0; color:var(--green);"><span>Store credit</span><span>-AED ' + formatAED(t.giftCardEstimate) + '</span></div>' : '') +
+      '<div style="display:flex; justify-content:space-between; padding:6px 0 0; margin-top:4px; border-top:1px solid var(--stone); font-weight:700; color:var(--green-deep);"><span>Total</span><span>AED ' + formatAED(t.total) + '</span></div>';
+
+    var customerName = (payload.customer.firstName + ' ' + payload.customer.lastName).trim();
+    var shipSameNote = payload.shippingAddress === payload.billingAddress ? ' (same as billing)' : '';
+
+    moConfirmDetails.innerHTML =
+      '<div style="margin-bottom:14px;">' +
+        '<h4 style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--gold); margin:0 0 6px;">Customer</h4>' +
+        '<div>' + customerName + '</div>' +
+        '<div style="opacity:0.75;">' + payload.customer.email + '</div>' +
+        (payload.customer.phone ? '<div style="opacity:0.75;">' + payload.customer.phone + '</div>' : '') +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        '<h4 style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--gold); margin:0 0 6px;">Items</h4>' +
+        itemsHtml +
+      '</div>' +
+      '<div style="margin-bottom:14px;">' +
+        totalsHtml +
+      '</div>' +
+      '<div style="margin-bottom:4px;">' +
+        '<h4 style="font-size:0.68rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--gold); margin:0 0 6px;">Payment &amp; Shipping</h4>' +
+        '<div>Payment: ' + payload.paymentMode + '</div>' +
+        '<div style="opacity:0.75;">Ships to: ' + [payload.shippingAddress.building, payload.shippingAddress.street, payload.shippingAddress.city].filter(Boolean).join(', ') + shipSameNote + '</div>' +
+      '</div>' +
+      '<p style="font-size:0.78rem; opacity:0.7; margin:10px 0 0;">This will immediately mark the item(s) as sold and email an order confirmation to ' + email + '.</p>';
+
+    moConfirmOverlay.classList.add('is-open');
+
+    function cleanup() {
+      moConfirmOverlay.classList.remove('is-open');
+      moConfirmSubmitBtn.removeEventListener('click', onConfirm);
+      moConfirmCancelBtn.removeEventListener('click', onCancel);
+      moConfirmOverlay.removeEventListener('click', onOverlayClick);
+    }
+    function onCancel() { cleanup(); }
+    function onOverlayClick(e) { if (e.target === moConfirmOverlay) onCancel(); }
+    function onConfirm() {
+      cleanup();
+      submitManualOrder(payload, email);
+    }
+    moConfirmSubmitBtn.addEventListener('click', onConfirm);
+    moConfirmCancelBtn.addEventListener('click', onCancel);
+    moConfirmOverlay.addEventListener('click', onOverlayClick);
+  }
+
+  // Mirrors what the server just did to products-data.js, against the
+  // browser's own in-memory window.PRODUCTS copy -- without this, the
+  // item(s) just sold would still show as available in the browse
+  // picker (and anywhere else in this admin session reading
+  // window.PRODUCTS) until the next full page reload. Also fixes a
+  // previously-broken call here to a function (refreshSareeList) that
+  // didn't exist anywhere in this file -- that threw inside the
+  // success handler's try path on every single order, which the
+  // surrounding .catch() silently turned into a false "Network error"
+  // message even though the order had already been created and the
+  // confirmation email already sent.
+  function markSoldLocally(items) {
+    items.forEach(function (it) {
+      var p = (window.PRODUCTS || []).find(function (x) { return x.id === it.id; });
+      if (!p) return;
+      var hasQty = p.quantity !== null && p.quantity !== undefined && !isNaN(Number(p.quantity));
+      if (hasQty) {
+        p.quantity = Math.max(0, Number(p.quantity) - it.qty);
+        if (p.quantity <= 0 && !p.sold) { p.sold = true; if (!p.soldAt) p.soldAt = new Date().toISOString(); }
+      } else if (!p.sold) {
+        p.sold = true;
+        if (!p.soldAt) p.soldAt = new Date().toISOString();
+      }
+    });
+  }
+
+  function submitManualOrder(payload, email) {
     submitBtn.disabled = true;
     submitBtn.textContent = 'Creating…';
 
@@ -6015,6 +6112,7 @@ function initManualOrderView(token) {
           successMsg += ' Note: ' + result.data.giftCardNote;
         }
         showStatus('success', successMsg);
+        markSoldLocally(pickedItems); // the sold saree(s) should drop out of the picker -- captured before pickedItems is cleared below
         pickedItems = [];
         renderPickedItems();
         document.getElementById('admin-mo-first-name').value = '';
@@ -6028,7 +6126,7 @@ function initManualOrderView(token) {
         giftCardCard.style.display = 'none';
         knownGiftCardBalance = 0;
         renderTotals();
-        refreshSareeList(); // the sold saree(s) should drop out of the picker
+        renderBrowseGrid();
         if (window.__refreshOrders) window.__refreshOrders();
       })
       .catch(function () {
@@ -6038,7 +6136,7 @@ function initManualOrderView(token) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Create Order & Send Confirmation Email';
       });
-  });
+  }
 
   // "Clear Fields" -- a manual reset the admin can hit any time (not
   // just after a successful submit), for when they've started filling

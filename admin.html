@@ -389,7 +389,15 @@
   .admin-date-range-popover.is-open { display: block; }
 
   .admin-simple-modal-overlay {
-    position: fixed; inset: 0; z-index: 100; background: rgba(43,13,26,0.45);
+    /* Must outrank every slide-in drawer (.admin-order-drawer-overlay,
+       z-index 251) and the mobile sidebar (z-index 200) -- this class
+       covers the confirm popup, session-expired popup, and a few
+       others that are always meant to sit on top of whatever triggered
+       them, drawer open or not. It was 100 before, which put it BEHIND
+       an open drawer: the popup technically opened but was hidden
+       under the drawer's dark overlay, and tapping outside the drawer
+       panel (which closes the drawer) was the only way to reveal it. */
+    position: fixed; inset: 0; z-index: 600; background: rgba(43,13,26,0.45);
     display: none; align-items: center; justify-content: center; padding: 20px;
   }
   .admin-simple-modal-overlay.is-open { display: flex; }
@@ -2086,6 +2094,17 @@
           <button type="button" class="admin-dept-filter-btn" data-dept="jewellery">Jewellery &amp; Accessories</button>
         </div>
         <div id="admin-mo-browse-grid" style="overflow-y:auto; display:grid; grid-template-columns:repeat(auto-fill, minmax(110px, 1fr)); grid-auto-rows:min-content; gap:10px; flex:1; min-height:0; padding-right:2px;"></div>
+      </div>
+    </div>
+
+    <div class="admin-simple-modal-overlay" id="admin-mo-confirm-overlay">
+      <div class="admin-simple-modal" style="max-width:460px; text-align:left; max-height:85vh; overflow-y:auto;">
+        <h3 style="margin:0 0 12px;">Confirm this order</h3>
+        <div id="admin-mo-confirm-details" style="font-size:0.85rem; margin-bottom:18px;"></div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" class="btn btn-ghost" id="admin-mo-confirm-cancel-btn" style="flex:1;">Back</button>
+          <button type="button" class="btn btn-primary" id="admin-mo-confirm-submit-btn" style="flex:1;">Proceed</button>
+        </div>
       </div>
     </div>
 
