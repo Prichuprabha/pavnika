@@ -2566,7 +2566,7 @@ window.PRODUCTS = [
     "material": "Soft Silk",
     "shade": "Green",
     "price": 575,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/SO006-1.jpg",
       "https://pavnika.ae/assets/products/SO006-2.jpg",
@@ -2577,7 +2577,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SO006-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "soldAt": "2026-10-12T16:03:39.042Z"
   },
   {
     "id": "SO007",
