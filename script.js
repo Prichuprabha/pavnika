@@ -488,12 +488,37 @@ function productCardHTML(p) {
   );
 }
 
+// Replaces the old boxed "Multiple sizes available" hint with a
+// compact "Sizes  [2.4] [2.6] [2.8]" row -- a gold label plus one
+// light-gold pill per size actually in stock right now, so the exact
+// available sizes are visible right on the card instead of a generic
+// sentence that only becomes useful once tapped. Only bangles carry a
+// real .size value today (see admin.js's bangle-only size field), so a
+// sibling with no .size falls back to a short "Option N" label rather
+// than leaving a blank pill. Capped at 5 pills with a "+N" overflow
+// pill so an unusually large size run never breaks the card layout.
+function sizePillsHTML(availableSiblings) {
+  var MAX_PILLS = 5;
+  var sizes = availableSiblings.map(function (s, i) { return (s.size || 'Option ' + (i + 1)) + ''; });
+  var shown = sizes.slice(0, MAX_PILLS);
+  var extra = sizes.length - shown.length;
+  return (
+    '<span class="p-size-pills-row">' +
+      '<span class="p-size-pills-label">Sizes &rsaquo;</span>' +
+      shown.map(function (sz) {
+        return '<span class="p-size-pill">' + sz.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>';
+      }).join('') +
+      (extra > 0 ? '<span class="p-size-pill p-size-pill-more">+' + extra + '</span>' : '') +
+    '</span>'
+  );
+}
+
 // Jewellery and Accessories share this card instead of the saree one
 // above — no series/material/design fields to build a card around, and
 // a Bangles & Bracelets group (several sizes, one design) shows a
-// "multiple sizes available" hint and a from-price rather than a
-// single fixed price, since the exact price a customer pays depends on
-// which sibling size they pick inside the lightbox.
+// row of available sizes and a from-price rather than a single fixed
+// price, since the exact price a customer pays depends on which
+// sibling size they pick inside the lightbox.
 function nonSareeCardHTML(p) {
   var group = jewelleryGroupSiblings(p);
   var availableSiblings = group.filter(function (s) { return !isEffectivelySold(s); });
@@ -533,22 +558,8 @@ function nonSareeCardHTML(p) {
       '</div>' +
       '<div class="product-info">' +
         '<span class="p-design">' + namePart + '</span>' +
+        (isGroup ? sizePillsHTML(availableSiblings) : '') +
         '<span class="p-meta">' + (p.department === 'jewellery' ? 'Fashion jewellery' : '') + (p.note ? (p.department === 'jewellery' ? ' · ' : '') + p.note : '') + '</span>' +
-        (isGroup ?
-          '<span class="p-size-hint">' +
-            '<span class="p-size-hint-icon">' +
-              '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
-                '<rect x="2.5" y="8" width="19" height="8" rx="1.5"></rect>' +
-                '<line x1="7" y1="8" x2="7" y2="11"></line>' +
-                '<line x1="11" y1="8" x2="11" y2="11"></line>' +
-                '<line x1="15" y1="8" x2="15" y2="11"></line>' +
-                '<line x1="19" y1="8" x2="19" y2="11"></line>' +
-              '</svg>' +
-            '</span>' +
-            '<span class="p-size-hint-text">Multiple sizes available</span>' +
-            '<span class="p-size-hint-chevron">&rsaquo;</span>' +
-          '</span>'
-          : '') +
         pricingHtml +
       '</div>' +
     '</div>'
