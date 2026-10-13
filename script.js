@@ -36,6 +36,47 @@ window.addEventListener('pageshow', function (e) {
   onScroll();
 })();
 
+// The mobile Sarees / Jewellery & More switcher (.dept-switcher) is two
+// plain links -- clicking either is a real page navigation, not a JS
+// toggle, so its own thumb transition (style.css, ~line 4441) never
+// used to get a chance to play: the browser unloads this page before a
+// CSS transition has any time to run. This briefly intercepts the tap
+// so that transition plays out in place first, then navigates on to
+// the real href once it's done -- the destination page's own switcher
+// is hardcoded to the same resting state already
+// (data-active="sarees"|"jewellery" per page), so the motion reads as
+// one continuous slide straight through the page load rather than a
+// snap-then-reload.
+// The matchMedia check inside the click handler below is what actually
+// limits this to mobile, not the selector here -- jewellery-accessories.html
+// has a separate desktop-only "elegant pill" switcher (a different
+// element, .dept-switcher-elegant, untouched by this) alongside its own
+// .dept-switcher.ja-switcher-mobile-only; collections.html has only one
+// plain .dept-switcher, shown at every width, since it never got that
+// same desktop/mobile split. Selecting on the shared ".dept-switcher"
+// class (no ".ja-switcher-mobile-only" requirement) is what makes this
+// work on both pages' markup despite that difference.
+(function initMobileDeptSwitcherTransition() {
+  var THUMB_TRANSITION_MS = 480; // matches .dept-switcher-thumb's own transition duration (style.css) -- slower than a UI micro-interaction normally runs, deliberately, so the slide itself is clearly visible rather than a quick flick
+  var NAV_DELAY_MS = THUMB_TRANSITION_MS + 20; // small buffer so the slide is fully settled before the page unloads
+  var sw = document.querySelector('.dept-switcher');
+  if (!sw) return;
+  var links = sw.querySelectorAll('a[href]');
+  if (links.length !== 2) return; // not the shape this was built for -- bail out rather than guess
+  links.forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      if (!window.matchMedia('(max-width: 900px)').matches) return; // desktop: this switcher isn't even visible, let the link behave normally
+      if (link.classList.contains('active')) return; // already on this page -- nothing to animate
+      e.preventDefault();
+      var targetHref = link.href;
+      var switchingToJewellery = link.getAttribute('href').indexOf('jewellery-accessories') !== -1;
+      sw.setAttribute('data-active', switchingToJewellery ? 'jewellery' : 'sarees');
+      links.forEach(function (a) { a.classList.toggle('active', a === link); });
+      window.setTimeout(function () { window.location.href = targetHref; }, NAV_DELAY_MS);
+    });
+  });
+})();
+
 document.addEventListener('DOMContentLoaded', function () {
   // This click-interceptor is registered first, before anything else in
   // this whole handler — deliberately. If any function further down
