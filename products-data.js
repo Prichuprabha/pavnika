@@ -2924,8 +2924,8 @@ window.PRODUCTS = [
   {
     "department": "jewellery",
     "type": "Bangles & Bracelets",
-    "colour": "Test color",
-    "note": "Test product",
+    "colour": "Golden brown",
+    "note": "Golden lines with artificial diamonds",
     "price": 5,
     "salePrice": null,
     "sold": false,
@@ -2939,7 +2939,11 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/JW001-24-1.jpg",
     "baseId": "JW001",
     "size": "2.4",
-    "id": "JW001-24"
+    "id": "JW001-24",
+    "soldAt": null,
+    "quantity": 5,
+    "qtyUnit": "Pcs",
+    "maxPerOrder": null
   },
   {
     "department": "jewellery",
