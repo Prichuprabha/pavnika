@@ -1893,6 +1893,23 @@ function initJewelleryAccessoriesPage() {
     initHoverCycle(grid);
   }
 
+  // A category with zero items right now -- none at all, sold out or
+  // not -- is hidden entirely rather than shown as an empty/dead-end
+  // filter. A category that still has at least one item, even if every
+  // single one of them is sold out, stays visible as a normal,
+  // clickable chip (the grid will just show it as Sold Out, same as
+  // any other out-of-stock item).
+  (function hideEmptyChips() {
+    var allTypes = groupedCatalogue().map(function (p) { return p.type; });
+    chipRow.querySelectorAll('.filter-btn').forEach(function (btn) {
+      var val = btn.getAttribute('data-value');
+      if (val === 'all') return;
+      if (allTypes.indexOf(val) === -1) {
+        btn.style.display = 'none';
+      }
+    });
+  })();
+
   chipRow.querySelectorAll('.filter-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
       chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
