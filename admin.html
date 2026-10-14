@@ -2113,9 +2113,12 @@
       <div class="admin-simple-modal" style="max-width:440px; text-align:left;">
         <h3 style="margin:0 0 12px; color:#B8142A;">Delete this sale permanently?</h3>
         <div id="admin-delete-sale-details" style="font-size:0.85rem; margin-bottom:16px;"></div>
+        <label for="admin-delete-sale-reason" style="display:block; font-size:0.78rem; font-weight:700; margin-bottom:6px;">Reason for deleting this sale (required)</label>
+        <textarea id="admin-delete-sale-reason" rows="2" placeholder="e.g. duplicate entry, test sale, customer never paid..." style="width:100%; resize:vertical; font-family:inherit; font-size:0.85rem; padding:9px 11px; border:1px solid #DED0C7; border-radius:8px; margin-bottom:16px; box-sizing:border-box;"></textarea>
+        <p style="margin:0 0 12px; font-size:0.72rem; opacity:0.6;">This reason, plus a full copy of the sale, is permanently recorded in the audit log before the sale itself is deleted.</p>
         <div style="display:flex; gap:10px;">
           <button type="button" class="btn btn-ghost" id="admin-delete-sale-cancel-btn" style="flex:1;">Cancel</button>
-          <button type="button" class="btn btn-primary" id="admin-delete-sale-confirm-btn" style="flex:1; background:#B8142A; border-color:#B8142A;">Delete Permanently</button>
+          <button type="button" class="btn btn-primary" id="admin-delete-sale-confirm-btn" disabled style="flex:1; background:#B8142A; border-color:#B8142A;">Delete Permanently</button>
         </div>
       </div>
     </div>

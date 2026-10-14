@@ -4646,16 +4646,30 @@ function initOrdersView(token) {
     html += '<p style="margin:12px 0 0; font-weight:700;">This cannot be undone.</p>';
 
     document.getElementById('admin-delete-sale-details').innerHTML = html;
+    var reasonInput = document.getElementById('admin-delete-sale-reason');
+    reasonInput.value = '';
+    document.getElementById('admin-delete-sale-confirm-btn').disabled = true;
     document.getElementById('admin-delete-sale-overlay').classList.add('is-open');
     pendingDeleteSale = order;
   }
 
+  // The delete button stays disabled until a reason is actually typed
+  // in — a required field enforced in the UI as well as server-side,
+  // so staff get immediate feedback rather than a rejected request.
+  document.getElementById('admin-delete-sale-reason').addEventListener('input', function (e) {
+    document.getElementById('admin-delete-sale-confirm-btn').disabled = !e.target.value.trim();
+  });
+
   document.getElementById('admin-delete-sale-cancel-btn').addEventListener('click', function () {
     document.getElementById('admin-delete-sale-overlay').classList.remove('is-open');
+    document.getElementById('admin-delete-sale-reason').value = '';
     pendingDeleteSale = null;
   });
   document.getElementById('admin-delete-sale-confirm-btn').addEventListener('click', function () {
     if (!pendingDeleteSale) return;
+    var reason = document.getElementById('admin-delete-sale-reason').value.trim();
+    if (!reason) return; // belt-and-suspenders — button should already be disabled without one
+
     var btn = document.getElementById('admin-delete-sale-confirm-btn');
     btn.disabled = true;
     btn.textContent = 'Deleting...';
@@ -4663,23 +4677,27 @@ function initOrdersView(token) {
     fetch('/.netlify/functions/admin-delete-pos-sale', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, saleId: pendingDeleteSale.id })
+      body: JSON.stringify({ adminToken: token, saleId: pendingDeleteSale.id, reason: reason })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
-        btn.disabled = false;
         btn.textContent = 'Delete Permanently';
-        if (!result.ok) { showStatus('error', result.data.error || 'Could not delete this sale.'); return; }
+        if (!result.ok) {
+          btn.disabled = !document.getElementById('admin-delete-sale-reason').value.trim();
+          showStatus('error', result.data.error || 'Could not delete this sale.');
+          return;
+        }
 
         allShopOrders = allShopOrders.filter(function (o) { return o.id !== pendingDeleteSale.id; });
         renderSummary();
         renderShopTable();
         document.getElementById('admin-delete-sale-overlay').classList.remove('is-open');
+        document.getElementById('admin-delete-sale-reason').value = '';
         drawerOverlay.classList.remove('is-open');
         pendingDeleteSale = null;
       })
       .catch(function () {
-        btn.disabled = false;
+        btn.disabled = !document.getElementById('admin-delete-sale-reason').value.trim();
         btn.textContent = 'Delete Permanently';
         showStatus('error', 'Network error deleting this sale.');
       });
