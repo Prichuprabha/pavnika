@@ -386,6 +386,7 @@ function showAdminPanel(token, displayName) {
   initSareeTagsView(token);
   initShareLinkTool();
   initBusinessSettings(token);
+  initDeliveryRatesSettings(token);
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -4328,6 +4329,76 @@ function initBusinessSettings(token) {
   loadSettings();
 }
 
+/* ---------- Delivery Rates (Partner/Own/Other flat AED amounts) ---------- */
+function initDeliveryRatesSettings(token) {
+  var statusMsg = document.getElementById('admin-dr-status-msg');
+  var updatedNote = document.getElementById('admin-dr-updated-note');
+  var saveBtn = document.getElementById('admin-dr-save-btn');
+
+  function showStatus(type, msg) {
+    statusMsg.textContent = msg;
+    statusMsg.className = 'admin-status-msg ' + type;
+    setTimeout(function () { statusMsg.textContent = ''; }, 4000);
+  }
+
+  function fillForm(r) {
+    document.getElementById('admin-dr-partner-rate').value = (r && r.partner_rate != null) ? r.partner_rate : '';
+    document.getElementById('admin-dr-own-rate').value = (r && r.own_rate != null) ? r.own_rate : '';
+    document.getElementById('admin-dr-other-rate').value = (r && r.other_rate != null) ? r.other_rate : '';
+    if (r && r.updated_at) {
+      var when = new Date(r.updated_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      updatedNote.textContent = 'Last updated ' + when + (r.updated_by ? (' by ' + r.updated_by) : '') + '.';
+    } else {
+      updatedNote.textContent = 'Not set yet -- every rate defaults to AED 0 until saved here.';
+    }
+  }
+
+  function loadRates() {
+    fetch('/.netlify/functions/admin-get-delivery-rates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) { fillForm(data.rates); })
+      .catch(function () { showStatus('error', 'Could not load delivery rates.'); });
+  }
+
+  saveBtn.addEventListener('click', function () {
+    var partnerRate = parseFloat(document.getElementById('admin-dr-partner-rate').value);
+    var ownRate = parseFloat(document.getElementById('admin-dr-own-rate').value);
+    var otherRate = parseFloat(document.getElementById('admin-dr-other-rate').value);
+    if (isNaN(partnerRate) || partnerRate < 0 || isNaN(ownRate) || ownRate < 0 || isNaN(otherRate) || otherRate < 0) {
+      showStatus('error', 'All three rates must be numbers of 0 or more.');
+      return;
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    fetch('/.netlify/functions/admin-save-delivery-rates', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, partnerRate: partnerRate, ownRate: ownRate, otherRate: otherRate })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Delivery Rates';
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not save delivery rates.'); return; }
+        showStatus('success', 'Delivery rates saved. Only orders/sales where a method is picked after this will use the new rates.');
+        fillForm(result.data.rates);
+      })
+      .catch(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Delivery Rates';
+        showStatus('error', 'Network error saving delivery rates.');
+      });
+  });
+
+  loadRates();
+}
+
 /* ---------- Orders view ---------- */
 function initOrdersView(token) {
   var statusMsg = document.getElementById('admin-orders-status-msg');
@@ -4903,6 +4974,25 @@ function initOrdersView(token) {
     return '<select class="admin-order-status-select admin-status-pill-select status-' + (o.status || 'pending') + '" data-id="' + o.id + '">' + options + '</select>';
   }
 
+  var DELIVERY_METHOD_LABEL = { partner: 'Delivery Partner', own: 'Own / Self Delivery', other: 'Other' };
+
+  function buildDeliverySelect(o, isShop) {
+    var methods = ['partner', 'own', 'other'];
+    var current = o.delivery_method || '';
+    var options = (current ? '' : '<option value="" selected disabled>Not set</option>') + methods.map(function (m) {
+      return '<option value="' + m + '"' + (current === m ? ' selected' : '') + '>' + DELIVERY_METHOD_LABEL[m] + '</option>';
+    }).join('');
+    return '<select class="admin-order-delivery-select" data-id="' + o.id + '" data-channel="' + (isShop ? 'shop' : 'online') + '">' + options + '</select>';
+  }
+
+  // Shows the AED amount actually locked onto this order/sale — a
+  // snapshot from whenever the method was last (re-)picked, which can
+  // differ from today's Delivery Rates if they've changed since.
+  function deliveryCostNote(o) {
+    if (!o.delivery_method) return '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Pick a method to lock in today’s rate for this ' + (o.bill_number ? 'sale' : 'order') + '.</p>';
+    return '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Locked at AED ' + formatAED(o.delivery_cost || 0) + ' when last set — won’t change if Delivery Rates are edited later.</p>';
+  }
+
   rowsEl.addEventListener('change', function (e) {
     var statusSelectEl = e.target.closest('.admin-order-status-select');
     if (statusSelectEl) {
@@ -5191,6 +5281,9 @@ function initOrdersView(token) {
         '<h4>Status</h4>' +
         '<span style="font-size:0.78rem; font-weight:700; padding:4px 12px; border-radius:6px; ' + shopStatusBadgeColor(order.status) + '">' + order.status + '</span>' +
         '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Reflects returns/exchanges recorded in the POS — not editable here.</p>' +
+        '<h4>Delivery Method</h4>' +
+        buildDeliverySelect(order, true) +
+        deliveryCostNote(order) +
         '<h4>Danger Zone</h4>' +
         '<button type="button" class="btn btn-ghost" id="admin-shop-delete-btn" style="width:100%; color:#B8142A; border-color:#B8142A;">Delete This Sale</button>';
     } else {
@@ -5198,7 +5291,10 @@ function initOrdersView(token) {
         '<h4>Billing Address</h4>' + addressBlock(order.billing_address) +
         '<h4>Shipping Address' + (order.billing_address === order.shipping_address ? ' (same as billing)' : '') + '</h4>' + addressBlock(order.shipping_address) +
         '<h4>Update Status</h4>' +
-        buildStatusSelect(order);
+        buildStatusSelect(order) +
+        '<h4>Delivery Method</h4>' +
+        buildDeliverySelect(order, false) +
+        deliveryCostNote(order);
 
       if (order.status === 'pending' && order.customer_phone) {
         html += '<button type="button" class="btn btn-outline" id="admin-pending-followup-btn" style="width:100%; margin-top:10px;">Send WhatsApp Follow-up</button>';
@@ -5414,6 +5510,41 @@ function initOrdersView(token) {
             renderTable();
           })
           .catch(function () { showDrawerStatus('error', 'Network error — payment method was not updated.'); paymentSelect.value = prevPaymentMethod; });
+      });
+      return;
+    }
+
+    var deliverySelect = e.target.closest('.admin-order-delivery-select');
+    if (deliverySelect) {
+      var deliveryChannel = deliverySelect.getAttribute('data-channel');
+      var deliveryId = deliverySelect.getAttribute('data-id');
+      var newDeliveryMethod = deliverySelect.value;
+      var deliverySource = deliveryChannel === 'shop' ? allShopOrders : allOrders;
+      var orderForDelivery = deliverySource.find(function (o) { return String(o.id) === String(deliveryId); });
+      var prevDeliveryMethod = orderForDelivery ? orderForDelivery.delivery_method : '';
+      deliverySelect.value = prevDeliveryMethod || ''; // hold the visible value until confirmed
+
+      showConfirmPopup('Set delivery method to “' + DELIVERY_METHOD_LABEL[newDeliveryMethod] + '”? This locks in today’s rate for this ' + (deliveryChannel === 'shop' ? 'sale' : 'order') + '.', function () {
+        deliverySelect.value = newDeliveryMethod;
+        showDrawerStatus('success', 'Saving...');
+
+        fetch('/.netlify/functions/admin-set-delivery-method', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, channel: deliveryChannel, id: deliveryId, method: newDeliveryMethod })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not set delivery method.'); deliverySelect.value = prevDeliveryMethod; return; }
+            if (orderForDelivery) {
+              orderForDelivery.delivery_method = result.data.deliveryMethod;
+              orderForDelivery.delivery_cost = result.data.deliveryCost;
+            }
+            var noteEl = deliverySelect.nextElementSibling;
+            if (noteEl) noteEl.innerHTML = 'Locked at AED ' + formatAED(result.data.deliveryCost || 0) + ' when last set — won’t change if Delivery Rates are edited later.';
+            showDrawerStatus('success', 'Delivery method set to ' + DELIVERY_METHOD_LABEL[newDeliveryMethod] + ' (AED ' + formatAED(result.data.deliveryCost || 0) + ').');
+          })
+          .catch(function () { showDrawerStatus('error', 'Network error — delivery method was not updated.'); deliverySelect.value = prevDeliveryMethod; });
       });
     }
   });

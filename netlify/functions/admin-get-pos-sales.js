@@ -101,7 +101,9 @@ exports.handler = async function (event) {
         payment_method: s.payment_method,
         sales_person: s.sales_person,
         status: status,
-        gift_card_credit: giftCardCreditBySale[s.id] || 0
+        gift_card_credit: giftCardCreditBySale[s.id] || 0,
+        delivery_method: s.delivery_method || null,
+        delivery_cost: s.delivery_cost != null ? s.delivery_cost : 0
       };
     });
 

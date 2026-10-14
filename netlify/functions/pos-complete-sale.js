@@ -1,5 +1,5 @@
 const { verifyPosToken } = require('./_pos-auth');
-const { fulfillPurchasedItems } = require('./_order-shared');
+const { fulfillPurchasedItems, fetchDeliveryRates } = require('./_order-shared');
 const { generateBillNumber } = require('./_pos-shared');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -39,6 +39,15 @@ exports.handler = async function (event) {
   try {
     var billNumber = await generateBillNumber();
 
+    // Every POS sale defaults to "own" delivery (most are picked up /
+    // self-delivered in-store) at whatever delivery_rates.own_rate is
+    // right now -- a one-time snapshot, same idea as the invoice's
+    // business_settings snapshot isn't, but delivery_cost here IS a
+    // snapshot: admins can still change it per-sale afterwards from the
+    // sale's detail drawer, which re-snapshots to the rate in force at
+    // that later moment.
+    var deliveryRates = await fetchDeliveryRates();
+
     var saleRes = await fetch(`${SUPABASE_URL}/rest/v1/pos_sales`, {
       method: 'POST',
       headers: supabaseHeaders(),
@@ -58,7 +67,9 @@ exports.handler = async function (event) {
         payment_breakdown: body.paymentBreakdown || null,
         reference_id: body.referenceId || null,
         sales_person: body.salesPersonOverride || session.displayName,
-        notes: body.notes || null
+        notes: body.notes || null,
+        delivery_method: 'own',
+        delivery_cost: Number(deliveryRates.own_rate) || 0
       })
     });
     if (!saleRes.ok) {

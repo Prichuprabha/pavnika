@@ -225,6 +225,23 @@ async function fetchBusinessSettings() {
   }
 }
 
+// Same fallback pattern as FALLBACK_BUSINESS_SETTINGS above -- if
+// SETUP_delivery_rates.sql hasn't been run yet, or the fetch fails,
+// every rate is just 0 rather than breaking sale completion.
+var FALLBACK_DELIVERY_RATES = { partner_rate: 0, own_rate: 0, other_rate: 0 };
+
+async function fetchDeliveryRates() {
+  try {
+    var res = await fetch(`${SUPABASE_URL}/rest/v1/delivery_rates?id=eq.1&select=*`, { headers: supabaseHeaders() });
+    if (!res.ok) return FALLBACK_DELIVERY_RATES;
+    var rows = await res.json();
+    return rows[0] || FALLBACK_DELIVERY_RATES;
+  } catch (e) {
+    console.error('fetchDeliveryRates: could not load delivery_rates, using fallback:', e);
+    return FALLBACK_DELIVERY_RATES;
+  }
+}
+
 function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -644,6 +661,7 @@ module.exports = {
   supabaseHeaders: supabaseHeaders,
   formatAED: formatAED,
   fetchBusinessSettings: fetchBusinessSettings,
+  fetchDeliveryRates: fetchDeliveryRates,
   buildItemDescription: buildItemDescription,
   generateOrderNumber: generateOrderNumber,
   sendReceiptEmail: sendReceiptEmail,
