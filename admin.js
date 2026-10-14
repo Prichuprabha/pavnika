@@ -63,6 +63,72 @@ function showConfirmPopup(message, onConfirm, onCancel) {
 }
 
 // ---------------------------------------------------------------
+/* ---------- Shared: "how was this delivered?" popup ----------
+   Shown whenever an order is marked Delivered. Lets the admin pick
+   Partner / Own / Other; picking Other reveals a free-typed AED amount
+   field, since -- unlike Partner/Own -- there's no stored rate for
+   Other any more (that's the point: it can vary per delivery). Calls
+   onConfirm(method, customCost) -- customCost is only meaningful when
+   method === 'other'. */
+function showDeliveryMethodPopup(message, onConfirm, onCancel) {
+  var overlay = document.getElementById('admin-delivery-method-overlay');
+  var textEl = document.getElementById('admin-dm-text');
+  var otherField = document.getElementById('admin-dm-other-field');
+  var otherInput = document.getElementById('admin-dm-other-amount');
+  var errorEl = document.getElementById('admin-dm-error');
+  var confirmBtn = document.getElementById('admin-dm-confirm-btn');
+  var cancelBtn = document.getElementById('admin-dm-cancel-btn');
+  var radios = overlay ? Array.prototype.slice.call(overlay.querySelectorAll('input[name="admin-dm-method"]')) : [];
+  if (!overlay) { if (onConfirm) onConfirm('own', 0); return; } // safety net if markup is ever missing
+
+  textEl.textContent = message;
+  radios.forEach(function (r) { r.checked = false; });
+  otherField.style.display = 'none';
+  otherInput.value = '';
+  errorEl.style.display = 'none';
+  overlay.classList.add('is-open');
+
+  function onRadioChange() {
+    var picked = radios.find(function (r) { return r.checked; });
+    otherField.style.display = (picked && picked.value === 'other') ? 'block' : 'none';
+    errorEl.style.display = 'none';
+  }
+  radios.forEach(function (r) { r.addEventListener('change', onRadioChange); });
+
+  function cleanup() {
+    overlay.classList.remove('is-open');
+    radios.forEach(function (r) { r.removeEventListener('change', onRadioChange); });
+    confirmBtn.removeEventListener('click', onYes);
+    cancelBtn.removeEventListener('click', onNo);
+    overlay.removeEventListener('click', onOverlayClick);
+  }
+  function onYes() {
+    var picked = radios.find(function (r) { return r.checked; });
+    if (!picked) {
+      errorEl.textContent = 'Pick how this was delivered.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    var customCost = 0;
+    if (picked.value === 'other') {
+      customCost = parseFloat(otherInput.value);
+      if (isNaN(customCost) || customCost < 0) {
+        errorEl.textContent = 'Enter a valid amount (0 or more) for Other.';
+        errorEl.style.display = 'block';
+        return;
+      }
+    }
+    cleanup();
+    if (onConfirm) onConfirm(picked.value, customCost);
+  }
+  function onNo() { cleanup(); if (onCancel) onCancel(); }
+  function onOverlayClick(e) { if (e.target === overlay) onNo(); }
+  confirmBtn.addEventListener('click', onYes);
+  cancelBtn.addEventListener('click', onNo);
+  overlay.addEventListener('click', onOverlayClick);
+}
+
+// ---------------------------------------------------------------
 /* ---------- Shared: session-expired popup ----------
    Every admin-* function returns 401 + "Not authorized..." the same
    way when the signed token has expired or been invalidated. Before
@@ -4344,7 +4410,7 @@ function initDeliveryRatesSettings(token) {
   function fillForm(r) {
     document.getElementById('admin-dr-partner-rate').value = (r && r.partner_rate != null) ? r.partner_rate : '';
     document.getElementById('admin-dr-own-rate').value = (r && r.own_rate != null) ? r.own_rate : '';
-    document.getElementById('admin-dr-other-rate').value = (r && r.other_rate != null) ? r.other_rate : '';
+    document.getElementById('admin-dr-other-rate').value = ''; // no stored rate any more -- typed in per order instead
     if (r && r.updated_at) {
       var when = new Date(r.updated_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
       updatedNote.textContent = 'Last updated ' + when + (r.updated_by ? (' by ' + r.updated_by) : '') + '.';
@@ -4367,9 +4433,8 @@ function initDeliveryRatesSettings(token) {
   saveBtn.addEventListener('click', function () {
     var partnerRate = parseFloat(document.getElementById('admin-dr-partner-rate').value);
     var ownRate = parseFloat(document.getElementById('admin-dr-own-rate').value);
-    var otherRate = parseFloat(document.getElementById('admin-dr-other-rate').value);
-    if (isNaN(partnerRate) || partnerRate < 0 || isNaN(ownRate) || ownRate < 0 || isNaN(otherRate) || otherRate < 0) {
-      showStatus('error', 'All three rates must be numbers of 0 or more.');
+    if (isNaN(partnerRate) || partnerRate < 0 || isNaN(ownRate) || ownRate < 0) {
+      showStatus('error', 'Both rates must be numbers of 0 or more.');
       return;
     }
 
@@ -4379,7 +4444,7 @@ function initDeliveryRatesSettings(token) {
     fetch('/.netlify/functions/admin-save-delivery-rates', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, partnerRate: partnerRate, ownRate: ownRate, otherRate: otherRate })
+      body: JSON.stringify({ adminToken: token, partnerRate: partnerRate, ownRate: ownRate })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -4993,21 +5058,58 @@ function initOrdersView(token) {
     return '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Locked at AED ' + formatAED(o.delivery_cost || 0) + ' when last set — won’t change if Delivery Rates are edited later.</p>';
   }
 
+  // Shared by both the table's inline status select and the drawer's:
+  // sets delivery_method/delivery_cost for an order, then returns a
+  // promise resolving with {ok, data}, same shape as the status-update
+  // fetches below so callers can chain them identically.
+  function applyDeliveryMethod(id, method, customCost) {
+    var payload = { adminToken: token, channel: 'online', id: id, method: method };
+    if (method === 'other') payload.customCost = customCost;
+    return fetch('/.netlify/functions/admin-set-delivery-method', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); });
+  }
+
+  function updateOrderStatus(orderId, newStatus) {
+    return fetch('/.netlify/functions/admin-update-order-status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
+    }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); });
+  }
+
   rowsEl.addEventListener('change', function (e) {
     var statusSelectEl = e.target.closest('.admin-order-status-select');
     if (statusSelectEl) {
       var orderId = statusSelectEl.getAttribute('data-id');
       var newStatus = statusSelectEl.value;
+      var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
 
-      fetch('/.netlify/functions/admin-update-order-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
-      })
-        .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      if (newStatus === 'delivered') {
+        var prevStatusTable = order ? order.status : newStatus;
+        statusSelectEl.value = prevStatusTable; // hold the visible value until the popup is confirmed
+        showDeliveryMethodPopup('Marking Order #' + (order ? order.order_number : orderId) + ' as Delivered.', function (method, customCost) {
+          applyDeliveryMethod(orderId, method, customCost).then(function (dmResult) {
+            if (!dmResult.ok) { showStatus('error', dmResult.data.error || 'Could not set delivery method.'); return; }
+            if (order) { order.delivery_method = dmResult.data.deliveryMethod; order.delivery_cost = dmResult.data.deliveryCost; }
+            return updateOrderStatus(orderId, newStatus).then(function (result) {
+              if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
+              if (order) order.status = newStatus;
+              statusSelectEl.value = newStatus;
+              showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' marked Delivered (' + DELIVERY_METHOD_LABEL[dmResult.data.deliveryMethod] + ', AED ' + formatAED(dmResult.data.deliveryCost || 0) + ').');
+              renderSummary();
+              renderTable();
+            });
+          }).catch(function () { showStatus('error', 'Network error — status was not updated.'); });
+        });
+        return;
+      }
+
+      updateOrderStatus(orderId, newStatus)
         .then(function (result) {
           if (!result.ok) { showStatus('error', result.data.error || 'Could not update status.'); return; }
-          var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
           if (order) order.status = newStatus;
           showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
           renderSummary();
@@ -5459,16 +5561,40 @@ function initOrdersView(token) {
       var prevStatus = orderForStatus ? orderForStatus.status : select.value;
       select.value = prevStatus; // hold the visible value until confirmed
 
+      if (newStatus === 'delivered') {
+        showDeliveryMethodPopup('Marking this order as Delivered.', function (method, customCost) {
+          select.value = newStatus;
+          showDrawerStatus('success', 'Saving...');
+
+          applyDeliveryMethod(orderId, method, customCost)
+            .then(function (dmResult) {
+              if (!dmResult.ok) { showDrawerStatus('error', dmResult.data.error || 'Could not set delivery method.'); select.value = prevStatus; return; }
+              if (orderForStatus) { orderForStatus.delivery_method = dmResult.data.deliveryMethod; orderForStatus.delivery_cost = dmResult.data.deliveryCost; }
+              var deliverySelectEl = drawerBody.querySelector('.admin-order-delivery-select[data-channel="online"]');
+              if (deliverySelectEl) {
+                deliverySelectEl.value = dmResult.data.deliveryMethod;
+                var noteEl = deliverySelectEl.nextElementSibling;
+                if (noteEl) noteEl.innerHTML = 'Locked at AED ' + formatAED(dmResult.data.deliveryCost || 0) + ' when last set — won’t change if Delivery Rates are edited later.';
+              }
+              return updateOrderStatus(orderId, newStatus).then(function (result) {
+                if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); select.value = prevStatus; return; }
+                if (orderForStatus) orderForStatus.status = newStatus;
+                drawerStatusBadge.textContent = statusLabel(newStatus);
+                showDrawerStatus('success', 'Updated to Delivered (' + DELIVERY_METHOD_LABEL[dmResult.data.deliveryMethod] + ', AED ' + formatAED(dmResult.data.deliveryCost || 0) + ').');
+                renderSummary();
+                renderTable();
+              });
+            })
+            .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); select.value = prevStatus; });
+        }, function () { select.value = prevStatus; });
+        return;
+      }
+
       showConfirmPopup('Change this order’s status to “' + statusLabel(newStatus) + '”?', function () {
         select.value = newStatus;
         showDrawerStatus('success', 'Saving...');
 
-        fetch('/.netlify/functions/admin-update-order-status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminToken: token, orderId: orderId, status: newStatus })
-        })
-          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        updateOrderStatus(orderId, newStatus)
           .then(function (result) {
             if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not update status.'); select.value = prevStatus; return; }
             var order = allOrders.find(function (o) { return String(o.id) === String(orderId); });
@@ -5479,7 +5605,7 @@ function initOrdersView(token) {
             renderTable();
           })
           .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); select.value = prevStatus; });
-      });
+      }, function () { select.value = prevStatus; });
       return;
     }
 

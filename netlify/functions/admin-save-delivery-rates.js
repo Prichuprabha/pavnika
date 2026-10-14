@@ -1,12 +1,16 @@
 // netlify/functions/admin-save-delivery-rates.js
 //
-// POST { adminToken, partnerRate, ownRate, otherRate }
+// POST { adminToken, partnerRate, ownRate }
 // - Upserts the single delivery_rates row (id = 1), edited from the
 //   admin panel's Delivery Rates tab.
 // - Changing a rate here only affects orders/sales where the delivery
 //   method is picked (or re-picked) AFTER this save -- every order or
 //   sale that already has a method selected keeps its own snapshotted
 //   delivery_cost untouched.
+// - "Other" has no stored rate any more -- its amount is typed in fresh
+//   for each order at the moment it's delivered (see
+//   admin-set-delivery-method.js), so it's intentionally left out of
+//   this payload and the other_rate column is left untouched.
 // - Same-origin only (admin.html) -- no CORS needed here.
 
 const { verifyAdminToken } = require('./_admin-auth');
@@ -42,16 +46,14 @@ exports.handler = async function (event) {
 
   const partnerRate = Number(body.partnerRate);
   const ownRate = Number(body.ownRate);
-  const otherRate = Number(body.otherRate);
-  if (isNaN(partnerRate) || partnerRate < 0 || isNaN(ownRate) || ownRate < 0 || isNaN(otherRate) || otherRate < 0) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'All three rates must be numbers of 0 or more.' }) };
+  if (isNaN(partnerRate) || partnerRate < 0 || isNaN(ownRate) || ownRate < 0) {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Both rates must be numbers of 0 or more.' }) };
   }
 
   const row = {
     id: 1,
     partner_rate: partnerRate,
     own_rate: ownRate,
-    other_rate: otherRate,
     updated_at: new Date().toISOString(),
     updated_by: session.displayName || session.username || null
   };

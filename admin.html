@@ -1990,7 +1990,11 @@
         <div class="admin-form-grid">
           <div class="admin-field"><label>Partner (AED)</label><input type="text" id="admin-dr-partner-rate" placeholder="0.00"></div>
           <div class="admin-field"><label>Own (AED)</label><input type="text" id="admin-dr-own-rate" placeholder="0.00"></div>
-          <div class="admin-field"><label>Other (AED)</label><input type="text" id="admin-dr-other-rate" placeholder="0.00"></div>
+          <div class="admin-field">
+            <label>Other (AED)</label>
+            <input type="text" id="admin-dr-other-rate" placeholder="0.00" disabled style="opacity:0.55; cursor:not-allowed; background:#F3EEE7;">
+            <p style="font-size:0.7rem; opacity:0.6; margin:5px 0 0;">To be added at the delivery stage, for each order individually.</p>
+          </div>
         </div>
         <button type="button" class="btn btn-primary" id="admin-dr-save-btn" style="margin-top:14px;">Save Delivery Rates</button>
         <p style="font-size:0.75rem; color:var(--ink); opacity:0.6; margin-top:10px;" id="admin-dr-updated-note"></p>
@@ -2171,6 +2175,27 @@
         <div style="display:flex; gap:10px;">
           <button type="button" class="btn btn-ghost" id="admin-delete-sale-cancel-btn" style="flex:1;">Cancel</button>
           <button type="button" class="btn btn-primary" id="admin-delete-sale-confirm-btn" disabled style="flex:1; background:#B8142A; border-color:#B8142A;">Delete Permanently</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-simple-modal-overlay" id="admin-delivery-method-overlay">
+      <div class="admin-simple-modal" style="max-width:420px; text-align:left;">
+        <h3 style="margin:0 0 12px;">How was this delivered?</h3>
+        <p id="admin-dm-text" style="font-size:0.88rem; margin:0 0 14px; opacity:0.8;"></p>
+        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:6px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer;"><input type="radio" name="admin-dm-method" value="partner"> Delivery Partner</label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer;"><input type="radio" name="admin-dm-method" value="own"> Own / Self Delivery</label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer;"><input type="radio" name="admin-dm-method" value="other"> Other</label>
+        </div>
+        <div id="admin-dm-other-field" style="display:none; margin:8px 0 6px;">
+          <label for="admin-dm-other-amount" style="display:block; font-size:0.76rem; opacity:0.7; margin-bottom:4px;">Amount for this delivery (AED)</label>
+          <input type="text" id="admin-dm-other-amount" placeholder="0.00" style="width:100%; font-family:inherit; font-size:0.85rem; padding:9px 11px; border:1px solid #DED0C7; border-radius:8px; box-sizing:border-box;">
+        </div>
+        <p id="admin-dm-error" class="admin-status-msg admin-status-error" style="display:none; margin:4px 0 10px;"></p>
+        <div style="display:flex; gap:10px; margin-top:12px;">
+          <button type="button" class="btn btn-ghost" id="admin-dm-cancel-btn" style="flex:1;">Cancel</button>
+          <button type="button" class="btn btn-primary" id="admin-dm-confirm-btn" style="flex:1;">Confirm</button>
         </div>
       </div>
     </div>

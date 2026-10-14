@@ -1,14 +1,19 @@
 // netlify/functions/admin-set-delivery-method.js
 //
-// POST { adminToken, channel, id, method }
+// POST { adminToken, channel, id, method, customCost? }
 // - channel: 'online' (orders table) or 'shop' (pos_sales table)
 // - method: 'partner' | 'own' | 'other'
-// - Looks up the CURRENT delivery_rates row and snapshots that
-//   method's rate onto the order/sale as delivery_cost -- this is a
-//   one-time copy, not a live reference. Changing delivery_rates later
-//   never changes an order/sale that already has a method set; picking
-//   (or re-picking) a method here is the only thing that updates it,
-//   using whatever rate is in force at that moment.
+// - For 'partner'/'own', looks up the CURRENT delivery_rates row and
+//   snapshots that method's rate onto the order/sale as delivery_cost --
+//   a one-time copy, not a live reference. Changing delivery_rates
+//   later never changes an order/sale that already has a method set;
+//   picking (or re-picking) a method here is the only thing that
+//   updates it, using whatever rate is in force at that moment.
+// - For 'other', there is no stored rate at all -- the caller supplies
+//   customCost (typed in fresh each time, e.g. from the "how was this
+//   delivered?" prompt shown when an order is marked Delivered), and
+//   that exact value is snapshotted instead. This is what gives
+//   "Other" the flexibility to vary per delivery.
 // - Same-origin only (admin.html, from the order/sale detail drawer) --
 //   no CORS needed here.
 
@@ -54,9 +59,19 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid channel, ID, or delivery method.' }) };
   }
 
+  let cost;
+  if (method === 'other') {
+    cost = Number(body.customCost);
+    if (isNaN(cost) || cost < 0) {
+      return { statusCode: 400, body: JSON.stringify({ error: 'Enter a valid amount (0 or more) for Other.' }) };
+    }
+  }
+
   try {
-    const rates = await fetchDeliveryRates();
-    const cost = Number(rates[RATE_FIELD[method]]) || 0;
+    if (method !== 'other') {
+      const rates = await fetchDeliveryRates();
+      cost = Number(rates[RATE_FIELD[method]]) || 0;
+    }
 
     const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
       method: 'PATCH',
