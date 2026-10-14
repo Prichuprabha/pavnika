@@ -385,6 +385,7 @@ function showAdminPanel(token, displayName) {
   initCustomersView(token);
   initSareeTagsView(token);
   initShareLinkTool();
+  initBusinessSettings(token);
   initSidebarNav();
 
   document.getElementById('admin-logout-btn').addEventListener('click', function () {
@@ -4246,6 +4247,85 @@ function initAdminUsersEditor(token) {
   });
 
   loadUsers();
+}
+
+/* ---------- Company Settings (TRN, trade license, address -- feeds invoice emails) ---------- */
+function initBusinessSettings(token) {
+  var statusMsg = document.getElementById('admin-business-settings-status-msg');
+  var updatedNote = document.getElementById('admin-bs-updated-note');
+  var saveBtn = document.getElementById('admin-bs-save-btn');
+
+  function showStatus(type, msg) {
+    statusMsg.textContent = msg;
+    statusMsg.className = 'admin-status-msg ' + type;
+    setTimeout(function () { statusMsg.textContent = ''; }, 4000);
+  }
+
+  function fillForm(s) {
+    document.getElementById('admin-bs-legal-name').value = (s && s.legal_name) || '';
+    document.getElementById('admin-bs-trade-license').value = (s && s.trade_license_number) || '';
+    document.getElementById('admin-bs-licensing-authority').value = (s && s.licensing_authority) || '';
+    document.getElementById('admin-bs-registered-address').value = (s && s.registered_address) || '';
+    document.getElementById('admin-bs-vat-registered').checked = !!(s && s.vat_registered);
+    document.getElementById('admin-bs-trn').value = (s && s.trn) || '';
+    document.getElementById('admin-bs-corporate-tax-trn').value = (s && s.corporate_tax_trn) || '';
+    if (s && s.updated_at) {
+      var when = new Date(s.updated_at).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+      updatedNote.textContent = 'Last updated ' + when + (s.updated_by ? (' by ' + s.updated_by) : '') + '.';
+    } else {
+      updatedNote.textContent = 'Not set yet -- the invoice email will use its built-in fallback details until you save here.';
+    }
+  }
+
+  function loadSettings() {
+    fetch('/.netlify/functions/admin-get-business-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) { fillForm(data.settings); })
+      .catch(function () { showStatus('error', 'Could not load company settings.'); });
+  }
+
+  saveBtn.addEventListener('click', function () {
+    var legalName = document.getElementById('admin-bs-legal-name').value.trim();
+    var registeredAddress = document.getElementById('admin-bs-registered-address').value.trim();
+    if (!legalName || !registeredAddress) { showStatus('error', 'Legal trading name and registered address are required.'); return; }
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+
+    fetch('/.netlify/functions/admin-save-business-settings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        adminToken: token,
+        legalName: legalName,
+        tradeLicenseNumber: document.getElementById('admin-bs-trade-license').value.trim(),
+        licensingAuthority: document.getElementById('admin-bs-licensing-authority').value.trim(),
+        registeredAddress: registeredAddress,
+        vatRegistered: document.getElementById('admin-bs-vat-registered').checked,
+        trn: document.getElementById('admin-bs-trn').value.trim(),
+        corporateTaxTrn: document.getElementById('admin-bs-corporate-tax-trn').value.trim()
+      })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Company Settings';
+        if (!result.ok) { showStatus('error', result.data.error || 'Could not save company settings.'); return; }
+        showStatus('success', 'Company settings saved. New invoice emails will use these details.');
+        fillForm(result.data.settings);
+      })
+      .catch(function () {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save Company Settings';
+        showStatus('error', 'Network error saving company settings.');
+      });
+  });
+
+  loadSettings();
 }
 
 /* ---------- Orders view ---------- */

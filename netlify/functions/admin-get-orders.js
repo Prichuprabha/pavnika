@@ -8,25 +8,33 @@
 //   second round trip from the browser.
 
 const { verifyAdminToken } = require('./_admin-auth');
+const { CORS_HEADERS, corsPreflight } = require('./_cors');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+// CORS is enabled here (see _cors.js) so the offline Finance app --
+// run from your own computer, not deployed to pavnika.ae -- can read
+// order history for its Dashboard/Reports. Still requires a valid
+// adminToken, same as every other caller of this function.
 exports.handler = async function (event) {
+  var preflight = corsPreflight(event);
+  if (preflight) return preflight;
+
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return { statusCode: 405, headers: CORS_HEADERS, body: 'Method Not Allowed' };
   }
 
   let body;
   try {
     body = JSON.parse(event.body || '{}');
   } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
+    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
   const session = verifyAdminToken(body.adminToken);
   if (!session) {
-    return { statusCode: 401, body: JSON.stringify({ error: 'Not authorized. Please sign in again.' }) };
+    return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Not authorized. Please sign in again.' }) };
   }
 
   try {
@@ -65,9 +73,9 @@ exports.handler = async function (event) {
     }
     orders.forEach(function (o) { o.returns = returnsByOrder[o.id] || []; });
 
-    return { statusCode: 200, body: JSON.stringify({ orders: orders }) };
+    return { statusCode: 200, headers: CORS_HEADERS, body: JSON.stringify({ orders: orders }) };
   } catch (err) {
     console.error(err);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Failed to load orders: ' + err.message }) };
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Failed to load orders: ' + err.message }) };
   }
 };

@@ -9,6 +9,7 @@
 
 const { verifyPassword } = require('./_pos-auth');
 const { signAdminToken } = require('./_admin-auth');
+const { CORS_HEADERS, corsPreflight } = require('./_cors');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -21,22 +22,29 @@ function supabaseHeaders() {
   };
 }
 
+// CORS is enabled here (see _cors.js) so the offline Finance app --
+// run from your own computer, not deployed to pavnika.ae -- can sign
+// in the same way admin.html does, using the same admin_users table
+// and the same short-lived signed token.
 exports.handler = async function (event) {
+  var preflight = corsPreflight(event);
+  if (preflight) return preflight;
+
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, body: 'Method not allowed' };
+    return { statusCode: 405, headers: CORS_HEADERS, body: 'Method not allowed' };
   }
 
   var body;
   try {
     body = JSON.parse(event.body || '{}');
   } catch (e) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Invalid request body' }) };
+    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid request body' }) };
   }
 
   var username = (body.username || '').trim();
   var password = body.password || '';
   if (!username || !password) {
-    return { statusCode: 400, body: JSON.stringify({ error: 'Username and password are required' }) };
+    return { statusCode: 400, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Username and password are required' }) };
   }
 
   try {
@@ -52,16 +60,17 @@ exports.handler = async function (event) {
     // password is wrong — doesn't reveal which one it was, so this
     // can't be used to check which usernames are valid.
     if (!user || !verifyPassword(password, user.password_hash, user.password_salt)) {
-      return { statusCode: 401, body: JSON.stringify({ error: 'Invalid username or password' }) };
+      return { statusCode: 401, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Invalid username or password' }) };
     }
 
     var token = signAdminToken(user.id, user.username, user.display_name);
     return {
       statusCode: 200,
+      headers: CORS_HEADERS,
       body: JSON.stringify({ token: token, displayName: user.display_name, username: user.username })
     };
   } catch (e) {
     console.error('admin-login error:', e);
-    return { statusCode: 500, body: JSON.stringify({ error: 'Something went wrong, please try again' }) };
+    return { statusCode: 500, headers: CORS_HEADERS, body: JSON.stringify({ error: 'Something went wrong, please try again' }) };
   }
 };

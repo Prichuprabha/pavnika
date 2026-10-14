@@ -196,6 +196,35 @@ function supabaseHeaders() {
   };
 }
 
+// These are the exact details that used to be hardcoded directly into
+// the invoice HTML below. They now live in business_settings (see
+// SETUP_business_settings.sql and the Finance tool's Company Settings
+// tab) and are seeded with these same values, so nothing changes on
+// the live invoice until someone actually edits them there. This
+// fallback exists so a fetch failure, or the table not existing yet
+// (migration not run), degrades to exactly the old hardcoded behavior
+// instead of sending a broken-looking invoice.
+var FALLBACK_BUSINESS_SETTINGS = {
+  legal_name: 'Pavnika Online Seller, trading as Pavnika by Saranya',
+  trade_license_number: '1563920',
+  licensing_authority: 'Dubai Department of Economy & Tourism',
+  registered_address: 'Al Barsha South 4, Dubai, United Arab Emirates',
+  vat_registered: false,
+  trn: ''
+};
+
+async function fetchBusinessSettings() {
+  try {
+    var res = await fetch(`${SUPABASE_URL}/rest/v1/business_settings?id=eq.1&select=*`, { headers: supabaseHeaders() });
+    if (!res.ok) return FALLBACK_BUSINESS_SETTINGS;
+    var rows = await res.json();
+    return rows[0] || FALLBACK_BUSINESS_SETTINGS;
+  } catch (e) {
+    console.error('fetchBusinessSettings: could not load business_settings, using fallback:', e);
+    return FALLBACK_BUSINESS_SETTINGS;
+  }
+}
+
 function formatAED(n) {
   return Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -315,6 +344,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
   var items = await enrichItemsForReceipt(JSON.parse(order.items || '[]'));
   var billing = JSON.parse(order.billing_address || '{}');
   var shipping = JSON.parse(order.shipping_address || '{}');
+  var biz = await fetchBusinessSettings();
 
   function addressHtml(addr) {
     if (!addr.building && !addr.city) return '<span style="color:#a08b7f;">(not provided)</span>';
@@ -392,9 +422,10 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
 
       <div style="background:#FFFFFF; border:1px solid #DED0C7; border-radius:6px; padding:14px 16px; margin:0 0 16px;">
         <p style="margin:0 0 6px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Sold by / <span dir="rtl" style="text-transform:none;">البائع</span></p>
-        <p style="margin:0 0 3px; font-size:13px; font-weight:600; color:#3B2528;">Pavnika Online Seller, trading as Pavnika by Saranya</p>
-        <p style="margin:0 0 3px; font-size:12px; color:#3B2528; line-height:1.6;">Al Barsha South 4, Dubai, United Arab Emirates</p>
-        <p style="margin:0 0 3px; font-size:12px; color:#3B2528;">Licensed by Dubai Department of Economy &amp; Tourism — License No. 1563920</p>
+        <p style="margin:0 0 3px; font-size:13px; font-weight:600; color:#3B2528;">${biz.legal_name}</p>
+        <p style="margin:0 0 3px; font-size:12px; color:#3B2528; line-height:1.6;">${biz.registered_address}</p>
+        ${biz.trade_license_number ? `<p style="margin:0 0 3px; font-size:12px; color:#3B2528;">Licensed by ${biz.licensing_authority || 'the relevant UAE licensing authority'} — License No. ${biz.trade_license_number}</p>` : ''}
+        ${biz.vat_registered && biz.trn ? `<p style="margin:0 0 3px; font-size:12px; color:#3B2528;">TRN: ${biz.trn}</p>` : ''}
         <p style="margin:0; font-size:12px; color:#3B2528;">support@pavnika.ae &nbsp;&middot;&nbsp; +971 52 66 30307</p>
       </div>
 
@@ -612,6 +643,7 @@ async function sendReturnConfirmationEmail(params) {
 module.exports = {
   supabaseHeaders: supabaseHeaders,
   formatAED: formatAED,
+  fetchBusinessSettings: fetchBusinessSettings,
   buildItemDescription: buildItemDescription,
   generateOrderNumber: generateOrderNumber,
   sendReceiptEmail: sendReceiptEmail,
