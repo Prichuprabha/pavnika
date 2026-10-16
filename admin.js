@@ -63,16 +63,31 @@ function showConfirmPopup(message, onConfirm, onCancel) {
 }
 
 // ---------------------------------------------------------------
-/* ---------- Shared: "how was this delivered?" popup ----------
-   Shown whenever an order is marked Delivered. Lets the admin pick
-   Partner / Own / Other; picking Other reveals a free-typed AED amount
-   field, since -- unlike Partner/Own -- there's no stored rate for
-   Other any more (that's the point: it can vary per delivery). Calls
-   onConfirm(method, customCost) -- customCost is only meaningful when
-   method === 'other'. */
-function showDeliveryMethodPopup(message, onConfirm, onCancel) {
+/* ---------- Shared: "Delivery Method" popup ----------
+   Used both when an order is marked Delivered, and whenever the
+   Delivery Method button itself is tapped (to set or change it
+   independent of status). Lets the admin pick Partner / Own / Other:
+     - Partner shows an AED amount field pre-filled with today's
+       Partner rate from Delivery Rates -- almost always correct as-is,
+       but editable for the rare long-distance delivery a partner
+       charges more for.
+     - Own has no amount field -- it always uses the Own rate.
+     - Other has no stored rate at all -- the field starts blank and
+       must be typed in fresh every time.
+   Calls onConfirm(method, customCost). customCost is the AED value to
+   snapshot for 'partner'/'other' (read from their amount fields);
+   it's ignored for 'own', which the server prices from the live Own
+   rate itself.
+   options (all optional):
+     partnerRate  — today's Partner rate, used to pre-fill its field
+     prefillMethod/prefillCost — preselect an already-set method (used
+       when re-opening via the Delivery Method button to change it) */
+function showDeliveryMethodPopup(message, onConfirm, onCancel, options) {
+  options = options || {};
   var overlay = document.getElementById('admin-delivery-method-overlay');
   var textEl = document.getElementById('admin-dm-text');
+  var partnerField = document.getElementById('admin-dm-partner-field');
+  var partnerInput = document.getElementById('admin-dm-partner-amount');
   var otherField = document.getElementById('admin-dm-other-field');
   var otherInput = document.getElementById('admin-dm-other-amount');
   var errorEl = document.getElementById('admin-dm-error');
@@ -81,15 +96,21 @@ function showDeliveryMethodPopup(message, onConfirm, onCancel) {
   var radios = overlay ? Array.prototype.slice.call(overlay.querySelectorAll('input[name="admin-dm-method"]')) : [];
   if (!overlay) { if (onConfirm) onConfirm('own', 0); return; } // safety net if markup is ever missing
 
+  var partnerRate = Number(options.partnerRate) || 0;
+
   textEl.textContent = message;
-  radios.forEach(function (r) { r.checked = false; });
+  radios.forEach(function (r) { r.checked = (r.value === options.prefillMethod); });
+  partnerField.style.display = 'none';
   otherField.style.display = 'none';
-  otherInput.value = '';
+  partnerInput.value = formatAED(partnerRate);
+  otherInput.value = (options.prefillMethod === 'other' && options.prefillCost != null) ? formatAED(options.prefillCost) : '';
   errorEl.style.display = 'none';
   overlay.classList.add('is-open');
+  onRadioChange(); // show whichever field matches a preselected radio, if any
 
   function onRadioChange() {
     var picked = radios.find(function (r) { return r.checked; });
+    partnerField.style.display = (picked && picked.value === 'partner') ? 'block' : 'none';
     otherField.style.display = (picked && picked.value === 'other') ? 'block' : 'none';
     errorEl.style.display = 'none';
   }
@@ -105,12 +126,19 @@ function showDeliveryMethodPopup(message, onConfirm, onCancel) {
   function onYes() {
     var picked = radios.find(function (r) { return r.checked; });
     if (!picked) {
-      errorEl.textContent = 'Pick how this was delivered.';
+      errorEl.textContent = 'Pick a delivery method.';
       errorEl.style.display = 'block';
       return;
     }
     var customCost = 0;
-    if (picked.value === 'other') {
+    if (picked.value === 'partner') {
+      customCost = parseFloat(partnerInput.value);
+      if (isNaN(customCost) || customCost < 0) {
+        errorEl.textContent = 'Enter a valid amount (0 or more) for Delivery Partner.';
+        errorEl.style.display = 'block';
+        return;
+      }
+    } else if (picked.value === 'other') {
       customCost = parseFloat(otherInput.value);
       if (isNaN(customCost) || customCost < 0) {
         errorEl.textContent = 'Enter a valid amount (0 or more) for Other.';
@@ -3607,9 +3635,11 @@ function initStatsDashboard(token) {
         var dateLabel = o.created_at ? new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : '';
         return '<div class="admin-rank-row admin-recent-order-row">' +
           '<span>#' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Customer') +
-            '<br><span style="font-size:0.7rem; opacity:0.6;">' + recentOrderStatusLabel(o.status) + ' &middot; ' + dateLabel + '</span>' +
+            '<br><span style="font-size:0.7rem; opacity:0.6;">' + dateLabel + '</span>' +
           '</span>' +
-          '<span class="rank-value">AED ' + formatAED(o.total || 0) + '</span>' +
+          '<span class="rank-value" style="text-align:right;">AED ' + formatAED(o.total || 0) +
+            '<br><span style="font-size:0.7rem; opacity:0.65; font-weight:600;">' + recentOrderStatusLabel(o.status) + '</span>' +
+          '</span>' +
         '</div>';
       },
       'No orders yet.',
@@ -4536,6 +4566,15 @@ function initOrdersView(token) {
 
   var allOrders = [];
   var allShopOrders = [];
+  var currentDeliveryRates = { partner_rate: 0, own_rate: 0 };
+  fetch('/.netlify/functions/admin-get-delivery-rates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ adminToken: token })
+  })
+    .then(function (res) { return res.json(); })
+    .then(function (data) { if (data && data.rates) currentDeliveryRates = data.rates; })
+    .catch(function () {}); // non-fatal -- the popup's Partner field just falls back to 0, still editable
   var activeChannel = 'online';
   var sortKey = 'created_at';
   var sortDir = 'desc';
@@ -5041,13 +5080,12 @@ function initOrdersView(token) {
 
   var DELIVERY_METHOD_LABEL = { partner: 'Delivery Partner', own: 'Own / Self Delivery', other: 'Other' };
 
-  function buildDeliverySelect(o, isShop) {
-    var methods = ['partner', 'own', 'other'];
-    var current = o.delivery_method || '';
-    var options = (current ? '' : '<option value="" selected disabled>Not set</option>') + methods.map(function (m) {
-      return '<option value="' + m + '"' + (current === m ? ' selected' : '') + '>' + DELIVERY_METHOD_LABEL[m] + '</option>';
-    }).join('');
-    return '<select class="admin-order-delivery-select" data-id="' + o.id + '" data-channel="' + (isShop ? 'shop' : 'online') + '">' + options + '</select>';
+  // A button, not a <select> -- picking (or changing) a method opens
+  // the same "Delivery Method" popup used when an order is marked
+  // Delivered, rather than offering an inline dropdown.
+  function buildDeliveryButton(o, isShop) {
+    var label = o.delivery_method ? DELIVERY_METHOD_LABEL[o.delivery_method] : 'Not set — tap to choose';
+    return '<button type="button" class="admin-order-delivery-btn" data-id="' + o.id + '" data-channel="' + (isShop ? 'shop' : 'online') + '">' + label + '</button>';
   }
 
   // Shows the AED amount actually locked onto this order/sale — a
@@ -5058,13 +5096,14 @@ function initOrdersView(token) {
     return '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Locked at AED ' + formatAED(o.delivery_cost || 0) + ' when last set — won’t change if Delivery Rates are edited later.</p>';
   }
 
-  // Shared by both the table's inline status select and the drawer's:
-  // sets delivery_method/delivery_cost for an order, then returns a
-  // promise resolving with {ok, data}, same shape as the status-update
-  // fetches below so callers can chain them identically.
-  function applyDeliveryMethod(id, method, customCost) {
-    var payload = { adminToken: token, channel: 'online', id: id, method: method };
-    if (method === 'other') payload.customCost = customCost;
+  // Shared by the table's inline status select, the drawer's status
+  // select, and the Delivery Method button: sets delivery_method/
+  // delivery_cost for an order or sale, then returns a promise
+  // resolving with {ok, data}, same shape as the status-update fetches
+  // below so callers can chain them identically.
+  function applyDeliveryMethod(channel, id, method, customCost) {
+    var payload = { adminToken: token, channel: channel, id: id, method: method };
+    if (method === 'partner' || method === 'other') payload.customCost = customCost;
     return fetch('/.netlify/functions/admin-set-delivery-method', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -5091,7 +5130,7 @@ function initOrdersView(token) {
         var prevStatusTable = order ? order.status : newStatus;
         statusSelectEl.value = prevStatusTable; // hold the visible value until the popup is confirmed
         showDeliveryMethodPopup('Marking Order #' + (order ? order.order_number : orderId) + ' as Delivered.', function (method, customCost) {
-          applyDeliveryMethod(orderId, method, customCost).then(function (dmResult) {
+          applyDeliveryMethod('online', orderId, method, customCost).then(function (dmResult) {
             if (!dmResult.ok) { showStatus('error', dmResult.data.error || 'Could not set delivery method.'); return; }
             if (order) { order.delivery_method = dmResult.data.deliveryMethod; order.delivery_cost = dmResult.data.deliveryCost; }
             return updateOrderStatus(orderId, newStatus).then(function (result) {
@@ -5103,7 +5142,7 @@ function initOrdersView(token) {
               renderTable();
             });
           }).catch(function () { showStatus('error', 'Network error — status was not updated.'); });
-        });
+        }, function () { statusSelectEl.value = prevStatusTable; }, { partnerRate: currentDeliveryRates.partner_rate });
         return;
       }
 
@@ -5384,7 +5423,7 @@ function initOrdersView(token) {
         '<span style="font-size:0.78rem; font-weight:700; padding:4px 12px; border-radius:6px; ' + shopStatusBadgeColor(order.status) + '">' + order.status + '</span>' +
         '<p style="margin:6px 0 0; font-size:0.72rem; opacity:0.6;">Reflects returns/exchanges recorded in the POS — not editable here.</p>' +
         '<h4>Delivery Method</h4>' +
-        buildDeliverySelect(order, true) +
+        buildDeliveryButton(order, true) +
         deliveryCostNote(order) +
         '<h4>Danger Zone</h4>' +
         '<button type="button" class="btn btn-ghost" id="admin-shop-delete-btn" style="width:100%; color:#B8142A; border-color:#B8142A;">Delete This Sale</button>';
@@ -5395,7 +5434,7 @@ function initOrdersView(token) {
         '<h4>Update Status</h4>' +
         buildStatusSelect(order) +
         '<h4>Delivery Method</h4>' +
-        buildDeliverySelect(order, false) +
+        buildDeliveryButton(order, false) +
         deliveryCostNote(order);
 
       if (order.status === 'pending' && order.customer_phone) {
@@ -5566,14 +5605,14 @@ function initOrdersView(token) {
           select.value = newStatus;
           showDrawerStatus('success', 'Saving...');
 
-          applyDeliveryMethod(orderId, method, customCost)
+          applyDeliveryMethod('online', orderId, method, customCost)
             .then(function (dmResult) {
               if (!dmResult.ok) { showDrawerStatus('error', dmResult.data.error || 'Could not set delivery method.'); select.value = prevStatus; return; }
               if (orderForStatus) { orderForStatus.delivery_method = dmResult.data.deliveryMethod; orderForStatus.delivery_cost = dmResult.data.deliveryCost; }
-              var deliverySelectEl = drawerBody.querySelector('.admin-order-delivery-select[data-channel="online"]');
-              if (deliverySelectEl) {
-                deliverySelectEl.value = dmResult.data.deliveryMethod;
-                var noteEl = deliverySelectEl.nextElementSibling;
+              var deliveryBtnEl = drawerBody.querySelector('.admin-order-delivery-btn[data-channel="online"]');
+              if (deliveryBtnEl) {
+                deliveryBtnEl.textContent = DELIVERY_METHOD_LABEL[dmResult.data.deliveryMethod];
+                var noteEl = deliveryBtnEl.nextElementSibling;
                 if (noteEl) noteEl.innerHTML = 'Locked at AED ' + formatAED(dmResult.data.deliveryCost || 0) + ' when last set — won’t change if Delivery Rates are edited later.';
               }
               return updateOrderStatus(orderId, newStatus).then(function (result) {
@@ -5586,7 +5625,7 @@ function initOrdersView(token) {
               });
             })
             .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); select.value = prevStatus; });
-        }, function () { select.value = prevStatus; });
+        }, function () { select.value = prevStatus; }, { partnerRate: currentDeliveryRates.partner_rate });
         return;
       }
 
@@ -5640,39 +5679,43 @@ function initOrdersView(token) {
       return;
     }
 
-    var deliverySelect = e.target.closest('.admin-order-delivery-select');
-    if (deliverySelect) {
-      var deliveryChannel = deliverySelect.getAttribute('data-channel');
-      var deliveryId = deliverySelect.getAttribute('data-id');
-      var newDeliveryMethod = deliverySelect.value;
-      var deliverySource = deliveryChannel === 'shop' ? allShopOrders : allOrders;
-      var orderForDelivery = deliverySource.find(function (o) { return String(o.id) === String(deliveryId); });
-      var prevDeliveryMethod = orderForDelivery ? orderForDelivery.delivery_method : '';
-      deliverySelect.value = prevDeliveryMethod || ''; // hold the visible value until confirmed
+  });
 
-      showConfirmPopup('Set delivery method to “' + DELIVERY_METHOD_LABEL[newDeliveryMethod] + '”? This locks in today’s rate for this ' + (deliveryChannel === 'shop' ? 'sale' : 'order') + '.', function () {
-        deliverySelect.value = newDeliveryMethod;
+  // The Delivery Method control is a button, not a <select> -- tapping
+  // it opens the same popup used when marking an order Delivered, so
+  // this is a separate 'click' listener rather than part of the
+  // 'change' one above.
+  drawerBody.addEventListener('click', function (e) {
+    var deliveryBtn = e.target.closest('.admin-order-delivery-btn');
+    if (!deliveryBtn) return;
+
+    var deliveryChannel = deliveryBtn.getAttribute('data-channel');
+    var deliveryId = deliveryBtn.getAttribute('data-id');
+    var deliverySource = deliveryChannel === 'shop' ? allShopOrders : allOrders;
+    var orderForDelivery = deliverySource.find(function (o) { return String(o.id) === String(deliveryId); });
+    var prevLabel = deliveryBtn.textContent;
+
+    showDeliveryMethodPopup(
+      'Choose how this ' + (deliveryChannel === 'shop' ? 'sale' : 'order') + ' was delivered. This locks in the amount shown for it.',
+      function (method, customCost) {
         showDrawerStatus('success', 'Saving...');
-
-        fetch('/.netlify/functions/admin-set-delivery-method', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ adminToken: token, channel: deliveryChannel, id: deliveryId, method: newDeliveryMethod })
-        })
-          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+        applyDeliveryMethod(deliveryChannel, deliveryId, method, customCost)
           .then(function (result) {
-            if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not set delivery method.'); deliverySelect.value = prevDeliveryMethod; return; }
+            if (!result.ok) { showDrawerStatus('error', result.data.error || 'Could not set delivery method.'); deliveryBtn.textContent = prevLabel; return; }
             if (orderForDelivery) {
               orderForDelivery.delivery_method = result.data.deliveryMethod;
               orderForDelivery.delivery_cost = result.data.deliveryCost;
             }
-            var noteEl = deliverySelect.nextElementSibling;
+            deliveryBtn.textContent = DELIVERY_METHOD_LABEL[result.data.deliveryMethod];
+            var noteEl = deliveryBtn.nextElementSibling;
             if (noteEl) noteEl.innerHTML = 'Locked at AED ' + formatAED(result.data.deliveryCost || 0) + ' when last set — won’t change if Delivery Rates are edited later.';
-            showDrawerStatus('success', 'Delivery method set to ' + DELIVERY_METHOD_LABEL[newDeliveryMethod] + ' (AED ' + formatAED(result.data.deliveryCost || 0) + ').');
+            showDrawerStatus('success', 'Delivery method set to ' + DELIVERY_METHOD_LABEL[result.data.deliveryMethod] + ' (AED ' + formatAED(result.data.deliveryCost || 0) + ').');
           })
-          .catch(function () { showDrawerStatus('error', 'Network error — delivery method was not updated.'); deliverySelect.value = prevDeliveryMethod; });
-      });
-    }
+          .catch(function () { showDrawerStatus('error', 'Network error — delivery method was not updated.'); deliveryBtn.textContent = prevLabel; });
+      },
+      null,
+      { partnerRate: currentDeliveryRates.partner_rate, prefillMethod: orderForDelivery ? orderForDelivery.delivery_method : null, prefillCost: orderForDelivery ? orderForDelivery.delivery_cost : null }
+    );
   });
 
   function loadOrders() {
@@ -6656,7 +6699,7 @@ function initCustomersView(token) {
         '</div>' +
         '<div class="admin-order-mobile-right">' +
           '<p class="omt">AED ' + formatAED(c.totalSpend) + '</p>' +
-          (c.giftCardBalance > 0 ? '<p class="omp" style="color:#3B6D11; font-weight:600;">AED ' + formatAED(c.giftCardBalance) + ' credit</p>' : '') +
+          (Math.round((c.giftCardBalance || 0) * 100) > 0 ? '<p class="omp" style="color:#3B6D11; font-weight:600;">AED ' + formatAED(c.giftCardBalance) + ' credit</p>' : '') +
         '</div>' +
       '</div>';
     }).join('');
@@ -6678,7 +6721,7 @@ function initCustomersView(token) {
         buildStatCardHtml('In-Store Spend (AED)', formatAED(c.inStoreSpend), 'box', 'gold') +
       '</div>' +
       '<p style="font-size:0.8rem; opacity:0.7; margin:0 0 16px;">' + c.onlineOrders + ' online order' + (c.onlineOrders === 1 ? '' : 's') + ' &middot; ' + c.inStoreOrders + ' in-store order' + (c.inStoreOrders === 1 ? '' : 's') + '</p>' +
-      (c.giftCardBalance > 0 ? '<p style="background:#EAF3DE; color:#3B6D11; padding:10px 14px; border-radius:8px; font-weight:600; font-size:0.86rem; margin-bottom:16px;">Store credit balance: AED ' + formatAED(c.giftCardBalance) + '</p>' : '') +
+      (Math.round((c.giftCardBalance || 0) * 100) > 0 ? '<p style="background:#EAF3DE; color:#3B6D11; padding:10px 14px; border-radius:8px; font-weight:600; font-size:0.86rem; margin-bottom:16px;">Store credit balance: AED ' + formatAED(c.giftCardBalance) + '</p>' : '') +
       '<h4>Contact Details</h4>' +
       '<div class="admin-field"><label>Name</label><input type="text" id="admin-cust-name" value="' + (c.name || '').replace(/"/g, '&quot;') + '"></div>' +
       '<div class="admin-field"><label>Email</label><input type="text" id="admin-cust-email" value="' + (c.email || '').replace(/"/g, '&quot;') + '"></div>' +
@@ -6689,7 +6732,7 @@ function initCustomersView(token) {
         ? ('<p style="font-size:0.76rem; opacity:0.7; margin:0 0 10px;">Store credit normally only changes through a return or a checkout redemption. Use this only to correct a balance that’s wrong (e.g. fixing a past error) — every change here is logged with a reason.</p>' +
           '<div class="admin-field"><label>Current balance (AED)</label><input type="text" id="admin-cust-giftcard-balance" value="' + formatAED(c.giftCardBalance || 0) + '"></div>' +
           '<div class="admin-field"><label>Reason for this change</label><input type="text" id="admin-cust-giftcard-reason" placeholder="e.g. correcting an over-credit from order #PV-1234"></div>' +
-          '<button type="button" class="btn" id="admin-cust-giftcard-save-btn" style="width:100%; color:#B8142A; border-color:#B8142A;">Adjust Store Credit</button>')
+          '<button type="button" class="btn" id="admin-cust-giftcard-save-btn" style="width:100%; margin-top:14px; color:#B8142A; border-color:#B8142A;">Adjust Store Credit</button>')
         : '<p style="font-size:0.76rem; opacity:0.7; margin:0;">This customer has only ever bought online and has no store-credit record yet — save their contact details above first, then this balance can be adjusted.</p>');
 
     document.getElementById('admin-cust-save-btn').addEventListener('click', function () {

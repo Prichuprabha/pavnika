@@ -3,17 +3,22 @@
 // POST { adminToken, channel, id, method, customCost? }
 // - channel: 'online' (orders table) or 'shop' (pos_sales table)
 // - method: 'partner' | 'own' | 'other'
-// - For 'partner'/'own', looks up the CURRENT delivery_rates row and
-//   snapshots that method's rate onto the order/sale as delivery_cost --
-//   a one-time copy, not a live reference. Changing delivery_rates
-//   later never changes an order/sale that already has a method set;
-//   picking (or re-picking) a method here is the only thing that
-//   updates it, using whatever rate is in force at that moment.
-// - For 'other', there is no stored rate at all -- the caller supplies
-//   customCost (typed in fresh each time, e.g. from the "how was this
-//   delivered?" prompt shown when an order is marked Delivered), and
-//   that exact value is snapshotted instead. This is what gives
-//   "Other" the flexibility to vary per delivery.
+// - 'own' always uses the CURRENT delivery_rates row's own_rate -- a
+//   one-time snapshot copy, not a live reference. Changing
+//   delivery_rates later never changes an order/sale that already has
+//   a method set; picking (or re-picking) a method here is the only
+//   thing that updates it.
+// - 'partner' and 'other' both require the caller to supply customCost
+//   (typed in fresh each time, from the Delivery Method popup):
+//     - Partner's popup field is pre-filled with today's partner_rate
+//       but is editable, since the standard rate applies ~90% of the
+//       time but a delivery partner occasionally charges more for a
+//       long-distance trip within the UAE.
+//     - Other has no stored rate at all -- its field always starts
+//       blank.
+//   Either way, whatever value the admin confirms is exactly what's
+//   snapshotted -- this endpoint does not re-derive or clamp it
+//   against delivery_rates for these two methods.
 // - Same-origin only (admin.html, from the order/sale detail drawer) --
 //   no CORS needed here.
 
@@ -60,15 +65,15 @@ exports.handler = async function (event) {
   }
 
   let cost;
-  if (method === 'other') {
+  if (method === 'partner' || method === 'other') {
     cost = Number(body.customCost);
     if (isNaN(cost) || cost < 0) {
-      return { statusCode: 400, body: JSON.stringify({ error: 'Enter a valid amount (0 or more) for Other.' }) };
+      return { statusCode: 400, body: JSON.stringify({ error: 'Enter a valid amount (0 or more).' }) };
     }
   }
 
   try {
-    if (method !== 'other') {
+    if (method === 'own') {
       const rates = await fetchDeliveryRates();
       cost = Number(rates[RATE_FIELD[method]]) || 0;
     }

@@ -193,6 +193,17 @@
   }
   .admin-order-payment-select { font-size: 0.76rem; padding-top: 5px; padding-bottom: 5px; }
   .admin-order-delivery-select { font-size: 0.76rem; padding-top: 5px; padding-bottom: 5px; }
+  /* Delivery Method is a button, not a <select> -- it opens a popup
+     rather than offering an inline dropdown, so it can't use the
+     select-specific appearance/arrow-icon rules above. It's styled to
+     match the Payment Method pill as closely as a <button> can. */
+  .admin-order-delivery-btn {
+    font-family: inherit; font-size: 0.76rem; font-weight: 500; text-align: left;
+    border: none; cursor: pointer; width: 100%;
+    border-radius: 999px; background: var(--ivory-deep); color: var(--ink);
+    padding: 5px 16px;
+  }
+  .admin-order-delivery-btn:hover { background: var(--gold-light); }
 
   .admin-pending-card {
     display: flex; justify-content: space-between; align-items: center; gap: 12px;
@@ -2181,16 +2192,20 @@
 
     <div class="admin-simple-modal-overlay" id="admin-delivery-method-overlay">
       <div class="admin-simple-modal" style="max-width:420px; text-align:left;">
-        <h3 style="margin:0 0 12px;">How was this delivered?</h3>
+        <h3 id="admin-dm-heading" style="margin:0 0 12px;">Delivery Method</h3>
         <p id="admin-dm-text" style="font-size:0.88rem; margin:0 0 14px; opacity:0.8;"></p>
-        <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:6px;">
-          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer;"><input type="radio" name="admin-dm-method" value="partner"> Delivery Partner</label>
-          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer;"><input type="radio" name="admin-dm-method" value="own"> Own / Self Delivery</label>
-          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer;"><input type="radio" name="admin-dm-method" value="other"> Other</label>
-        </div>
-        <div id="admin-dm-other-field" style="display:none; margin:8px 0 6px;">
-          <label for="admin-dm-other-amount" style="display:block; font-size:0.76rem; opacity:0.7; margin-bottom:4px;">Amount for this delivery (AED)</label>
-          <input type="text" id="admin-dm-other-amount" placeholder="0.00" style="width:100%; font-family:inherit; font-size:0.85rem; padding:9px 11px; border:1px solid #DED0C7; border-radius:8px; box-sizing:border-box;">
+        <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:6px;">
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer; padding:4px 0;"><input type="radio" name="admin-dm-method" value="partner"> Delivery Partner</label>
+          <div id="admin-dm-partner-field" style="display:none; margin:0 0 6px 24px;">
+            <label for="admin-dm-partner-amount" style="display:block; font-size:0.76rem; opacity:0.7; margin-bottom:4px;">Amount (AED) — pre-filled from Delivery Rates, editable for this delivery</label>
+            <input type="text" id="admin-dm-partner-amount" placeholder="0.00" style="width:100%; font-family:inherit; font-size:0.85rem; padding:9px 11px; border:1px solid #DED0C7; border-radius:8px; box-sizing:border-box;">
+          </div>
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer; padding:4px 0;"><input type="radio" name="admin-dm-method" value="own"> Own / Self Delivery</label>
+          <label style="display:flex; align-items:center; gap:8px; font-size:0.86rem; cursor:pointer; padding:4px 0;"><input type="radio" name="admin-dm-method" value="other"> Other</label>
+          <div id="admin-dm-other-field" style="display:none; margin:0 0 6px 24px;">
+            <label for="admin-dm-other-amount" style="display:block; font-size:0.76rem; opacity:0.7; margin-bottom:4px;">Amount for this delivery (AED)</label>
+            <input type="text" id="admin-dm-other-amount" placeholder="0.00" style="width:100%; font-family:inherit; font-size:0.85rem; padding:9px 11px; border:1px solid #DED0C7; border-radius:8px; box-sizing:border-box;">
+          </div>
         </div>
         <p id="admin-dm-error" class="admin-status-msg admin-status-error" style="display:none; margin:4px 0 10px;"></p>
         <div style="display:flex; gap:10px; margin-top:12px;">
