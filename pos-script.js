@@ -1405,7 +1405,7 @@ function renderCart() {
     listEl.innerHTML = posState.cart.map(function (c) {
       var imgTag = c.image ? '<img src="' + c.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
       var warnClass = (c.dupeWarning || c.sold) ? (c.sold ? ' pos-sold-warning' : ' pos-dupe-warning') : '';
-      var dupeNote = c.dupeWarning ? '<div class="ci-sub" style="color:#B8142A;">Added twice separately \u2014 check this is intended</div>' : '';
+      var dupeNote = c.dupeWarning ? '<div class="ci-sub" style="color:#B8142A;">Added Separately</div>' : '';
       return '<div class="pos-cart-item' + warnClass + '">' + imgTag +
         '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
         '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + dupeNote + '</div>' +

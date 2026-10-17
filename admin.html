@@ -530,6 +530,27 @@
   .admin-stats-card-header { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
   .admin-stats-card-header .admin-stats-subheading { margin: 0; }
 
+  /* ---- Sales Overview bar/line chart (same mechanism as the offline
+     finance tool's Revenue & Profit Trend chart: axis/tick labels as
+     HTML divs rather than SVG <text> -- SVG text wasn't rendering
+     reliably -- a measured-width SVG so it fills the card exactly on
+     any screen size, and a hover/tap tooltip per bar or point). ---- */
+  .admin-dash-row > .admin-stats-card { min-width: 0; }
+  .admin-chart-type-toggle { display: inline-flex; gap: 4px; }
+  .admin-chart-axis-tick { position: absolute; font-size: 10px; color: #8a7266; line-height: 1; white-space: nowrap; }
+  .admin-chart-month-label { position: absolute; font-size: 10px; color: #8a7266; line-height: 1; white-space: nowrap; text-align: center; }
+  .admin-chart-mark { cursor: pointer; }
+  .admin-chart-mark:hover { opacity: 1 !important; }
+  .admin-chart-tooltip {
+    display: none; position: absolute; transform: translate(-50%, -100%);
+    background: var(--green-deep); color: var(--ivory); padding: 6px 10px; border-radius: 8px;
+    font-size: 11px; white-space: nowrap; pointer-events: none; box-shadow: 0 4px 12px rgba(43,13,26,0.2); z-index: 5;
+  }
+  @media (max-width: 560px) {
+    .admin-chart-axis-tick, .admin-chart-month-label { font-size: 9px; }
+    .admin-chart-tooltip { font-size: 10px; padding: 5px 8px; }
+  }
+
   /* ---- Scrollable list panels (Most Viewed / Recent Logins / Recent
      Orders) -- replaces the old "Show N more" that kept expanding the
      page's height. Capped height + scroll keeps the dashboard a fixed,
@@ -579,6 +600,12 @@
        taller than the dashboard's rank rows, so the same "~10 rows"
        collapsed height needs a taller cap here specifically. */
     .admin-orders-mobile-list .admin-scroll-list { max-height: 960px; }
+    /* The Send Filtered List preview has no "Show more" toggle wired --
+       it's filled with a plain innerHTML set, not renderScrollablePanel
+       -- so the rule above (overflow-y: hidden, with no way to expand)
+       would trap its content with no way to reach it. Keep it internally
+       scrollable at every width, same as desktop. */
+    .admin-sl-preview-scroll { overflow-y: auto !important; }
     .admin-scroll-list.is-expanded {
       overflow-y: auto;
       -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 22px), transparent);
@@ -1731,7 +1758,7 @@
         <div class="admin-form-card">
           <h3 style="margin-bottom:4px;">Preview</h3>
           <p style="font-size:0.82rem; color:var(--ink); opacity:0.7; margin-bottom:10px;"><span id="admin-sl-count">0</span> available item(s) match these filters.</p>
-          <div class="admin-scroll-list" id="admin-sl-preview-list" style="max-height:170px; margin-bottom:12px;"></div>
+          <div class="admin-scroll-list admin-sl-preview-scroll" id="admin-sl-preview-list" style="max-height:170px; margin-bottom:12px;"></div>
 
           <div class="admin-field">
             <label>Link</label>
@@ -2317,6 +2344,10 @@
               <button type="button" class="admin-chart-tab active" data-chart-series="revenue">Revenue</button>
               <button type="button" class="admin-chart-tab" data-chart-series="orders">Orders</button>
               <button type="button" class="admin-chart-tab" data-chart-series="visitors">Visitors</button>
+            </div>
+            <div class="admin-chart-type-toggle">
+              <button type="button" class="admin-chart-tab active" id="admin-chart-bar-btn">Bar</button>
+              <button type="button" class="admin-chart-tab" id="admin-chart-line-btn">Line</button>
             </div>
           </div>
           <div id="admin-revenue-chart"></div>

@@ -3241,6 +3241,46 @@ function initStatsDashboard(token) {
   var latestStats = null;
   var latestOrderStats = null;
   var activeChartSeries = 'revenue';
+  var adminChartType = 'bar';
+
+  // A "nice" axis step (1/2/5 x a power of ten) so tick labels land on
+  // round numbers instead of whatever the data happens to range over --
+  // same helper as the offline finance tool's trend chart.
+  function niceAxisStep(range, targetTicks) {
+    if (!range) return 1;
+    var rawStep = range / targetTicks;
+    var mag = Math.pow(10, Math.floor(Math.log(rawStep) / Math.LN10));
+    var residual = rawStep / mag;
+    var step;
+    if (residual > 5) step = 10 * mag;
+    else if (residual > 2) step = 5 * mag;
+    else if (residual > 1) step = 2 * mag;
+    else step = mag;
+    return step;
+  }
+  function formatAxisTick(v) {
+    if (v === 0) return '0';
+    var sign = v < 0 ? '-' : '';
+    var av = Math.abs(v);
+    if (av >= 1000) return sign + (av % 1000 === 0 ? (av / 1000) : (av / 1000).toFixed(1)) + 'K';
+    return sign + Math.round(av);
+  }
+  // Catmull-Rom to cubic-Bezier -- a smooth curve that still passes
+  // exactly through every data point, used for the "Line" chart style.
+  function smoothChartPath(pts) {
+    if (pts.length < 2) return '';
+    var d = 'M' + pts[0].x.toFixed(1) + ',' + pts[0].y.toFixed(1) + ' ';
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i];
+      var p1 = pts[i];
+      var p2 = pts[i + 1];
+      var p3 = pts[i + 2] || p2;
+      var c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+      var c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+      d += 'C' + c1x.toFixed(1) + ',' + c1y.toFixed(1) + ' ' + c2x.toFixed(1) + ',' + c2y.toFixed(1) + ' ' + p2.x.toFixed(1) + ',' + p2.y.toFixed(1) + ' ';
+    }
+    return d;
+  }
 
   function showStatus(type, html) {
     statusMsg.className = 'admin-status-msg ' + type;
@@ -3564,6 +3604,14 @@ function initStatsDashboard(token) {
   // verified-visitor list for the selected range, since the client only
   // ever receives the newest 50 of those (recentLogins) -- not enough
   // to chart a 30-day range accurately on its own.
+  // Grouped-bar-chart's single-series sibling: a bar chart (default) or
+  // smooth line chart, with a labelled Y axis, up to 6 evenly-spaced X
+  // labels, and a hover/tap tooltip per bar or point -- same mechanism
+  // as the offline finance tool's Revenue & Profit Trend chart,
+  // including drawing the chart at the card's own *measured* width
+  // (not a fixed size) so it always fills the card on phone or desktop,
+  // and HTML divs instead of SVG <text> for every label (SVG text
+  // wasn't rendering reliably in this environment).
   function renderSalesChart() {
     var chartEl = document.getElementById('admin-revenue-chart');
     if (!chartEl || !latestOrderStats) return;
@@ -3574,12 +3622,12 @@ function initStatsDashboard(token) {
       values = latestOrderStats.ordersSeries;
       emptyMessage = 'No orders in this range yet.';
       color = '#3C1223';
-      formatValue = function (v) { return v; };
+      formatValue = function (v) { return String(Math.round(v)); };
     } else if (activeChartSeries === 'visitors') {
       values = latestOrderStats.visitorsSeries;
       emptyMessage = 'No verified visitors in this range yet.';
       color = '#946B4A';
-      formatValue = function (v) { return v; };
+      formatValue = function (v) { return String(Math.round(v)); };
     } else {
       values = latestOrderStats.dailyPoints.map(function (p) { return p.revenue; });
       emptyMessage = 'No revenue in this range yet.';
@@ -3591,33 +3639,122 @@ function initStatsDashboard(token) {
       chartEl.innerHTML = '<p style="font-size:0.82rem; opacity:0.6;">' + emptyMessage + '</p>';
       return;
     }
-    var max = Math.max.apply(null, values) || 1;
-    var w = 100, h = 40;
-    var stepX = values.length > 1 ? w / (values.length - 1) : 0;
-    var coords = values.map(function (v, i) {
-      var x = values.length > 1 ? i * stepX : w / 2;
-      var y = h - (v / max) * (h - 4) - 2;
-      return x + ',' + y;
+
+    var n = values.length;
+    var isMobile = window.innerWidth <= 560;
+    var h = isMobile ? 190 : 220, padTop = 14, padBottom = isMobile ? 26 : 30, leftM = isMobile ? 38 : 48, rightM = 8;
+    var w = Math.max(260, chartEl.clientWidth || 480);
+    var plotW = w - leftM - rightM;
+
+    var maxV = Math.max.apply(null, values), minV = Math.min(0, Math.min.apply(null, values));
+    var step = niceAxisStep(Math.max(maxV - minV, 1), 5);
+    var niceMax = Math.ceil(maxV / step) * step;
+    var niceMin = Math.floor(minV / step) * step;
+    if (niceMax === niceMin) niceMax = niceMin + step;
+    var plotH = h - padTop - padBottom;
+    function scaleY(v) { return padTop + (1 - (v - niceMin) / (niceMax - niceMin)) * plotH; }
+    var zeroY = scaleY(0);
+    var plotBottom = padTop + plotH;
+
+    var tickVals = [];
+    for (var tv = niceMin; tv <= niceMax + step * 1e-6; tv += step) tickVals.push(Math.round(tv * 100) / 100);
+
+    var gridLines = '', tickLabels = '';
+    tickVals.forEach(function (t) {
+      var y = scaleY(t);
+      gridLines += '<line x1="' + leftM + '" y1="' + y.toFixed(1) + '" x2="' + (leftM + plotW) + '" y2="' + y.toFixed(1) + '" stroke="#eee1d6" stroke-width="1"/>';
+      tickLabels += '<div class="admin-chart-axis-tick" style="left:0; top:' + y.toFixed(1) + 'px; width:' + (leftM - 6) + 'px; transform:translateY(-50%); text-align:right;">' + formatAxisTick(t) + '</div>';
     });
-    var svg =
-      '<svg viewBox="0 0 ' + w + ' ' + h + '" preserveAspectRatio="none" style="width:100%; height:90px;">' +
-        '<polyline points="' + coords.join(' ') + '" fill="none" stroke="' + color + '" stroke-width="1.4" vector-effect="non-scaling-stroke"/>' +
-      '</svg>';
-    // Up to 6 evenly-spaced date labels along the x-axis (previously
-    // only the first/last date showed, leaving a long unlabeled stretch
-    // for anything wider than a week).
-    var maxLabels = Math.min(6, dates.length);
+    var axisLines = '<line x1="' + leftM + '" y1="' + padTop + '" x2="' + leftM + '" y2="' + plotBottom + '" stroke="var(--stone)" stroke-width="1.5"/>' +
+      '<line x1="' + leftM + '" y1="' + zeroY.toFixed(1) + '" x2="' + (leftM + plotW) + '" y2="' + zeroY.toFixed(1) + '" stroke="#c9b6a9" stroke-width="1.5"/>';
+
+    // Up to 6 (fewer on a phone) evenly-spaced date labels along the x
+    // axis -- showing every single day's label would overlap when
+    // there are dozens of points.
+    var maxLabels = Math.min(isMobile ? 4 : 6, n);
     var labelIndices = [];
     for (var li = 0; li < maxLabels; li++) {
-      var idx = maxLabels > 1 ? Math.round(li * (dates.length - 1) / (maxLabels - 1)) : 0;
+      var idx = maxLabels > 1 ? Math.round(li * (n - 1) / (maxLabels - 1)) : 0;
       if (labelIndices.indexOf(idx) === -1) labelIndices.push(idx);
     }
-    var labels =
-      '<div style="display:flex; justify-content:space-between; font-size:0.62rem; color:#8a7266; margin-top:4px;">' +
-        labelIndices.map(function (idx) { return '<span>' + dates[idx] + '</span>'; }).join('') +
-      '</div>';
-    chartEl.innerHTML = svg + labels;
+    var monthLabels = '';
+    labelIndices.forEach(function (idx) {
+      var x = leftM + (idx + 0.5) * (plotW / n);
+      monthLabels += '<div class="admin-chart-month-label" style="left:' + x.toFixed(1) + 'px; top:' + plotBottom + 'px; transform:translate(-50%, 6px);">' + dates[idx] + '</div>';
+    });
+
+    var marks = '';
+    if (adminChartType === 'bar') {
+      var groupW = plotW / n;
+      var barW = Math.min(isMobile ? 10 : 18, groupW * 0.6);
+      values.forEach(function (v, i) {
+        var x = leftM + (i + 0.5) * groupW - barW / 2;
+        var y1 = scaleY(Math.max(v, 0));
+        var y2 = scaleY(Math.min(v, 0));
+        var barH = Math.max(1, y2 - y1);
+        var topY = Math.min(y1, y2);
+        marks += '<rect class="admin-chart-mark" data-cx="' + (x + barW / 2).toFixed(1) + '" data-cy="' + (topY - 8).toFixed(1) + '" data-label="' + dates[i] + '" data-value="' + formatValue(v) + '" x="' + x.toFixed(1) + '" y="' + y1.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + barH.toFixed(1) + '" rx="2" fill="' + color + '" opacity="0.88"/>';
+      });
+    } else {
+      var pts = values.map(function (v, i) { return { x: leftM + (i + 0.5) * (plotW / n), y: scaleY(v) }; });
+      marks += '<path d="' + smoothChartPath(pts) + '" fill="none" stroke="' + color + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>';
+      values.forEach(function (v, i) {
+        var x = leftM + (i + 0.5) * (plotW / n), y = scaleY(v);
+        marks += '<circle class="admin-chart-mark" data-cx="' + x.toFixed(1) + '" data-cy="' + (y - 10).toFixed(1) + '" data-label="' + dates[i] + '" data-value="' + formatValue(v) + '" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="9" fill="transparent"/>' +
+          '<circle cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="2.8" fill="' + color + '" style="pointer-events:none;"/>';
+      });
+    }
+
+    var svg = '<svg width="' + w + '" height="' + h + '" viewBox="0 0 ' + w + ' ' + h + '" style="display:block;">' + gridLines + axisLines + marks + '</svg>';
+    chartEl.innerHTML = '<div style="position:relative; width:' + w + 'px; height:' + h + 'px;">' + svg + tickLabels + monthLabels +
+      '<div class="admin-chart-tooltip" id="admin-chart-tooltip"></div></div>';
+    wireChartTooltips();
   }
+
+  // Hover (desktop) / tap (mobile, no real hover) tooltip wiring for
+  // whatever renderSalesChart() just drew -- called after every
+  // innerHTML replacement since listeners don't survive that.
+  function wireChartTooltips() {
+    var tooltip = document.getElementById('admin-chart-tooltip');
+    if (!tooltip) return;
+    function showTip(el) {
+      tooltip.innerHTML = '<div style="font-weight:600;">' + el.getAttribute('data-label') + '</div><div>' + el.getAttribute('data-value') + '</div>';
+      tooltip.style.left = el.getAttribute('data-cx') + 'px';
+      tooltip.style.top = el.getAttribute('data-cy') + 'px';
+      tooltip.style.display = 'block';
+    }
+    function hideTip() { tooltip.style.display = 'none'; }
+    document.querySelectorAll('#admin-revenue-chart .admin-chart-mark').forEach(function (el) {
+      el.addEventListener('mouseenter', function () { showTip(el); });
+      el.addEventListener('mouseleave', hideTip);
+      el.addEventListener('touchstart', function (e) { e.preventDefault(); showTip(el); }, { passive: false });
+    });
+    document.addEventListener('touchstart', function (e) {
+      if (!e.target.closest('.admin-chart-mark')) hideTip();
+    }, { passive: true });
+  }
+
+  (function initChartTypeToggle() {
+    var barBtn = document.getElementById('admin-chart-bar-btn');
+    var lineBtn = document.getElementById('admin-chart-line-btn');
+    if (barBtn) barBtn.addEventListener('click', function () {
+      adminChartType = 'bar'; barBtn.classList.add('active'); lineBtn.classList.remove('active'); renderSalesChart();
+    });
+    if (lineBtn) lineBtn.addEventListener('click', function () {
+      adminChartType = 'line'; lineBtn.classList.add('active'); barBtn.classList.remove('active'); renderSalesChart();
+    });
+    // Redraw (not refetch) on resize so the chart keeps filling the
+    // card's actual width -- e.g. rotating a phone, or the browser
+    // window being resized on desktop.
+    var resizeTimer = null;
+    window.addEventListener('resize', function () {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        var el = document.getElementById('admin-revenue-chart');
+        if (el && el.offsetParent) renderSalesChart();
+      }, 200);
+    });
+  })();
 
   function recentOrderStatusLabel(s) {
     if (s === 'delivered_direct_pay') return 'Delivered (Direct Pay)';
@@ -4636,7 +4773,7 @@ function initOrdersView(token) {
     var label = channel === 'shop' ? (o.status || '—') : statusLabel(o.status);
     return '<div class="admin-rank-row"><span>' + (o.order_number || o.id) + ' — ' + (o.customer_name || 'Unknown') +
       '<br><span style="font-size:0.7rem; opacity:0.6;">' + new Date(o.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + '</span></span>' +
-      '<span class="rank-value">AED ' + formatAED(o.total || 0) + '<br><span style="font-size:0.66rem; opacity:0.7; font-weight:400;">' + label + '</span></span></div>';
+      '<span class="rank-value" style="text-align:right;">AED ' + formatAED(o.total || 0) + '<br><span style="font-size:0.66rem; opacity:0.7; font-weight:400;">' + label + '</span></span></div>';
   }
 
   function renderSummary() {

@@ -4615,6 +4615,16 @@ body.login-page {
   .dse-divider { margin: 0 8px; }
 }
 
+/* Desktop: the switcher itself now reuses .dept-switcher's exact
+   sliding-thumb design/animation from mobile, just sized to sit inline
+   between the two flourish ornaments instead of standing alone full
+   width. The compound selector (not a single class) guarantees this
+   wins over .dept-switcher's own unconditional "width: 100%", the same
+   reasoning already used for the mobile/desktop display split below. */
+.dept-switcher.dept-switcher-inline {
+  width: 320px; flex: 0 0 auto; margin: 0;
+}
+
 /* Desktop: new elegant switcher. Mobile: original sliding-pill switcher,
    unchanged. Both .dept-switcher and .dept-switcher-elegant set their
    own unconditional "display: flex", so a plain single-class override

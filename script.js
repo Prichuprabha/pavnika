@@ -36,43 +36,42 @@ window.addEventListener('pageshow', function (e) {
   onScroll();
 })();
 
-// The mobile Sarees / Jewellery & More switcher (.dept-switcher) is two
-// plain links -- clicking either is a real page navigation, not a JS
-// toggle, so its own thumb transition (style.css, ~line 4441) never
-// used to get a chance to play: the browser unloads this page before a
-// CSS transition has any time to run. This briefly intercepts the tap
-// so that transition plays out in place first, then navigates on to
-// the real href once it's done -- the destination page's own switcher
-// is hardcoded to the same resting state already
+// The Sarees / Jewellery & More switcher (.dept-switcher) is two plain
+// links -- clicking either is a real page navigation, not a JS toggle,
+// so its own thumb transition (style.css, ~line 4441) never used to get
+// a chance to play: the browser unloads this page before a CSS
+// transition has any time to run. This briefly intercepts the tap so
+// that transition plays out in place first, then navigates on to the
+// real href once it's done -- the destination page's own switcher is
+// hardcoded to the same resting state already
 // (data-active="sarees"|"jewellery" per page), so the motion reads as
 // one continuous slide straight through the page load rather than a
 // snap-then-reload.
-// The matchMedia check inside the click handler below is what actually
-// limits this to mobile, not the selector here -- jewellery-accessories.html
-// has a separate desktop-only "elegant pill" switcher (a different
-// element, .dept-switcher-elegant, untouched by this) alongside its own
-// .dept-switcher.ja-switcher-mobile-only; collections.html has only one
-// plain .dept-switcher, shown at every width, since it never got that
-// same desktop/mobile split. Selecting on the shared ".dept-switcher"
-// class (no ".ja-switcher-mobile-only" requirement) is what makes this
-// work on both pages' markup despite that difference.
-(function initMobileDeptSwitcherTransition() {
+// jewellery-accessories.html now has TWO .dept-switcher elements -- the
+// desktop one sits first in the DOM, inline inside .dept-switcher-elegant
+// between its flourish ornaments, same sliding-thumb design/markup as
+// the original mobile-only one -- so this wires every .dept-switcher it
+// finds, not just the first. Each is only ever visible at its own
+// breakpoint (CSS handles that split), so there's no need to gate this
+// by matchMedia any more either -- whichever one a person can actually
+// see and click is the one that animates. collections.html, which has
+// only one plain .dept-switcher shown at every width, is unaffected.
+(function initDeptSwitcherTransition() {
   var THUMB_TRANSITION_MS = 480; // matches .dept-switcher-thumb's own transition duration (style.css) -- slower than a UI micro-interaction normally runs, deliberately, so the slide itself is clearly visible rather than a quick flick
   var NAV_DELAY_MS = THUMB_TRANSITION_MS + 20; // small buffer so the slide is fully settled before the page unloads
-  var sw = document.querySelector('.dept-switcher');
-  if (!sw) return;
-  var links = sw.querySelectorAll('a[href]');
-  if (links.length !== 2) return; // not the shape this was built for -- bail out rather than guess
-  links.forEach(function (link) {
-    link.addEventListener('click', function (e) {
-      if (!window.matchMedia('(max-width: 900px)').matches) return; // desktop: this switcher isn't even visible, let the link behave normally
-      if (link.classList.contains('active')) return; // already on this page -- nothing to animate
-      e.preventDefault();
-      var targetHref = link.href;
-      var switchingToJewellery = link.getAttribute('href').indexOf('jewellery-accessories') !== -1;
-      sw.setAttribute('data-active', switchingToJewellery ? 'jewellery' : 'sarees');
-      links.forEach(function (a) { a.classList.toggle('active', a === link); });
-      window.setTimeout(function () { window.location.href = targetHref; }, NAV_DELAY_MS);
+  document.querySelectorAll('.dept-switcher').forEach(function (sw) {
+    var links = sw.querySelectorAll('a[href]');
+    if (links.length !== 2) return; // not the shape this was built for -- bail out rather than guess
+    links.forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        if (link.classList.contains('active')) return; // already on this page -- nothing to animate
+        e.preventDefault();
+        var targetHref = link.href;
+        var switchingToJewellery = link.getAttribute('href').indexOf('jewellery-accessories') !== -1;
+        sw.setAttribute('data-active', switchingToJewellery ? 'jewellery' : 'sarees');
+        links.forEach(function (a) { a.classList.toggle('active', a === link); });
+        window.setTimeout(function () { window.location.href = targetHref; }, NAV_DELAY_MS);
+      });
     });
   });
 })();
@@ -2890,13 +2889,12 @@ window.openLightbox = function (product, sizeAlreadyConfirmed) {
     // currently the only unsold size in its family, so size is visibly
     // part of every bangle purchase rather than silently implied.
     var isSizedItem = !!product.size || siblings.length > 1;
-    // A size is "confirmed" once the shopper has explicitly clicked a
-    // size chip (even the already-active one) during THIS viewing —
-    // the default chip shown on open (lowest-price sibling from the
-    // grid) must not count on its own, or someone could buy a size
-    // they never consciously picked. Single-size bangles and every
-    // non-bangle product have nothing to confirm, so they're exempt.
-    var sizeConfirmed = !isSizedItem || siblings.length <= 1 || !!sizeAlreadyConfirmed;
+    // The size chip row always shows one chip highlighted as "active"
+    // (the exact product this lightbox opened for), so that's already a
+    // real, concrete size — not a placeholder — and Add to Cart/Buy Now
+    // should accept it right away without an extra confirmation click
+    // that the visible highlight doesn't hint is needed.
+    var sizeConfirmed = true;
     if (isSizedItem) {
       var pickerLabel = siblings.length > 1 ? 'Select size' : 'Size';
       sizePickerEl.innerHTML = '<span class="size-picker-label">' + pickerLabel + '</span><div class="size-chip-row">' +
