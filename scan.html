@@ -369,9 +369,19 @@
     })[0] || null;
   }
 
+  // Jewellery and accessories have no material/design/series (those are
+  // saree-only fields) -- showing them here is what previously fell
+  // through to the hardcoded 'Saree' fallback. Mirrors admin.js's jaName().
+  function displayName(p) {
+    if (p.department === 'jewellery' || p.department === 'accessory') {
+      return (p.type || (p.department === 'accessory' ? 'Accessory' : 'Jewellery')) + (p.colour ? ' — ' + p.colour : '');
+    }
+    return p.material || p.design || 'Saree';
+  }
+
   function showProduct(p) {
     document.getElementById('res-code').textContent = p.id;
-    document.getElementById('res-name').textContent = p.material || p.design || 'Saree';
+    document.getElementById('res-name').textContent = displayName(p);
     document.getElementById('res-series').textContent = titleCase(p.series);
 
     var onSale = p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
@@ -390,10 +400,12 @@
     if (p.image) { img.src = p.image; img.style.display = 'block'; }
     else { img.style.display = 'none'; }
 
+    var hasQty = p.quantity !== null && p.quantity !== undefined && !isNaN(Number(p.quantity));
     var fields = [
       ['Type', p.type], ['Design', p.design], ['Colour', p.sareeType],
-      ['Pattern', p.pattern], ['Shade', p.shade], ['Category', p.category]
-    ].filter(function (f) { return f[1]; });
+      ['Pattern', p.pattern], ['Shade', p.shade], ['Category', p.category],
+      ['Qty remaining', hasQty ? Number(p.quantity) : null]
+    ].filter(function (f) { return f[1] !== null && f[1] !== undefined && f[1] !== ''; });
 
     document.getElementById('res-details').innerHTML = fields.map(function (f) {
       return '<div class="row"><span class="label">' + f[0] + '</span><span class="val">' + f[1] + '</span></div>';
@@ -429,7 +441,7 @@
   }
   function addToHistory(p) {
     var hist = getHistory().filter(function (h) { return h.id !== p.id; });
-    hist.unshift({ id: p.id, name: p.material || p.design || 'Saree', price: effectivePrice(p), image: p.image || '' });
+    hist.unshift({ id: p.id, name: displayName(p), price: effectivePrice(p), image: p.image || '' });
     if (hist.length > MAX_HISTORY) hist = hist.slice(0, MAX_HISTORY);
     saveHistory(hist);
     renderHistory();
