@@ -7012,7 +7012,8 @@ function initSareeTagsView(token) {
   var statusMsg = document.getElementById('admin-tags-status-msg');
 
   var selectedIds = [];
-  var TAGS_PER_SHEET = 9;
+  var SAREE_TAGS_PER_SHEET = 9;
+  var JEWELLERY_STICKERS_PER_SHEET = 55;
 
   function showStatus(type, msg) {
     statusMsg.className = 'admin-status-msg admin-status-' + type;
@@ -7074,12 +7075,29 @@ function initSareeTagsView(token) {
     });
   }
 
+  function selectedItemsByDept() {
+    var items = selectedIds.map(function (id) {
+      return (window.PRODUCTS || []).find(function (p) { return p.id === id; });
+    }).filter(Boolean);
+    var sarees = items.filter(function (it) { return (it.department || 'saree') === 'saree'; });
+    var jewellery = items.filter(function (it) { return it.department === 'jewellery' || it.department === 'accessory'; });
+    return { sarees: sarees, jewellery: jewellery };
+  }
+
   function updateCount() {
     countEl.textContent = selectedIds.length + ' selected';
     if (selectedIds.length) {
-      var sheets = Math.ceil(selectedIds.length / TAGS_PER_SHEET);
-      sheetsEl.textContent = '\u2192 ' + sheets + ' A4 sheet' + (sheets > 1 ? 's' : '') +
-        (selectedIds.length % TAGS_PER_SHEET !== 0 ? ' (last sheet partly empty)' : '');
+      var split = selectedItemsByDept();
+      var parts = [];
+      if (split.sarees.length) {
+        var sareeSheets = Math.ceil(split.sarees.length / SAREE_TAGS_PER_SHEET);
+        parts.push(sareeSheets + ' saree tag sheet' + (sareeSheets > 1 ? 's' : ''));
+      }
+      if (split.jewellery.length) {
+        var jewellerySheets = Math.ceil(split.jewellery.length / JEWELLERY_STICKERS_PER_SHEET);
+        parts.push(jewellerySheets + ' jewellery sticker sheet' + (jewellerySheets > 1 ? 's' : ''));
+      }
+      sheetsEl.textContent = '\u2192 ' + parts.join(' + ');
     } else {
       sheetsEl.textContent = '';
     }
@@ -7117,47 +7135,64 @@ function initSareeTagsView(token) {
 
   generateBtn.addEventListener('click', function () {
     if (!selectedIds.length) return;
-    if (typeof JsBarcode === 'undefined') {
-      showStatus('error', 'Barcode library did not load — please refresh the page and try again.');
+    if (typeof qrcode === 'undefined') {
+      showStatus('error', 'QR code library did not load — please refresh the page and try again.');
       return;
     }
-    var items = selectedIds.map(function (id) {
-      return (window.PRODUCTS || []).find(function (p) { return p.id === id; });
-    }).filter(Boolean);
 
-    var win = window.open('', '_blank');
-    if (!win) {
-      showStatus('error', 'Could not open the print window — please allow pop-ups for this site and try again.');
-      return;
+    var split = selectedItemsByDept();
+    var openedAny = false;
+
+    if (split.sarees.length) {
+      var sareeWin = window.open('', '_blank');
+      if (!sareeWin) {
+        showStatus('error', 'Could not open the print window — please allow pop-ups for this site and try again.');
+        return;
+      }
+      sareeWin.document.write(buildTagSheetHtml(split.sarees));
+      sareeWin.document.close();
+      openedAny = true;
     }
-    win.document.write(buildTagSheetHtml(items));
-    win.document.close();
-    showStatus('success', 'Print sheet opened in a new tab for ' + items.length + ' tag' + (items.length > 1 ? 's' : '') + '.');
+
+    if (split.jewellery.length) {
+      var jewelleryWin = window.open('', '_blank');
+      if (!jewelleryWin) {
+        showStatus('error', 'Could not open the print window — please allow pop-ups for this site and try again.');
+        return;
+      }
+      jewelleryWin.document.write(buildJewelleryStickerSheetHtml(split.jewellery));
+      jewelleryWin.document.close();
+      openedAny = true;
+    }
+
+    if (!openedAny) return;
+
+    var parts = [];
+    if (split.sarees.length) parts.push(split.sarees.length + ' saree tag' + (split.sarees.length > 1 ? 's' : ''));
+    if (split.jewellery.length) parts.push(split.jewellery.length + ' jewellery sticker' + (split.jewellery.length > 1 ? 's' : ''));
+    showStatus('success', 'Print sheet' + (parts.length > 1 ? 's' : '') + ' opened in a new tab for ' + parts.join(' and ') + '.');
   });
 
   renderList();
   updateCount();
 }
 
-// Builds the standalone printable tag sheet. Barcodes are rendered
-// inside the new window itself (JsBarcode is loaded there too), since
-// SVG generated in this document can't be reliably transplanted.
-// The logo is referenced by URL rather than inlined as base64 — the
-// sheet opens from this same site, so the path resolves, and it keeps
-// admin.js from carrying a 110KB embedded image.
+// Builds the standalone printable saree tag sheet. QR codes are
+// rendered inside the new window itself (qrcode-generator.min.js is
+// loaded there too), since SVG generated in this document can't be
+// reliably transplanted. The logo is referenced by URL rather than
+// inlined as base64 — the sheet opens from this same site, so the
+// path resolves, and it keeps admin.js from carrying an embedded image.
 function buildTagSheetHtml(items) {
   var phoneIcon = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
   var igIcon = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>';
   var siteIcon = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>';
 
-  function seriesTitle(s) {
-    return (s || '').toLowerCase().replace(/\b\w/g, function (c) { return c.toUpperCase(); });
-  }
   function esc(s) {
     return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  // Chunk into pages of 6 so each A4 sheet breaks cleanly
+  // Chunk into pages of 9 so each A4 sheet breaks cleanly
   var pages = [];
   for (var i = 0; i < items.length; i += 9) pages.push(items.slice(i, i + 9));
 
@@ -7169,12 +7204,6 @@ function buildTagSheetHtml(items) {
           '<div class="panel-outer">' +
             '<img src="assets/maroonlogo.png" alt="Pavnika by Saranya">' +
             '<p class="tagline">Elegance that Defines You</p>' +
-          '</div>' +
-          '<div class="fold-line"></div>' +
-          '<div class="panel-inner">' +
-            '<p class="series-text">' + esc(tagSubtitle(item)) + '</p>' +
-            '<svg class="barcode" id="bc-' + globalIdx + '"></svg>' +
-            '<p class="code-text">' + esc(item.id) + '</p>' +
             '<div class="contact-footer">' +
               '<span class="phone-line">' + phoneIcon + ' +971 52 66 30307</span>' +
               '<span class="contact-divider">|</span>' +
@@ -7184,13 +7213,24 @@ function buildTagSheetHtml(items) {
               '<span class="site-line">' + siteIcon + ' www.pavnika.com</span>' +
             '</div>' +
           '</div>' +
+          '<div class="fold-line"></div>' +
+          '<div class="panel-inner">' +
+            '<div class="qr-row">' +
+              '<div class="qr-code" id="qr-' + globalIdx + '"></div>' +
+              '<div class="qr-text">' +
+                '<p class="series-text">' + esc(tagSubtitle(item)) + '</p>' +
+                '<p class="code-text">' + esc(item.id) + '</p>' +
+              '</div>' +
+            '</div>' +
+            '<div class="staple-zone"></div>' +
+          '</div>' +
         '</div>'
       );
     }).join('');
     return '<div class="sheet">' + tags + '</div>';
   }).join('');
 
-  var barcodeData = items.map(function (it) { return it.id; });
+  var qrData = items.map(function (it) { return it.id; });
 
   return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pavnika Saree Tags</title>' +
     '<style>' +
@@ -7203,13 +7243,18 @@ function buildTagSheetHtml(items) {
     '.fold-line{position:absolute;top:50%;left:0;right:0;border-top:1px dotted #ddd}' +
     '.panel-outer,.panel-inner{height:1.75in;display:flex;flex-direction:column;align-items:center;padding:0.12in 0.15in}' +
     '.panel-outer{justify-content:center}' +
-    '.panel-inner{justify-content:flex-start;padding-top:0.22in}' +
-    '.panel-outer img{width:1.55in;height:auto}' +
-    '.panel-outer .tagline{font-size:8px;color:#B68A69;letter-spacing:0.8px;text-transform:uppercase;margin-top:8px;white-space:nowrap}' +
-    '.panel-inner svg.barcode{width:1.7in;margin-top:4px}' +
-    '.panel-inner .code-text{font-family:"Courier New",monospace;font-size:13px;font-weight:bold;color:#2B0D1A;letter-spacing:1px;margin-top:2px}' +
-    '.panel-inner .series-text{font-size:9px;color:#8a7266;margin:0 0 2px;text-align:center;font-weight:600}' +
-    '.contact-footer{font-size:5.6px;color:#B68A69;margin-top:6px;display:flex;align-items:center;gap:3px;flex-wrap:nowrap;white-space:nowrap;justify-content:center}' +
+    '.panel-outer img{width:1.5in;height:auto}' +
+    '.panel-outer .tagline{font-size:7.5px;color:#B68A69;letter-spacing:0.8px;text-transform:uppercase;margin-top:6px;white-space:nowrap}' +
+    '.panel-outer .contact-footer{margin-top:10px}' +
+    '.panel-inner{justify-content:flex-start;padding-top:0.16in}' +
+    '.qr-row{display:flex;align-items:center;gap:0.12in;width:100%}' +
+    '.qr-code{width:0.95in;height:0.95in;flex-shrink:0}' +
+    '.qr-code svg{width:100%;height:100%;display:block}' +
+    '.qr-text{min-width:0;display:flex;flex-direction:column;justify-content:center}' +
+    '.qr-text .series-text{font-size:8.5px;color:#8a7266;font-weight:600;line-height:1.3;margin-bottom:4px;word-break:break-word}' +
+    '.qr-text .code-text{font-family:"Courier New",monospace;font-size:13px;font-weight:bold;color:#2B0D1A;letter-spacing:0.5px;word-break:break-word}' +
+    '.staple-zone{flex:1;width:100%}' +
+    '.contact-footer{font-size:5.6px;color:#B68A69;display:flex;align-items:center;gap:3px;flex-wrap:nowrap;white-space:nowrap;justify-content:center}' +
     '.contact-footer.site-footer{margin-top:3px}' +
     '.contact-divider{opacity:0.5}' +
     '.ig-line,.phone-line,.site-line{display:inline-flex;align-items:center;gap:3px}' +
@@ -7217,13 +7262,75 @@ function buildTagSheetHtml(items) {
     '</style></head><body>' +
     '<div class="screen-note"><b>Print instructions for the shop:</b><br>' +
     'Paper: 250&ndash;300 GSM white cardstock &middot; A4 &middot; <b>Laser print</b> (not inkjet) &middot; Optional matte lamination<br>' +
-    'Print at <b>100% scale / "Actual size"</b> &mdash; do <b>not</b> use "Fit to page", or the tags will come out the wrong size and the barcodes may not scan reliably.<br>' +
-    'Cut along the light dashed lines, then fold each tag in half along the dotted centre line (printed sides face outward).<br>' +
+    'Print at <b>100% scale / "Actual size"</b> &mdash; do <b>not</b> use "Fit to page", or the tags will come out the wrong size and the QR codes may not scan reliably.<br>' +
+    'Cut along the light dashed lines, then fold each tag in half along the dotted centre line (printed sides face outward). The blank area below the QR code is left clear for stapling the tag to the item.<br>' +
     '<button class="print-btn" onclick="window.print()">Print / Save as PDF</button></div>' +
     pagesHtml +
-    '<script src="jsbarcode.min.js"><\/script>' +
-    '<script>var CODES=' + JSON.stringify(barcodeData) + ';' +
-    'CODES.forEach(function(code,i){try{JsBarcode("#bc-"+i,code,{format:"CODE128",width:1.6,height:40,displayValue:false,margin:0});}catch(e){' +
-    'var el=document.getElementById("bc-"+i);if(el)el.outerHTML=\'<div style="font-size:10px;color:#B8142A;">Barcode failed: \'+code+\'</div>\';}});<\/script>' +
+    '<script src="qrcode-generator.min.js"><\/script>' +
+    '<script>var CODES=' + JSON.stringify(qrData) + ';' +
+    'CODES.forEach(function(code,i){try{var qr=qrcode(0,"M");qr.addData(code);qr.make();document.getElementById("qr-"+i).innerHTML=qr.createSvgTag(0);}catch(e){' +
+    'var el=document.getElementById("qr-"+i);if(el)el.outerHTML=\'<div style="font-size:10px;color:#B8142A;">QR failed: \'+code+\'</div>\';}});<\/script>' +
+    '</body></html>';
+}
+
+// Builds the standalone printable jewellery sticker sheet — small
+// individual stickers (logo + QR + ID) meant to be cut or peeled and
+// stuck onto a separately-bought blank jewellery tag, not the fold-
+// over saree tag format. Grid cut lines are shared between neighbouring
+// stickers (no gaps), which is what gets 55 onto one A4 sheet instead
+// of fewer with individually-outlined boxes. Sticker size (~36mm x
+// 24mm) is a starting point pending the shop's actual blank tags —
+// adjusting it later is a one-line change to STICKER_W_IN/STICKER_H_IN.
+function buildJewelleryStickerSheetHtml(items) {
+  var STICKERS_PER_ROW = 5;
+  var STICKERS_PER_SHEET = 55;
+
+  var pages = [];
+  for (var i = 0; i < items.length; i += STICKERS_PER_SHEET) pages.push(items.slice(i, i + STICKERS_PER_SHEET));
+
+  var pagesHtml = pages.map(function (pageItems, pageIdx) {
+    var stickers = pageItems.map(function (item, idx) {
+      var globalIdx = pageIdx * STICKERS_PER_SHEET + idx;
+      return (
+        '<div class="sticker">' +
+          '<div class="top-row">' +
+            '<img class="sticker-logo" src="assets/logo.png" alt="">' +
+            '<div class="qr-code" id="jqr-' + globalIdx + '"></div>' +
+          '</div>' +
+          '<div class="sticker-id">' + item.id + '</div>' +
+        '</div>'
+      );
+    }).join('');
+    return '<div class="sheet"><div class="grid">' + stickers + '</div></div>';
+  }).join('');
+
+  var qrData = items.map(function (it) { return it.id; });
+
+  return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Pavnika Jewellery QR Stickers</title>' +
+    '<style>' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:sans-serif;background:#d8d0c5;padding:20px}' +
+    '.screen-note{max-width:8.27in;margin:0 auto 20px;background:#fff;border-left:4px solid #B68A69;padding:14px 18px;font-size:13px;line-height:1.6;color:#3B2528}' +
+    '.print-btn{margin-top:10px;background:#3C1223;color:#fff;border:none;padding:10px 20px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer}' +
+    '.sheet{width:8.27in;height:11.69in;background:#fff;margin:0 auto 20px;padding:0.35in;box-shadow:0 10px 40px rgba(0,0,0,0.2)}' +
+    '.grid{display:grid;grid-template-columns:repeat(' + STICKERS_PER_ROW + ',1fr);border-left:1px dashed #999;border-top:1px dashed #999}' +
+    '.sticker{height:0.94in;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.02in;padding:0.06in;overflow:hidden;border-right:1px dashed #999;border-bottom:1px dashed #999}' +
+    '.top-row{display:flex;align-items:center;justify-content:center;gap:0.08in}' +
+    '.sticker-logo{width:0.48in;height:0.48in;flex-shrink:0;object-fit:contain}' +
+    '.qr-code{width:0.63in;height:0.63in;flex-shrink:0}' +
+    '.qr-code svg{width:100%;height:100%;display:block}' +
+    '.sticker-id{font-family:"Courier New",monospace;font-size:11px;font-weight:bold;color:#2B0D1A;letter-spacing:0.3px;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}' +
+    '@media print{@page{size:A4;margin:0}body{background:#fff;padding:0}.screen-note{display:none}.sheet{box-shadow:none;margin:0;page-break-after:always}.sheet:last-child{page-break-after:auto}}' +
+    '</style></head><body>' +
+    '<div class="screen-note"><b>Print instructions for the shop:</b><br>' +
+    'Sticker size: ~36mm &times; 24mm &middot; 5 across &times; 11 down &middot; 55 per A4 sheet<br>' +
+    'Paper: standard A4 self-adhesive sticker sheet &middot; <b>Laser print</b> preferred &middot; Print at <b>100% scale / "Actual size"</b> &mdash; not "Fit to page", or the stickers will come out the wrong size.<br>' +
+    'Cut along every line in the grid, both directions, to separate each sticker, then peel and stick onto your blank jewellery tags.<br>' +
+    '<button class="print-btn" onclick="window.print()">Print / Save as PDF</button></div>' +
+    pagesHtml +
+    '<script src="qrcode-generator.min.js"><\/script>' +
+    '<script>var CODES=' + JSON.stringify(qrData) + ';' +
+    'CODES.forEach(function(code,i){try{var qr=qrcode(0,"M");qr.addData(code);qr.make();document.getElementById("jqr-"+i).innerHTML=qr.createSvgTag(0);}catch(e){' +
+    'var el=document.getElementById("jqr-"+i);if(el)el.outerHTML=\'<div style="font-size:8px;color:#B8142A;">QR failed<\/div>\';}});<\/script>' +
     '</body></html>';
 }

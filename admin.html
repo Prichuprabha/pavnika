@@ -2273,7 +2273,7 @@
       <p class="admin-status-msg" id="admin-tags-status-msg"></p>
 
       <p style="font-size:0.85rem; color:var(--ink); opacity:0.75; margin-bottom:16px;">
-        Select the sarees you need tags for, then generate a printable sheet &mdash; 6 tags per A4 page.
+        Select the items you need tags for, then generate a printable sheet. Sarees print as fold-over QR tags, 9 per A4 page &mdash; jewellery &amp; accessories print as peel-and-stick QR stickers, 55 per A4 sheet. Mixed selections open one print tab for each.
       </p>
 
       <div style="display:flex; gap:10px; margin-bottom:14px; flex-wrap:wrap; align-items:center;">
@@ -2445,7 +2445,7 @@
   </div>
 </div>
 
-<script src="jsbarcode.min.js"></script>
+<script src="qrcode-generator.min.js"></script>
 <script src="products-data.js"></script>
 <script src="zxing.min.js"></script>
 <script>
@@ -2465,7 +2465,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=216"></script>
+<script src="admin.js?v=217"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
