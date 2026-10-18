@@ -3320,7 +3320,7 @@ window.PRODUCTS = [
     "note": "",
     "price": 785,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [
       "Bridal"
     ],
@@ -3336,7 +3336,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SU016-6.jpg",
       "https://pavnika.ae/assets/products/SU016-7.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/SU016-1.jpg"
+    "image": "https://pavnika.ae/assets/products/SU016-1.jpg",
+    "soldAt": "2026-10-18T17:13:52.993Z"
   },
   {
     "id": "BB014",
