@@ -1185,7 +1185,7 @@ var POS_BROWSE_DEPTS = [
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7l8 5-1 2-7-3.5V15a1 1 0 0 1-2 0v-4.5L4 14l-1-2 8-5V5.73A2 2 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>'
   },
   {
-    dept: 'jewellery', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Haarams', 'Necklace'],
+    dept: 'jewellery', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Haarams', 'Necklace', 'Jewellery Set'],
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg>'
   },
   {
