@@ -296,7 +296,19 @@
 
         <p class="live-count" id="results-count"></p>
 
-        <div class="product-grid" id="product-grid"></div>
+        <!-- Loading-state skeletons, same reasoning/markup as the
+             Jewellery & Accessories page's grid -- see style.css's
+             .skeleton-card rules for why these are here. -->
+        <div class="product-grid" id="product-grid">
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+        </div>
         <p class="no-results" id="no-results" style="display:none;">No sarees match this filter yet — try another material or series.</p>
         <div class="pagination" id="pagination"></div>
       </div>

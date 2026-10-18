@@ -1829,6 +1829,54 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   object-fit: cover;
   display: block;
 }
+
+/* Loading-state placeholders for .product-grid -- same card shape as
+   .product-card/.product-photo above, shown as static HTML so a grid
+   never paints empty while its page's script is still parsing/running.
+   render() replaces the whole grid's innerHTML with real cards on first
+   run, which removes these automatically -- no JS needed on this end. */
+.skeleton-card {
+  background: var(--ivory);
+  border: 1px solid var(--stone);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.skeleton-photo {
+  aspect-ratio: 3 / 4;
+  width: 100%;
+  background: var(--ivory-deep);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-line {
+  height: 11px;
+  margin: 12px 14px 0;
+  border-radius: 3px;
+  background: var(--ivory-deep);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+.skeleton-line.short { width: 40%; }
+.skeleton-line:not(.short) { width: 70%; margin-bottom: 14px; }
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-photo, .skeleton-line { animation: none; opacity: 0.75; }
+}
+
+/* Loading-state placeholder for .curated-grid (homepage) -- .curated-tile
+   is a single full-bleed image tile (no separate photo/text blocks like
+   .product-card), so its skeleton is just the same shape pulsing, rather
+   than reusing .skeleton-card's photo+lines layout above. */
+.skeleton-curated-tile {
+  aspect-ratio: 3 / 4.4;
+  border-radius: 4px;
+  background: var(--stone);
+  animation: skeleton-pulse 1.4s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-curated-tile { animation: none; opacity: 0.75; }
+}
 .product-photo .series-badge {
   position: absolute;
   top: 10px; left: 10px;
