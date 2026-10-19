@@ -1095,23 +1095,28 @@
     .admin-mobile-bottom-nav .amb-item.active { color: var(--green); font-weight: 600; }
     .admin-mobile-bottom-nav .amb-item svg { width: 19px; height: 19px; }
 
-    /* Business Expenses table -> stacked cards, one per expense, instead
-       of a cramped 5-column table squeezed into a phone width. */
+    /* Business Expenses table -> one compact line per expense (Date,
+       Category, Amount + Edit/Delete), Description dropped entirely on
+       mobile rather than wrapping into a multi-line card. */
     #admin-view-business-expenses .admin-table thead { display: none; }
     #admin-view-business-expenses .admin-table,
-    #admin-view-business-expenses .admin-table tbody,
-    #admin-view-business-expenses .admin-table tr,
-    #admin-view-business-expenses .admin-table td { display: block; width: 100%; }
+    #admin-view-business-expenses .admin-table tbody { display: block; width: 100%; }
     #admin-view-business-expenses .admin-table { border: none; }
-    #admin-view-business-expenses .admin-table tr { border: 1px solid var(--stone); border-radius: 8px; margin-bottom: 12px; padding: 10px 14px; }
-    #admin-view-business-expenses .admin-table td { border-top: none; padding: 5px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
-    #admin-view-business-expenses .admin-table td::before {
-      content: attr(data-label); font-weight: 600; opacity: 0.55; font-size: 0.68rem;
-      text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0;
+    #admin-view-business-expenses .admin-table tr {
+      display: flex; align-items: center; gap: 8px;
+      border: 1px solid var(--stone); border-radius: 8px; margin-bottom: 8px; padding: 8px 10px;
     }
-    #admin-view-business-expenses .admin-table td:last-child { justify-content: flex-end; padding-top: 10px; }
-    #admin-view-business-expenses .admin-table td:last-child::before { content: none; }
-    #admin-view-business-expenses .admin-table td > div { text-align: right; }
+    #admin-view-business-expenses .admin-table td { display: block; border-top: none; padding: 0; width: auto; }
+    #admin-view-business-expenses .admin-table td[data-col="description"] { display: none; }
+    #admin-view-business-expenses .admin-table td[data-col="date"] { font-size: 0.68rem; opacity: 0.65; flex: 0 0 auto; white-space: nowrap; }
+    #admin-view-business-expenses .admin-table td[data-col="category"] {
+      font-size: 0.78rem; font-weight: 600; flex: 1 1 auto; min-width: 0;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #admin-view-business-expenses .admin-table td[data-col="amount"] { font-size: 0.78rem; font-weight: 600; flex: 0 0 auto; white-space: nowrap; }
+    #admin-view-business-expenses .admin-table td[data-col="amount"] .fx-note { display: none; } /* no room on one line -- still in the CSV/edit popup */
+    #admin-view-business-expenses .admin-table td[data-col="actions"] { flex: 0 0 auto; margin-left: auto; display: flex; gap: 4px; }
+    #admin-view-business-expenses .admin-table td[data-col="actions"] button { padding: 4px 9px; font-size: 0.65rem; }
   }
 </style>
 </head>
@@ -2066,14 +2071,22 @@
         </div>
         <div class="admin-form-grid">
           <div class="admin-field"><label id="admin-be-amount-label">Amount (AED)</label><input type="text" id="admin-be-amount" list="admin-be-amount-list" placeholder="0.00" autocomplete="off"></div>
-          <div class="admin-field" id="admin-be-fxrate-field" style="display:none;"><label id="admin-be-fxrate-label">Exchange rate (1 = ? AED)</label><input type="text" id="admin-be-fxrate" placeholder="e.g. 0.044"></div>
+          <div class="admin-field" id="admin-be-fxrate-field" style="display:none;">
+            <label id="admin-be-fxrate-label">Exchange rate (1 = ? AED)</label>
+            <input type="text" id="admin-be-fxrate" placeholder="e.g. 0.044">
+            <p style="font-size:0.72rem; color:var(--ink); opacity:0.65; margin:5px 0 0;" id="admin-be-fxrate-note">
+              <span id="admin-be-fxrate-note-text"></span>
+              <a href="#" id="admin-be-fxrate-refresh" style="color:var(--gold); font-weight:600;">Refresh rate</a>
+            </p>
+          </div>
         </div>
         <datalist id="admin-be-category-list"></datalist>
         <datalist id="admin-be-description-list"></datalist>
         <datalist id="admin-be-amount-list"></datalist>
 
         <button type="button" class="btn btn-primary" id="admin-be-save-btn" style="margin-top:14px;">Add Expense</button>
-        <button type="button" class="admin-btn-secondary" id="admin-be-cancel-edit-btn" style="margin-top:14px; margin-left:8px; display:none;">Cancel</button>
+        <button type="button" class="btn btn-ghost" id="admin-be-clear-btn" style="margin-top:14px; margin-left:8px;">Clear</button>
+        <button type="button" class="btn btn-ghost" id="admin-be-cancel-edit-btn" style="margin-top:14px; margin-left:8px; display:none;">Cancel</button>
       </div>
 
       <h3 class="admin-stats-subheading" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">

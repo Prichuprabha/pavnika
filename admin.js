@@ -4631,9 +4631,13 @@ function initBusinessExpenses(token) {
   var rowsEl = document.getElementById('admin-be-rows');
   var totalEl = document.getElementById('admin-be-total');
   var csvFileInput = document.getElementById('admin-be-csv-file-input');
+  var clearBtn = document.getElementById('admin-be-clear-btn');
+  var fxRateNoteText = document.getElementById('admin-be-fxrate-note-text');
+  var fxRateRefreshLink = document.getElementById('admin-be-fxrate-refresh');
 
   var currentExpenses = [];
   var editingId = null;
+  var fxFetchToken = 0; // guards against a stale fetch landing after a newer one / a currency switch
 
   function showStatus(type, msg) {
     statusMsg.textContent = msg;
@@ -4652,7 +4656,45 @@ function initBusinessExpenses(token) {
       document.getElementById('admin-be-fxrate-label').textContent = 'Exchange rate (1 ' + cur + ' = ? AED)';
     }
   }
-  currencySelect.addEventListener('change', updateCurrencyFields);
+
+  // Looks up today's rate automatically when AED isn't picked, so the
+  // common case (paste an INR/USD receipt, don't look up a rate by hand)
+  // needs no extra step -- the field stays a plain text input the whole
+  // time, so typing over the fetched value always works.
+  function fetchFxRate(currency) {
+    var myToken = ++fxFetchToken;
+    fxRateNoteText.textContent = 'Fetching today’s rate…';
+    fetch('/.netlify/functions/admin-get-fx-rate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, currency: currency })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        if (myToken !== fxFetchToken) return; // currency changed again / another fetch started since
+        if (data && data.rate) {
+          fxRateInput.value = data.rate;
+          fxRateNoteText.textContent = 'Fetched automatically (1 ' + currency + ' = ' + data.rate + ' AED, ' + (data.asOf || 'today') + ') — you can type over it.';
+        } else {
+          fxRateNoteText.textContent = 'Could not fetch a live rate — enter it manually.';
+        }
+      })
+      .catch(function () {
+        if (myToken !== fxFetchToken) return;
+        fxRateNoteText.textContent = 'Could not fetch a live rate (network error) — enter it manually.';
+      });
+  }
+
+  currencySelect.addEventListener('change', function () {
+    updateCurrencyFields();
+    fxRateInput.value = '';
+    fxRateNoteText.textContent = '';
+    if (currencySelect.value !== 'AED') fetchFxRate(currencySelect.value);
+  });
+  fxRateRefreshLink.addEventListener('click', function (ev) {
+    ev.preventDefault();
+    if (currencySelect.value !== 'AED') fetchFxRate(currencySelect.value);
+  });
   updateCurrencyFields();
 
   function resetForm() {
@@ -4663,11 +4705,14 @@ function initBusinessExpenses(token) {
     currencySelect.value = 'AED';
     amountInput.value = '';
     fxRateInput.value = '';
+    fxRateNoteText.textContent = '';
+    fxFetchToken++; // invalidate any in-flight fetch so it can't overwrite the cleared field
     updateCurrencyFields();
     formHeading.textContent = 'Add Expense';
     saveBtn.textContent = 'Add Expense';
     cancelEditBtn.style.display = 'none';
   }
+  clearBtn.addEventListener('click', resetForm);
 
   function renderTable() {
     if (!currentExpenses.length) {
@@ -4677,13 +4722,14 @@ function initBusinessExpenses(token) {
     }
     rowsEl.innerHTML = currentExpenses.map(function (e) {
       var when = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
-      var fxNote = e.origCurrency ? '<div style="font-size:0.72rem; opacity:0.65;">' + e.origCurrency + ' ' + formatAED(e.origAmount) + ' @ ' + e.fxRate + '</div>' : '';
-      // data-label feeds the mobile card layout (CSS ::before, scoped to
-      // #admin-view-business-expenses under 880px) -- each td shows its
-      // own column name stacked above the value instead of a cramped row.
-      return '<tr><td data-label="Date">' + when + '</td><td data-label="Category">' + (e.category || '') + '</td><td data-label="Description">' + (e.description || '') + '</td>' +
-        '<td data-label="Amount (AED)"><div>' + formatAED(e.amount) + fxNote + '</div></td>' +
-        '<td style="white-space:nowrap;"><button type="button" class="admin-btn-secondary" data-edit-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Edit</button> ' +
+      var fxNote = e.origCurrency ? '<div class="fx-note" style="font-size:0.72rem; opacity:0.65;">' + e.origCurrency + ' ' + formatAED(e.origAmount) + ' @ ' + e.fxRate + '</div>' : '';
+      // data-col feeds the mobile single-line layout (scoped to
+      // #admin-view-business-expenses under 880px): Date/Category/Amount
+      // stay visible on one line, Description is hidden there entirely
+      // (still shown on desktop and still in the CSV export).
+      return '<tr><td data-col="date">' + when + '</td><td data-col="category">' + (e.category || '') + '</td><td data-col="description">' + (e.description || '') + '</td>' +
+        '<td data-col="amount"><div>' + formatAED(e.amount) + fxNote + '</div></td>' +
+        '<td data-col="actions" style="white-space:nowrap;"><button type="button" class="admin-btn-secondary" data-edit-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Edit</button> ' +
         '<button type="button" class="admin-btn-secondary" data-delete-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
     }).join('');
 
@@ -4701,6 +4747,8 @@ function initBusinessExpenses(token) {
         currencySelect.value = e.origCurrency || 'AED';
         amountInput.value = e.origCurrency ? e.origAmount : e.amount;
         fxRateInput.value = e.fxRate || '';
+        fxRateNoteText.textContent = e.fxRate ? 'Rate recorded with this expense — edit it, or click Refresh rate for today’s.' : '';
+        fxFetchToken++; // don't let an in-flight auto-fetch from the Add form overwrite this recorded rate
         updateCurrencyFields();
         formHeading.textContent = 'Edit Expense';
         saveBtn.textContent = 'Update Expense';
