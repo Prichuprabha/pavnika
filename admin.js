@@ -4921,20 +4921,48 @@ function initBusinessExpenses(token) {
     return Math.abs((Number(a) || 0) - (Number(b) || 0)) < 0.01;
   }
 
+  // Accepts the exported format (YYYY-MM-DD) as well as the day/month/
+  // year style spreadsheets tend to produce (10/19/2026, 10-19-2026,
+  // 2/6/2026 ...) and normalizes to YYYY-MM-DD -- the format the backend
+  // requires. Returns '' when the value can't be confidently parsed,
+  // which the caller treats as an invalid row rather than guessing.
+  function normalizeImportDate(raw) {
+    raw = (raw || '').trim();
+    if (!raw) return '';
+    if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+    var m = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (m) {
+      // Spreadsheet exports from this admin panel and the offline tool
+      // are always M/D/YYYY (US-style), matching the Add Expense form's
+      // own <input type="date"> locale -- not D/M/YYYY.
+      var month = m[1].padStart(2, '0');
+      var day = m[2].padStart(2, '0');
+      var year = m[3];
+      if (Number(month) >= 1 && Number(month) <= 12 && Number(day) >= 1 && Number(day) <= 31) {
+        return year + '-' + month + '-' + day;
+      }
+    }
+    return '';
+  }
+
   function classifyImportRows(rows) {
     var byId = {};
     currentExpenses.forEach(function (e) { byId[String(e.id)] = e; });
 
     return rows.map(function (row) {
-      var date = (row['Date'] || '').trim();
+      var date = normalizeImportDate(row['Date']);
       var category = (row['Category'] || '').trim();
       var description = (row['Description'] || '').trim();
       var amountRaw = (row['Amount'] || '').trim();
       var currency = (row['Currency'] || 'AED').trim().toUpperCase() || 'AED';
       var fxRateRaw = (row['Exchange Rate'] || '').trim();
       var idRaw = (row['Id'] || '').trim();
-      var label = (date || '?') + ' — ' + (category || '?') + (description ? (' — ' + description) : '') + ' — ' + (amountRaw || '?') + ' ' + currency;
+      var rawDate = (row['Date'] || '').trim();
+      var label = (date || rawDate || '?') + ' — ' + (category || '?') + (description ? (' — ' + description) : '') + ' — ' + (amountRaw || '?') + ' ' + currency;
 
+      if (rawDate && !date) {
+        return { kind: 'invalid', include: false, label: label, reason: 'Could not read the date "' + rawDate + '" -- expected YYYY-MM-DD or M/D/YYYY.' };
+      }
       if (!date || !category || !amountRaw || isNaN(Number(amountRaw)) || Number(amountRaw) <= 0) {
         return { kind: 'invalid', include: false, label: label, reason: 'Missing or invalid Date/Category/Amount.' };
       }
