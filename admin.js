@@ -510,6 +510,7 @@ function showAdminPanel(token, displayName) {
   initSareeTagsView(token);
   initShareLinkTool();
   initBusinessSettings(token);
+  initBusinessExpenses(token);
   initDeliveryRatesSettings(token);
   initSidebarNav();
 
@@ -4611,6 +4612,320 @@ function initBusinessSettings(token) {
   });
 
   loadSettings();
+}
+
+/* ---------- Business Expenses (Company -> Business Expenses) ---------- */
+function initBusinessExpenses(token) {
+  var statusMsg = document.getElementById('admin-be-status-msg');
+  var formHeading = document.getElementById('admin-be-form-heading');
+  var saveBtn = document.getElementById('admin-be-save-btn');
+  var cancelEditBtn = document.getElementById('admin-be-cancel-edit-btn');
+  var dateInput = document.getElementById('admin-be-date');
+  var categoryInput = document.getElementById('admin-be-category');
+  var descriptionInput = document.getElementById('admin-be-description');
+  var currencySelect = document.getElementById('admin-be-currency');
+  var amountInput = document.getElementById('admin-be-amount');
+  var amountLabel = document.getElementById('admin-be-amount-label');
+  var fxRateField = document.getElementById('admin-be-fxrate-field');
+  var fxRateInput = document.getElementById('admin-be-fxrate');
+  var rowsEl = document.getElementById('admin-be-rows');
+  var totalEl = document.getElementById('admin-be-total');
+  var csvFileInput = document.getElementById('admin-be-csv-file-input');
+
+  var currentExpenses = [];
+  var editingId = null;
+
+  function showStatus(type, msg) {
+    statusMsg.textContent = msg;
+    statusMsg.className = 'admin-status-msg ' + type;
+    setTimeout(function () { statusMsg.textContent = ''; }, 4000);
+  }
+
+  function updateCurrencyFields() {
+    var cur = currencySelect.value;
+    if (cur === 'AED') {
+      fxRateField.style.display = 'none';
+      amountLabel.textContent = 'Amount (AED)';
+    } else {
+      fxRateField.style.display = '';
+      amountLabel.textContent = 'Amount (' + cur + ')';
+      document.getElementById('admin-be-fxrate-label').textContent = 'Exchange rate (1 ' + cur + ' = ? AED)';
+    }
+  }
+  currencySelect.addEventListener('change', updateCurrencyFields);
+  updateCurrencyFields();
+
+  function resetForm() {
+    editingId = null;
+    dateInput.value = '';
+    categoryInput.value = '';
+    descriptionInput.value = '';
+    currencySelect.value = 'AED';
+    amountInput.value = '';
+    fxRateInput.value = '';
+    updateCurrencyFields();
+    formHeading.textContent = 'Add Expense';
+    saveBtn.textContent = 'Add Expense';
+    cancelEditBtn.style.display = 'none';
+  }
+
+  function renderTable() {
+    if (!currentExpenses.length) {
+      rowsEl.innerHTML = '<tr><td colspan="5" style="opacity:0.6;">No expenses logged yet.</td></tr>';
+      totalEl.textContent = '';
+      return;
+    }
+    rowsEl.innerHTML = currentExpenses.map(function (e) {
+      var when = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+      var fxNote = e.origCurrency ? '<div style="font-size:0.72rem; opacity:0.65;">' + e.origCurrency + ' ' + formatAED(e.origAmount) + ' @ ' + e.fxRate + '</div>' : '';
+      return '<tr><td>' + when + '</td><td>' + (e.category || '') + '</td><td>' + (e.description || '') + '</td>' +
+        '<td>' + formatAED(e.amount) + fxNote + '</td>' +
+        '<td style="white-space:nowrap;"><button type="button" class="admin-btn-secondary" data-edit-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Edit</button> ' +
+        '<button type="button" class="admin-btn-secondary" data-delete-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
+    }).join('');
+
+    var total = currentExpenses.reduce(function (sum, e) { return sum + (Number(e.amount) || 0); }, 0);
+    totalEl.textContent = 'Total: AED ' + formatAED(total) + ' (' + currentExpenses.length + ' expense' + (currentExpenses.length === 1 ? '' : 's') + ')';
+
+    rowsEl.querySelectorAll('[data-edit-expense]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var e = currentExpenses.filter(function (x) { return String(x.id) === btn.getAttribute('data-edit-expense'); })[0];
+        if (!e) return;
+        editingId = e.id;
+        dateInput.value = e.date || '';
+        categoryInput.value = e.category || '';
+        descriptionInput.value = e.description || '';
+        currencySelect.value = e.origCurrency || 'AED';
+        amountInput.value = e.origCurrency ? e.origAmount : e.amount;
+        fxRateInput.value = e.fxRate || '';
+        updateCurrencyFields();
+        formHeading.textContent = 'Edit Expense';
+        saveBtn.textContent = 'Update Expense';
+        cancelEditBtn.style.display = '';
+        formHeading.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      });
+    });
+
+    rowsEl.querySelectorAll('[data-delete-expense]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        if (!confirm('Delete this expense? This cannot be undone.')) return;
+        fetch('/.netlify/functions/admin-delete-business-expense', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ adminToken: token, id: btn.getAttribute('data-delete-expense') })
+        })
+          .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+          .then(function (result) {
+            if (!result.ok) { showStatus('error', result.data.error || 'Could not delete expense.'); return; }
+            showStatus('success', 'Expense deleted.');
+            if (editingId === btn.getAttribute('data-delete-expense')) resetForm();
+            loadExpenses();
+          })
+          .catch(function () { showStatus('error', 'Network error deleting expense.'); });
+      });
+    });
+  }
+
+  function loadExpenses() {
+    return fetch('/.netlify/functions/admin-get-business-expenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token })
+    })
+      .then(function (res) { return res.json(); })
+      .then(function (data) { currentExpenses = data.expenses || []; renderTable(); })
+      .catch(function () { showStatus('error', 'Could not load business expenses.'); });
+  }
+
+  function saveExpense(payload) {
+    return fetch('/.netlify/functions/admin-save-business-expense', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(Object.assign({ adminToken: token }, payload))
+    }).then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); });
+  }
+
+  saveBtn.addEventListener('click', function () {
+    var date = dateInput.value;
+    var category = categoryInput.value.trim();
+    var amount = amountInput.value.trim();
+    if (!date) { showStatus('error', 'Date is required.'); return; }
+    if (!category) { showStatus('error', 'Category is required.'); return; }
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) { showStatus('error', 'Enter a valid amount.'); return; }
+    var currency = currencySelect.value;
+    var fxRate = fxRateInput.value.trim();
+    if (currency !== 'AED' && (!fxRate || isNaN(Number(fxRate)) || Number(fxRate) <= 0)) {
+      showStatus('error', 'Enter the exchange rate (1 ' + currency + ' = ? AED).');
+      return;
+    }
+
+    saveBtn.disabled = true;
+    var wasEditing = !!editingId;
+    saveBtn.textContent = wasEditing ? 'Updating...' : 'Adding...';
+
+    saveExpense({
+      id: editingId || undefined,
+      date: date,
+      category: category,
+      description: descriptionInput.value.trim(),
+      amount: Number(amount),
+      currency: currency,
+      fxRate: currency !== 'AED' ? Number(fxRate) : undefined
+    }).then(function (result) {
+      saveBtn.disabled = false;
+      if (!result.ok) {
+        saveBtn.textContent = wasEditing ? 'Update Expense' : 'Add Expense';
+        showStatus('error', result.data.error || 'Could not save expense.');
+        return;
+      }
+      showStatus('success', wasEditing ? 'Expense updated.' : 'Expense added.');
+      resetForm();
+      loadExpenses();
+    }).catch(function () {
+      saveBtn.disabled = false;
+      saveBtn.textContent = wasEditing ? 'Update Expense' : 'Add Expense';
+      showStatus('error', 'Network error saving expense.');
+    });
+  });
+
+  cancelEditBtn.addEventListener('click', resetForm);
+
+  /* ----- CSV export / import ----- */
+  var EXPENSE_CSV_COLUMNS = ['Id', 'Date', 'Category', 'Description', 'Amount', 'Currency', 'Exchange Rate'];
+
+  function csvEscape(val) {
+    val = val === undefined || val === null ? '' : String(val);
+    if (val.indexOf(',') !== -1 || val.indexOf('"') !== -1 || val.indexOf('\n') !== -1) {
+      return '"' + val.replace(/"/g, '""') + '"';
+    }
+    return val;
+  }
+
+  function parseCsv(text) {
+    var lines = text.replace(/\r\n/g, '\n').split('\n').filter(function (l) { return l.trim().length; });
+    if (!lines.length) return [];
+
+    function parseLine(line) {
+      var result = [];
+      var cur = '';
+      var inQuotes = false;
+      for (var i = 0; i < line.length; i++) {
+        var ch = line[i];
+        if (inQuotes) {
+          if (ch === '"' && line[i + 1] === '"') { cur += '"'; i++; }
+          else if (ch === '"') { inQuotes = false; }
+          else { cur += ch; }
+        } else {
+          if (ch === '"') inQuotes = true;
+          else if (ch === ',') { result.push(cur); cur = ''; }
+          else cur += ch;
+        }
+      }
+      result.push(cur);
+      return result;
+    }
+
+    var headers = parseLine(lines[0]).map(function (h) { return h.trim(); });
+    return lines.slice(1).map(function (line) {
+      var cells = parseLine(line);
+      var obj = {};
+      headers.forEach(function (h, i) { obj[h] = (cells[i] || '').trim(); });
+      return obj;
+    });
+  }
+
+  document.getElementById('admin-be-download-csv-btn').addEventListener('click', function () {
+    var rows = [EXPENSE_CSV_COLUMNS.join(',')];
+    currentExpenses.forEach(function (e) {
+      var row = [
+        e.id,
+        e.date || '',
+        e.category || '',
+        e.description || '',
+        e.origCurrency ? e.origAmount : e.amount,
+        e.origCurrency || 'AED',
+        e.fxRate || ''
+      ].map(csvEscape);
+      rows.push(row.join(','));
+    });
+    var blob = new Blob([rows.join('\n')], { type: 'text/csv' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'pavnika-business-expenses-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+  });
+
+  document.getElementById('admin-be-upload-csv-btn').addEventListener('click', function () {
+    csvFileInput.click();
+  });
+
+  csvFileInput.addEventListener('change', function () {
+    var file = csvFileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var rows = parseCsv(String(reader.result));
+      if (!rows.length) { showStatus('error', 'That CSV had no rows to import.'); csvFileInput.value = ''; return; }
+
+      var payloads = [];
+      var skipped = 0;
+      rows.forEach(function (row) {
+        var date = (row['Date'] || '').trim();
+        var category = (row['Category'] || '').trim();
+        var amountRaw = (row['Amount'] || '').trim();
+        var currency = (row['Currency'] || 'AED').trim().toUpperCase() || 'AED';
+        var fxRateRaw = (row['Exchange Rate'] || '').trim();
+        if (!date || !category || !amountRaw || isNaN(Number(amountRaw)) || Number(amountRaw) <= 0) { skipped++; return; }
+        if (currency !== 'AED' && (!fxRateRaw || isNaN(Number(fxRateRaw)) || Number(fxRateRaw) <= 0)) { skipped++; return; }
+        payloads.push({
+          id: (row['Id'] || '').trim() || undefined,
+          date: date,
+          category: category,
+          description: (row['Description'] || '').trim(),
+          amount: Number(amountRaw),
+          currency: currency,
+          fxRate: currency !== 'AED' ? Number(fxRateRaw) : undefined
+        });
+      });
+
+      if (!payloads.length) {
+        showStatus('error', 'No valid rows found in that CSV (need at least Date, Category and Amount).');
+        csvFileInput.value = '';
+        return;
+      }
+
+      showStatus('success', 'Importing ' + payloads.length + ' row' + (payloads.length === 1 ? '' : 's') + '...');
+
+      // Sequential, not parallel -- Supabase handles either fine, but
+      // sequential keeps this readable and avoids slamming the function
+      // with 100s of simultaneous invocations on a big CSV.
+      var i = 0;
+      var okCount = 0;
+      var errCount = 0;
+      function next() {
+        if (i >= payloads.length) {
+          csvFileInput.value = '';
+          loadExpenses();
+          var msg = 'Imported ' + okCount + ' row' + (okCount === 1 ? '' : 's') + '.';
+          if (errCount) msg += ' ' + errCount + ' row' + (errCount === 1 ? '' : 's') + ' failed.';
+          if (skipped) msg += ' ' + skipped + ' row' + (skipped === 1 ? '' : 's') + ' skipped (missing/invalid fields).';
+          showStatus(errCount ? 'error' : 'success', msg);
+          return;
+        }
+        var payload = payloads[i];
+        i++;
+        saveExpense(payload).then(function (result) {
+          if (result.ok) okCount++; else errCount++;
+          next();
+        }).catch(function () { errCount++; next(); });
+      }
+      next();
+    };
+    reader.readAsText(file);
+  });
+
+  resetForm();
+  loadExpenses();
 }
 
 /* ---------- Delivery Rates (Partner/Own/Other flat AED amounts) ---------- */
