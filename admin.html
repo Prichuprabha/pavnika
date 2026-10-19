@@ -1095,28 +1095,34 @@
     .admin-mobile-bottom-nav .amb-item.active { color: var(--green); font-weight: 600; }
     .admin-mobile-bottom-nav .amb-item svg { width: 19px; height: 19px; }
 
-    /* Business Expenses table -> one compact line per expense (Date,
-       Category, Amount + Edit/Delete), Description dropped entirely on
-       mobile rather than wrapping into a multi-line card. */
+    /* Business Expenses table -> one compact top line per expense (Date,
+       Category, Amount + Edit/Delete), with Description as a second,
+       smaller/lighter line underneath when there is one -- a 2-row grid
+       per row rather than a multi-field stacked card. */
     #admin-view-business-expenses .admin-table thead { display: none; }
     #admin-view-business-expenses .admin-table,
     #admin-view-business-expenses .admin-table tbody { display: block; width: 100%; }
     #admin-view-business-expenses .admin-table { border: none; }
     #admin-view-business-expenses .admin-table tr {
-      display: flex; align-items: center; gap: 8px;
+      display: grid; grid-template-columns: auto 1fr auto auto; align-items: center;
+      column-gap: 8px; row-gap: 3px;
       border: 1px solid var(--stone); border-radius: 8px; margin-bottom: 8px; padding: 8px 10px;
     }
     #admin-view-business-expenses .admin-table td { display: block; border-top: none; padding: 0; width: auto; }
-    #admin-view-business-expenses .admin-table td[data-col="description"] { display: none; }
-    #admin-view-business-expenses .admin-table td[data-col="date"] { font-size: 0.68rem; opacity: 0.65; flex: 0 0 auto; white-space: nowrap; }
+    #admin-view-business-expenses .admin-table td[data-col="date"] { grid-column: 1; grid-row: 1; font-size: 0.68rem; opacity: 0.65; white-space: nowrap; }
     #admin-view-business-expenses .admin-table td[data-col="category"] {
-      font-size: 0.78rem; font-weight: 600; flex: 1 1 auto; min-width: 0;
+      grid-column: 2; grid-row: 1; font-size: 0.78rem; font-weight: 600; min-width: 0;
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    #admin-view-business-expenses .admin-table td[data-col="amount"] { font-size: 0.78rem; font-weight: 600; flex: 0 0 auto; white-space: nowrap; }
-    #admin-view-business-expenses .admin-table td[data-col="amount"] .fx-note { display: none; } /* no room on one line -- still in the CSV/edit popup */
-    #admin-view-business-expenses .admin-table td[data-col="actions"] { flex: 0 0 auto; margin-left: auto; display: flex; gap: 4px; }
+    #admin-view-business-expenses .admin-table td[data-col="amount"] { grid-column: 3; grid-row: 1; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+    #admin-view-business-expenses .admin-table td[data-col="amount"] .fx-note { display: none; } /* no room here -- still in the CSV/edit popup */
+    #admin-view-business-expenses .admin-table td[data-col="actions"] { grid-column: 4; grid-row: 1; display: flex; gap: 4px; }
     #admin-view-business-expenses .admin-table td[data-col="actions"] button { padding: 4px 9px; font-size: 0.65rem; }
+    #admin-view-business-expenses .admin-table td[data-col="description"] {
+      grid-column: 1 / -1; grid-row: 2; font-size: 0.7rem; color: var(--ink); opacity: 0.55;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    #admin-view-business-expenses .admin-table td[data-col="description"]:empty { display: none; }
   }
 </style>
 </head>
