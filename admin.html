@@ -820,6 +820,10 @@
   .admin-csv-row .tag { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; font-weight: 600; }
   .admin-csv-row .tag.new { background: #e6efe2; color: var(--green); }
   .admin-csv-row .tag.edit { background: #fdf3df; color: var(--gold); }
+  .admin-csv-row .tag.dup { background: #fcebeb; color: #791f1f; }
+  .admin-csv-row .tag.invalid { background: #ececec; color: #555; }
+  .admin-csv-row label { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+  .admin-csv-row label span.row-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
   .admin-table { width: 100%; border-collapse: collapse; border: 1px solid var(--stone); border-radius: 6px; overflow: hidden; margin-bottom: 26px; font-size: 0.82rem; }
   .admin-table th { background: var(--ivory-deep); text-align: left; padding: 9px 12px; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink); opacity: 0.7; }
@@ -1090,6 +1094,24 @@
     }
     .admin-mobile-bottom-nav .amb-item.active { color: var(--green); font-weight: 600; }
     .admin-mobile-bottom-nav .amb-item svg { width: 19px; height: 19px; }
+
+    /* Business Expenses table -> stacked cards, one per expense, instead
+       of a cramped 5-column table squeezed into a phone width. */
+    #admin-view-business-expenses .admin-table thead { display: none; }
+    #admin-view-business-expenses .admin-table,
+    #admin-view-business-expenses .admin-table tbody,
+    #admin-view-business-expenses .admin-table tr,
+    #admin-view-business-expenses .admin-table td { display: block; width: 100%; }
+    #admin-view-business-expenses .admin-table { border: none; }
+    #admin-view-business-expenses .admin-table tr { border: 1px solid var(--stone); border-radius: 8px; margin-bottom: 12px; padding: 10px 14px; }
+    #admin-view-business-expenses .admin-table td { border-top: none; padding: 5px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    #admin-view-business-expenses .admin-table td::before {
+      content: attr(data-label); font-weight: 600; opacity: 0.55; font-size: 0.68rem;
+      text-transform: uppercase; letter-spacing: 0.04em; flex-shrink: 0;
+    }
+    #admin-view-business-expenses .admin-table td:last-child { justify-content: flex-end; padding-top: 10px; }
+    #admin-view-business-expenses .admin-table td:last-child::before { content: none; }
+    #admin-view-business-expenses .admin-table td > div { text-align: right; }
   }
 </style>
 </head>
@@ -2029,10 +2051,10 @@
         <h3 id="admin-be-form-heading">Add Expense</h3>
         <div class="admin-form-grid">
           <div class="admin-field"><label>Date</label><input type="date" id="admin-be-date"></div>
-          <div class="admin-field"><label>Category</label><input type="text" id="admin-be-category" placeholder="e.g. Rent, Salaries, Packaging"></div>
+          <div class="admin-field"><label>Category</label><input type="text" id="admin-be-category" list="admin-be-category-list" placeholder="e.g. Rent, Salaries, Packaging" autocomplete="off"></div>
         </div>
         <div class="admin-form-grid">
-          <div class="admin-field"><label>Description</label><input type="text" id="admin-be-description" placeholder="Optional"></div>
+          <div class="admin-field"><label>Description</label><input type="text" id="admin-be-description" list="admin-be-description-list" placeholder="Optional" autocomplete="off"></div>
           <div class="admin-field">
             <label>Currency</label>
             <select id="admin-be-currency">
@@ -2043,9 +2065,12 @@
           </div>
         </div>
         <div class="admin-form-grid">
-          <div class="admin-field"><label id="admin-be-amount-label">Amount (AED)</label><input type="text" id="admin-be-amount" placeholder="0.00"></div>
+          <div class="admin-field"><label id="admin-be-amount-label">Amount (AED)</label><input type="text" id="admin-be-amount" list="admin-be-amount-list" placeholder="0.00" autocomplete="off"></div>
           <div class="admin-field" id="admin-be-fxrate-field" style="display:none;"><label id="admin-be-fxrate-label">Exchange rate (1 = ? AED)</label><input type="text" id="admin-be-fxrate" placeholder="e.g. 0.044"></div>
         </div>
+        <datalist id="admin-be-category-list"></datalist>
+        <datalist id="admin-be-description-list"></datalist>
+        <datalist id="admin-be-amount-list"></datalist>
 
         <button type="button" class="btn btn-primary" id="admin-be-save-btn" style="margin-top:14px;">Add Expense</button>
         <button type="button" class="admin-btn-secondary" id="admin-be-cancel-edit-btn" style="margin-top:14px; margin-left:8px; display:none;">Cancel</button>
@@ -2059,7 +2084,18 @@
           <input type="file" id="admin-be-csv-file-input" accept=".csv" style="display:none;">
         </span>
       </h3>
-      <p style="font-size:0.74rem; color:var(--ink); opacity:0.6; margin:-6px 0 14px;">Import matches existing rows by their Id column (leave blank to add a new expense) and adds or updates accordingly — it never deletes rows.</p>
+      <p style="font-size:0.74rem; color:var(--ink); opacity:0.6; margin:-6px 0 14px;">Import matches rows with an Id to an existing expense (updating it) and adds everything else as new — you'll see a summary before anything is saved, so nothing is added or changed without a final confirm.</p>
+
+      <div class="admin-form-card" id="admin-be-import-preview" style="display:none;">
+        <h3>Confirm import</h3>
+        <p id="admin-be-import-summary" style="font-size:0.85rem; margin-bottom:14px;"></p>
+        <div id="admin-be-import-list" style="max-height:320px; overflow-y:auto; border:1px solid var(--stone); border-radius:4px; margin-bottom:16px;"></div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" id="admin-be-import-confirm-btn">Confirm Import</button>
+          <button type="button" class="btn btn-ghost" id="admin-be-import-cancel-btn">Cancel, don't save anything</button>
+        </div>
+      </div>
+
       <table class="admin-table">
         <thead><tr><th>Date</th><th>Category</th><th>Description</th><th>Amount (AED)</th><th></th></tr></thead>
         <tbody id="admin-be-rows"></tbody>

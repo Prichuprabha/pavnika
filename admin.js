@@ -4678,8 +4678,11 @@ function initBusinessExpenses(token) {
     rowsEl.innerHTML = currentExpenses.map(function (e) {
       var when = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
       var fxNote = e.origCurrency ? '<div style="font-size:0.72rem; opacity:0.65;">' + e.origCurrency + ' ' + formatAED(e.origAmount) + ' @ ' + e.fxRate + '</div>' : '';
-      return '<tr><td>' + when + '</td><td>' + (e.category || '') + '</td><td>' + (e.description || '') + '</td>' +
-        '<td>' + formatAED(e.amount) + fxNote + '</td>' +
+      // data-label feeds the mobile card layout (CSS ::before, scoped to
+      // #admin-view-business-expenses under 880px) -- each td shows its
+      // own column name stacked above the value instead of a cramped row.
+      return '<tr><td data-label="Date">' + when + '</td><td data-label="Category">' + (e.category || '') + '</td><td data-label="Description">' + (e.description || '') + '</td>' +
+        '<td data-label="Amount (AED)"><div>' + formatAED(e.amount) + fxNote + '</div></td>' +
         '<td style="white-space:nowrap;"><button type="button" class="admin-btn-secondary" data-edit-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Edit</button> ' +
         '<button type="button" class="admin-btn-secondary" data-delete-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
     }).join('');
@@ -4733,9 +4736,49 @@ function initBusinessExpenses(token) {
       body: JSON.stringify({ adminToken: token })
     })
       .then(function (res) { return res.json(); })
-      .then(function (data) { currentExpenses = data.expenses || []; renderTable(); })
+      .then(function (data) { currentExpenses = data.expenses || []; renderTable(); updateAutocompleteLists(); })
       .catch(function () { showStatus('error', 'Could not load business expenses.'); });
   }
+
+  /* ----- Autocomplete: same "pick from what you've typed before" feel
+     the offline Finance tool's Category/Description/Amount fields had --
+     implemented with native <datalist>s so it needs no extra UI, and
+     filters as you type (browser-native prefix/substring matching). The
+     Description and Amount lists narrow to whatever Category is
+     currently typed, so you're not scrolling through every description
+     ever entered under every category. ----- */
+  function uniqueSorted(arr) {
+    var seen = {};
+    var out = [];
+    arr.forEach(function (v) {
+      v = (v || '').toString().trim();
+      if (!v || seen[v.toLowerCase()]) return;
+      seen[v.toLowerCase()] = true;
+      out.push(v);
+    });
+    out.sort(function (a, b) { return a.localeCompare(b); });
+    return out;
+  }
+
+  function fillDatalist(id, values) {
+    var el = document.getElementById(id);
+    el.innerHTML = values.map(function (v) { return '<option value="' + v.replace(/"/g, '&quot;') + '"></option>'; }).join('');
+  }
+
+  function updateAutocompleteLists() {
+    fillDatalist('admin-be-category-list', uniqueSorted(currentExpenses.map(function (e) { return e.category; })));
+
+    var catFilter = categoryInput.value.trim().toLowerCase();
+    var scoped = catFilter ? currentExpenses.filter(function (e) { return (e.category || '').toLowerCase() === catFilter; }) : currentExpenses;
+    // Fall back to the full list when nothing matches the typed category
+    // yet (still mid-typing), so suggestions don't just disappear.
+    if (catFilter && !scoped.length) scoped = currentExpenses;
+
+    fillDatalist('admin-be-description-list', uniqueSorted(scoped.map(function (e) { return e.description; })));
+    fillDatalist('admin-be-amount-list', uniqueSorted(scoped.map(function (e) { return e.origCurrency ? e.origAmount : e.amount; })));
+  }
+
+  categoryInput.addEventListener('input', updateAutocompleteLists);
 
   function saveExpense(payload) {
     return fetch('/.netlify/functions/admin-save-business-expense', {
@@ -4859,69 +4902,177 @@ function initBusinessExpenses(token) {
     csvFileInput.click();
   });
 
+  /* ----- CSV import: classify, review, confirm, then ONE bulk save -----
+     Rebuilt after an earlier version imported row-by-row (one network
+     call per row) -- on a 110-row file, a transient failure partway
+     through left the browser reporting "110 imported" while only ~60
+     actually landed, and the table didn't reflect reality until a page
+     refresh. Now the whole file is classified client-side (new / update
+     / possible duplicate / invalid), shown for review with checkboxes,
+     and only sent once the admin confirms -- as a single request to
+     admin-bulk-save-business-expenses, which does it as one atomic
+     Supabase upsert. Nothing is saved until Confirm is clicked. */
+  var importPreviewCard = document.getElementById('admin-be-import-preview');
+  var importSummaryEl = document.getElementById('admin-be-import-summary');
+  var importListEl = document.getElementById('admin-be-import-list');
+  var pendingImportItems = null; // [{ payload, kind: 'new'|'update'|'duplicate'|'invalid', include, label, reason }]
+
+  function amountsClose(a, b) {
+    return Math.abs((Number(a) || 0) - (Number(b) || 0)) < 0.01;
+  }
+
+  function classifyImportRows(rows) {
+    var byId = {};
+    currentExpenses.forEach(function (e) { byId[String(e.id)] = e; });
+
+    return rows.map(function (row) {
+      var date = (row['Date'] || '').trim();
+      var category = (row['Category'] || '').trim();
+      var description = (row['Description'] || '').trim();
+      var amountRaw = (row['Amount'] || '').trim();
+      var currency = (row['Currency'] || 'AED').trim().toUpperCase() || 'AED';
+      var fxRateRaw = (row['Exchange Rate'] || '').trim();
+      var idRaw = (row['Id'] || '').trim();
+      var label = (date || '?') + ' — ' + (category || '?') + (description ? (' — ' + description) : '') + ' — ' + (amountRaw || '?') + ' ' + currency;
+
+      if (!date || !category || !amountRaw || isNaN(Number(amountRaw)) || Number(amountRaw) <= 0) {
+        return { kind: 'invalid', include: false, label: label, reason: 'Missing or invalid Date/Category/Amount.' };
+      }
+      if (currency !== 'AED' && (!fxRateRaw || isNaN(Number(fxRateRaw)) || Number(fxRateRaw) <= 0)) {
+        return { kind: 'invalid', include: false, label: label, reason: 'Non-AED currency needs a valid Exchange Rate.' };
+      }
+
+      var payload = {
+        id: idRaw || undefined,
+        date: date,
+        category: category,
+        description: description,
+        amount: Number(amountRaw),
+        currency: currency,
+        fxRate: currency !== 'AED' ? Number(fxRateRaw) : undefined
+      };
+
+      if (idRaw) {
+        var existing = byId[idRaw];
+        if (existing) {
+          return { kind: 'update', include: true, label: label, payload: payload, reason: 'Matches existing Id — will update that row.' };
+        }
+        return { kind: 'update', include: true, label: label, payload: payload, reason: 'Id not found in the current list — will create a new row with this exact Id.' };
+      }
+
+      // No Id given: flag as a possible duplicate when an existing row
+      // already has the same date, category, description and amount --
+      // unchecked by default so a re-imported/re-exported CSV doesn't
+      // silently double an expense.
+      var dupe = currentExpenses.some(function (e) {
+        return e.date === date &&
+          (e.category || '').toLowerCase() === category.toLowerCase() &&
+          (e.description || '').toLowerCase() === description.toLowerCase() &&
+          amountsClose(e.origCurrency ? e.origAmount : e.amount, amountRaw);
+      });
+      if (dupe) {
+        return { kind: 'duplicate', include: false, label: label, payload: payload, reason: 'An expense with the same date, category, description and amount already exists.' };
+      }
+      return { kind: 'new', include: true, label: label, payload: payload, reason: 'New expense.' };
+    });
+  }
+
+  function renderImportPreview() {
+    var counts = { new: 0, update: 0, duplicate: 0, invalid: 0 };
+    pendingImportItems.forEach(function (it) { counts[it.kind]++; });
+
+    importSummaryEl.textContent = counts['new'] + ' new, ' + counts.update + ' update' + (counts.update === 1 ? '' : 's') +
+      ', ' + counts.duplicate + ' possible duplicate' + (counts.duplicate === 1 ? '' : 's') + ' (unchecked by default)' +
+      (counts.invalid ? ', ' + counts.invalid + ' invalid row' + (counts.invalid === 1 ? '' : 's') + ' (will be skipped)' : '') + '.';
+
+    importListEl.innerHTML = pendingImportItems.map(function (it, i) {
+      var tagClass = it.kind === 'new' ? 'new' : it.kind === 'update' ? 'edit' : it.kind === 'duplicate' ? 'dup' : 'invalid';
+      var tagText = it.kind === 'new' ? 'New' : it.kind === 'update' ? 'Update' : it.kind === 'duplicate' ? 'Possible duplicate' : 'Invalid';
+      var checkbox = it.kind === 'invalid'
+        ? '<input type="checkbox" disabled>'
+        : '<input type="checkbox" data-import-idx="' + i + '"' + (it.include ? ' checked' : '') + '>';
+      return '<div class="admin-csv-row" title="' + it.reason.replace(/"/g, '&quot;') + '">' +
+        '<label><span>' + checkbox + '</span><span class="row-text">' + it.label + '</span></label>' +
+        '<span class="tag ' + tagClass + '">' + tagText + '</span></div>';
+    }).join('');
+
+    importListEl.querySelectorAll('[data-import-idx]').forEach(function (cb) {
+      cb.addEventListener('change', function () {
+        pendingImportItems[Number(cb.getAttribute('data-import-idx'))].include = cb.checked;
+      });
+    });
+  }
+
   csvFileInput.addEventListener('change', function () {
     var file = csvFileInput.files[0];
     if (!file) return;
     var reader = new FileReader();
     reader.onload = function () {
-      var rows = parseCsv(String(reader.result));
+      var rows;
+      try {
+        rows = parseCsv(String(reader.result));
+      } catch (err) {
+        showStatus('error', 'Could not read that CSV file. Please check its format.');
+        csvFileInput.value = '';
+        return;
+      }
       if (!rows.length) { showStatus('error', 'That CSV had no rows to import.'); csvFileInput.value = ''; return; }
 
-      var payloads = [];
-      var skipped = 0;
-      rows.forEach(function (row) {
-        var date = (row['Date'] || '').trim();
-        var category = (row['Category'] || '').trim();
-        var amountRaw = (row['Amount'] || '').trim();
-        var currency = (row['Currency'] || 'AED').trim().toUpperCase() || 'AED';
-        var fxRateRaw = (row['Exchange Rate'] || '').trim();
-        if (!date || !category || !amountRaw || isNaN(Number(amountRaw)) || Number(amountRaw) <= 0) { skipped++; return; }
-        if (currency !== 'AED' && (!fxRateRaw || isNaN(Number(fxRateRaw)) || Number(fxRateRaw) <= 0)) { skipped++; return; }
-        payloads.push({
-          id: (row['Id'] || '').trim() || undefined,
-          date: date,
-          category: category,
-          description: (row['Description'] || '').trim(),
-          amount: Number(amountRaw),
-          currency: currency,
-          fxRate: currency !== 'AED' ? Number(fxRateRaw) : undefined
-        });
-      });
-
-      if (!payloads.length) {
+      pendingImportItems = classifyImportRows(rows);
+      if (!pendingImportItems.some(function (it) { return it.kind !== 'invalid'; })) {
         showStatus('error', 'No valid rows found in that CSV (need at least Date, Category and Amount).');
+        pendingImportItems = null;
         csvFileInput.value = '';
         return;
       }
 
-      showStatus('success', 'Importing ' + payloads.length + ' row' + (payloads.length === 1 ? '' : 's') + '...');
-
-      // Sequential, not parallel -- Supabase handles either fine, but
-      // sequential keeps this readable and avoids slamming the function
-      // with 100s of simultaneous invocations on a big CSV.
-      var i = 0;
-      var okCount = 0;
-      var errCount = 0;
-      function next() {
-        if (i >= payloads.length) {
-          csvFileInput.value = '';
-          loadExpenses();
-          var msg = 'Imported ' + okCount + ' row' + (okCount === 1 ? '' : 's') + '.';
-          if (errCount) msg += ' ' + errCount + ' row' + (errCount === 1 ? '' : 's') + ' failed.';
-          if (skipped) msg += ' ' + skipped + ' row' + (skipped === 1 ? '' : 's') + ' skipped (missing/invalid fields).';
-          showStatus(errCount ? 'error' : 'success', msg);
-          return;
-        }
-        var payload = payloads[i];
-        i++;
-        saveExpense(payload).then(function (result) {
-          if (result.ok) okCount++; else errCount++;
-          next();
-        }).catch(function () { errCount++; next(); });
-      }
-      next();
+      renderImportPreview();
+      importPreviewCard.style.display = 'block';
+      importPreviewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      csvFileInput.value = '';
     };
     reader.readAsText(file);
+  });
+
+  document.getElementById('admin-be-import-cancel-btn').addEventListener('click', function () {
+    pendingImportItems = null;
+    importPreviewCard.style.display = 'none';
+  });
+
+  document.getElementById('admin-be-import-confirm-btn').addEventListener('click', function () {
+    if (!pendingImportItems) return;
+    var toSend = pendingImportItems.filter(function (it) { return it.kind !== 'invalid' && it.include; }).map(function (it) { return it.payload; });
+    if (!toSend.length) {
+      showStatus('error', 'Nothing is checked to import.');
+      return;
+    }
+
+    var confirmBtn = document.getElementById('admin-be-import-confirm-btn');
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Importing...';
+
+    fetch('/.netlify/functions/admin-bulk-save-business-expenses', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, expenses: toSend })
+    })
+      .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
+      .then(function (result) {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm Import';
+        if (!result.ok) { showStatus('error', result.data.error || 'Import failed -- nothing was saved.'); return; }
+        var skippedCount = pendingImportItems.length - toSend.length;
+        pendingImportItems = null;
+        importPreviewCard.style.display = 'none';
+        showStatus('success', 'Imported ' + result.data.count + ' row' + (result.data.count === 1 ? '' : 's') + '.' +
+          (skippedCount ? ' ' + skippedCount + ' row' + (skippedCount === 1 ? '' : 's') + ' left unchecked/invalid were skipped.' : ''));
+        loadExpenses();
+      })
+      .catch(function () {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = 'Confirm Import';
+        showStatus('error', 'Network error -- nothing was imported. Nothing was saved, so it\'s safe to try again.');
+      });
   });
 
   resetForm();
