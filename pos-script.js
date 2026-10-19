@@ -1185,11 +1185,11 @@ var POS_BROWSE_DEPTS = [
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7l8 5-1 2-7-3.5V15a1 1 0 0 1-2 0v-4.5L4 14l-1-2 8-5V5.73A2 2 0 0 1 10 4a2 2 0 0 1 2-2z"/></svg>'
   },
   {
-    dept: 'jewellery', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Haarams', 'Necklace', 'Jewellery Set'],
+    dept: 'jewellery', label: 'Jewellery', options: ['Bangles & Bracelets', 'Earrings', 'Long Harams', 'Necklaces', 'Jewellery Sets'],
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l4 6-10 12L2 9z"/><path d="M11 3 8 9l4 12 4-12-3-6"/><path d="M2 9h20"/></svg>'
   },
   {
-    dept: 'accessory', label: 'Accessories', options: ['Artificial Flowers', 'Hair Adornments', 'Saree Essentials', 'Blouse Material', 'Potli & Bags', 'Gift Collections'],
+    dept: 'accessory', label: 'Accessories', options: ['Reusable Flowers', 'Hair Adornments', 'Saree Essentials', 'Blouse Material', 'Potli & Bags', 'Gift Collections'],
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>'
   }
 ];

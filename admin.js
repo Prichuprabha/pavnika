@@ -266,14 +266,44 @@ function tagListSubtitle(item) {
 }
 
 // Classifies a line item's department straight from its ID prefix
-// (JW.../AC.../anything else) rather than looking it up in
-// window.PRODUCTS, so this still works correctly for an order placed
-// months ago even if that exact item has since been deleted from the
-// live catalogue.
+// rather than looking it up in window.PRODUCTS, so this still works
+// correctly for an order placed months ago even if that exact item
+// has since been deleted from the live catalogue.
+//
+// Each jewellery/accessory TYPE now gets its own ID prefix (ER/NK/LH/
+// JS/BM/BR/RF) instead of the old shared JW (jewellery) / AC
+// (accessory) pair -- see JEWELLERY_ID_PREFIXES / ACCESSORY_ID_PREFIXES
+// below, which the admin's ID-suggestion logic also reads from, so the
+// two stay in sync. JW/AC themselves are kept recognized here
+// permanently for any order placed before this change -- those IDs
+// are real, already-issued history and must keep classifying
+// correctly forever, even though no new item will use them going
+// forward.
+var JEWELLERY_ID_PREFIXES = {
+  'Earrings': 'ER',
+  'Necklaces': 'NK',
+  'Long Harams': 'LH',
+  'Jewellery Sets': 'JS',
+  'Bangles & Bracelets': 'BR'
+};
+var ACCESSORY_ID_PREFIXES = {
+  'Blouse Material': 'BM',
+  'Reusable Flowers': 'RF'
+  // Every other Accessory type (Hair Adornments, Saree Essentials,
+  // Potli & Bags, Gift Collections) deliberately has no entry here --
+  // those stay on the shared 'AC' prefix below until one of them
+  // actually needs its own, same as Pavnika asked.
+};
 function itemDepartmentFromId(id) {
   var s = String(id || '');
-  if (s.indexOf('JW') === 0) return 'jewellery';
-  if (s.indexOf('AC') === 0) return 'accessory';
+  var jewelleryPrefixes = ['ER', 'NK', 'LH', 'JS', 'BR', 'JW'];
+  var accessoryPrefixes = ['BM', 'RF', 'AC'];
+  for (var i = 0; i < jewelleryPrefixes.length; i++) {
+    if (s.indexOf(jewelleryPrefixes[i]) === 0) return 'jewellery';
+  }
+  for (var j = 0; j < accessoryPrefixes.length; j++) {
+    if (s.indexOf(accessoryPrefixes[j]) === 0) return 'accessory';
+  }
   return 'saree';
 }
 
@@ -1183,7 +1213,18 @@ function initSareeEditor(token) {
   var idHint = document.getElementById('admin-id-hint');
   var idWarning = document.getElementById('admin-id-warning');
   var departmentSelect = document.getElementById('admin-f-department');
-  var DEPT_PREFIXES = { jewellery: 'JW', accessory: 'AC' };
+  // Each jewellery/accessory TYPE gets its own ID prefix now, not one
+  // shared per department -- see JEWELLERY_ID_PREFIXES /
+  // ACCESSORY_ID_PREFIXES near itemDepartmentFromId above, which this
+  // reads from directly so the two never drift apart. A type with no
+  // entry (the still-unused Accessory types) falls back to the plain
+  // department-level prefix, same as every jewellery/accessory type
+  // used to work before this split.
+  var DEPT_FALLBACK_PREFIXES = { jewellery: 'JW', accessory: 'AC' };
+  function idPrefixForType(dept, type) {
+    var byType = dept === 'jewellery' ? JEWELLERY_ID_PREFIXES : (dept === 'accessory' ? ACCESSORY_ID_PREFIXES : null);
+    return (byType && byType[type]) || DEPT_FALLBACK_PREFIXES[dept];
+  }
   var currentImages = []; // the saree's photo URLs, as far as the live product record is concerned
   var previewOverrides = {}; // url -> local dataUrl, for photos uploaded this session whose live URL isn't deployed yet
   var uploadedForId = null; // which ID currentImages' uploads were filed under, to catch a mid-session ID change
@@ -1933,13 +1974,13 @@ function initSareeEditor(token) {
 
   function sizeSuffix(raw) {
     // "2.4" -> "24", "2.40" -> "24", "8" -> "08" — always exactly two
-    // digits, since that's the ID format decided on (JW001-24).
+    // digits, since that's the ID format decided on (BR001-24).
     var digits = String(raw || '').replace(/\D/g, '');
     return digits.slice(-2).padStart(2, '0');
   }
 
   function updateBangleIdPreview() {
-    var base = document.getElementById('admin-f-bangle-base').value || nextBaseId('JW', true);
+    var base = document.getElementById('admin-f-bangle-base').value || nextBaseId(idPrefixForType('jewellery', 'Bangles & Bracelets'), true);
     var sizeRaw = currentBangleSizeValue();
     var preview = document.getElementById('admin-bangle-id-preview');
     if (!sizeRaw) {
@@ -1966,7 +2007,8 @@ function initSareeEditor(token) {
       updateBangleIdPreview();
       idHint.textContent = '';
     } else {
-      var prefix = DEPT_PREFIXES[dept];
+      var typeField = dept === 'jewellery' ? document.getElementById('admin-f-jtype') : document.getElementById('admin-f-atype');
+      var prefix = idPrefixForType(dept, typeField.value);
       idField.value = nextBaseId(prefix, false);
       idHint.textContent = 'Suggested next ' + prefix + ' number. You can type your own ID instead if you prefer.';
       checkIdDuplicate();
@@ -1990,6 +2032,15 @@ function initSareeEditor(token) {
   document.getElementById('admin-f-jtype').addEventListener('change', function () {
     try { updateNonSareeIdSuggestion(); }
     catch (err) { alert('Error switching jewellery type: ' + err.message); console.error(err); }
+  });
+  // Accessory types didn't need this before -- they all shared the one
+  // AC prefix regardless of which type was picked. Now that Blouse
+  // Material and Reusable Flowers have their own prefixes, switching
+  // the Accessory type has to refresh the suggested ID too, same as
+  // Jewellery already does.
+  document.getElementById('admin-f-atype').addEventListener('change', function () {
+    try { updateNonSareeIdSuggestion(); }
+    catch (err) { alert('Error switching accessory type: ' + err.message); console.error(err); }
   });
   document.getElementById('admin-f-bangle-base').addEventListener('change', function () {
     try { updateBangleIdPreview(); }
@@ -2146,7 +2197,7 @@ function initSareeEditor(token) {
       document.getElementById('admin-bangle-size-fields').style.display = 'none'; // the base/size pickers are an add-mode-only convenience
       document.getElementById('admin-bangle-id-preview').style.display = 'none';
     } else {
-      document.getElementById('admin-f-atype').value = product.type || 'Artificial Flowers';
+      document.getElementById('admin-f-atype').value = product.type || 'Reusable Flowers';
       document.getElementById('admin-f-anote').value = product.note || '';
       document.getElementById('admin-f-aprice').value = product.price || '';
     }

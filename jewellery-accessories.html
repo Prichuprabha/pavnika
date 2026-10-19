@@ -96,7 +96,7 @@
   <div class="container">
     <span class="eyebrow">Fashion Jewellery &amp; Accessories</span>
     <h1>Pieces to complete<br>every look</h1>
-    <p class="catalogue-tagline">Bangles &nbsp;&middot;&nbsp; Earrings &nbsp;&middot;&nbsp; Haarams &nbsp;&middot;&nbsp; Necklaces</p>
+    <p class="catalogue-tagline">Bangles &nbsp;&middot;&nbsp; Earrings &nbsp;&middot;&nbsp; Long Harams &nbsp;&middot;&nbsp; Necklaces</p>
   </div>
 </section>
 
@@ -202,10 +202,10 @@
                 <button type="button" class="filter-btn active" data-value="all">All</button>
                 <button type="button" class="filter-btn" data-value="Bangles & Bracelets">Bangles &amp; Bracelets</button>
                 <button type="button" class="filter-btn" data-value="Earrings">Earrings</button>
-                <button type="button" class="filter-btn" data-value="Haarams">Haarams</button>
-                <button type="button" class="filter-btn" data-value="Necklace">Necklace</button>
-                <button type="button" class="filter-btn" data-value="Jewellery Set">Jewellery Set</button>
-                <button type="button" class="filter-btn" data-value="Artificial Flowers">Artificial Flowers</button>
+                <button type="button" class="filter-btn" data-value="Long Harams">Long Harams</button>
+                <button type="button" class="filter-btn" data-value="Necklaces">Necklaces</button>
+                <button type="button" class="filter-btn" data-value="Jewellery Sets">Jewellery Sets</button>
+                <button type="button" class="filter-btn" data-value="Reusable Flowers">Reusable Flowers</button>
                 <button type="button" class="filter-btn" data-value="Hair Adornments">Hair Adornments</button>
                 <button type="button" class="filter-btn" data-value="Saree Essentials">Saree Essentials</button>
                 <button type="button" class="filter-btn" data-value="Blouse Material">Blouse Material</button>
@@ -245,7 +245,24 @@
       <div class="ja-results-area">
         <span class="active-filter-note" id="ja-active-filter-note"></span>
         <p class="live-count" id="ja-results-count"></p>
-        <div class="product-grid" id="ja-product-grid"></div>
+        <!-- 8 skeleton placeholders, visible the instant the page paints
+             (static HTML, no JS needed) -- shown only until render() in
+             script.js replaces this whole container's innerHTML with the
+             real cards. Without these, the filters sidebar paints first
+             (it's static markup) while this grid sits empty until
+             script.js finishes parsing/running, which on a page this
+             size showed as a brief blank gap where no products at all
+             were visible. -->
+        <div class="product-grid" id="ja-product-grid">
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+          <div class="skeleton-card" aria-hidden="true"><div class="skeleton-photo"></div><div class="skeleton-line short"></div><div class="skeleton-line"></div></div>
+        </div>
         <p class="no-results" id="ja-no-results" style="display:none;">No pieces match this filter yet — try another category or price range.</p>
         <div class="pagination" id="ja-pagination"></div>
       </div>
