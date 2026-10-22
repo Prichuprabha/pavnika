@@ -4078,12 +4078,23 @@ function initHeroBannerCarousel() {
 
   var FOLDER = 'assets/banners/';
   var DEFAULT_LINK = 'collections.html';
+  // Declared up front (not just inside the success branch) so the
+  // no-banners and fetch-failure paths below can both reach it to reveal
+  // the static fallback copy -- see the "opacity: 0" comment on
+  // .hero-banner-text in style.css for why that reveal is needed at all.
+  var pinnedEl = document.getElementById('hero-banner-pinned');
 
   fetch(FOLDER + 'banners.json')
     .then(function (res) { return res.ok ? res.json() : []; })
     .then(function (allSlots) {
       var banners = (allSlots || []).filter(function (b) { return b && b.image; });
-      if (!banners.length) return;
+      if (!banners.length) {
+        // No banner images configured at all -- nothing will call
+        // syncClickHref to decide text visibility, so reveal the static
+        // fallback copy here instead of leaving it hidden forever.
+        if (pinnedEl) pinnedEl.classList.add('text-ready');
+        return;
+      }
 
       var slidesHTML = banners.map(function (b, i) {
         var loading = i === 0 ? 'eager' : 'lazy';
@@ -4125,7 +4136,6 @@ function initHeroBannerCarousel() {
       var clickLink = document.createElement('a');
       clickLink.className = 'hero-banner-click';
       clickLink.setAttribute('aria-label', 'Open this banner\'s collection');
-      var pinnedEl = document.getElementById('hero-banner-pinned');
       // The wording in home.html is the fallback for any slot that
       // hasn't had custom copy entered in admin, so existing banners
       // keep working unchanged.
@@ -4149,8 +4159,15 @@ function initHeroBannerCarousel() {
         // Per-banner "hide text" mode (admin checkbox): fade the text +
         // buttons out with the same 1s ease the slides use, and let the
         // click layer cover the WHOLE banner instead of the right half.
+        // "text-ready" is what actually reveals the copy at all (it
+        // starts at opacity:0 in CSS) -- toggling both together here
+        // means a hideText banner never gets revealed in the first
+        // place, rather than flashing on and fading out.
         var hide = !!(banners[i] && banners[i].hideText);
-        if (pinnedEl) pinnedEl.classList.toggle('text-hidden', hide);
+        if (pinnedEl) {
+          pinnedEl.classList.toggle('text-hidden', hide);
+          pinnedEl.classList.toggle('text-ready', !hide);
+        }
 
         var slot = banners[i] || {};
         var nextEyebrow = slot.eyebrow || defaultEyebrow;
@@ -4220,7 +4237,12 @@ function initHeroBannerCarousel() {
         scheduleNext();
       }
     })
-    .catch(function () { /* silently do nothing if the manifest can't be read */ });
+    .catch(function () {
+      // banners.json couldn't be read at all -- reveal the static
+      // fallback copy rather than leaving it hidden forever (it starts
+      // at opacity:0 so a hideText first banner doesn't flash).
+      if (pinnedEl) pinnedEl.classList.add('text-ready');
+    });
 }
 
 /* ---------- FAQ accordion ---------- */

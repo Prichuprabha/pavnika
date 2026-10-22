@@ -864,6 +864,17 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
   inset: 0;
   z-index: 3;
   pointer-events: none;
+  /* Hidden until script.js confirms the active banner actually wants
+     text shown (see initHeroBannerCarousel's "text-ready"/"text-hidden"
+     toggle below). Previously this was visible by default, so a page
+     whose FIRST banner was set to hide text would flash the fallback
+     copy + button on screen for the moment it takes banners.json to
+     load, then fade it out -- this makes it start invisible, matching
+     how the banner image itself starts at opacity:0 and fades in, so
+     nothing pops in only to immediately be hidden again. If banners.json
+     can't be read, or no banner is configured at all, script.js adds
+     "text-ready" itself as a fallback so the static copy still shows. */
+  opacity: 0;
 }
 .hero-banner-text .container {
   pointer-events: none; /* only the copy column itself is interactive,
@@ -880,6 +891,7 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
    cover the whole banner. On mobile the click layer is normally hidden,
    but text-hidden banners enable it full-width so the image is tappable. */
 .hero-banner-text { transition: opacity 1s ease; }
+.hero-banner-pinned.text-ready .hero-banner-text { opacity: 1; }
 .hero-banner-pinned.text-hidden .hero-banner-text { opacity: 0; pointer-events: none; }
 .hero-banner-pinned.text-hidden .hero-banner-click { left: 0; }
 
