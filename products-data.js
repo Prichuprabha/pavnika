@@ -3585,5 +3585,59 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW037-6.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW037-1.jpg"
+  },
+  {
+    "id": "RF002",
+    "department": "accessory",
+    "series": "",
+    "category": "",
+    "type": "Reusable Flowers",
+    "sareeType": "",
+    "pattern": "",
+    "design": "",
+    "material": "",
+    "shade": "Maroon / Red",
+    "colour": "White & Red",
+    "note": "Jasmine Double Layer With Rose",
+    "price": 70,
+    "salePrice": null,
+    "sold": false,
+    "occasions": [],
+    "quantity": 4,
+    "qtyUnit": "Muzham (~16 inches)",
+    "maxPerOrder": null,
+    "images": [
+      "https://pavnika.ae/assets/products/RF002-1.jpg",
+      "https://pavnika.ae/assets/products/RF002-2.jpg",
+      "https://pavnika.ae/assets/products/RF002-3.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/RF002-1.jpg"
+  },
+  {
+    "id": "RF001",
+    "department": "accessory",
+    "series": "",
+    "category": "",
+    "type": "Reusable Flowers",
+    "sareeType": "",
+    "pattern": "",
+    "design": "",
+    "material": "",
+    "shade": "Maroon / Red",
+    "colour": "White",
+    "note": "Jasmine Double Layer",
+    "price": 70,
+    "salePrice": null,
+    "sold": false,
+    "occasions": [],
+    "quantity": 4,
+    "qtyUnit": "Muzham (~16 inches)",
+    "maxPerOrder": null,
+    "images": [
+      "https://pavnika.ae/assets/products/RF001-1.jpg",
+      "https://pavnika.ae/assets/products/RF001-2.jpg",
+      "https://pavnika.ae/assets/products/RF001-3.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/RF001-1.jpg"
   }
 ];
