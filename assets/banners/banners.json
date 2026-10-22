@@ -10,6 +10,16 @@
     "seconds": 8
   },
   {
+    "image": "jewl_banner.jpg",
+    "mobileImage": "jewl_banner-mobile.jpg",
+    "link": "home.html",
+    "hideText": true,
+    "eyebrow": "",
+    "heading": "",
+    "description": "",
+    "seconds": ""
+  },
+  {
     "image": "banner-v2-2.jpg",
     "mobileImage": "banner-v2-2-mobile.jpg",
     "link": "collections.html",
@@ -34,16 +44,6 @@
     "mobileImage": "banner-v2-3-mobile.jpg",
     "link": "collections.html",
     "hideText": false,
-    "eyebrow": "",
-    "heading": "",
-    "description": "",
-    "seconds": ""
-  },
-  {
-    "image": "jewl_banner.jpg",
-    "mobileImage": "jewl_banner-mobile.jpg",
-    "link": "home.html",
-    "hideText": true,
     "eyebrow": "",
     "heading": "",
     "description": "",
