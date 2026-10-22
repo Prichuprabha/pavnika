@@ -233,40 +233,48 @@
   var distanceHintEl = document.getElementById('distance-hint');
   var qualityCheckInterval = null;
 
+  // One small offscreen canvas, created once and reused, rather than a
+  // full-resolution canvas rebuilt every call. The video (often
+  // requested at 1920x1080 — see the camera constraints below) is drawn
+  // scaled DOWN into this ~240x135 canvas; the hardware-accelerated
+  // drawImage scale is essentially free, and it cuts the pixel work in
+  // both loops below by roughly 60x. This mattered: at full resolution,
+  // the dark-ratio loop walked all ~2.07M pixels every single tick (the
+  // sharpness loop already sampled every 4th pixel, but this one didn't)
+  // on top of ZXing's own continuous decoding of the same video element
+  // — competing for the main thread and showing up as scan lag,
+  // especially on mid-range phones.
+  var qaCanvas = document.createElement('canvas');
+  qaCanvas.width = 240;
+  qaCanvas.height = 135;
+  var qaCtx = qaCanvas.getContext('2d', { willReadFrequently: true });
+
   function analyzeImageQuality() {
     if (!scanning || !videoEl.videoWidth) return;
     try {
-      var canvas = document.createElement('canvas');
-      canvas.width = videoEl.videoWidth;
-      canvas.height = videoEl.videoHeight;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(videoEl, 0, 0);
-      var imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      qaCtx.drawImage(videoEl, 0, 0, qaCanvas.width, qaCanvas.height);
+      var imageData = qaCtx.getImageData(0, 0, qaCanvas.width, qaCanvas.height);
       var data = imageData.data;
+      var width = qaCanvas.width, height = qaCanvas.height;
 
-      // Blur detection via Laplacian variance: samples every 4th pixel
-      // (both axes) to keep this cheap enough to run twice a second on
-      // mid-range hardware without competing with ZXing's own decoding.
-      var variance = 0, count = 0, width = canvas.width;
-      for (var y = 1; y < canvas.height - 1; y += 4) {
-        for (var x = 1; x < width - 1; x += 4) {
+      // Blur detection via Laplacian variance, sampling every other
+      // pixel (the canvas is already small, so a finer sample than the
+      // old every-4th-pixel pass is affordable and a bit more accurate).
+      var variance = 0, count = 0;
+      for (var y = 1; y < height - 1; y += 2) {
+        for (var x = 1; x < width - 1; x += 2) {
           var idx = (y * width + x) * 4;
-          if (idx >= data.length) break;
           var neighbors = [];
           for (var dy = -1; dy <= 1; dy++) {
             for (var dx = -1; dx <= 1; dx++) {
               var nIdx = ((y + dy) * width + (x + dx)) * 4;
-              if (nIdx >= 0 && nIdx < data.length) {
-                var g = data[nIdx] * 0.299 + data[nIdx + 1] * 0.587 + data[nIdx + 2] * 0.114;
-                neighbors.push(g);
-              }
+              var g = data[nIdx] * 0.299 + data[nIdx + 1] * 0.587 + data[nIdx + 2] * 0.114;
+              neighbors.push(g);
             }
           }
-          if (neighbors.length === 9) {
-            var lap = -neighbors[0] - neighbors[1] - neighbors[2] - neighbors[3] + 8 * neighbors[4] - neighbors[5] - neighbors[6] - neighbors[7] - neighbors[8];
-            variance += lap * lap;
-            count++;
-          }
+          var lap = -neighbors[0] - neighbors[1] - neighbors[2] - neighbors[3] + 8 * neighbors[4] - neighbors[5] - neighbors[6] - neighbors[7] - neighbors[8];
+          variance += lap * lap;
+          count++;
         }
       }
       var sharpness = count > 0 ? Math.sqrt(variance / count) / 1000 : 0;
@@ -287,7 +295,9 @@
 
       // Distance detection: a barcode filling too little of the frame
       // reads as mostly-bright background (too far), and one filling
-      // too much reads as mostly-dark bars (too close).
+      // too much reads as mostly-dark bars (too close). Every pixel of
+      // the small canvas, not sampled -- it's cheap enough now that it
+      // doesn't need to be.
       var darkPixels = 0;
       for (var i = 0; i < data.length; i += 4) {
         if ((data[i] + data[i + 1] + data[i + 2]) / 3 < 100) darkPixels++;
@@ -475,9 +485,24 @@
   });
 
   // ---- Camera scanning ----
+  // scanSession: bumped every time the camera starts or stops. ZXing's
+  // decodeFromConstraints keeps a frame-by-frame decode loop running in
+  // the background, and reset() doesn't necessarily cancel a frame
+  // that's already mid-decode -- so a result from the PREVIOUS session
+  // could still land after stopCamera() has already run (e.g. a saree
+  // that was in frame a moment ago, like the one just scanned, briefly
+  // still being decoded as the camera is pulled away). Capturing the
+  // session number when a scan starts and checking it's still current
+  // before acting on a result throws away any such late/stale callback,
+  // instead of it silently overwriting whatever the camera is pointed
+  // at now (reported as "the wrong saree -- often the same one --
+  // showing up after scanning something else").
+  var scanSession = 0;
+
   function stopCamera() {
+    scanSession++;
     scanning = false;
-    if (codeReader) { try { codeReader.reset(); } catch (e) {} }
+    if (codeReader) { try { codeReader.reset(); } catch (e) {} codeReader = null; }
     videoEl.style.display = 'none';
     videoWrap.classList.remove('scanning');
     cameraBtn.textContent = 'Start camera';
@@ -499,6 +524,7 @@
       return;
     }
 
+    var mySession = ++scanSession;
     scanning = true;
     cameraBtn.textContent = 'Stop camera';
     videoEl.style.display = 'block';
@@ -525,6 +551,7 @@
       },
       videoEl,
       function (result, err) {
+        if (mySession !== scanSession) return; // stale callback from a torn-down scan session -- ignore
         if (result) {
           var text = result.getText ? result.getText() : result.text;
           if (text && lookup(text)) {
@@ -537,9 +564,11 @@
         // normal while searching, so it isn't surfaced to the user.
       }
     ).then(function () {
+      if (mySession !== scanSession) return; // camera was stopped again before the stream even finished starting
       imageQualityEl.classList.add('visible');
       qualityCheckInterval = setInterval(analyzeImageQuality, 500);
     }).catch(function (e) {
+      if (mySession !== scanSession) return;
       scanning = false;
       cameraBtn.textContent = 'Start camera';
       videoEl.style.display = 'none';
