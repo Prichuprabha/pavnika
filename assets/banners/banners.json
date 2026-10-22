@@ -1,21 +1,21 @@
 [
   {
-    "image": "banner-v2-1.jpg",
-    "mobileImage": "banner-v2-1-mobile.jpg",
-    "link": "collections.html",
-    "hideText": false,
-    "eyebrow": "AUTHENTIC KANCHIPURAM SILK",
-    "heading": "Hand-selected in Kancheepuram. Curated for Dubai.",
-    "description": "",
-    "seconds": 8
-  },
-  {
     "image": "jewl_banner.jpg",
     "mobileImage": "jewl_banner-mobile.jpg",
     "link": "home.html",
     "hideText": true,
     "eyebrow": "",
     "heading": "",
+    "description": "",
+    "seconds": 8
+  },
+  {
+    "image": "banner-v2-1.jpg",
+    "mobileImage": "banner-v2-1-mobile.jpg",
+    "link": "collections.html",
+    "hideText": false,
+    "eyebrow": "AUTHENTIC KANCHIPURAM SILK",
+    "heading": "Hand-selected in Kancheepuram. Curated for Dubai.",
     "description": "",
     "seconds": ""
   },
@@ -27,7 +27,7 @@
     "eyebrow": "",
     "heading": "",
     "description": "",
-    "seconds": 8
+    "seconds": ""
   },
   {
     "image": "banner-v2-4.jpg",
@@ -37,7 +37,7 @@
     "eyebrow": "",
     "heading": "",
     "description": "",
-    "seconds": 8
+    "seconds": ""
   },
   {
     "image": "banner-v2-3.jpg",
