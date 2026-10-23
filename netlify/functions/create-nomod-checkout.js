@@ -201,12 +201,31 @@ exports.handler = async function (event) {
 
   const finalAmountCents = subtotalCents - totalDiscountCents;
 
+  // Step 5: AED 25 flat shipping fee, charged only when the order's
+  // value after the promo-code discount above (finalAmountCents) is
+  // under AED 150, and only for UAE addresses — online shipping is
+  // UAE-only already (see the frontend's own checkUAEShipping block),
+  // but this is re-checked here too rather than trusted from the
+  // browser. Deliberately kept OUT of subtotalCents/finalAmountCents —
+  // it's recorded in its own shipping_fee column (SETUP_shipping_fee.sql)
+  // and is non-refundable: admin-process-order-return.js and the admin
+  // order drawer's return estimate both explicitly exclude it from the
+  // refund-ratio calculation, which only works correctly if it's never
+  // folded into the order's subtotal/discount math here.
+  const SHIPPING_FEE_AED = 25;
+  const SHIPPING_FEE_THRESHOLD_AED = 150;
+  const shippingAddrForFee = body.shippingAddress || body.billingAddress || {};
+  const isUAEShipping = (shippingAddrForFee.country || '').trim() === 'United Arab Emirates';
+  const shippingFeeCents = (isUAEShipping && finalAmountCents < SHIPPING_FEE_THRESHOLD_AED * 100) ? SHIPPING_FEE_AED * 100 : 0;
+
   // Store credit is opt-in and fully server-computed. The client only
   // says "yes, try to apply it" — the amount is always derived here
   // from the visitor's real balance, looked up by the email inside a
   // genuine signed visitorToken, never from anything else in the
   // request. An invalid/missing token just means no credit is applied;
-  // it does not block checkout.
+  // it does not block checkout. The cap now includes the shipping fee
+  // (chargeableCents) since store credit can cover shipping too.
+  const chargeableCents = finalAmountCents + shippingFeeCents;
   var giftCardAppliedCents = 0;
   var giftCardEmail = null;
   if (body.applyGiftCard) {
@@ -217,7 +236,7 @@ exports.handler = async function (event) {
         const custRows = await custRes.json();
         if (custRows.length) {
           const realBalanceCents = toCents(custRows[0].gift_card_balance);
-          giftCardAppliedCents = Math.max(0, Math.min(realBalanceCents, finalAmountCents));
+          giftCardAppliedCents = Math.max(0, Math.min(realBalanceCents, chargeableCents));
           giftCardEmail = visitorSession.email;
         }
       } catch (e) {
@@ -226,7 +245,7 @@ exports.handler = async function (event) {
     }
   }
 
-  const amountAfterGiftCardCents = finalAmountCents - giftCardAppliedCents;
+  const amountAfterGiftCardCents = chargeableCents - giftCardAppliedCents;
 
   const referenceId = 'pavnika-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
@@ -252,6 +271,7 @@ exports.handler = async function (event) {
         discount_amount: totalDiscountCents / 100,
         total: 0,
         gift_card_applied: giftCardAppliedCents / 100,
+        shipping_fee: shippingFeeCents / 100,
         status: 'paid',
         billing_address: JSON.stringify(body.billingAddress || {}),
         shipping_address: JSON.stringify(body.shippingAddress || {})
@@ -308,6 +328,18 @@ exports.handler = async function (event) {
     }
   }
 
+  // Added as its own line item (rather than silently folded into
+  // `amount`) so it's visible to the customer on the Nomod hosted
+  // checkout page itself, same as every saree/item line already is.
+  if (shippingFeeCents > 0) {
+    nomodItems.push({
+      item_id: 'shipping-fee',
+      name: 'Shipping',
+      quantity: 1,
+      unit_amount: centsToStr(shippingFeeCents)
+    });
+  }
+
   const payload = {
     reference_id: referenceId,
     amount: centsToStr(amountAfterGiftCardCents),
@@ -326,7 +358,12 @@ exports.handler = async function (event) {
       promo_code: body.promoCode || '',
       saree_ids: items.map(function (it) { return it.id; }).join(','),
       gift_card_applied: giftCardAppliedCents > 0 ? centsToStr(giftCardAppliedCents) : '',
-      gift_card_email: giftCardAppliedCents > 0 ? giftCardEmail : ''
+      gift_card_email: giftCardAppliedCents > 0 ? giftCardEmail : '',
+      // Read back by verify-nomod-order.js once payment is confirmed —
+      // that function only sees Nomod's confirmed `amount` and
+      // `discount`, so this is the one place shipping_fee survives the
+      // round trip to Nomod and back, same pattern as gift_card_applied.
+      shipping_fee: shippingFeeCents > 0 ? centsToStr(shippingFeeCents) : ''
     }
   };
   // Nomod's own `discount` field only ever represented the promo code's
@@ -383,6 +420,7 @@ exports.handler = async function (event) {
           discount_amount: totalDiscountCents / 100,
           total: amountAfterGiftCardCents / 100,
           gift_card_applied: giftCardAppliedCents / 100,
+          shipping_fee: shippingFeeCents / 100,
           status: 'pending',
           billing_address: JSON.stringify(body.billingAddress || {}),
           shipping_address: JSON.stringify(body.shippingAddress || {})

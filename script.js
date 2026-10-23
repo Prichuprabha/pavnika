@@ -5272,7 +5272,18 @@ function initCheckoutPage() {
   var discountLabel = document.getElementById('checkout-discount-label');
   var discountAmountEl = document.getElementById('checkout-discount-amount');
   var totalEl = document.getElementById('checkout-total');
+  var shippingAmountEl = document.getElementById('checkout-shipping-amount');
   if (!emptyEl || !contentEl) return;
+
+  // Declared early (rather than down by currentTotal()/updateSummary(),
+  // where they conceptually belong) because checkUAEShipping() now
+  // calls updateSummary() on its own initial call further below, before
+  // execution would otherwise reach their original declaration point --
+  // var hoisting would otherwise leave these as `undefined` for that
+  // first render, breaking the shipping-fee discount math.
+  var appliedDiscount = 0;
+  var appliedCode = '';
+  var giftCardBalance = 0;
 
   var ids = cartGetItems();
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
@@ -5466,6 +5477,11 @@ function initCheckoutPage() {
       uaeBlocking = false;
     }
     applyPayButtonState();
+    // Shipping fee depends on which country currently governs the
+    // order (see currentShippingFee()), so re-render the summary any
+    // time that changes -- also covers the very first render, since
+    // checkUAEShipping() already runs once at setup below.
+    if (typeof updateSummary === 'function') updateSummary();
   }
   billingCountrySelect.addEventListener('change', checkUAEShipping);
   shippingCountrySelect.addEventListener('change', checkUAEShipping);
@@ -5530,15 +5546,34 @@ function initCheckoutPage() {
   }
   checkSoldItems();
 
-  var appliedDiscount = 0;
-  var appliedCode = '';
-  var giftCardBalance = 0;
+  // Step 5: AED 25 flat shipping fee, charged only on UAE orders whose
+  // value after any promo-code discount is under AED 150 -- the exact
+  // numbers Pavnika settled on. This is a display-only estimate; the
+  // real, binding calculation happens server-side in
+  // create-nomod-checkout.js (never trusted from here), so this just
+  // has to match that logic closely enough that the total shown here
+  // equals what's actually charged.
+  var SHIPPING_FEE_AED = 25;
+  var SHIPPING_FEE_THRESHOLD_AED = 150;
+
+  function currentShippingFee() {
+    var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
+    var effectiveCountry = sameAddressBox.checked
+      ? billingCountrySelect.value
+      : shippingCountrySelect.value;
+    // Non-UAE addresses can't actually check out here at all (blocked
+    // by checkUAEShipping/the Pay Online handler), so there's no fee to
+    // show for them either -- an unset country also means no fee yet.
+    if (!effectiveCountry || effectiveCountry !== 'United Arab Emirates') return 0;
+    return afterDiscount < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
+  }
 
   function currentTotal() {
     var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
+    var chargeable = afterDiscount + currentShippingFee();
     var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
-    var giftCardEstimate = (giftCardCheckbox && giftCardCheckbox.checked) ? Math.min(giftCardBalance, afterDiscount) : 0;
-    return Math.max(0, afterDiscount - giftCardEstimate);
+    var giftCardEstimate = (giftCardCheckbox && giftCardCheckbox.checked) ? Math.min(giftCardBalance, chargeable) : 0;
+    return Math.max(0, chargeable - giftCardEstimate);
   }
 
   function updateSummary() {
@@ -5552,12 +5587,17 @@ function initCheckoutPage() {
       discountRow.style.display = 'none';
     }
 
+    var shippingFee = currentShippingFee();
+    if (shippingAmountEl) {
+      shippingAmountEl.textContent = shippingFee > 0 ? ('AED ' + formatAED(shippingFee)) : 'Free within UAE';
+    }
+
     var giftCardRow = document.getElementById('checkout-giftcard-row');
     var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
     if (giftCardRow) {
       if (giftCardCheckbox && giftCardCheckbox.checked) {
         var afterDiscountForGC = Math.round(subtotal * (1 - appliedDiscount / 100));
-        var giftCardEstimate = Math.min(giftCardBalance, afterDiscountForGC);
+        var giftCardEstimate = Math.min(giftCardBalance, afterDiscountForGC + shippingFee);
         document.getElementById('checkout-giftcard-amount').textContent = '-AED ' + formatAED(giftCardEstimate);
         giftCardRow.style.display = 'flex';
       } else {
@@ -6647,6 +6687,7 @@ function initPinnedHero() {
         subtotal: o.subtotal != null ? o.subtotal : o.total,
         discount: o.discount_amount || 0,
         promo: o.promo_code || '',
+        shippingFee: o.shipping_fee || 0,
         total: o.total,
         status: o.status,
         mode: paymentModeLabel(o),
@@ -6711,6 +6752,9 @@ function initPinnedHero() {
     if (Number(rec.discount) > 0) {
       totalsHtml += '<div class="rc-row"><span>Discount' + (rec.promo ? ' (' + esc(rec.promo) + ')' : '') +
         '</span><span>\u2212 ' + money(rec.discount) + '</span></div>';
+    }
+    if (Number(rec.shippingFee) > 0) {
+      totalsHtml += '<div class="rc-row"><span>Shipping (non-refundable)</span><span>' + money(rec.shippingFee) + '</span></div>';
     }
     totalsHtml += '<div class="rc-grand"><span>Total</span><span>AED ' + money(rec.total) + '</span></div>';
     document.getElementById('rc-totals').innerHTML = totalsHtml;

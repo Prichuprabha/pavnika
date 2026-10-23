@@ -127,7 +127,16 @@ exports.handler = async function (event) {
     // longer exist or may have changed since — clamped so it can never
     // exceed the freshly-computed subtotal.
     var discountCents = Math.min(toCents(order.discount_amount || 0), subtotalCents);
-    var finalAmountCents = subtotalCents - discountCents;
+
+    // Step 5: honour whatever shipping fee was already set on this
+    // order (same "trust the original snapshot, don't re-derive"
+    // treatment discount_amount already gets above) rather than
+    // silently dropping it here — this was the one other place that
+    // builds a Nomod `amount` from an order and PATCHes totals back,
+    // and without this it would quietly undercharge a resumed/retried
+    // checkout by the shipping fee that was already agreed.
+    var shippingFeeCents = toCents(order.shipping_fee || 0);
+    var finalAmountCents = subtotalCents - discountCents + shippingFeeCents;
 
     var referenceId = 'pavnika-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
     var nameParts = String(order.customer_name || '').trim().split(/\s+/);
@@ -156,6 +165,9 @@ exports.handler = async function (event) {
     };
     if (discountCents > 0) {
       payload.discount = centsToStr(discountCents);
+    }
+    if (shippingFeeCents > 0) {
+      nomodItems.push({ item_id: 'shipping-fee', name: 'Shipping', quantity: 1, unit_amount: centsToStr(shippingFeeCents) });
     }
 
     var nomodRes = await fetch(`${NOMOD_BASE}/checkout`, {

@@ -1,0 +1,24 @@
+-- Run this in Supabase's SQL editor before deploying this update.
+--
+-- Adds shipping_fee to orders: the flat AED amount charged TO THE
+-- CUSTOMER at checkout for shipping -- distinct from delivery_cost
+-- (SETUP_delivery_tracking.sql), which is what delivery costs THE
+-- BUSINESS and is a completely separate, admin-only figure.
+--
+-- Rule (decided and wired into create-nomod-checkout.js /
+-- verify-nomod-order.js): AED 25, charged only when the order's value
+-- AFTER any promo-code discount is under AED 150, and only for UAE
+-- addresses (online ordering/shipping is UAE-only already). Always
+-- computed server-side from the live cart -- never trusted from the
+-- browser.
+--
+-- Non-refundable by design: shipping_fee is kept out of orders.subtotal
+-- entirely and explicitly excluded from the refund-ratio formula in
+-- both admin-process-order-return.js and the admin order drawer's
+-- return estimate (admin.js), so returning items on an order never
+-- refunds any portion of this fee.
+--
+-- Defaults to 0 so every existing order (placed before this existed)
+-- reads as "no shipping fee charged", matching their actual history.
+
+alter table orders add column if not exists shipping_fee numeric not null default 0;

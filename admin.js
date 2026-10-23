@@ -6112,7 +6112,15 @@ function initOrdersView(token) {
     }
     var listValue = checked.reduce(function (sum, cb) { return sum + (Number(cb.getAttribute('data-item-price')) || 0); }, 0);
     var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
-    var ratio = subtotal > 0 ? (Number(order.total) || 0) / subtotal : 1;
+    // Step 5: the shipping fee is non-refundable, so it must be
+    // excluded here before deriving the discount ratio -- otherwise an
+    // order that paid a shipping fee would show a ratio above 1 and
+    // this estimate would effectively refund a slice of that fee for
+    // every item returned. Mirrors the same fix in
+    // admin-process-order-return.js, which is what actually processes
+    // the return.
+    var totalExclShipping = (Number(order.total) || 0) - (Number(order.shipping_fee) || 0);
+    var ratio = subtotal > 0 ? totalExclShipping / subtotal : 1;
     var estimate = Math.round(listValue * ratio * 100) / 100;
     estimateEl.textContent = 'Estimated refund: AED ' + formatAED(estimate) + (ratio !== 1 ? ' (after order discount)' : '');
     submitBtn.disabled = false;
@@ -6139,6 +6147,7 @@ function initOrdersView(token) {
 
     var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
     var discount = Number(order.discount_amount) || 0;
+    var shippingFee = Number(order.shipping_fee) || 0;
 
     var html =
       '<h4>Customer</h4>' +
@@ -6151,6 +6160,7 @@ function initOrdersView(token) {
       '<h4>Order Summary</h4>' +
       '<div class="admin-order-drawer-totals-row"><span>Subtotal</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
       (discount > 0 ? '<div class="admin-order-drawer-totals-row"><span>Discount' + (order.promo_code ? ' (' + order.promo_code + ')' : '') + '</span><span>-AED ' + formatAED(discount) + '</span></div>' : '') +
+      (shippingFee > 0 ? '<div class="admin-order-drawer-totals-row"><span>Shipping (non-refundable)</span><span>AED ' + formatAED(shippingFee) + '</span></div>' : '') +
       '<div class="admin-order-drawer-totals-row total"><span>Total</span><span>AED ' + formatAED(order.total || 0) + '</span></div>' +
 
       '<h4>Payment Method</h4>' +

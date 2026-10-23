@@ -93,8 +93,15 @@ exports.handler = async function (event) {
     // Same proration formula as the POS return flow: whatever discount
     // ratio applied to the whole order (percent promo or flat AED)
     // gets divided fairly across just the items being returned now.
+    //
+    // Step 5: order.total can now include a non-refundable shipping fee
+    // (SETUP_shipping_fee.sql) — it must be subtracted back out before
+    // dividing by subtotal, or it would push the ratio above 1 and this
+    // formula would refund a slice of the shipping fee on every return,
+    // which is exactly what "non-refundable" is meant to prevent.
     const subtotal = Number(order.subtotal) || 0;
-    const effectiveRatio = subtotal > 0 ? (Number(order.total) || 0) / subtotal : 1;
+    const shippingFee = Number(order.shipping_fee) || 0;
+    const effectiveRatio = subtotal > 0 ? ((Number(order.total) || 0) - shippingFee) / subtotal : 1;
     const listValue = validRequestedItems.reduce(function (sum, it) { return sum + (Number(it.price) || 0); }, 0);
     const refundAmount = Math.round(listValue * effectiveRatio * 100) / 100;
 

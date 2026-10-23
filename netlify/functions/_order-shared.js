@@ -489,6 +489,10 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
             <td style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">Store credit applied / <span dir="rtl" style="text-transform:none; font-weight:400;">الرصيد المستخدم</span></td>
             <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.gift_card_applied)}</td>
           </tr>` : ''}
+          ${(order.shipping_fee && Number(order.shipping_fee) > 0) ? `<tr>
+            <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Shipping (non-refundable) / <span dir="rtl" style="text-transform:none;">الشحن (غير قابل للاسترداد)</span></td>
+            <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(order.shipping_fee)}</td>
+          </tr>` : ''}
         </table>
       </div>
       ${paymentStatusHtml}

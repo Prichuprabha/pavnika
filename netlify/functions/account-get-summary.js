@@ -67,7 +67,7 @@ exports.handler = async function (event) {
     // Online orders and the POS customer record don't depend on each
     // other, so fetch them together rather than one after the other.
     var initial = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/orders?customer_email=eq.${enc}&select=id,order_number,created_at,customer_name,customer_email,items,subtotal,discount_amount,total,status,payment_method,promo_code&order=created_at.desc`, { headers: supabaseHeaders() })
+      fetch(`${SUPABASE_URL}/rest/v1/orders?customer_email=eq.${enc}&select=id,order_number,created_at,customer_name,customer_email,items,subtotal,discount_amount,shipping_fee,total,status,payment_method,promo_code&order=created_at.desc`, { headers: supabaseHeaders() })
         .then(function (r) { return r.ok ? r.json() : []; }),
       fetch(`${SUPABASE_URL}/rest/v1/pos_customers?email=eq.${enc}&select=id,name,gift_card_balance`, { headers: supabaseHeaders() })
         .then(function (r) { return r.ok ? r.json() : []; })

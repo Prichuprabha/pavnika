@@ -166,6 +166,14 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
   const total = Number(nomodData.amount) || 0;
   const discount = Number(nomodData.discount) || 0;
   const giftCardApplied = Number(meta.gift_card_applied) || 0;
+  // Step 5: read back from metadata (create-nomod-checkout.js's only
+  // way to carry this through Nomod and back — Nomod's own confirmed
+  // `amount`/`discount` fields don't break it out separately). Must be
+  // subtracted back out of the subtotal reconstruction below, or this
+  // non-refundable fee would silently get folded into "subtotal" and
+  // start counting toward the admin return-ratio formula as if it were
+  // part of the goods themselves.
+  const shippingFee = Number(meta.shipping_fee) || 0;
 
   const orderRow = {
     order_number: await generateOrderNumber(),
@@ -176,10 +184,11 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
     customer_phone: cust.phone_number || '',
     items: JSON.stringify(items),
     promo_code: meta.promo_code || '',
-    subtotal: total + discount + giftCardApplied,
+    subtotal: total + discount + giftCardApplied - shippingFee,
     discount_amount: discount,
     total: total,
     gift_card_applied: giftCardApplied,
+    shipping_fee: shippingFee,
     status: 'pending',
     billing_address: '{}',
     shipping_address: '{}'
