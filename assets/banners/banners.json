@@ -23,7 +23,7 @@
     "image": "banner-v2-2.jpg",
     "mobileImage": "banner-v2-2-mobile.jpg",
     "link": "collections.html",
-    "hideText": false,
+    "hideText": true,
     "eyebrow": "",
     "heading": "",
     "description": "",
