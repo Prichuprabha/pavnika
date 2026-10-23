@@ -3807,34 +3807,5 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/JS002-4.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JS002-1.jpg"
-  },
-  {
-    "id": "JS001",
-    "department": "jewellery",
-    "series": "",
-    "category": "",
-    "type": "Jewellery Sets",
-    "sareeType": "",
-    "pattern": "",
-    "design": "",
-    "material": "",
-    "shade": "Maroon / Red",
-    "colour": "Gold & Pink",
-    "note": "Single Layer AD stone with Pink Ruby",
-    "price": 115,
-    "salePrice": null,
-    "sold": false,
-    "occasions": [],
-    "quantity": null,
-    "qtyUnit": null,
-    "maxPerOrder": null,
-    "images": [
-      "https://pavnika.ae/assets/products/JS001-1.jpg",
-      "https://pavnika.ae/assets/products/JS001-2.jpg",
-      "https://pavnika.ae/assets/products/JS001-3.jpg",
-      "https://pavnika.ae/assets/products/JS001-4.jpg",
-      "https://pavnika.ae/assets/products/JS001-5.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/JS001-1.jpg"
   }
 ];
