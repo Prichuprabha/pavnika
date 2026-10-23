@@ -5141,12 +5141,22 @@ function renderCartDrawer() {
     );
   }).join('') +
     continueShoppingHTML() +
-    '<div class="cart-order-summary">' +
-      '<h4>Order Summary</h4>' +
-      '<div class="os-row"><span>Subtotal (' + products.length + (products.length === 1 ? ' item' : ' items') + ')</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
-      '<div class="os-row"><span>Shipping</span><span class="os-free">Free within UAE</span></div>' +
-      '<div class="os-row os-total"><span>Total</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
-    '</div>';
+    (function () {
+      // Step 5: the cart drawer has no shipping-address context at all
+      // (that's only collected on the checkout page itself), so this is
+      // a UAE-assumed estimate using the same AED 25-under-AED 150 rule
+      // -- the actual, address-aware fee is (re)computed at checkout,
+      // which is also where a non-UAE address gets caught. Previously
+      // this just hardcoded "Free within UAE" unconditionally, which is
+      // what the customer was seeing regardless of cart value.
+      var shippingEstimate = subtotal < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
+      return '<div class="cart-order-summary">' +
+        '<h4>Order Summary</h4>' +
+        '<div class="os-row"><span>Subtotal (' + products.length + (products.length === 1 ? ' item' : ' items') + ')</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
+        '<div class="os-row"><span>Shipping</span><span class="os-free">' + (shippingEstimate > 0 ? 'AED ' + formatAED(shippingEstimate) + ' (UAE)' : 'Free within UAE') + '</span></div>' +
+        '<div class="os-row os-total"><span>Total</span><span>AED ' + formatAED(subtotal + shippingEstimate) + '</span></div>' +
+      '</div>';
+    })();
   bindContinueShopping();
 
   // Clicking (or tapping/Enter-ing) a cart item's photo opens its full
@@ -5263,35 +5273,126 @@ function initCartDrawer() {
 }
 
 /* ---------- Checkout page ---------- */
-function initCheckoutPage() {
-  var emptyEl = document.getElementById('checkout-empty');
-  var contentEl = document.getElementById('checkout-content');
-  var itemsEl = document.getElementById('checkout-items');
-  var subtotalEl = document.getElementById('checkout-subtotal');
+// Step 5 shipping-fee state, kept at MODULE scope rather than inside
+// initCheckoutPage(). initCheckoutPage() runs a second time once
+// syncCartFromServer() finishes merging the server-side cart in (see
+// the comment on window.__checkoutOneTimeSetupDone below) -- that
+// second call is meant to just re-render the items/subtotal/total with
+// whatever the merged cart now contains, short-circuiting before the
+// listener setup via that guard. Two real bugs traced back to these
+// values living as local `var`s inside initCheckoutPage instead:
+//   1. Re-declared as locals, appliedDiscount/giftCardBalance reset to
+//      0 on that second call, silently wiping an already-applied promo
+//      code or store-credit balance.
+//   2. The total shown was only ever brought up to date (discount +
+//      shipping fee + gift card) by updateSummary(), which only ran
+//      from inside the one-time-setup section -- so the second call's
+//      early, guard-free render fell back to a bare
+//      `totalEl.textContent = formatAED(subtotal)`, with no shipping
+//      fee added, and nothing ever corrected it afterward. That's
+//      exactly the "AED 25 shows under Shipping but isn't added to the
+//      Total" bug.
+// Living at module scope, these persist correctly across repeat calls
+// within the same page load (reset only when the page itself reloads,
+// which is the correct lifetime for "this checkout session's state"),
+// and updateCheckoutSummary() below can be called unconditionally on
+// EVERY initCheckoutPage() invocation, not just the first.
+var SHIPPING_FEE_AED = 25;
+var SHIPPING_FEE_THRESHOLD_AED = 150;
+var checkoutSubtotal = 0;
+var checkoutAppliedDiscount = 0;
+var checkoutAppliedCode = '';
+var checkoutGiftCardBalance = 0;
+
+// Step 5: AED 25 flat shipping fee, charged only on UAE orders whose
+// value after any promo-code discount is under AED 150 -- the exact
+// numbers Pavnika settled on. This is a display-only estimate; the
+// real, binding calculation happens server-side in
+// create-nomod-checkout.js (never trusted from here), so this just has
+// to match that logic closely enough that the total shown here equals
+// what's actually charged. Re-queries the country selects fresh each
+// call (rather than closing over references from one particular
+// initCheckoutPage() invocation) since this needs to work correctly
+// when called from any of them.
+function checkoutCurrentShippingFee() {
+  var sameAddressBox = document.getElementById('checkout-same-address');
+  var billingCountrySelect = document.getElementById('billing-country');
+  var shippingCountrySelect = document.getElementById('shipping-country');
+  if (!sameAddressBox || !billingCountrySelect) return 0;
+  var effectiveCountry = sameAddressBox.checked
+    ? billingCountrySelect.value
+    : (shippingCountrySelect ? shippingCountrySelect.value : '');
+  // Non-UAE addresses can't actually check out here at all (blocked by
+  // checkUAEShipping/the Pay Online handler), so there's no fee to show
+  // for them either -- an unset country also means no fee yet.
+  if (!effectiveCountry || effectiveCountry !== 'United Arab Emirates') return 0;
+  var afterDiscount = Math.round(checkoutSubtotal * (1 - checkoutAppliedDiscount / 100));
+  return afterDiscount < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
+}
+
+function checkoutCurrentTotal() {
+  var afterDiscount = Math.round(checkoutSubtotal * (1 - checkoutAppliedDiscount / 100));
+  var chargeable = afterDiscount + checkoutCurrentShippingFee();
+  var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
+  var giftCardEstimate = (giftCardCheckbox && giftCardCheckbox.checked) ? Math.min(checkoutGiftCardBalance, chargeable) : 0;
+  return Math.max(0, chargeable - giftCardEstimate);
+}
+
+// The one place that renders the checkout summary box (discount row,
+// shipping row, gift-card row, total) -- safe to call from ANY
+// initCheckoutPage() invocation, or from any listener set up during
+// the one-time setup, since it re-queries every element and reads only
+// from the module-level state above rather than closing over one
+// particular call's locals.
+function updateCheckoutSummary() {
   var discountRow = document.getElementById('checkout-discount-row');
   var discountLabel = document.getElementById('checkout-discount-label');
   var discountAmountEl = document.getElementById('checkout-discount-amount');
   var totalEl = document.getElementById('checkout-total');
   var shippingAmountEl = document.getElementById('checkout-shipping-amount');
-  if (!emptyEl || !contentEl) return;
+  if (!totalEl) return;
 
-  // Declared early (rather than down by currentTotal()/updateSummary(),
-  // where they conceptually belong) because checkUAEShipping() now
-  // calls updateSummary() on its own initial call further below, before
-  // execution would otherwise reach their original declaration point --
-  // var hoisting would otherwise leave these as `undefined` for that
-  // first render, breaking the shipping-fee discount math. (This bit
-  // the first version of this fix too: SHIPPING_FEE_AED/THRESHOLD were
-  // left at their original spot further down, so that first render's
-  // `afterDiscount < SHIPPING_FEE_THRESHOLD_AED` compared against
-  // `undefined` -- always false -- silently showing "Free within UAE"
-  // instead of the fee on every page load, until some other change
-  // event happened to run updateSummary() again afterward.)
-  var appliedDiscount = 0;
-  var appliedCode = '';
-  var giftCardBalance = 0;
-  var SHIPPING_FEE_AED = 25;
-  var SHIPPING_FEE_THRESHOLD_AED = 150;
+  if (checkoutAppliedDiscount > 0 && discountRow) {
+    var afterDiscount = Math.round(checkoutSubtotal * (1 - checkoutAppliedDiscount / 100));
+    var discountAmount = checkoutSubtotal - afterDiscount;
+    discountLabel.textContent = checkoutAppliedCode + ' (' + checkoutAppliedDiscount + '% off)';
+    discountAmountEl.textContent = '-AED ' + formatAED(discountAmount);
+    discountRow.style.display = 'flex';
+  } else if (discountRow) {
+    discountRow.style.display = 'none';
+  }
+
+  var shippingFee = checkoutCurrentShippingFee();
+  if (shippingAmountEl) {
+    shippingAmountEl.textContent = shippingFee > 0 ? ('AED ' + formatAED(shippingFee)) : 'Free within UAE';
+  }
+
+  var giftCardRow = document.getElementById('checkout-giftcard-row');
+  var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
+  if (giftCardRow) {
+    if (giftCardCheckbox && giftCardCheckbox.checked) {
+      var afterDiscountForGC = Math.round(checkoutSubtotal * (1 - checkoutAppliedDiscount / 100));
+      var giftCardEstimate = Math.min(checkoutGiftCardBalance, afterDiscountForGC + shippingFee);
+      document.getElementById('checkout-giftcard-amount').textContent = '-AED ' + formatAED(giftCardEstimate);
+      giftCardRow.style.display = 'flex';
+    } else {
+      giftCardRow.style.display = 'none';
+    }
+  }
+
+  totalEl.textContent = formatAED(checkoutCurrentTotal());
+}
+
+function initCheckoutPage() {
+  var emptyEl = document.getElementById('checkout-empty');
+  var contentEl = document.getElementById('checkout-content');
+  var itemsEl = document.getElementById('checkout-items');
+  var subtotalEl = document.getElementById('checkout-subtotal');
+  // Discount/shipping/gift-card/total elements are no longer queried
+  // here -- updateCheckoutSummary() (module-level, above) re-queries
+  // them itself each time it runs, since it's now called from more
+  // than just this one function's closure.
+  if (!emptyEl || !contentEl) return;
 
   var ids = cartGetItems();
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
@@ -5328,7 +5429,7 @@ function initCheckoutPage() {
   }).join('');
 
   subtotalEl.textContent = formatAED(subtotal);
-  totalEl.textContent = formatAED(subtotal);
+  checkoutSubtotal = subtotal;
 
   // Populate both country dropdowns, UAE first (and selected by default).
   var billingCountrySelect = document.getElementById('billing-country');
@@ -5336,6 +5437,16 @@ function initCheckoutPage() {
   [billingCountrySelect, shippingCountrySelect].forEach(function (select) {
     select.innerHTML = COUNTRY_LIST.map(function (c) { return '<option value="' + c + '">' + c + '</option>'; }).join('');
   });
+
+  // Renders the full summary (discount/shipping/gift-card/total), using
+  // the module-level checkoutSubtotal/checkoutAppliedDiscount/etc. set
+  // above and by the one-time promo/gift-card setup below. Runs on
+  // EVERY call to initCheckoutPage() -- including the second call
+  // syncCartFromServer() triggers after merging the server cart in,
+  // which returns early at the one-time-setup guard just below and
+  // would otherwise never get a correct (shipping-fee-inclusive) total
+  // -- not just the first.
+  updateCheckoutSummary();
 
   // Everything below this point — phone hint element, address
   // validation, promo code UI, and critically the Pay Online submit
@@ -5369,16 +5480,16 @@ function initCheckoutPage() {
       .then(function (res) { return res.json(); })
       .then(function (data) {
         if (data.found && Number(data.balance) > 0) {
-          giftCardBalance = Number(data.balance);
-          giftCardLabel.textContent = 'You have AED ' + formatAED(giftCardBalance) + ' in store credit';
-          giftCardCheckboxLabel.textContent = 'Apply my store credit (up to AED ' + formatAED(giftCardBalance) + ')';
+          checkoutGiftCardBalance = Number(data.balance);
+          giftCardLabel.textContent = 'You have AED ' + formatAED(checkoutGiftCardBalance) + ' in store credit';
+          giftCardCheckboxLabel.textContent = 'Apply my store credit (up to AED ' + formatAED(checkoutGiftCardBalance) + ')';
           giftCardCard.style.display = 'flex';
         }
       })
       .catch(function () { /* no balance shown — checkout still works normally */ });
   }
   if (applyGiftCardCheckbox) {
-    applyGiftCardCheckbox.addEventListener('change', updateSummary);
+    applyGiftCardCheckbox.addEventListener('change', updateCheckoutSummary);
   }
 
   // Phone: the country code + number split is purely a UX convenience —
@@ -5486,10 +5597,9 @@ function initCheckoutPage() {
     }
     applyPayButtonState();
     // Shipping fee depends on which country currently governs the
-    // order (see currentShippingFee()), so re-render the summary any
-    // time that changes -- also covers the very first render, since
-    // checkUAEShipping() already runs once at setup below.
-    if (typeof updateSummary === 'function') updateSummary();
+    // order (see checkoutCurrentShippingFee()), so re-render the
+    // summary any time that changes.
+    updateCheckoutSummary();
   }
   billingCountrySelect.addEventListener('change', checkUAEShipping);
   shippingCountrySelect.addEventListener('change', checkUAEShipping);
@@ -5554,66 +5664,6 @@ function initCheckoutPage() {
   }
   checkSoldItems();
 
-  // Step 5: AED 25 flat shipping fee, charged only on UAE orders whose
-  // value after any promo-code discount is under AED 150 -- the exact
-  // numbers Pavnika settled on (SHIPPING_FEE_AED/THRESHOLD declared up
-  // top with appliedDiscount, for the hoisting reason noted there).
-  // This is a display-only estimate; the real, binding calculation
-  // happens server-side in create-nomod-checkout.js (never trusted
-  // from here), so this just has to match that logic closely enough
-  // that the total shown here equals what's actually charged.
-  function currentShippingFee() {
-    var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
-    var effectiveCountry = sameAddressBox.checked
-      ? billingCountrySelect.value
-      : shippingCountrySelect.value;
-    // Non-UAE addresses can't actually check out here at all (blocked
-    // by checkUAEShipping/the Pay Online handler), so there's no fee to
-    // show for them either -- an unset country also means no fee yet.
-    if (!effectiveCountry || effectiveCountry !== 'United Arab Emirates') return 0;
-    return afterDiscount < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
-  }
-
-  function currentTotal() {
-    var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
-    var chargeable = afterDiscount + currentShippingFee();
-    var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
-    var giftCardEstimate = (giftCardCheckbox && giftCardCheckbox.checked) ? Math.min(giftCardBalance, chargeable) : 0;
-    return Math.max(0, chargeable - giftCardEstimate);
-  }
-
-  function updateSummary() {
-    if (appliedDiscount > 0) {
-      var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
-      var discountAmount = subtotal - afterDiscount;
-      discountLabel.textContent = appliedCode + ' (' + appliedDiscount + '% off)';
-      discountAmountEl.textContent = '-AED ' + formatAED(discountAmount);
-      discountRow.style.display = 'flex';
-    } else {
-      discountRow.style.display = 'none';
-    }
-
-    var shippingFee = currentShippingFee();
-    if (shippingAmountEl) {
-      shippingAmountEl.textContent = shippingFee > 0 ? ('AED ' + formatAED(shippingFee)) : 'Free within UAE';
-    }
-
-    var giftCardRow = document.getElementById('checkout-giftcard-row');
-    var giftCardCheckbox = document.getElementById('checkout-apply-giftcard');
-    if (giftCardRow) {
-      if (giftCardCheckbox && giftCardCheckbox.checked) {
-        var afterDiscountForGC = Math.round(subtotal * (1 - appliedDiscount / 100));
-        var giftCardEstimate = Math.min(giftCardBalance, afterDiscountForGC + shippingFee);
-        document.getElementById('checkout-giftcard-amount').textContent = '-AED ' + formatAED(giftCardEstimate);
-        giftCardRow.style.display = 'flex';
-      } else {
-        giftCardRow.style.display = 'none';
-      }
-    }
-
-    totalEl.textContent = formatAED(currentTotal());
-  }
-
   document.getElementById('checkout-promo-apply').addEventListener('click', function () {
     var input = document.getElementById('checkout-promo-input');
     var msg = document.getElementById('checkout-promo-msg');
@@ -5625,7 +5675,7 @@ function initCheckoutPage() {
       msg.textContent = 'Please enter a code.';
       return;
     }
-    if (appliedCode) {
+    if (checkoutAppliedCode) {
       msg.className = 'checkout-promo-msg error';
       msg.textContent = 'A code has already been applied to this order.';
       return;
@@ -5646,11 +5696,11 @@ function initCheckoutPage() {
           msg.textContent = result.error || 'That code is not valid.';
           return;
         }
-        appliedDiscount = result.discountPercent;
-        appliedCode = result.code;
+        checkoutAppliedDiscount = result.discountPercent;
+        checkoutAppliedCode = result.code;
         msg.className = 'checkout-promo-msg success';
-        msg.textContent = appliedCode + ' applied — ' + appliedDiscount + '% off.';
-        updateSummary();
+        msg.textContent = checkoutAppliedCode + ' applied — ' + checkoutAppliedDiscount + '% off.';
+        updateCheckoutSummary();
         input.disabled = true;
         applyBtn.style.display = 'none';
       })
@@ -5834,10 +5884,10 @@ function initCheckoutPage() {
         customer: { firstName: firstName, lastName: lastName, phone: phone, email: email },
         billingAddress: billingAddress,
         shippingAddress: shippingAddress,
-        discountPercent: appliedDiscount,
-        promoCode: appliedCode,
+        discountPercent: checkoutAppliedDiscount,
+        promoCode: checkoutAppliedCode,
         visitorToken: typeof getVisitorToken === 'function' ? getVisitorToken() : null,
-        applyGiftCard: !!(applyGiftCardCheckbox && applyGiftCardCheckbox.checked && giftCardBalance > 0)
+        applyGiftCard: !!(applyGiftCardCheckbox && applyGiftCardCheckbox.checked && checkoutGiftCardBalance > 0)
       };
 
       fetch('/.netlify/functions/create-nomod-checkout', {
@@ -5895,10 +5945,10 @@ function initCheckoutPage() {
       return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p) + qtyPart + ' — AED ' + formatAED(effectivePrice(p) * qty);
     });
     var msg = 'Hi Pavnika by Saranya, I would like to purchase the following items:\n' + lines.join('\n');
-    if (appliedCode) {
-      msg += '\n\nPromo code applied: ' + appliedCode + ' (' + appliedDiscount + '% off)';
+    if (checkoutAppliedCode) {
+      msg += '\n\nPromo code applied: ' + checkoutAppliedCode + ' (' + checkoutAppliedDiscount + '% off)';
     }
-    msg += '\n\nTotal: AED ' + formatAED(currentTotal());
+    msg += '\n\nTotal: AED ' + formatAED(checkoutCurrentTotal());
     return 'https://wa.me/971526630307?text=' + encodeURIComponent(msg);
   }
 }
