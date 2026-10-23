@@ -3679,7 +3679,7 @@ window.PRODUCTS = [
     "material": "",
     "shade": "Maroon / Red",
     "colour": "Gold",
-    "note": "Goddess with Ruby & Emerald round type set of 2",
+    "note": "Goddess with Ruby & Emerald round type set of 2 (Size - 2.6)",
     "price": 120,
     "salePrice": null,
     "sold": false,
@@ -3692,7 +3692,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/BR001-26-2.jpg",
       "https://pavnika.ae/assets/products/BR001-26-3.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/BR001-26-1.jpg"
+    "image": "https://pavnika.ae/assets/products/BR001-26-1.jpg",
+    "soldAt": null
   },
   {
     "id": "JS005",
