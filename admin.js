@@ -2491,10 +2491,24 @@ function initSareeEditor(token) {
 
       pendingBulkProducts = merged;
 
-      csvSummary.textContent = newRows.length + ' new saree(s) will be added, ' + editedRows.length + ' existing saree(s) will be edited.';
+      // "Saree" isn't accurate for every row any more -- a CSV can add or
+      // edit Jewellery/Accessories too -- so this summary now says "item(s)"
+      // regardless of department instead of always saying "saree(s)".
+      csvSummary.textContent = newRows.length + ' new item(s) will be added, ' + editedRows.length + ' existing item(s) will be edited.';
+
+      // Jewellery/Accessories have no "Design" field (that's saree-only),
+      // so showing r.design for them left the preview row blank after the
+      // dash. Mirrors the tagListSubtitle()/jaName() pattern used
+      // elsewhere: sarees show their design, Jewellery shows type +
+      // colour, Accessories show their type (or a generic fallback).
+      function csvRowPreviewDetail(r) {
+        if (r.department === 'jewellery') return r.type + (r.colour ? ' — ' + r.colour : '');
+        if (r.department === 'accessory') return r.type || 'Accessory';
+        return r.design || '';
+      }
       csvPreviewList.innerHTML =
-        newRows.map(function (r) { return '<div class="admin-csv-row"><span>' + r.id + ' — ' + (r.design || '') + '</span><span class="tag new">New</span></div>'; }).join('') +
-        editedRows.map(function (r) { return '<div class="admin-csv-row"><span>' + r.id + ' — ' + (r.design || '') + '</span><span class="tag edit">Edit</span></div>'; }).join('');
+        newRows.map(function (r) { return '<div class="admin-csv-row"><span>' + r.id + ' — ' + csvRowPreviewDetail(r) + '</span><span class="tag new">New</span></div>'; }).join('') +
+        editedRows.map(function (r) { return '<div class="admin-csv-row"><span>' + r.id + ' — ' + csvRowPreviewDetail(r) + '</span><span class="tag edit">Edit</span></div>'; }).join('');
 
       csvPreviewCard.style.display = 'block';
       csvPreviewCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
