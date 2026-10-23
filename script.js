@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', function () {
   initReviewsMarquee();
   initOccasionShowcase();
   initCuratedShowcase();
+  initJewelPromoSection();
   initFaqAccordion();
   buildLightbox();
   initAccountMenu();
@@ -6402,6 +6403,192 @@ function initOccasionMobileMarquee(grid) {
   // wiring — safe to call again even though other sections already have
   // theirs (initTouchRevealTiles() re-queries fresh each time it runs).
   initTouchRevealTiles();
+}
+
+// Jewellery & Accessories home promo — NOT live. #jewel-promo-mount in
+// home.html is an empty div; this only fills it in (and only then does
+// any of this code — data pull, markup, cycling — actually run) when
+// the page is loaded as home.html?preview=jewellery. A normal visitor's
+// page source never contains this section at all, not even hidden via
+// CSS. Remove the query-param check below (and nothing else) to make
+// this live to everyone. Mirrors the offline preview
+// (jewellery-home-section-preview-v4) the client approved: a card
+// stack on the left cycling through random individual products with
+// their Category + short description burned into the image, and 4
+// tiles on the right showing 4 of the available categories at random,
+// each cycling through that category's own product photos.
+function initJewelPromoSection() {
+  var mount = document.getElementById('jewel-promo-mount');
+  if (!mount) return;
+  if (new URLSearchParams(window.location.search).get('preview') !== 'jewellery') return;
+  if (typeof window.PRODUCTS === 'undefined') return;
+
+  var items = window.PRODUCTS.filter(function (p) {
+    return !p.sold && p.image && p.type && (p.department === 'jewellery' || p.department === 'accessory');
+  });
+  if (!items.length) return;
+
+  var jewelleryOnly = items.filter(function (p) { return p.department === 'jewellery'; });
+  var stackPool = jewelleryOnly.length ? jewelleryOnly : items;
+
+  var categoryMap = {};
+  items.forEach(function (p) {
+    if (!categoryMap[p.type]) categoryMap[p.type] = { name: p.type, photos: [] };
+    (p.images && p.images.length ? p.images : [p.image]).forEach(function (src) {
+      if (src) categoryMap[p.type].photos.push(src);
+    });
+  });
+  var categories = Object.keys(categoryMap).map(function (k) { return categoryMap[k]; });
+  if (!categories.length) return;
+
+  var arrowSvg = '<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+
+  mount.innerHTML =
+    '<div class="jewel-promo-preview-flag">Preview only — not visible on the live site without ?preview=jewellery</div>' +
+    '<section class="jewel-promo-section">' +
+      '<div class="container jewel-combo">' +
+        '<div class="jp-stack-wrap" id="jp-stack" role="button" tabindex="0" aria-label="Show next jewellery piece">' +
+          '<div class="jp-card pos-back"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p></div></div>' +
+          '<div class="jp-card pos-mid"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p></div></div>' +
+          '<div class="jp-card pos-front"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p></div></div>' +
+        '</div>' +
+        '<div class="jewel-right">' +
+          '<div class="jewel-right-top">' +
+            '<div class="jewel-promo-copy">' +
+              '<span class="eyebrow">Tradition &middot; Craftsmanship &middot; Grace</span>' +
+              '<h2>Timeless Jewellery</h2>' +
+              '<p class="lede">Exquisite jewellery to complete your story.</p>' +
+              '<a href="jewellery-accessories.html" class="btn btn-primary">Explore Jewellery</a>' +
+            '</div>' +
+            '<div class="jewel-access-heading">' +
+              '<span class="eyebrow">Jewellery &amp; Accessories</span>' +
+              '<h2>Shop by Category</h2>' +
+            '</div>' +
+          '</div>' +
+          '<div class="jewel-access-grid" id="jewel-access-grid"></div>' +
+        '</div>' +
+      '</div>' +
+    '</section>';
+
+  function shuffle(arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i]; a[i] = a[j]; a[j] = t;
+    }
+    return a;
+  }
+
+  // ---------- Left stack: random individual products ----------
+  (function () {
+    var wrap = document.getElementById('jp-stack');
+    if (!wrap) return;
+    var cardEls = Array.prototype.slice.call(wrap.querySelectorAll('.jp-card'));
+
+    var queue = shuffle(stackPool);
+    var qi = 0;
+    function nextItem() {
+      if (qi >= queue.length) { queue = shuffle(stackPool); qi = 0; }
+      return queue[qi++];
+    }
+
+    function paint(cardEl, item) {
+      cardEl.style.backgroundImage = "url('" + item.image + "')";
+      cardEl.querySelector('.jp-cat').textContent = item.type;
+      cardEl.querySelector('.jp-note').textContent = item.note || itemDisplayName(item);
+    }
+
+    var order = cardEls.slice();
+    if (order.length < 3) return;
+    paint(order[0], nextItem());
+    paint(order[1], nextItem());
+    paint(order[2], nextItem());
+
+    var CYCLE_MS = 3400, TRANSITION_MS = 760;
+    var timer = null, hovering = false, isVisible = false, transitioning = false;
+
+    function advance() {
+      if (transitioning) return;
+      transitioning = true;
+      var front = order[0], mid = order[1], back = order[2];
+      front.classList.remove('pos-front'); front.classList.add('pos-exit');
+      mid.classList.remove('pos-mid'); mid.classList.add('pos-front');
+      back.classList.remove('pos-back'); back.classList.add('pos-mid');
+      setTimeout(function () {
+        paint(front, nextItem());
+        front.classList.remove('pos-exit'); front.classList.add('pos-back');
+        transitioning = false;
+      }, TRANSITION_MS);
+      order = [mid, back, front];
+    }
+
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    function maybeStart() { if (isVisible && !hovering && !timer) timer = setInterval(advance, CYCLE_MS); }
+
+    wrap.addEventListener('mouseenter', function () { hovering = true; stop(); });
+    wrap.addEventListener('mouseleave', function () { hovering = false; maybeStart(); });
+
+    function onActivate() { advance(); stop(); maybeStart(); }
+    wrap.addEventListener('click', onActivate);
+    wrap.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(); }
+    });
+
+    if ('IntersectionObserver' in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          isVisible = entry.isIntersecting;
+          if (isVisible) maybeStart(); else stop();
+        });
+      }, { threshold: 0.15 });
+      io.observe(wrap);
+    } else {
+      isVisible = true;
+      maybeStart();
+    }
+  })();
+
+  // ---------- Right tiles: 4 random categories, each cycling ----------
+  (function () {
+    var grid = document.getElementById('jewel-access-grid');
+    if (!grid) return;
+
+    var chosen = shuffle(categories).slice(0, Math.min(4, categories.length));
+
+    chosen.forEach(function (cat, idx) {
+      var a = document.createElement('a');
+      a.href = 'jewellery-accessories.html?cat=' + encodeURIComponent(cat.name);
+      a.className = 'jewel-occ-tile';
+
+      var photos = shuffle(cat.photos);
+      var layersHtml = photos.map(function (url, i) {
+        return '<div class="jewel-occ-img-layer' + (i === 0 ? ' is-active' : '') + '" style="background-image:url(\'' + url + '\')"></div>';
+      }).join('');
+
+      a.innerHTML =
+        '<div class="jewel-occ-photo">' + layersHtml +
+        '<div class="jewel-occ-tile-gradient"></div>' +
+        '<div class="jewel-occ-tile-label">' +
+          '<span class="cat-name">' + cat.name + '</span>' +
+          '<span class="jewel-occ-tile-cta">Shop now ' + arrowSvg + '</span>' +
+        '</div>' +
+        '</div>';
+      grid.appendChild(a);
+
+      if (photos.length > 1) {
+        var layers = a.querySelectorAll('.jewel-occ-img-layer');
+        var active = 0;
+        setTimeout(function () {
+          setInterval(function () {
+            var next = (active + 1) % layers.length;
+            layers[next].classList.add('is-active');
+            layers[active].classList.remove('is-active');
+            active = next;
+          }, 2600);
+        }, idx * 650);
+      }
+    });
+  })();
 }
 
 function initCuratedShowcase() {

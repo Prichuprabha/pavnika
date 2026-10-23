@@ -40,7 +40,7 @@
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=253">
+<link rel="stylesheet" href="style.css?v=254">
 </head>
 <body class="home-page">
 <header class="site-header">
@@ -227,6 +227,13 @@
   </div>
 </section>
 
+<!-- Jewellery & Accessories home promo — NOT live. Stays completely
+     empty (no markup at all, not just hidden via CSS) unless the page
+     is loaded as home.html?preview=jewellery, see initJewelPromoSection()
+     in script.js. Remove that one query-param guard when this is ready
+     to go live to everyone. -->
+<div id="jewel-promo-mount"></div>
+
 <section class="bg-green wom-section">
   <div class="container">
     <div class="section-head">
@@ -342,6 +349,6 @@
 </div>
 
 <script src="products-data.js"></script>
-<script src="script.js?v=250"></script>
+<script src="script.js?v=251"></script>
 </body>
 </html>
