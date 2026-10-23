@@ -5280,10 +5280,18 @@ function initCheckoutPage() {
   // calls updateSummary() on its own initial call further below, before
   // execution would otherwise reach their original declaration point --
   // var hoisting would otherwise leave these as `undefined` for that
-  // first render, breaking the shipping-fee discount math.
+  // first render, breaking the shipping-fee discount math. (This bit
+  // the first version of this fix too: SHIPPING_FEE_AED/THRESHOLD were
+  // left at their original spot further down, so that first render's
+  // `afterDiscount < SHIPPING_FEE_THRESHOLD_AED` compared against
+  // `undefined` -- always false -- silently showing "Free within UAE"
+  // instead of the fee on every page load, until some other change
+  // event happened to run updateSummary() again afterward.)
   var appliedDiscount = 0;
   var appliedCode = '';
   var giftCardBalance = 0;
+  var SHIPPING_FEE_AED = 25;
+  var SHIPPING_FEE_THRESHOLD_AED = 150;
 
   var ids = cartGetItems();
   var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
@@ -5548,14 +5556,12 @@ function initCheckoutPage() {
 
   // Step 5: AED 25 flat shipping fee, charged only on UAE orders whose
   // value after any promo-code discount is under AED 150 -- the exact
-  // numbers Pavnika settled on. This is a display-only estimate; the
-  // real, binding calculation happens server-side in
-  // create-nomod-checkout.js (never trusted from here), so this just
-  // has to match that logic closely enough that the total shown here
-  // equals what's actually charged.
-  var SHIPPING_FEE_AED = 25;
-  var SHIPPING_FEE_THRESHOLD_AED = 150;
-
+  // numbers Pavnika settled on (SHIPPING_FEE_AED/THRESHOLD declared up
+  // top with appliedDiscount, for the hoisting reason noted there).
+  // This is a display-only estimate; the real, binding calculation
+  // happens server-side in create-nomod-checkout.js (never trusted
+  // from here), so this just has to match that logic closely enough
+  // that the total shown here equals what's actually charged.
   function currentShippingFee() {
     var afterDiscount = Math.round(subtotal * (1 - appliedDiscount / 100));
     var effectiveCountry = sameAddressBox.checked
