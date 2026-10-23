@@ -141,6 +141,20 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
     return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
   }
 
+  // Same department-aware naming as the client's itemDisplayName()
+  // (script.js) -- p.series is saree-only, so a Jewellery/Accessory
+  // item here used to rebuild as just its bare ID (e.g. "SU016"), the
+  // same "description missing for jewellery" bug reported for the
+  // normal checkout path, just in this rarer recovery path (used only
+  // when the pending order row itself went missing and has to be
+  // rebuilt from Nomod's own data after the fact).
+  function itemDisplayName(p) {
+    if (!p) return '';
+    if (p.department === 'jewellery') return p.type + (p.colour ? ' — ' + p.colour : '');
+    if (p.department === 'accessory') return p.type || 'Accessory';
+    return p.material || p.design || p.id;
+  }
+
   var items = [];
   try {
     const products = (await fetchProductsFromGitHub()).products;
@@ -148,12 +162,14 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
       var p = products.find(function (pp) { return pp.id === id; }) || {};
       return {
         id: id,
-        name: ((p.series || '') + ' ' + id).trim(),
+        name: (itemDisplayName(p) + ' ' + id).trim(),
         price: effectivePrice(p),
+        department: p.department,
         series: p.series,
         type: p.type,
         sareeType: p.sareeType,
         pattern: p.pattern,
+        colour: p.colour,
         image: p.image
       };
     });

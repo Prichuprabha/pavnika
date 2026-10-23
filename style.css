@@ -399,6 +399,13 @@ html.show-cart-wishlist #nav-cart-btn { display: flex; }
   padding: 5px 0;
 }
 .os-row .os-free { color: #3B6D11; font-weight: 600; }
+.os-shipping-note {
+  font-size: 0.72rem;
+  color: var(--ink);
+  opacity: 0.6;
+  margin: -3px 0 4px;
+  text-align: right;
+}
 .os-row.os-total {
   border-top: 1px solid var(--stone);
   margin-top: 6px;
