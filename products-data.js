@@ -3779,33 +3779,5 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/JS003-4.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JS003-1.jpg"
-  },
-  {
-    "id": "JS002",
-    "department": "jewellery",
-    "series": "",
-    "category": "",
-    "type": "Jewellery Sets",
-    "sareeType": "",
-    "pattern": "",
-    "design": "",
-    "material": "",
-    "shade": "Maroon / Red",
-    "colour": "Gold & Green",
-    "note": "Ruby Emerald Coin",
-    "price": 130,
-    "salePrice": null,
-    "sold": false,
-    "occasions": [],
-    "quantity": null,
-    "qtyUnit": null,
-    "maxPerOrder": null,
-    "images": [
-      "https://pavnika.ae/assets/products/JS002-1.jpg",
-      "https://pavnika.ae/assets/products/JS002-2.jpg",
-      "https://pavnika.ae/assets/products/JS002-3.jpg",
-      "https://pavnika.ae/assets/products/JS002-4.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/JS002-1.jpg"
   }
 ];
