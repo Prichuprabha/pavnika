@@ -3723,33 +3723,5 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/JS005-4.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JS005-1.jpg"
-  },
-  {
-    "id": "JS004",
-    "department": "jewellery",
-    "series": "",
-    "category": "",
-    "type": "Jewellery Sets",
-    "sareeType": "",
-    "pattern": "",
-    "design": "",
-    "material": "",
-    "shade": "Maroon / Red",
-    "colour": "Gold & Pink",
-    "note": "Double Layer AD stone",
-    "price": 95,
-    "salePrice": null,
-    "sold": false,
-    "occasions": [],
-    "quantity": null,
-    "qtyUnit": null,
-    "maxPerOrder": null,
-    "images": [
-      "https://pavnika.ae/assets/products/JS004-1.jpg",
-      "https://pavnika.ae/assets/products/JS004-2.jpg",
-      "https://pavnika.ae/assets/products/JS004-3.jpg",
-      "https://pavnika.ae/assets/products/JS004-4.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/JS004-1.jpg"
   }
 ];
