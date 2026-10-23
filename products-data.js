@@ -3751,33 +3751,5 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/JS004-4.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/JS004-1.jpg"
-  },
-  {
-    "id": "JS003",
-    "department": "jewellery",
-    "series": "",
-    "category": "",
-    "type": "Jewellery Sets",
-    "sareeType": "",
-    "pattern": "",
-    "design": "",
-    "material": "",
-    "shade": "Maroon / Red",
-    "colour": "Gold",
-    "note": "Necklace and Long Haram Set with Earring",
-    "price": 245,
-    "salePrice": null,
-    "sold": false,
-    "occasions": [],
-    "quantity": null,
-    "qtyUnit": null,
-    "maxPerOrder": null,
-    "images": [
-      "https://pavnika.ae/assets/products/JS003-1.jpg",
-      "https://pavnika.ae/assets/products/JS003-2.jpg",
-      "https://pavnika.ae/assets/products/JS003-3.jpg",
-      "https://pavnika.ae/assets/products/JS003-4.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/JS003-1.jpg"
   }
 ];
