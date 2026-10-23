@@ -5150,10 +5150,15 @@ function renderCartDrawer() {
       // this just hardcoded "Free within UAE" unconditionally, which is
       // what the customer was seeing regardless of cart value.
       var shippingEstimate = subtotal < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
+      // How much more (UAE-assumed) to add to the cart to clear the
+      // free-shipping threshold -- shown in small text under the
+      // Shipping row only while a fee would currently apply.
+      var remainingForFree = SHIPPING_FEE_THRESHOLD_AED - subtotal;
       return '<div class="cart-order-summary">' +
         '<h4>Order Summary</h4>' +
         '<div class="os-row"><span>Subtotal (' + products.length + (products.length === 1 ? ' item' : ' items') + ')</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
         '<div class="os-row"><span>Shipping</span><span class="os-free">' + (shippingEstimate > 0 ? 'AED ' + formatAED(shippingEstimate) + ' (UAE)' : 'Free within UAE') + '</span></div>' +
+        (shippingEstimate > 0 ? '<p class="os-shipping-note">Add AED ' + formatAED(remainingForFree) + ' more to get free shipping</p>' : '') +
         '<div class="os-row os-total"><span>Total</span><span>AED ' + formatAED(subtotal + shippingEstimate) + '</span></div>' +
       '</div>';
     })();
@@ -5867,7 +5872,15 @@ function initCheckoutPage() {
         items: products.map(function (p) {
           return {
             id: p.id,
-            name: p.design + ' — ' + p.id,
+            // Was `p.design + ' — ' + p.id` -- p.design is a saree-only
+            // field, so every Jewellery/Accessory item silently sent
+            // Nomod a name like "undefined — SU016" (or blank where it
+            // got coerced away), showing just the raw ID on the Nomod
+            // hosted checkout page and the receipt. itemDisplayName(p)
+            // is the same department-aware helper already used to show
+            // this item correctly in the checkout item list just above
+            // (and in the cart drawer, lightbox, wishlist, etc.).
+            name: itemDisplayName(p) + ' — ' + p.id,
             price: effectivePrice(p),
             qty: cartGetQty(p.id), // the server (create-nomod-checkout.js) re-validates and clamps this -- never trusted as-is for the actual charge
             department: p.department, // lets the invoice email build a correct description per department, not just sarees
