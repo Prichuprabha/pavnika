@@ -759,7 +759,7 @@ function dismissAllRevealsAndExpansions() {
 function initTouchRevealTiles() {
   if (!window.matchMedia('(hover: none)').matches) return; // desktop: hover works natively
 
-  var ALL_REVEALABLE_SELECTOR = '.curated-tile, .category-tile, .occ-tile';
+  var ALL_REVEALABLE_SELECTOR = '.curated-tile, .category-tile, .occ-tile, .jewel-occ-tile';
 
   function wire(selector) {
     document.querySelectorAll(selector).forEach(function (tile) {
@@ -6441,7 +6441,19 @@ function initJewelPromoSection() {
   var categories = Object.keys(categoryMap).map(function (k) { return categoryMap[k]; });
   if (!categories.length) return;
 
-  var arrowSvg = '<svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+  // Fixed, on-brand description per category (not a design count) —
+  // shown only on hover/tap, same spot as the "hover detail" line in
+  // Curated, Just for You. New types added to the catalogue later
+  // fall back to CATEGORY_BLURB_FALLBACK rather than showing nothing.
+  var CATEGORY_BLURBS = {
+    'Necklaces': 'The finishing touch to any drape',
+    'Bangles & Bracelets': 'Statement pieces for the wrist',
+    'Jewellery Sets': 'Complete looks, beautifully paired',
+    'Earrings': 'Delicate drama for every occasion',
+    'Long Harams': 'Traditional layers, timeless elegance',
+    'Reusable Flowers': 'Fresh blooms, worn again and again'
+  };
+  var CATEGORY_BLURB_FALLBACK = 'Beautifully crafted, just for you';
 
   mount.innerHTML =
     '<div class="jewel-promo-preview-flag">Preview only — not visible on the live site without ?preview=jewellery</div>' +
@@ -6557,7 +6569,7 @@ function initJewelPromoSection() {
 
     chosen.forEach(function (cat, idx) {
       var a = document.createElement('a');
-      a.href = 'jewellery-accessories.html?cat=' + encodeURIComponent(cat.name);
+      a.href = 'jewellery-accessories.html?type=' + encodeURIComponent(cat.name);
       a.className = 'jewel-occ-tile';
 
       var photos = shuffle(cat.photos);
@@ -6565,12 +6577,14 @@ function initJewelPromoSection() {
         return '<div class="jewel-occ-img-layer' + (i === 0 ? ' is-active' : '') + '" style="background-image:url(\'' + url + '\')"></div>';
       }).join('');
 
+      var blurb = CATEGORY_BLURBS[cat.name] || CATEGORY_BLURB_FALLBACK;
       a.innerHTML =
         '<div class="jewel-occ-photo">' + layersHtml +
         '<div class="jewel-occ-tile-gradient"></div>' +
-        '<div class="jewel-occ-tile-label">' +
+        '<div class="jewel-occ-tile-text">' +
           '<span class="cat-name">' + cat.name + '</span>' +
-          '<span class="jewel-occ-tile-cta">Shop now ' + arrowSvg + '</span>' +
+          '<span class="jewel-occ-desc">' + blurb + '</span>' +
+          '<span class="jewel-occ-explore">Explore More <span class="arrow">&rarr;</span></span>' +
         '</div>' +
         '</div>';
       grid.appendChild(a);
@@ -6588,6 +6602,12 @@ function initJewelPromoSection() {
         }, idx * 650);
       }
     });
+
+    // Wires tap-to-reveal for these tiles on touch devices (desktop
+    // hover is handled purely by the CSS above). Safe to call again —
+    // it re-queries ALL_REVEALABLE_SELECTOR fresh every time, same as
+    // initCuratedShowcase() does after building its own tiles.
+    initTouchRevealTiles();
   })();
 }
 

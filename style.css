@@ -6263,7 +6263,7 @@ a.home-video-tile-link {
 .jp-card-gradient { position: absolute; inset: 0; background: linear-gradient(to top, rgba(43, 13, 26, 0.88) 0%, rgba(43, 13, 26, 0.35) 38%, rgba(43, 13, 26, 0) 64%); }
 .jp-card-text { position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 24px 26px; }
 .jp-card-text .eyebrow { display: block; color: var(--gold-light); margin-bottom: 8px; }
-.jp-card-text .jp-note { font-family: var(--display); font-style: italic; font-weight: 600; font-size: 1.5rem; color: var(--ivory); margin: 0; line-height: 1.25; }
+.jp-card-text .jp-note { font-family: var(--display); font-weight: 600; font-size: 1.25rem; color: var(--ivory); margin: 0; line-height: 1.3; }
 
 .jewel-right { display: flex; flex-direction: column; }
 .jewel-right-top { display: flex; justify-content: space-between; align-items: flex-end; gap: 40px; flex-wrap: wrap; margin-bottom: 40px; }
@@ -6284,11 +6284,29 @@ a.home-video-tile-link {
 .jewel-occ-photo .jewel-occ-img-layer.is-active { opacity: 1; transform: scale(1); }
 @media (hover: hover) { .jewel-occ-tile:hover .jewel-occ-photo { border-color: var(--gold); } .jewel-occ-tile:hover .jewel-occ-img-layer.is-active { transform: scale(1.08); } }
 .jewel-occ-tile-gradient { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgba(43, 13, 26, 0.86) 0%, rgba(43, 13, 26, 0.3) 46%, rgba(43, 13, 26, 0) 70%); }
-.jewel-occ-tile-label { position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 12px 15px; text-align: center; }
-.jewel-occ-tile-label span.cat-name { display: block; font-family: var(--display); font-style: italic; font-weight: 600; font-size: 1.08rem; color: var(--ivory); margin-bottom: 4px; }
-.jewel-occ-tile-cta { display: inline-flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold-light); border-bottom: 1px solid rgba(246, 223, 213, 0.55); padding-bottom: 2px; opacity: 0; transform: translateY(8px); transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease; }
-@media (hover: hover) { .jewel-occ-tile:hover .jewel-occ-tile-cta { opacity: 1; transform: translateY(0); } }
-.jewel-occ-tile-cta svg.arrow { width: 12px; height: 12px; }
+/* Matches .curated-tile-text/.curated-type/.curated-hover-detail/
+   .curated-explore exactly (style.css ~4143-4207): the whole text
+   block sits translateY(62px) down by default, which is just enough
+   to push the description + Explore More (further down inside the
+   block) below the tile's clipped edge, while the category name —
+   higher up in the block — stays fully visible throughout. Hover/tap
+   slides the whole block back to translateY(0); the description/
+   Explore More's own opacity:0 is what keeps THEM invisible even
+   during the sliver of travel where they'd otherwise peek in. */
+.jewel-occ-tile-text { position: absolute; left: 0; right: 0; bottom: 0; padding: 16px 16px 18px; color: var(--ivory); transform: translateY(62px); transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); will-change: transform; }
+.jewel-occ-tile.is-revealed .jewel-occ-tile-text { transform: translateY(0); }
+@media (hover: hover) { .jewel-occ-tile:hover .jewel-occ-tile-text { transform: translateY(0); } }
+.jewel-occ-tile-text .cat-name { display: block; font-family: var(--display); font-weight: 600; font-size: 1.25rem; color: var(--ivory); margin: 0; }
+.jewel-occ-desc { display: block; font-size: 0.78rem; line-height: 1.4; color: var(--ivory); margin: 6px 0 8px; opacity: 0; transition: opacity 0.5s ease 0.1s; }
+.jewel-occ-explore { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 600; color: var(--gold-light); opacity: 0; transition: opacity 0.5s ease 0.16s; }
+.jewel-occ-tile.is-revealed .jewel-occ-desc,
+.jewel-occ-tile.is-revealed .jewel-occ-explore { opacity: 1; }
+@media (hover: hover) {
+  .jewel-occ-tile:hover .jewel-occ-desc,
+  .jewel-occ-tile:hover .jewel-occ-explore { opacity: 1; }
+}
+.jewel-occ-explore .arrow { display: inline-block; margin-left: 2px; transition: transform 0.3s ease; }
+@media (hover: hover) { .jewel-occ-tile:hover .jewel-occ-explore .arrow { transform: translateX(3px); } }
 
 @media (max-width: 900px) {
   .jewel-promo-section { padding: 56px 0 50px; }
