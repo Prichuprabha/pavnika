@@ -3695,33 +3695,5 @@ window.PRODUCTS = [
     ],
     "image": "https://pavnika.ae/assets/products/BR001-26-1.jpg",
     "soldAt": null
-  },
-  {
-    "id": "JS005",
-    "department": "jewellery",
-    "series": "",
-    "category": "",
-    "type": "Jewellery Sets",
-    "sareeType": "",
-    "pattern": "",
-    "design": "",
-    "material": "",
-    "shade": "Maroon / Red",
-    "colour": "Gold & Emerald",
-    "note": "AD stone with Emerald thick type",
-    "price": 95,
-    "salePrice": null,
-    "sold": false,
-    "occasions": [],
-    "quantity": null,
-    "qtyUnit": null,
-    "maxPerOrder": null,
-    "images": [
-      "https://pavnika.ae/assets/products/JS005-1.jpg",
-      "https://pavnika.ae/assets/products/JS005-2.jpg",
-      "https://pavnika.ae/assets/products/JS005-3.jpg",
-      "https://pavnika.ae/assets/products/JS005-4.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/JS005-1.jpg"
   }
 ];
