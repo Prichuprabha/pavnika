@@ -2,11 +2,11 @@
   {
     "image": "jewl_banner.jpg",
     "mobileImage": "jewl_banner-mobile.jpg",
-    "link": "home.html",
-    "hideText": true,
-    "eyebrow": "",
-    "heading": "",
-    "description": "",
+    "link": "jewellery-accessories.html",
+    "hideText": false,
+    "eyebrow": "JEWELLERY & ACCESSORIES",
+    "heading": "The finishing touch, for every occasion.",
+    "description": "Pavnika by Saranya brings handpicked fashion jewellery and accessories to the UAE — temple-inspired necklaces, statement earrings, and long harams designed to pair beautifully with every saree in our collection.",
     "seconds": 8
   },
   {
