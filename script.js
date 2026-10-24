@@ -4145,6 +4145,14 @@ function initHeroBannerCarousel() {
       var eyebrowEl = document.querySelector('.hero-copy .eyebrow');
       var headingEl = document.querySelector('.hero-copy h1');
       var ledeEl = document.querySelector('.hero-copy .lede');
+      // The visible "View Collections" button in the text column is a
+      // SEPARATE element from .hero-banner-click above -- that invisible
+      // layer only covers the image area to the right of the text (see
+      // its CSS comment), so without this the button stayed hardcoded to
+      // Collections regardless of what a slide's admin-configured link
+      // was, even though clicking the banner image itself correctly
+      // honoured it. Both now follow the same active-slide link.
+      var ctaBtnEl = document.querySelector('.hero-copy .btn-row .btn-primary');
       var defaultEyebrow = eyebrowEl ? eyebrowEl.textContent : '';
       var defaultHeading = headingEl ? headingEl.textContent : '';
       var defaultLede = ledeEl ? ledeEl.textContent : '';
@@ -4157,7 +4165,9 @@ function initHeroBannerCarousel() {
       }
 
       function syncClickHref(i, animate) {
-        clickLink.href = (banners[i] && banners[i].link) || DEFAULT_LINK;
+        var resolvedLink = (banners[i] && banners[i].link) || DEFAULT_LINK;
+        clickLink.href = resolvedLink;
+        if (ctaBtnEl) ctaBtnEl.href = resolvedLink;
         // Per-banner "hide text" mode (admin checkbox): fade the text +
         // buttons out with the same 1s ease the slides use, and let the
         // click layer cover the WHOLE banner instead of the right half.
@@ -5099,18 +5109,35 @@ function renderCartDrawer() {
   if (!badge) return;
 
   var ids = cartGetItems();
-  badge.style.display = ids.length ? 'flex' : 'none';
-  badge.textContent = ids.length;
+  // A stored id that no longer matches any real product (deleted from
+  // the catalog in admin, say) used to still count toward the badge and
+  // toward "is the cart empty" below -- it showed a "1" badge with
+  // nothing to actually show for it, and because the order-summary
+  // block further down filters against window.PRODUCTS too, its
+  // subtotal came out AED 0 while shipping still got charged on that
+  // (phantom) under-threshold total. Filtering here first, before
+  // either check, means both now reflect only items that actually
+  // exist. Falls back to the raw count only on the rare chance
+  // window.PRODUCTS hasn't loaded yet at all (never actually empty on
+  // a real page) -- that's a loading race, not a stale cart, and
+  // shouldn't flash the drawer to "empty".
+  var products = (window.PRODUCTS && window.PRODUCTS.length)
+    ? window.PRODUCTS.filter(function (p) { return ids.indexOf(p.id) !== -1; })
+    : null;
+  var itemCount = products ? products.length : ids.length;
+
+  badge.style.display = itemCount ? 'flex' : 'none';
+  badge.textContent = itemCount;
 
   var bbBadge = document.getElementById('bb-bag-badge');
   if (bbBadge) {
-    bbBadge.style.display = ids.length ? 'flex' : 'none';
-    bbBadge.textContent = ids.length;
+    bbBadge.style.display = itemCount ? 'flex' : 'none';
+    bbBadge.textContent = itemCount;
   }
 
   if (!itemsWrap) return;
 
-  if (!ids.length) {
+  if (!itemCount) {
     itemsWrap.innerHTML =
       '<p class="cart-drawer-empty">Your cart is empty. Browse the collection to find something you love.</p>' +
       continueShoppingHTML();
@@ -5119,7 +5146,7 @@ function renderCartDrawer() {
     return;
   }
 
-  var products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
+  if (!products) products = (window.PRODUCTS || []).filter(function (p) { return ids.indexOf(p.id) !== -1; });
   // Stage 3: each line's total is unit price × its qty (1 for every
   // existing one-of-a-kind product, same as always).
   var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p) * cartGetQty(p.id); }, 0);
