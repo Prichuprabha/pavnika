@@ -6406,22 +6406,15 @@ function initOccasionMobileMarquee(grid) {
   initTouchRevealTiles();
 }
 
-// Jewellery & Accessories home promo — NOT live. #jewel-promo-mount in
-// home.html is an empty div; this only fills it in (and only then does
-// any of this code — data pull, markup, cycling — actually run) when
-// the page is loaded as home.html?preview=jewellery. A normal visitor's
-// page source never contains this section at all, not even hidden via
-// CSS. Remove the query-param check below (and nothing else) to make
-// this live to everyone. Mirrors the offline preview
-// (jewellery-home-section-preview-v4) the client approved: a card
-// stack on the left cycling through random individual products with
-// their Category + short description burned into the image, and 4
-// tiles on the right showing 4 of the available categories at random,
-// each cycling through that category's own product photos.
+// Jewellery & Accessories home promo — LIVE to all visitors. Fills the
+// empty #jewel-promo-mount div in home.html with a card stack on the
+// left cycling through random individual products with their Category
+// + short description burned into the image, and 4 tiles on the right
+// showing 4 of the available categories at random, each cycling
+// through that category's own product photos.
 function initJewelPromoSection() {
   var mount = document.getElementById('jewel-promo-mount');
   if (!mount) return;
-  if (new URLSearchParams(window.location.search).get('preview') !== 'jewellery') return;
   if (typeof window.PRODUCTS === 'undefined') return;
 
   var items = window.PRODUCTS.filter(function (p) {
@@ -6457,7 +6450,6 @@ function initJewelPromoSection() {
   var CATEGORY_BLURB_FALLBACK = 'Beautifully crafted, just for you';
 
   mount.innerHTML =
-    '<div class="jewel-promo-preview-flag">Preview only — not visible on the live site without ?preview=jewellery</div>' +
     '<section class="jewel-promo-section">' +
       '<div class="container jewel-combo">' +
         '<div class="jp-stack-wrap" id="jp-stack" role="button" tabindex="0" aria-label="Show next jewellery piece">' +
