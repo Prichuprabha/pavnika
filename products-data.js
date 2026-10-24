@@ -4227,5 +4227,24 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/NK001-5.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/NK001-1.jpg"
+  },
+  {
+    "department": "accessory",
+    "type": "Reusable Flowers",
+    "note": "Jasmine Single Layer",
+    "price": 60,
+    "salePrice": null,
+    "sold": false,
+    "soldAt": null,
+    "images": [
+      "https://pavnika.ae/assets/products/RF003-1.jpg",
+      "https://pavnika.ae/assets/products/RF003-2.jpg",
+      "https://pavnika.ae/assets/products/RF003-3.jpg"
+    ],
+    "image": "https://pavnika.ae/assets/products/RF003-1.jpg",
+    "quantity": 3,
+    "qtyUnit": "pcs",
+    "maxPerOrder": null,
+    "id": "RF003"
   }
 ];
