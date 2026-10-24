@@ -3598,7 +3598,7 @@ window.PRODUCTS = [
     "material": "",
     "shade": "Maroon / Red",
     "colour": "White & Red",
-    "note": "Jasmine Double Layer With Rose",
+    "note": "Jasmine Double Layer With Rose, A Graceful Blend of Jasmine & Rose",
     "price": 70,
     "salePrice": null,
     "sold": false,
