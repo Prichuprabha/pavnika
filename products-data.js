@@ -4232,7 +4232,7 @@ window.PRODUCTS = [
   {
     "department": "accessory",
     "type": "Reusable Flowers",
-    "note": "Jasmine Single Layer",
+    "note": "Jasmine Single Layer, Timeless Traditional Elegance",
     "price": 60,
     "salePrice": null,
     "sold": false,
