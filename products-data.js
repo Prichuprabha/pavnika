@@ -3627,7 +3627,7 @@ window.PRODUCTS = [
     "material": "",
     "shade": "Maroon / Red",
     "colour": "White",
-    "note": "Jasmine Double Layer",
+    "note": "Jasmine Double Layer in Timeless Traditional Elegance",
     "price": 70,
     "salePrice": null,
     "sold": false,
@@ -3640,7 +3640,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/RF001-2.jpg",
       "https://pavnika.ae/assets/products/RF001-3.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/RF001-1.jpg"
+    "image": "https://pavnika.ae/assets/products/RF001-1.jpg",
+    "soldAt": null
   },
   {
     "id": "BR002-28",
