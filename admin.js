@@ -1241,6 +1241,7 @@ function initSareeEditor(token) {
   var formTitle = document.getElementById('admin-form-title');
   var searchInput = document.getElementById('admin-search-input');
   var paginationEl = document.getElementById('admin-pagination');
+  var paginationTopEl = document.getElementById('admin-pagination-top'); // same page buttons, shown above the grid too so paging doesn't require scrolling all the way down first
   var editingId = null;
   var isAddMode = false;
   var PAGE_SIZE = 80;
@@ -1376,7 +1377,15 @@ function initSareeEditor(token) {
   function renderPagination(totalItems) {
     var totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
     if (currentPage > totalPages) currentPage = totalPages;
-    if (totalPages <= 1) { paginationEl.innerHTML = ''; return; }
+    // Rendered identically into both the top (above the grid) and bottom
+    // pager so switching pages never requires scrolling all the way down
+    // first -- both share the same markup/CSS and the same click-delegation
+    // handler below, keyed off data-page.
+    if (totalPages <= 1) {
+      paginationEl.innerHTML = '';
+      if (paginationTopEl) paginationTopEl.innerHTML = '';
+      return;
+    }
 
     var buttons = [];
     buttons.push('<button type="button" class="admin-page-btn" data-page="' + (currentPage - 1) + '"' + (currentPage === 1 ? ' disabled' : '') + '>&lsaquo;</button>');
@@ -1384,7 +1393,9 @@ function initSareeEditor(token) {
       buttons.push('<button type="button" class="admin-page-btn' + (i === currentPage ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>');
     }
     buttons.push('<button type="button" class="admin-page-btn" data-page="' + (currentPage + 1) + '"' + (currentPage === totalPages ? ' disabled' : '') + '>&rsaquo;</button>');
-    paginationEl.innerHTML = buttons.join('');
+    var html = buttons.join('');
+    paginationEl.innerHTML = html;
+    if (paginationTopEl) paginationTopEl.innerHTML = html;
   }
 
   var bulkSelectedIds = [];
@@ -1503,14 +1514,22 @@ function initSareeEditor(token) {
     });
   }
 
-  paginationEl.addEventListener('click', function (e) {
+  function handlePaginationClick(e) {
     var btn = e.target.closest('.admin-page-btn');
     if (!btn || btn.disabled) return;
     var target = parseInt(btn.getAttribute('data-page'), 10);
     if (!target || target === currentPage) return;
     currentPage = target;
     renderTable();
-  });
+    // Paging from the bottom bar jumps back up to the top pager/grid so
+    // the newly-loaded page is actually visible without an extra manual
+    // scroll; paging from the top bar is already there.
+    if (paginationTopEl && e.currentTarget === paginationEl) {
+      paginationTopEl.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    }
+  }
+  paginationEl.addEventListener('click', handlePaginationClick);
+  if (paginationTopEl) paginationTopEl.addEventListener('click', handlePaginationClick);
 
   var stagedRemovals = []; // filenames marked for removal — not deleted from GitHub until Save to GitHub is pressed
   var stagedUploads = []; // [{filename, dataUrl}] confirmed for upload — not committed until Save to GitHub is pressed

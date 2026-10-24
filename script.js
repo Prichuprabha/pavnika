@@ -733,7 +733,7 @@ function scheduleReviewAutoRevert() {
 
 function dismissTileReveals() {
   if (activeTileRevertTimer) { clearTimeout(activeTileRevertTimer); activeTileRevertTimer = null; }
-  document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed').forEach(function (t) {
+  document.querySelectorAll('.curated-tile.is-revealed, .category-tile.is-revealed, .occ-tile.is-revealed, .jewel-occ-tile.is-revealed').forEach(function (t) {
     t.classList.remove('is-revealed');
   });
 }
@@ -788,6 +788,7 @@ function initTouchRevealTiles() {
   wire('.curated-tile');
   wire('.category-tile');
   wire('.occ-tile');
+  wire('.jewel-occ-tile');
 
   // Two ways a reveal/expansion used to get stuck showing indefinitely,
   // wired once globally (guarded against re-registering on every call —
@@ -6544,6 +6545,24 @@ function initJewelPromoSection() {
     wrap.addEventListener('click', onActivate);
     wrap.addEventListener('keydown', function (e) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(); }
+    });
+
+    // Mobile-only fix: this is a role="button" div so keyboard users can
+    // Tab to it, but that tabindex also makes mobile browsers treat a tap
+    // on it as "focus a not-fully-in-view element", which some of them
+    // answer by auto-scrolling the page to bring it fully into view --
+    // right as the card-flip transition above also starts, so the two
+    // compete and the flip visibly stalls/freezes until that scroll
+    // settles. A tap only ever needs to fire the click, never hold focus,
+    // so blur it right back out when the focus came from a pointer (not
+    // from Tab), which stops that auto-scroll from kicking in at all.
+    var focusedViaPointer = false;
+    wrap.addEventListener('pointerdown', function () { focusedViaPointer = true; });
+    wrap.addEventListener('focus', function () {
+      if (focusedViaPointer) {
+        focusedViaPointer = false;
+        wrap.blur();
+      }
     });
 
     if ('IntersectionObserver' in window) {
