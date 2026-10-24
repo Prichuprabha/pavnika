@@ -1,15 +1,5 @@
 [
   {
-    "image": "jewl_banner.jpg",
-    "mobileImage": "jewl_banner-mobile.jpg",
-    "link": "jewellery-accessories.html",
-    "hideText": false,
-    "eyebrow": "JEWELLERY & ACCESSORIES",
-    "heading": "The finishing touch, for every occasion.",
-    "description": "Pavnika by Saranya brings handpicked fashion jewellery and accessories to the UAE — temple-inspired necklaces, statement earrings, and long harams designed to pair beautifully with every saree in our collection.",
-    "seconds": 5
-  },
-  {
     "image": "banner-v2-1.jpg",
     "mobileImage": "banner-v2-1-mobile.jpg",
     "link": "collections.html",
@@ -18,6 +8,16 @@
     "heading": "Hand-selected in Kancheepuram. Curated for Dubai.",
     "description": "",
     "seconds": ""
+  },
+  {
+    "image": "jewl_banner.jpg",
+    "mobileImage": "jewl_banner-mobile.jpg",
+    "link": "jewellery-accessories.html",
+    "hideText": false,
+    "eyebrow": "JEWELLERY & ACCESSORIES",
+    "heading": "The finishing touch, for every occasion.",
+    "description": "Pavnika by Saranya brings handpicked fashion jewellery and accessories to the UAE — temple-inspired necklaces, statement earrings, and long harams designed to pair beautifully with every saree in our collection.",
+    "seconds": 5
   },
   {
     "image": "banner-v2-2.jpg",
