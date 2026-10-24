@@ -3606,12 +3606,9 @@ window.PRODUCTS = [
     "quantity": 4,
     "qtyUnit": "Muzham (~16 inches)",
     "maxPerOrder": null,
-    "images": [
-      "https://pavnika.ae/assets/products/RF002-1.jpg",
-      "https://pavnika.ae/assets/products/RF002-2.jpg",
-      "https://pavnika.ae/assets/products/RF002-3.jpg"
-    ],
-    "image": "https://pavnika.ae/assets/products/RF002-1.jpg"
+    "images": [],
+    "image": "",
+    "soldAt": null
   },
   {
     "id": "RF001",
