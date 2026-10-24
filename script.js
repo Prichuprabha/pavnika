@@ -7005,7 +7005,8 @@ function initPinnedHero() {
         total: o.total,
         status: o.status,
         mode: paymentModeLabel(o),
-        payments: o.payment_method ? [{ label: o.payment_method, amount: o.total }] : []
+        payments: o.payment_method ? [{ label: o.payment_method, amount: o.total }] : [],
+        returns: o.returns || []
       };
     } else {
       var s = accountData.shopSales.filter(function (x) { return String(x.id) === String(id); })[0];
@@ -7035,7 +7036,13 @@ function initPinnedHero() {
         // already shown below, so it's left out for this source only.
         status: 'paid',
         mode: null,
-        payments: payments
+        payments: payments,
+        // In-store returns (pos_returns) aren't attached per-sale by
+        // account-get-summary.js today, only rolled into the aggregate
+        // Gift Card history above -- left empty here rather than
+        // guessing, so this receipt just doesn't show a return section
+        // for an in-store sale yet.
+        returns: []
       };
     }
 
@@ -7080,6 +7087,30 @@ function initPinnedHero() {
         }).join('')
       : '';
     payEl.style.display = rec.payments.length ? 'block' : 'none';
+
+    // Return/refund history — previously the only place this ever
+    // appeared to the customer was the one-off return confirmation
+    // email, with no lasting record on the account page or the
+    // printable receipt itself. RETURN_METHOD_LABEL mirrors the same
+    // labels the admin side already uses for consistency.
+    var RETURN_METHOD_LABEL = { cash: 'Cash', bank_transfer: 'Bank transfer', gift_card: 'Gift card' };
+    var returnsEl = document.getElementById('rc-returns');
+    if (returnsEl) {
+      var returns = rec.returns || [];
+      returnsEl.innerHTML = returns.length
+        ? '<p class="rc-pay-label">Refund' + (returns.length > 1 ? 's' : '') + ' issued</p>' +
+          returns.map(function (r) {
+            var items = Array.isArray(r.items_returned) ? r.items_returned : [];
+            var itemNames = items.map(function (it) { return it.name || it.id; }).filter(Boolean).join(', ');
+            return '<div class="rc-return-entry">' +
+              (itemNames ? '<p class="rc-return-items">' + esc(itemNames) + '</p>' : '') +
+              '<div class="rc-row"><span>' + longDate(r.created_at) + '</span><span>− ' + money(r.refund_amount) + '</span></div>' +
+              '<div class="rc-row"><span>Refunded via</span><span>' + esc(RETURN_METHOD_LABEL[r.refund_method] || r.refund_method) + '</span></div>' +
+            '</div>';
+          }).join('')
+        : '';
+      returnsEl.style.display = returns.length ? 'block' : 'none';
+    }
 
     // Real, scannable CODE128 barcode — same library already used for
     // the printable saree tags — encoding this receipt's own reference

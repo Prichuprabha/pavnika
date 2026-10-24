@@ -80,6 +80,54 @@ exports.handler = async function (event) {
     var giftCardBalance = 0;
     var giftHistory = [];
 
+    // Each online order's own return/refund history (order_returns),
+    // mirroring what admin-get-orders.js already attaches for the admin
+    // Orders tab — without this, a customer who got an online order
+    // refunded (to any method) had no way to see the refund amount or
+    // method anywhere on their account page or printed receipt, only in
+    // the confirmation email. Best-effort: a failure here shouldn't take
+    // down the whole account page, it just means orders show without
+    // return history, same as before this existed.
+    if (onlineOrders.length) {
+      try {
+        var orderIds = onlineOrders.map(function (o) { return o.id; }).join(',');
+        var orderReturnsRes = await fetch(
+          `${SUPABASE_URL}/rest/v1/order_returns?order_id=in.(${orderIds})&select=order_id,items_returned,refund_amount,refund_method,created_at&order=created_at.asc`,
+          { headers: supabaseHeaders() }
+        );
+        var orderReturns = orderReturnsRes.ok ? await orderReturnsRes.json() : [];
+        var returnsByOrderId = {};
+        orderReturns.forEach(function (r) {
+          if (!returnsByOrderId[r.order_id]) returnsByOrderId[r.order_id] = [];
+          returnsByOrderId[r.order_id].push(r);
+        });
+        onlineOrders.forEach(function (o) { o.returns = returnsByOrderId[o.id] || []; });
+
+        // Credits: online-order returns refunded to the gift card. These
+        // were previously missing from giftHistory entirely — only
+        // in-store (pos_returns) credits were ever included — so an
+        // online return's gift-card credit never showed up in "Gift
+        // Card" history even though the balance itself was correctly
+        // topped up by admin-process-order-return.js.
+        orderReturns.forEach(function (r) {
+          if (String(r.refund_method || '') !== 'gift_card') return;
+          var amount = Number(r.refund_amount) || 0;
+          if (amount <= 0) return;
+          var ord = onlineOrders.filter(function (o) { return o.id === r.order_id; })[0];
+          giftHistory.push({
+            type: 'credit',
+            amount: amount,
+            date: r.created_at,
+            reference: ord ? (ord.order_number || ord.id) : '',
+            label: 'Return credit'
+          });
+        });
+      } catch (e) {
+        console.error('Could not load order_returns (orders will show without return history):', e);
+        onlineOrders.forEach(function (o) { if (!o.returns) o.returns = []; });
+      }
+    }
+
     if (posCustomer) {
       giftCardBalance = Number(posCustomer.gift_card_balance) || 0;
 
@@ -135,9 +183,15 @@ exports.handler = async function (event) {
           });
         });
       }
-
-      giftHistory.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
     }
+
+    // Sorted here, outside the posCustomer block above, since online
+    // order return credits are pushed into giftHistory regardless of
+    // whether a pos_customers row exists for this email (it almost
+    // always will by this point -- admin-process-order-return.js
+    // creates one on a gift-card refund if none matched -- but this
+    // keeps the sort correct even in the rare case it doesn't).
+    giftHistory.sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
 
     var onlineSpent = onlineOrders
       .filter(function (o) { return PAID_ONLINE_STATUSES.indexOf(o.status) !== -1; })

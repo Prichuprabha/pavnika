@@ -6224,7 +6224,16 @@ function initOrdersView(token) {
           '<p style="font-size:0.72rem; opacity:0.6; margin:6px 0 0;">Confirms delivery address, asks for a Google Maps pin, thanks the customer, signed from the Pavnika dispatch team.</p>';
       }
 
-      if (RETURNABLE_STATUSES.indexOf(order.status) !== -1) {
+      // Previously gated on RETURNABLE_STATUSES alone, which meant the
+      // "Return history" list (refund amount + method + who processed
+      // it) disappeared the moment an order became fully refunded —
+      // exactly the moment someone's most likely to come back and check
+      // it. buildReturnSectionHtml() already degrades correctly for a
+      // fully-returned order on its own (every item shows as "Already
+      // returned", no active controls, just the history), so it's safe
+      // to also call it whenever there's return history to show, even
+      // outside the returnable statuses.
+      if (RETURNABLE_STATUSES.indexOf(order.status) !== -1 || (order.returns || []).length) {
         html += buildReturnSectionHtml(order, items);
       }
     }

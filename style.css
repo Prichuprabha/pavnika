@@ -6136,6 +6136,16 @@ a.home-video-tile-link {
 .rc-payment .rc-pay-label { font-size: 0.74rem; opacity: 0.6; margin: 0 0 5px; }
 .rc-payment .rc-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
 
+/* Return/refund history on a customer's receipt (account page + print) --
+   same dashed-divider treatment as .rc-payment above, just its own
+   section so it only takes up space when an order actually has returns. */
+.rc-returns { border-top: 1px dashed var(--stone); padding-top: 12px; font-size: 0.84rem; }
+.rc-returns .rc-pay-label { font-size: 0.74rem; opacity: 0.6; margin: 0 0 5px; }
+.rc-returns .rc-return-entry { padding: 6px 0; border-bottom: 1px solid var(--stone); }
+.rc-returns .rc-return-entry:last-child { border-bottom: none; }
+.rc-returns .rc-row { display: flex; justify-content: space-between; gap: 12px; padding: 2px 0; }
+.rc-returns .rc-return-items { font-size: 0.76rem; opacity: 0.7; margin: 0 0 2px; }
+
 .rc-payment-status {
   background: var(--gold-light);
   margin: 0 -20px;
