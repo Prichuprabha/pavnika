@@ -3603,7 +3603,7 @@ window.PRODUCTS = [
     "salePrice": null,
     "sold": false,
     "occasions": [],
-    "quantity": 4,
+    "quantity": 3,
     "qtyUnit": "Muzham (~16 inches)",
     "maxPerOrder": null,
     "images": [
