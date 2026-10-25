@@ -6659,7 +6659,47 @@ function initCuratedShowcase() {
   var shuffled = available.slice().sort(function () { return Math.random() - 0.5; });
   var picks = shuffled.slice(0, Math.min(5, shuffled.length));
 
-  grid.innerHTML = picks.map(function (p) {
+  // One of the tiles is swapped for a Jewellery & Accessories piece
+  // (its main image only, same as the saree tiles use p.image rather
+  // than the full gallery) so the section occasionally surfaces that
+  // department too. Both which slot and which piece re-roll on every
+  // page load/refresh. Falls back to an all-saree row if nothing is
+  // in stock there yet.
+  var jewelCandidates = window.PRODUCTS.filter(function (p) {
+    return !p.sold && p.image && (p.department === 'jewellery' || p.department === 'accessory');
+  });
+  var jewelPick = jewelCandidates.length
+    ? jewelCandidates[Math.floor(Math.random() * jewelCandidates.length)]
+    : null;
+  var jewelSlot = jewelPick ? Math.floor(Math.random() * picks.length) : -1;
+
+  grid.innerHTML = picks.map(function (p, i) {
+    if (i === jewelSlot) {
+      // itemGroupLabel(jewelPick) gives the category (e.g. "Necklaces") --
+      // used for the series line, same spot a saree shows its series.
+      // The heading below it needs to be something OTHER than that same
+      // category (itemDisplayName repeats it, e.g. "Necklaces — Antique
+      // Gold Finish"), so it falls back through the item's own name/
+      // finish/colour first and only repeats the category as a last resort.
+      var jGroup = itemGroupLabel(jewelPick);
+      var jHeading = jewelPick.note || jewelPick.colour || jewelPick.shade || jGroup;
+      var jAlt = itemDisplayName(jewelPick);
+      // Jewellery & Accessories detail popups live on their own page,
+      // same ?open= pattern the saree tiles use for collections.html.
+      var jHref = 'jewellery-accessories.html?open=' + encodeURIComponent(jewelPick.id);
+      return (
+        '<a class="curated-tile" href="' + jHref + '">' +
+          '<div class="curated-tile-media"><img src="' + jewelPick.image + '" alt="' + jAlt + '" loading="lazy"><span class="id-badge">' + jewelPick.id + '</span></div>' +
+          '<div class="curated-tile-gradient"></div>' +
+          '<div class="curated-tile-text">' +
+            '<span class="curated-series">' + jGroup + '</span>' +
+            '<h3 class="curated-type">' + jHeading + '</h3>' +
+            '<p class="curated-hover-detail">From our Jewellery &amp; Accessories collection</p>' +
+            '<span class="curated-explore">Explore More &rarr;</span>' +
+          '</div>' +
+        '</a>'
+      );
+    }
     var seriesLabel = seriesTitleCase(p.series);
     // Open this saree's detail popup with the Collections grid behind
     // it showing the full, unfiltered catalogue.
