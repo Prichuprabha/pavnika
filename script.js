@@ -844,7 +844,7 @@ function initCollectionsPage() {
 
   var DEFAULT_PAGE_SIZE = 16;
   var PAGE_SIZE = DEFAULT_PAGE_SIZE;
-  var state = { category: 'all', series: 'all', shade: 'all', occasion: 'all', hideSold: false, page: 1, query: '', priceMin: null, priceMax: null, sort: 'default' };
+  var state = { category: 'all', series: 'all', shade: 'all', occasion: 'all', hideSold: false, page: 1, query: '', priceMin: null, priceMax: null, priceTouchedByUser: false, sort: 'default' };
 
   // isUnfiltered() no longer gates row-filling (see updatePageSize()
   // below, which now applies regardless of any active filter) — it's
@@ -977,8 +977,18 @@ function initCollectionsPage() {
     return window.PRODUCTS.some(function (p) {
       if (state.hideSold && p.sold) return false;
       var price = effectivePrice(p);
-      if (state.priceMin !== null && price < state.priceMin) return false;
-      if (state.priceMax !== null && price > state.priceMax) return false;
+      // Only treat the price slider as a real constraint on OTHER filter
+      // buttons' availability once the person has actually dragged it
+      // themselves (state.priceTouchedByUser). Otherwise its current
+      // span is just recomputePriceBounds() reflecting whichever
+      // category/series/shade/occasion was last picked -- not a
+      // deliberate price choice -- and treating it as one here would
+      // wrongly greyed out e.g. every OTHER material whose prices don't
+      // happen to overlap the one just selected.
+      if (state.priceTouchedByUser) {
+        if (state.priceMin !== null && price < state.priceMin) return false;
+        if (state.priceMax !== null && price > state.priceMax) return false;
+      }
       if (groupKey !== 'category' && state.category !== 'all' && p.material !== state.category) return false;
       if (groupKey !== 'series' && state.series !== 'all' && p.series !== state.series) return false;
       if (groupKey !== 'shade' && state.shade !== 'all' && p.shade !== state.shade) return false;
@@ -1140,18 +1150,21 @@ function initCollectionsPage() {
       tags.push({ label: state.occasion, reset: function () {
         state.occasion = 'all';
         setActiveButton(occasionGroup, 'all');
+        recomputePriceBounds();
       }});
     }
     if (state.category !== 'all') {
       tags.push({ label: state.category, reset: function () {
         state.category = 'all';
         setActiveButton(categoryGroup, 'all');
+        recomputePriceBounds();
       }});
     }
     if (state.series !== 'all') {
       tags.push({ label: seriesTitleCase(state.series), reset: function () {
         state.series = 'all';
         setActiveButton(seriesGroup, 'all');
+        recomputePriceBounds();
       }});
     }
     if (state.shade !== 'all') {
@@ -1160,17 +1173,16 @@ function initCollectionsPage() {
         if (shadeGroup) shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
           b.classList.toggle('active', b.getAttribute('data-value') === 'all');
         });
+        recomputePriceBounds();
       }});
     }
     if (!fullRange) {
+      // "Remove" on the price tag alone resets the slider back to the
+      // full span for whatever OTHER filters are still active, not the
+      // whole catalogue \u2014 recomputePriceBounds() already does exactly
+      // that from the current state.
       tags.push({ label: 'AED ' + state.priceMin.toLocaleString() + ' \u2013 AED ' + state.priceMax.toLocaleString(), reset: function () {
-        if (priceMinInput && priceMaxInput) {
-          priceMinInput.value = priceMinInput.min;
-          priceMaxInput.value = priceMaxInput.max;
-          state.priceMin = Number(priceMinInput.min);
-          state.priceMax = Number(priceMaxInput.max);
-          updatePriceUI();
-        }
+        recomputePriceBounds();
       }});
     }
 
@@ -1202,6 +1214,7 @@ function initCollectionsPage() {
       if (!btn || btn.disabled) return;
       state.occasion = btn.getAttribute('data-value');
       setActiveButton(occasionGroup, state.occasion);
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1222,6 +1235,7 @@ function initCollectionsPage() {
         setActiveButton(seriesGroup, 'all');
       }
 
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1235,6 +1249,7 @@ function initCollectionsPage() {
       shadeGroup.querySelectorAll('.swatch-btn').forEach(function (b) {
         b.classList.toggle('active', b === btn);
       });
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1254,6 +1269,7 @@ function initCollectionsPage() {
         setActiveButton(categoryGroup, 'all');
       }
 
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1262,6 +1278,7 @@ function initCollectionsPage() {
   if (hideSoldToggle) {
     hideSoldToggle.addEventListener('change', function () {
       state.hideSold = hideSoldToggle.checked;
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1499,6 +1516,7 @@ function initCollectionsPage() {
   if (searchInput) {
     searchInput.addEventListener('input', function () {
       state.query = searchInput.value;
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1512,21 +1530,51 @@ function initCollectionsPage() {
   var priceMaxLabel = document.getElementById('price-max-label');
   var priceTrackFill = document.getElementById('price-track-fill');
   var updatePriceUI = function () {};
+  var dataMin, dataMax;
 
-  if (priceMinInput && priceMaxInput && window.PRODUCTS && window.PRODUCTS.length) {
-    var allPrices = window.PRODUCTS.filter(function (p) { return (p.department || 'saree') === 'saree'; }).map(function (p) { return effectivePrice(p); });
-    var dataMin = Math.floor(Math.min.apply(null, allPrices) / 50) * 50;
-    var dataMax = Math.ceil(Math.max.apply(null, allPrices) / 50) * 50;
-
-    [priceMinInput, priceMaxInput].forEach(function (input) {
-      input.min = dataMin;
-      input.max = dataMax;
+  // Recomputes the slider's own min/max from whichever sarees match
+  // every OTHER active filter (category/series/shade/occasion/search/
+  // hide-sold) — not the whole catalogue — then resets the slider to
+  // that new full span. Called on first load and again whenever one of
+  // those other filters changes, so "AED X – AED Y" always reflects
+  // what's actually in the filtered list instead of staying pinned to
+  // the full catalogue's range no matter what else is selected.
+  function recomputePriceBounds() {
+    if (!priceMinInput || !priceMaxInput || !window.PRODUCTS || !window.PRODUCTS.length) return;
+    var q = state.query.trim().toLowerCase();
+    var scoped = window.PRODUCTS.filter(function (p) {
+      if ((p.department || 'saree') !== 'saree') return false;
+      var okCat = state.category === 'all' || p.material === state.category;
+      var okSeries = state.series === 'all' || p.series === state.series;
+      var okShade = state.shade === 'all' || p.shade === state.shade;
+      var okOccasion = state.occasion === 'all' || (p.occasions && p.occasions.indexOf(state.occasion) !== -1);
+      var okSold = !state.hideSold || !p.sold;
+      var okQuery = !q || SEARCH_FIELDS.some(function (f) {
+        return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
+      });
+      return okCat && okSeries && okShade && okOccasion && okSold && okQuery && !isSoldOutExpired(p);
     });
+    // A combination with zero matches falls back to the full catalogue's
+    // span rather than a stale or degenerate [0,0] slider — getFiltered()
+    // already shows "no results" correctly regardless of what the
+    // slider displays in that case.
+    var source = scoped.length ? scoped : window.PRODUCTS.filter(function (p) { return (p.department || 'saree') === 'saree'; });
+    var prices = source.map(function (p) { return effectivePrice(p); });
+    dataMin = Math.floor(Math.min.apply(null, prices) / 50) * 50;
+    dataMax = Math.ceil(Math.max.apply(null, prices) / 50) * 50;
+    if (dataMax <= dataMin) dataMax = dataMin + 50;
+
+    priceMinInput.min = dataMin; priceMinInput.max = dataMax;
+    priceMaxInput.min = dataMin; priceMaxInput.max = dataMax;
     priceMinInput.value = dataMin;
     priceMaxInput.value = dataMax;
     state.priceMin = dataMin;
     state.priceMax = dataMax;
+    state.priceTouchedByUser = false;
+    updatePriceUI();
+  }
 
+  if (priceMinInput && priceMaxInput && window.PRODUCTS && window.PRODUCTS.length) {
     updatePriceUI = function () {
       var lo = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
       var hi = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
@@ -1539,11 +1587,12 @@ function initCollectionsPage() {
         priceTrackFill.style.width = (pctHi - pctLo) + '%';
       }
     };
-    updatePriceUI();
+    recomputePriceBounds();
 
     function onPriceChange() {
       state.priceMin = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
       state.priceMax = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+      state.priceTouchedByUser = true;
       state.page = 1;
       updatePriceUI();
       render();
@@ -1581,13 +1630,9 @@ function initCollectionsPage() {
       if (hideSoldToggle) hideSoldToggle.checked = false;
       if (searchInput) searchInput.value = '';
       if (sortSelect) sortSelect.value = 'default';
-      if (priceMinInput && priceMaxInput) {
-        priceMinInput.value = priceMinInput.min;
-        priceMaxInput.value = priceMaxInput.max;
-        state.priceMin = Number(priceMinInput.min);
-        state.priceMax = Number(priceMaxInput.max);
-        updatePriceUI();
-      }
+      // Every other filter is already back to 'all' above, so this
+      // recomputes the slider against the full catalogue again.
+      recomputePriceBounds();
       render();
     });
   }
@@ -1653,6 +1698,17 @@ function initCollectionsPage() {
     searchInput.value = queryParam;
   }
 
+  if (hideSoldParam === '1') {
+    state.hideSold = true;
+    if (hideSoldToggle) hideSoldToggle.checked = true;
+  }
+
+  // Any of the above may have narrowed the catalogue before the price
+  // slider's bounds were first computed, so recompute them now against
+  // whatever filters just got applied from the URL -- then, if the URL
+  // also specifies an explicit price range, that overrides it below.
+  recomputePriceBounds();
+
   if (priceMinInput && priceMaxInput && priceMinParam !== null && priceMaxParam !== null) {
     var pMinFromUrl = Number(priceMinParam);
     var pMaxFromUrl = Number(priceMaxParam);
@@ -1661,6 +1717,7 @@ function initCollectionsPage() {
       priceMaxInput.value = pMaxFromUrl;
       state.priceMin = pMinFromUrl;
       state.priceMax = pMaxFromUrl;
+      state.priceTouchedByUser = true;
       updatePriceUI();
     }
   }
@@ -1668,11 +1725,6 @@ function initCollectionsPage() {
   if (sortParam && sortSelect && ['default', 'price-asc', 'price-desc', 'newest'].indexOf(sortParam) !== -1) {
     state.sort = sortParam;
     sortSelect.value = sortParam;
-  }
-
-  if (hideSoldParam === '1') {
-    state.hideSold = true;
-    if (hideSoldToggle) hideSoldToggle.checked = true;
   }
 
   // Arriving with a filter already applied (e.g. a home page occasion
@@ -1894,21 +1946,22 @@ function initJewelleryAccessoriesPage() {
         jaTags.push({ label: state.type, reset: function () {
           state.type = 'all';
           chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-value') === 'all'); });
+          recomputePriceBounds();
         }});
       }
       if (state.query.trim()) {
         jaTags.push({ label: '\u201C' + state.query.trim() + '\u201D', reset: function () {
           state.query = '';
           searchInput.value = '';
+          recomputePriceBounds();
         }});
       }
       if (!jaPriceIsFullRange) {
+        // "Remove" on the price tag alone resets back to the full span
+        // for whatever OTHER filter (type/search/hide-sold) is still
+        // active, not the whole catalogue.
         jaTags.push({ label: 'AED ' + state.priceMin.toLocaleString() + ' \u2013 AED ' + state.priceMax.toLocaleString(), reset: function () {
-          priceMinInput.value = dataMin;
-          priceMaxInput.value = dataMax;
-          state.priceMin = dataMin;
-          state.priceMax = dataMax;
-          updatePriceUI();
+          recomputePriceBounds();
         }});
       }
 
@@ -1968,6 +2021,7 @@ function initJewelleryAccessoriesPage() {
       chipRow.querySelectorAll('.filter-btn').forEach(function (b) { b.classList.remove('active'); });
       btn.classList.add('active');
       state.type = btn.getAttribute('data-value');
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -1993,19 +2047,16 @@ function initJewelleryAccessoriesPage() {
       var mobileToggleBtn = document.getElementById('ja-hide-sold-toggle-mobile');
       if (mobileToggleBtn) mobileToggleBtn.classList.remove('checked');
       searchInput.value = '';
-      if (typeof dataMin !== 'undefined') {
-        priceMinInput.value = dataMin;
-        priceMaxInput.value = dataMax;
-        state.priceMin = dataMin;
-        state.priceMax = dataMax;
-        updatePriceUI();
-      }
+      // state.type/query/hideSold are already back to defaults above, so
+      // this recomputes the slider against the full catalogue again.
+      recomputePriceBounds();
       render();
     });
   }
 
   searchInput.addEventListener('input', function () {
     state.query = searchInput.value;
+    recomputePriceBounds();
     state.page = 1;
     render();
   });
@@ -2018,6 +2069,7 @@ function initJewelleryAccessoriesPage() {
 
   hideSoldToggle.addEventListener('change', function () {
     state.hideSold = hideSoldToggle.checked;
+    recomputePriceBounds();
     state.page = 1;
     render();
   });
@@ -2043,44 +2095,63 @@ function initJewelleryAccessoriesPage() {
   var priceTrackFill = document.getElementById('ja-price-track-fill');
   var dataMin, dataMax, updatePriceUI = function () {};
 
+  // Recomputes the slider's own min/max from whichever pieces match
+  // the OTHER active filters (type chip/search/hide-sold) — not the
+  // whole catalogue — then resets the slider to that new full span.
+  // Called on first load and again whenever one of those filters
+  // changes, same fix as Collections' identical issue: without this,
+  // "AED X – AED Y" stayed pinned to the full catalogue's range no
+  // matter which category chip was selected.
+  function recomputePriceBounds() {
+    if (!priceMinInput || !priceMaxInput) return;
+    var q = state.query.trim().toLowerCase();
+    var scoped = groupedCatalogue().filter(function (p) {
+      var okType = state.type === 'all' || p.type === state.type || p.category === state.type;
+      var okSold = !state.hideSold || !p.sold;
+      var okQuery = !q || SEARCH_FIELDS.some(function (f) { return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1; });
+      return okType && okSold && okQuery && !isSoldOutExpired(p);
+    });
+    var source = scoped.length ? scoped : groupedCatalogue();
+    var prices = source.map(function (p) { return effectivePrice(p); });
+    if (!prices.length) return;
+    dataMin = Math.floor(Math.min.apply(null, prices) / 5) * 5;
+    dataMax = Math.ceil(Math.max.apply(null, prices) / 5) * 5;
+    if (dataMax <= dataMin) dataMax = dataMin + 5;
+
+    priceMinInput.min = dataMin; priceMinInput.max = dataMax;
+    priceMaxInput.min = dataMin; priceMaxInput.max = dataMax;
+    priceMinInput.value = dataMin;
+    priceMaxInput.value = dataMax;
+    state.priceMin = dataMin;
+    state.priceMax = dataMax;
+    updatePriceUI();
+  }
+
   if (priceMinInput && priceMaxInput) {
-    var allPrices = groupedCatalogue().map(function (p) { return effectivePrice(p); });
-    if (allPrices.length) {
-      dataMin = Math.floor(Math.min.apply(null, allPrices) / 5) * 5;
-      dataMax = Math.ceil(Math.max.apply(null, allPrices) / 5) * 5;
-      [priceMinInput, priceMaxInput].forEach(function (input) {
-        input.min = dataMin;
-        input.max = dataMax;
-      });
-      priceMinInput.value = dataMin;
-      priceMaxInput.value = dataMax;
-      state.priceMin = dataMin;
-      state.priceMax = dataMax;
-
-      updatePriceUI = function () {
-        var lo = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
-        var hi = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
-        priceMinLabel.textContent = lo.toLocaleString();
-        priceMaxLabel.textContent = hi.toLocaleString();
-        if (priceTrackFill) {
-          var pctLo = ((lo - dataMin) / (dataMax - dataMin)) * 100;
-          var pctHi = ((hi - dataMin) / (dataMax - dataMin)) * 100;
-          priceTrackFill.style.left = pctLo + '%';
-          priceTrackFill.style.width = (pctHi - pctLo) + '%';
-        }
-      };
-      updatePriceUI();
-
-      function onPriceChange() {
-        state.priceMin = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
-        state.priceMax = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
-        state.page = 1;
-        updatePriceUI();
-        render();
+    updatePriceUI = function () {
+      var lo = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+      var hi = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+      priceMinLabel.textContent = lo.toLocaleString();
+      priceMaxLabel.textContent = hi.toLocaleString();
+      if (priceTrackFill) {
+        var pctLo = ((lo - dataMin) / (dataMax - dataMin)) * 100;
+        var pctHi = ((hi - dataMin) / (dataMax - dataMin)) * 100;
+        priceTrackFill.style.left = pctLo + '%';
+        priceTrackFill.style.width = (pctHi - pctLo) + '%';
       }
-      priceMinInput.addEventListener('input', onPriceChange);
-      priceMaxInput.addEventListener('input', onPriceChange);
+    };
+    recomputePriceBounds();
+
+    function onPriceChange() {
+      state.priceMin = Math.min(Number(priceMinInput.value), Number(priceMaxInput.value));
+      state.priceMax = Math.max(Number(priceMinInput.value), Number(priceMaxInput.value));
+      state.priceTouchedByUser = true;
+      state.page = 1;
+      updatePriceUI();
+      render();
     }
+    priceMinInput.addEventListener('input', onPriceChange);
+    priceMaxInput.addEventListener('input', onPriceChange);
   }
 
   window.addEventListener('resize', function () {
@@ -2146,6 +2217,7 @@ function initJewelleryAccessoriesPage() {
       state.hideSold = !state.hideSold;
       hideSoldToggle.checked = state.hideSold;
       hideSoldMobileBtn.classList.toggle('checked', state.hideSold);
+      recomputePriceBounds();
       state.page = 1;
       render();
     });
@@ -2208,6 +2280,16 @@ function initJewelleryAccessoriesPage() {
     searchInput.value = jaQueryParam;
   }
 
+  if (jaHideSoldParam === '1') {
+    state.hideSold = true;
+    if (hideSoldToggle) hideSoldToggle.checked = true;
+    if (hideSoldMobileBtn) hideSoldMobileBtn.classList.add('checked');
+  }
+
+  // Recompute against whatever type/search/hide-sold filter the URL
+  // just applied, before any explicit price param (next) overrides it.
+  recomputePriceBounds();
+
   if (priceMinInput && priceMaxInput && jaPriceMinParam !== null && jaPriceMaxParam !== null) {
     var jaPMinFromUrl = Number(jaPriceMinParam);
     var jaPMaxFromUrl = Number(jaPriceMaxParam);
@@ -2223,12 +2305,6 @@ function initJewelleryAccessoriesPage() {
   if (jaSortParam && sortSelect && ['default', 'price-asc', 'price-desc', 'newest'].indexOf(jaSortParam) !== -1) {
     state.sort = jaSortParam;
     sortSelect.value = jaSortParam;
-  }
-
-  if (jaHideSoldParam === '1') {
-    state.hideSold = true;
-    if (hideSoldToggle) hideSoldToggle.checked = true;
-    if (hideSoldMobileBtn) hideSoldMobileBtn.classList.add('checked');
   }
 
   if (jaSidebar && (state.type !== 'all' || jaQueryParam || state.hideSold)) {
