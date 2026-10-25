@@ -91,7 +91,7 @@ exports.handler = async function (event) {
         <table style="border-collapse:collapse; width:100%; margin:0 0 4px;">
           <thead>
             <tr style="text-align:left;">
-              <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Saree</th>
+              <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Item</th>
               <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Description / <span dir="rtl" style="text-transform:none;">الوصف</span></th>
               <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Price / <span dir="rtl" style="text-transform:none;">السعر</span></th>
             </tr>
@@ -118,7 +118,7 @@ exports.handler = async function (event) {
         </div>
 
         <p style="font-size:20px; font-weight:bold; color:#B68A69; margin-top:18px; margin-bottom:2px;">Total paid: AED ${formatAED(body.total)}</p>
-        <p style="font-size:14px; font-weight:bold; color:#B68A69; margin:0 0 18px;" dir="rtl">المبلغ المدفوع: ${formatAED(body.total)} درهم إماراتي</p>
+        <p style="font-size:14px; font-weight:bold; color:#B68A69; margin:0 0 18px;" dir="rtl">إجمالي المبلغ المدفوع: ${formatAED(body.total)} درهم إماراتي</p>
 
         <div style="border-top:1px solid #DED0C7; padding-top:14px; margin-top:6px;">
           <p style="font-size:11px; color:#a08b7f; line-height:1.7; margin:0 0 4px;">

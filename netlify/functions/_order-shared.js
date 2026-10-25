@@ -423,7 +423,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
       <div style="background:#3C1223; padding:28px 24px; text-align:center; border-radius:6px 6px 0 0;">
         <img src="https://pavnika.ae/assets/email-logo.png" alt="Pavnika by Saranya" width="94" height="90" style="display:block; margin:0 auto 12px;">
         <p style="font-family:Georgia,serif; font-size:20px; color:#FCF5ED; margin:0 0 4px;">Thank you for your purchase!</p>
-        <p style="font-family:Georgia,serif; font-size:15px; color:#FCF5ED; margin:0 0 8px;" dir="rtl">شكراً لشرائك!</p>
+        <p style="font-family:Georgia,serif; font-size:15px; color:#FCF5ED; margin:0 0 8px;" dir="rtl">شكراً لشرائك منا!</p>
         <p style="font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:#B68A69; margin:0 0 8px;">Invoice</p>
         <p style="font-size:11.5px; color:#F6DFD5; margin:0;">Our team will be in touch shortly to arrange shipment.</p>
         <p style="font-size:11px; color:#F6DFD5; margin:2px 0 0;" dir="rtl">سيتواصل معك فريقنا قريباً لترتيب الشحن.</p>
@@ -467,7 +467,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
       <table style="border-collapse:collapse; width:100%; margin:16px 0;">
         <thead>
           <tr style="text-align:left;">
-            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Saree</th>
+            <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Item</th>
             <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Description / <span dir="rtl" style="text-transform:none;">الوصف</span></th>
             <th style="padding:8px 10px; font-size:11px; text-transform:uppercase; color:#8a6f63;">Price / <span dir="rtl" style="text-transform:none;">السعر</span></th>
           </tr>
@@ -490,7 +490,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
             <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.gift_card_applied)}</td>
           </tr>` : ''}
           ${(order.shipping_fee && Number(order.shipping_fee) > 0) ? `<tr>
-            <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Shipping (non-refundable) / <span dir="rtl" style="text-transform:none;">الشحن (غير قابل للاسترداد)</span></td>
+            <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Shipping (non-refundable) / <span dir="rtl" style="text-transform:none;">رسوم الشحن (غير قابلة للاسترداد)</span></td>
             <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(order.shipping_fee)}</td>
           </tr>` : ''}
         </table>
@@ -506,7 +506,7 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
         </table>
       </div>` : ''}
       <p style="font-size:20px; font-weight:bold; color:#B68A69; margin-top:18px; margin-bottom:2px;">Total paid: AED ${formatAED(order.total)}</p>
-      <p style="font-size:14px; font-weight:bold; color:#B68A69; margin:0 0 18px;" dir="rtl">المبلغ المدفوع: ${formatAED(order.total)} درهم إماراتي</p>
+      <p style="font-size:14px; font-weight:bold; color:#B68A69; margin:0 0 18px;" dir="rtl">إجمالي المبلغ المدفوع: ${formatAED(order.total)} درهم إماراتي</p>
 
       <div style="border-top:1px solid #DED0C7; padding-top:14px; margin-top:6px;">
         <p style="font-size:11px; color:#a08b7f; line-height:1.7; margin:0 0 4px;">
