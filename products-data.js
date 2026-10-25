@@ -4243,7 +4243,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/RF003-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/RF003-1.jpg",
-    "quantity": 3,
+    "quantity": 4,
     "qtyUnit": "pcs",
     "maxPerOrder": null,
     "id": "RF003"
