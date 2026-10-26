@@ -3446,7 +3446,8 @@ function initHomeVideoShowcase() {
     return { file: '', link: '' };
   }
 
-  fetch(FOLDER + 'home-video-slots.json')
+  function loadAndRender() {
+    fetch(FOLDER + 'home-video-slots.json')
     .then(function (res) { return res.ok ? res.json() : []; })
     .then(function (slots) {
       if (!Array.isArray(slots)) slots = [];
@@ -3482,6 +3483,27 @@ function initHomeVideoShowcase() {
     .catch(function () {
       grid.innerHTML = '<div class="home-video-tile"><div class="home-video-tile-fallback"><div class="mark">P</div><p>' + FALLBACK_TEXT + '</p></div></div>'.repeat(4);
     });
+  }
+
+  // Deferred until this section is about to scroll into view -- 4
+  // autoplaying videos (even compressed, a few MB combined) were
+  // previously fetched and started playing immediately on every home
+  // page load, regardless of whether the visitor ever scrolled this
+  // far. rootMargin starts the fetch ~600px before the section enters
+  // the viewport, so by ordinary scroll speed it's already loaded (or
+  // loading) by the time it's actually visible, rather than showing a
+  // blank gap.
+  if ('IntersectionObserver' in window) {
+    var videoObserver = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; })) {
+        videoObserver.disconnect();
+        loadAndRender();
+      }
+    }, { rootMargin: '600px 0px' });
+    videoObserver.observe(grid);
+  } else {
+    loadAndRender();
+  }
 }
 
 /* ---------- Login page (index.html): email + mobile verification ---------- */
@@ -4008,6 +4030,25 @@ function initReviewsMarquee() {
   var track = document.getElementById('reviews-track');
   if (!track) return;
 
+  // Deferred until the Word of Mouth section is about to scroll into
+  // view, same reasoning as the video grid below: reviews.json is
+  // ~1.5MB, and was previously fetched unconditionally on every home
+  // page load even though this section sits well below the fold.
+  // rootMargin starts the fetch ~600px early so it's already loaded
+  // (or loading) by the time the section is actually visible.
+  var womSection = document.querySelector('.wom-section') || track;
+  if ('IntersectionObserver' in window) {
+    var reviewsObserver = new IntersectionObserver(function (entries) {
+      if (entries.some(function (e) { return e.isIntersecting; })) {
+        reviewsObserver.disconnect();
+        loadReviews();
+      }
+    }, { rootMargin: '600px 0px' });
+    reviewsObserver.observe(womSection);
+  } else {
+    loadReviews();
+  }
+
   function starString(n) {
     var count = Math.max(0, Math.min(5, parseInt(n, 10) || 0));
     var filled = '';
@@ -4071,7 +4112,8 @@ function initReviewsMarquee() {
     return card;
   }
 
-  fetch('assets/reviews/reviews.json')
+  function loadReviews() {
+    fetch('assets/reviews/reviews.json')
     .then(function (res) { return res.ok ? res.json() : []; })
     .then(function (reviews) {
       if (!reviews || !reviews.length) return;
@@ -4139,6 +4181,7 @@ function initReviewsMarquee() {
       if (marqueeEl) initDraggableMarquee(marqueeEl, track, { speed: 0.35, reverse: true });
     })
     .catch(function () { /* silently do nothing if the manifest can't be read */ });
+  }
 }
 
 /* ---------- Homepage: hero banner carousel ----------
