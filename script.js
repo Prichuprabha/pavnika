@@ -5363,7 +5363,15 @@ function initCartDrawer() {
       var qty = cartGetQty(p.id);
       return '- ' + itemGroupLabel(p) + ' (' + (p.baseId || p.id) + ') — ' + itemDisplayName(p) + (qty > 1 ? ' — Qty: ' + qty + (p.qtyUnit ? ' ' + p.qtyUnit : '') : '');
     });
-    var total = products.reduce(function (sum, p) { return sum + effectivePrice(p) * cartGetQty(p.id); }, 0);
+    var subtotal = products.reduce(function (sum, p) { return sum + effectivePrice(p) * cartGetQty(p.id); }, 0);
+    // Same UAE-assumed estimate the cart drawer's own Order Summary
+    // uses just above this button (see the Step 5 comment on that
+    // block) -- without this, "Cart total" here was quoting the bare
+    // product subtotal while the summary right above it was already
+    // showing subtotal + shipping, so the two totals didn't match
+    // whenever shipping applied.
+    var shippingEstimate = subtotal < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
+    var total = subtotal + shippingEstimate;
     // Tabby/Tamara's own merchant fee (6.75%) plus a flat AED 1 is
     // folded into this total rather than charged at the normal
     // checkout price — Nomod has no way to apply this only when
@@ -5372,7 +5380,7 @@ function initCartDrawer() {
     // final totals.
     var installmentTotal = total * 1.0675 + 1;
     var msg = 'Hi Pavnika by Saranya, I\u2019d like to pay in installments (Tabby/Tamara) for the following items from my cart:\n' + lines.join('\n');
-    msg += '\n\nCart total: AED ' + formatAED(total);
+    msg += '\n\nCart total: AED ' + formatAED(total) + (shippingEstimate > 0 ? ' (incl. AED ' + formatAED(shippingEstimate) + ' shipping)' : '');
     msg += '\n\nTotal for installment (incl. processing charges): *AED ' + formatAED(installmentTotal) + '*';
     msg += '\n\nCould you please send me a payment link to proceed?';
     msg += '\n\nRequest Ref: Pav_Instal_' + installmentRequestRef();
