@@ -170,6 +170,9 @@ async function recoverOrderFromNomod(referenceId, checkoutId) {
         sareeType: p.sareeType,
         pattern: p.pattern,
         colour: p.colour,
+        category: p.category,
+        note: p.note,
+        size: p.size,
         image: p.image
       };
     });

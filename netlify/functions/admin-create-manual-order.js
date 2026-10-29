@@ -144,6 +144,7 @@ exports.handler = async function (event) {
       colour: it.colour || '',
       category: it.category || '',
       note: it.note || '',
+      size: it.size || '',
       image: it.image || ''
     };
   });

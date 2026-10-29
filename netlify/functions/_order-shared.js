@@ -255,10 +255,16 @@ function buildItemDescription(it) {
   var department = it.department || 'saree';
 
   if (department === 'jewellery') {
-    // e.g. "Antique gold-tone Bangles & Bracelets (JW010-24)" + optional note
+    // e.g. "Antique gold-tone Bangles & Bracelets (JW010-24) — Size 2.4, Adjustable clasp"
+    // Every field the catalogue actually tracks for a jewellery item
+    // (colour, size -- bangles only, note) goes on the line, same as
+    // every saree field goes into its own line below.
     var jLine = (it.type || 'Jewellery') + ' (' + it.id + ')';
     if (it.colour) jLine = it.colour + ' ' + jLine;
-    if (it.note) jLine += ' — ' + it.note;
+    var jExtras = [];
+    if (it.size) jExtras.push('Size ' + it.size);
+    if (it.note) jExtras.push(it.note);
+    if (jExtras.length) jLine += ' — ' + jExtras.join(', ');
     return jLine;
   }
 
@@ -315,17 +321,23 @@ async function generateOrderNumber() {
 // Fills in whichever description fields (department/series/type/
 // sareeType/pattern/colour/category/note) an order's stored item is
 // missing, by matching it against the live catalogue. Online checkout
-// already stores these directly (script.js sends them), but the
-// manual-order admin form only ever sends {id, name, price, qty} --
-// without this, every manual order's invoice would describe every
-// item as a generic "Saree" regardless of what was actually sold.
+// already stores these directly (script.js sends them), and the
+// manual-order admin form now does too -- but older orders placed
+// before that admin fix, or any future path that stores a partial
+// item, can still arrive here without a department set.
+//
+// `department` specifically is what buildItemDescription() branches
+// on -- an item missing it is silently treated as a saree (the
+// fallback branch), which is exactly how a jewellery/accessory item
+// bought with no department stored ends up on the invoice as e.g.
+// "Bangles & Bracelets saree". So this checks for a missing
+// department directly, rather than requiring every one of several
+// fields to be absent before bothering to look the item up.
 // Fails soft: if the catalogue fetch itself fails, items are returned
 // unchanged (same behavior as before this existed) rather than
 // blocking the email from sending at all.
 async function enrichItemsForReceipt(items) {
-  var needsEnrichment = items.some(function (it) {
-    return !it.department && !it.series && !it.type && !it.category;
-  });
+  var needsEnrichment = items.some(function (it) { return !it.department; });
   if (!needsEnrichment) return items;
 
   try {
@@ -343,7 +355,8 @@ async function enrichItemsForReceipt(items) {
         pattern: p.pattern,
         colour: p.colour,
         category: p.category,
-        note: p.note
+        note: p.note,
+        size: p.size
       }, it); // `it`'s own fields (if present) always win over the catalogue's current values
     });
   } catch (e) {

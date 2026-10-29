@@ -7029,10 +7029,20 @@ function initManualOrderView(token) {
         price: effectivePrice(product),
         qty: Math.min(qty, stockCap),
         stockCap: stockCap,
+        // Same field set the online checkout sends (script.js) -- without
+        // department in particular, the order-confirmation email can't
+        // tell a jewellery/accessory item from a saree and mislabels it
+        // as one (e.g. "Bangles & Bracelets saree"). size carries a
+        // bangle's size (e.g. "2.4") onto the invoice line too.
+        department: product.department,
         series: product.series,
         type: product.type,
         sareeType: product.sareeType,
         pattern: product.pattern,
+        colour: product.colour,
+        category: product.category,
+        note: product.note,
+        size: product.size,
         image: product.image
       });
     }
@@ -7059,9 +7069,14 @@ function initManualOrderView(token) {
   var browseOverlay = document.getElementById('admin-mo-browse-overlay');
   var browseGrid = document.getElementById('admin-mo-browse-grid');
   var browseSearch = document.getElementById('admin-mo-browse-search');
+  var browseSearchClearBtn = document.getElementById('admin-mo-browse-search-clear');
   var browseDeptRow = document.getElementById('admin-mo-browse-dept-row');
   var browseDeptFilter = 'all';
   var browseHideSoldToggle = document.getElementById('admin-mo-browse-hide-sold');
+
+  function updateBrowseSearchClearBtn() {
+    browseSearchClearBtn.style.display = browseSearch.value ? 'block' : 'none';
+  }
 
   function renderBrowseGrid() {
     var q = browseSearch.value.trim().toLowerCase();
@@ -7100,6 +7115,16 @@ function initManualOrderView(token) {
   }
 
   document.getElementById('admin-mo-browse-btn').addEventListener('click', function () {
+    // Reopening starts from a clean slate every time -- a search typed
+    // while finding the previous item, or a filter/toggle left changed,
+    // shouldn't silently narrow the grid the next time this is opened
+    // to add another item.
+    browseSearch.value = '';
+    updateBrowseSearchClearBtn();
+    browseDeptFilter = 'all';
+    browseDeptRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (b) { b.classList.remove('active'); });
+    browseDeptRow.querySelector('.admin-dept-filter-btn[data-dept="all"]').classList.add('active');
+    browseHideSoldToggle.checked = true;
     browseOverlay.classList.add('is-open');
     renderBrowseGrid();
   });
@@ -7109,7 +7134,16 @@ function initManualOrderView(token) {
   browseOverlay.addEventListener('click', function (e) {
     if (e.target === browseOverlay) browseOverlay.classList.remove('is-open');
   });
-  browseSearch.addEventListener('input', renderBrowseGrid);
+  browseSearch.addEventListener('input', function () {
+    updateBrowseSearchClearBtn();
+    renderBrowseGrid();
+  });
+  browseSearchClearBtn.addEventListener('click', function () {
+    browseSearch.value = '';
+    updateBrowseSearchClearBtn();
+    renderBrowseGrid();
+    browseSearch.focus();
+  });
   browseHideSoldToggle.addEventListener('change', renderBrowseGrid);
   browseDeptRow.querySelectorAll('.admin-dept-filter-btn').forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -7301,7 +7335,7 @@ function initManualOrderView(token) {
         phoneCodeSelect.value = '971';
         phoneNumberInput.value = '';
         syncManualOrderPhone();
-        discountValueInput.value = '0';
+        discountValueInput.value = '';
         applyGiftCardCheckbox.checked = false;
         giftCardCard.style.display = 'none';
         knownGiftCardBalance = 0;
@@ -7352,7 +7386,7 @@ function initManualOrderView(token) {
     discountTypeBtns.forEach(function (b) { b.classList.remove('active'); });
     document.querySelector('.admin-mo-discount-type-btn[data-type="percent"]').classList.add('active');
     discountType = 'percent';
-    discountValueInput.value = '0';
+    discountValueInput.value = '';
 
     applyGiftCardCheckbox.checked = false;
     giftCardCard.style.display = 'none';

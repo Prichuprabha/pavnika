@@ -45,6 +45,19 @@
     padding-right: 16px !important;
   }
   .admin-field textarea { border-radius: 18px !important; }
+  /* The generic pill-input rule above also catches the two <input type="range">
+     elements of the Price Range slider (they live inside .admin-field too),
+     giving each one an opaque ivory-deep fill. The later element in the DOM
+     (the max handle) then paints that solid pill over the full slider width,
+     visually burying the min handle underneath it -- only the max handle's
+     own thumb showed through. Range inputs don't need a pill background or
+     text padding at all, so this undoes it for just this control. */
+  .admin-field input.price-range-input {
+    border-radius: 0 !important;
+    background: none !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
   /* A plain <select> keeps its native OS widget chrome (which ignores
      border-radius) unless appearance is turned off -- that's why,
      without this, every dropdown on the page looked like the one
@@ -2235,7 +2248,7 @@
               </div>
               <div class="admin-field" style="max-width:120px;">
                 <label>Amount</label>
-                <input type="number" id="admin-mo-discount-value" placeholder="0" min="0" value="0">
+                <input type="number" id="admin-mo-discount-value" placeholder="0" min="0" value="">
               </div>
             </div>
           </div>
@@ -2282,7 +2295,10 @@
           <button type="button" id="admin-mo-browse-close-btn" style="background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--ink); line-height:1;">&times;</button>
         </div>
         <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; flex-shrink:0; align-items:center;">
-          <input type="text" id="admin-mo-browse-search" placeholder="Search by code, name, type, or colour…" style="flex:1; min-width:160px; padding:8px 10px; border:1px solid var(--stone); border-radius:3px; font-family:var(--body); font-size:0.8rem; background:var(--ivory);">
+          <div style="position:relative; flex:1; min-width:160px;">
+            <input type="text" id="admin-mo-browse-search" placeholder="Search by code, name, type, or colour…" style="width:100%; box-sizing:border-box; padding:8px 30px 8px 10px; border:1px solid var(--stone); border-radius:3px; font-family:var(--body); font-size:0.8rem; background:var(--ivory);">
+            <button type="button" id="admin-mo-browse-search-clear" aria-label="Clear search" style="display:none; position:absolute; right:4px; top:50%; transform:translateY(-50%); width:22px; height:22px; background:none; border:none; font-size:1.05rem; line-height:1; cursor:pointer; color:var(--ink); opacity:0.5;">&times;</button>
+          </div>
           <label class="admin-toggle-label" style="font-size:0.78rem; white-space:nowrap;">
             <span class="admin-toggle-switch"><input type="checkbox" id="admin-mo-browse-hide-sold" checked><span class="admin-toggle-slider"></span></span>
             Hide sold out
@@ -2570,7 +2586,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=219"></script>
+<script src="admin.js?v=222"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

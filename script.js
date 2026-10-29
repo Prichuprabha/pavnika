@@ -6047,6 +6047,7 @@ function initCheckoutPage() {
             colour: p.colour,
             category: p.category,
             note: p.note,
+            size: p.size, // a bangle's size (e.g. "2.4"), shown on the invoice line alongside colour/type
             image: p.image
           };
         }),
