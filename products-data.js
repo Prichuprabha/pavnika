@@ -805,7 +805,7 @@ window.PRODUCTS = [
     "material": "Semi Kanchipuram",
     "shade": "Pink",
     "price": 170,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/SS001-1.jpg",
       "https://pavnika.ae/assets/products/SS001-2.jpg",
@@ -817,7 +817,8 @@ window.PRODUCTS = [
     "salePrice": null,
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "soldAt": "2026-10-29T16:10:28.068Z"
   },
   {
     "id": "SS002",
@@ -2716,7 +2717,7 @@ window.PRODUCTS = [
     "material": "Semi Kanchipuram",
     "shade": "Maroon / Red",
     "price": 295,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/BB010-1.jpg",
       "https://pavnika.ae/assets/products/BB010-2.jpg",
@@ -2731,7 +2732,8 @@ window.PRODUCTS = [
       "Bridal",
       "Wedding Guest"
     ],
-    "salePrice": null
+    "salePrice": null,
+    "soldAt": "2026-10-29T16:10:28.068Z"
   },
   {
     "id": "SU015",
@@ -3686,7 +3688,7 @@ window.PRODUCTS = [
     "note": "Goddess with Ruby & Emerald round type set of 2 (Size - 2.6)",
     "price": 120,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [],
     "quantity": null,
     "qtyUnit": null,
@@ -3697,7 +3699,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/BR001-26-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/BR001-26-1.jpg",
-    "soldAt": null
+    "soldAt": "2026-10-29T16:10:28.068Z"
   },
   {
     "id": "NK009",
@@ -4102,7 +4104,7 @@ window.PRODUCTS = [
     "note": "Single Layer AD stone with Pink Ruby",
     "price": 115,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [],
     "quantity": null,
     "qtyUnit": null,
@@ -4114,7 +4116,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/NK005-4.jpg",
       "https://pavnika.ae/assets/products/NK005-5.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/NK005-1.jpg"
+    "image": "https://pavnika.ae/assets/products/NK005-1.jpg",
+    "soldAt": "2026-10-29T16:10:28.068Z"
   },
   {
     "id": "NK004",
@@ -4159,7 +4162,7 @@ window.PRODUCTS = [
     "note": "Medium necklace with goddess pendant",
     "price": 120,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [],
     "quantity": null,
     "qtyUnit": null,
@@ -4170,7 +4173,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/NK003-3.jpg",
       "https://pavnika.ae/assets/products/NK003-4.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/NK003-1.jpg"
+    "image": "https://pavnika.ae/assets/products/NK003-1.jpg",
+    "soldAt": "2026-10-29T16:10:28.068Z"
   },
   {
     "id": "NK002",
@@ -4215,7 +4219,7 @@ window.PRODUCTS = [
     "note": "Small Peacock Necklace with earrings",
     "price": 45,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [],
     "quantity": null,
     "qtyUnit": null,
@@ -4227,7 +4231,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/NK001-4.jpg",
       "https://pavnika.ae/assets/products/NK001-5.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/NK001-1.jpg"
+    "image": "https://pavnika.ae/assets/products/NK001-1.jpg",
+    "soldAt": "2026-10-29T16:10:28.068Z"
   },
   {
     "department": "accessory",
