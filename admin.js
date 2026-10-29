@@ -2603,6 +2603,21 @@ function initSareeEditor(token) {
     updateBulkBar();
   });
 
+  // Selects every item currently in view -- i.e. whatever getFilteredProducts()
+  // returns right now, so it honours the active department tab (All /
+  // Sarees / Jewellery & Accessories), the search box, and "Hide sold
+  // out" exactly as shown, across every page, not just the one on
+  // screen. Sold-out items are skipped since they never get a checkbox
+  // to begin with (can't be bulk-discounted -- see the checkbox markup
+  // in renderTable above).
+  document.getElementById('admin-bulk-select-all-btn').addEventListener('click', function () {
+    bulkSelectedIds = getFilteredProducts()
+      .filter(function (p) { return !p.sold; })
+      .map(function (p) { return p.id; });
+    renderTable();
+    updateBulkBar();
+  });
+
   document.getElementById('admin-bulk-apply-btn').addEventListener('click', function () {
     var raw = Number(document.getElementById('admin-bulk-value').value);
     if (bulkMode !== 'remove' && (!raw || raw <= 0)) {
