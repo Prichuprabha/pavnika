@@ -5415,13 +5415,14 @@ function initCartDrawer() {
     // whenever shipping applied.
     var shippingEstimate = subtotal < SHIPPING_FEE_THRESHOLD_AED ? SHIPPING_FEE_AED : 0;
     var total = subtotal + shippingEstimate;
-    // Tabby/Tamara's own merchant fee (6.75%) plus a flat AED 1 is
-    // folded into this total rather than charged at the normal
+    // Tabby/Tamara's merchant fee (6.75% + AED 1, plus 5% VAT on that
+    // fee) is folded into this total rather than charged at the normal
     // checkout price — Nomod has no way to apply this only when
-    // installments are chosen, so it's covered here instead. The
-    // formula itself is never shown to the customer, only the two
-    // final totals.
-    var installmentTotal = total * 1.0675 + 1;
+    // installments are chosen, so it's covered here instead. See
+    // installmentChargeFor(): the amount is grossed up so we receive
+    // exactly the cart total after the fee. The formula itself is never
+    // shown to the customer, only the two final totals.
+    var installmentTotal = installmentChargeFor(total);
     var msg = 'Hi Pavnika by Saranya, I\u2019d like to pay in installments (Tabby/Tamara) for the following items from my cart:\n' + lines.join('\n');
     msg += '\n\nCart total: AED ' + formatAED(total) + (shippingEstimate > 0 ? ' (incl. AED ' + formatAED(shippingEstimate) + ' shipping)' : '');
     msg += '\n\nTotal for installment (incl. processing charges): *AED ' + formatAED(installmentTotal) + '*';
@@ -5460,6 +5461,22 @@ function initCartDrawer() {
 // EVERY initCheckoutPage() invocation, not just the first.
 var SHIPPING_FEE_AED = 25;
 var SHIPPING_FEE_THRESHOLD_AED = 150;
+
+// Tabby/Tamara installment fee, as actually deducted from what we receive:
+// (6.75% of the amount charged + AED 1 flat), plus 5% VAT on that fee.
+//   fee = (rate * A + flat) * (1 + vat)
+//   net = A - fee
+// installmentChargeFor() solves that backwards, so that after the fee is
+// taken we receive exactly `target` (the cart total, shipping included).
+// Rounded UP to the fil so rounding can never leave us slightly short.
+var INSTALLMENT_FEE_RATE = 0.0675;
+var INSTALLMENT_FEE_FLAT_AED = 1;
+var INSTALLMENT_FEE_VAT = 0.05;
+function installmentChargeFor(target) {
+  var k = 1 + INSTALLMENT_FEE_VAT;
+  var amount = (target + INSTALLMENT_FEE_FLAT_AED * k) / (1 - INSTALLMENT_FEE_RATE * k);
+  return Math.ceil(amount * 100 - 1e-6) / 100;
+}
 var checkoutSubtotal = 0;
 var checkoutAppliedDiscount = 0;
 var checkoutAppliedCode = '';
