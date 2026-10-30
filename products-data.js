@@ -3200,7 +3200,7 @@ window.PRODUCTS = [
     "note": "",
     "price": 240,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [
       "Wedding Guest",
       "Festive",
@@ -3218,7 +3218,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW039-6.jpg",
       "https://pavnika.ae/assets/products/VW039-7.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/VW039-1.jpg"
+    "image": "https://pavnika.ae/assets/products/VW039-1.jpg",
+    "soldAt": "2026-10-30T05:04:42.911Z"
   },
   {
     "id": "SU016",
