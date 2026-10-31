@@ -4529,17 +4529,20 @@ function initSearchPanel() {
       return;
     }
 
-    var fields = ['id', 'design', 'type', 'sareeType', 'pattern', 'series', 'category'];
+    var fields = ['id', 'baseId', 'design', 'type', 'sareeType', 'pattern', 'series', 'category', 'colour', 'note'];
+    var seenGroups = {};
     var matches = window.PRODUCTS.filter(function (p) {
       if (p.sold) return false;
-      // Jewellery/Accessories stay out of site-wide search results until
-      // the Launch switch turns them on deliberately, alongside the nav
-      // links and home sections — matching how Jewellery & Accessories
-      // is meant to stay reachable only by direct link until then.
-      if ((p.department || 'saree') !== 'saree') return false;
-      return fields.some(function (f) {
+      var hit = fields.some(function (f) {
         return p[f] && String(p[f]).toLowerCase().indexOf(q) !== -1;
       });
+      if (!hit) return false;
+      // Jewellery size families (BR002-24, BR002-26...) show as ONE row.
+      if (p.baseId) {
+        if (seenGroups[p.baseId]) return false;
+        seenGroups[p.baseId] = true;
+      }
+      return true;
     }).slice(0, 30);
 
     emptyMsg.style.display = matches.length ? 'none' : 'block';
@@ -4549,26 +4552,32 @@ function initSearchPanel() {
       row.type = 'button';
       row.className = 'search-result-row';
 
+      var isSaree = (p.department || 'saree') === 'saree';
       var img = document.createElement('img');
       img.src = p.image;
-      img.alt = p.design;
+      img.alt = p.design || p.type || p.id;
       row.appendChild(img);
 
       var info = document.createElement('div');
       info.className = 'search-result-info';
       var title = document.createElement('span');
       title.className = 'r-design';
-      title.textContent = p.design + ' — ' + p.id;
+      title.textContent = isSaree
+        ? p.design + ' — ' + p.id
+        : (p.type || p.category || 'Jewellery') + ' — ' + (p.baseId || p.id);
       var meta = document.createElement('span');
       meta.className = 'r-meta';
-      meta.textContent = p.type + ' · ' + p.pattern + ' · ' + seriesTitleCase(p.series);
+      meta.textContent = isSaree
+        ? p.type + ' · ' + p.pattern + ' · ' + seriesTitleCase(p.series)
+        : [p.colour, p.note].filter(Boolean).join(' · ') || 'Jewellery & Accessories';
       info.appendChild(title);
       info.appendChild(meta);
       row.appendChild(info);
 
       row.addEventListener('click', function () {
         var query = input.value.trim();
-        window.location.href = 'collections.html?q=' + encodeURIComponent(query) + '&open=' + encodeURIComponent(p.id);
+        var dest = isSaree ? 'collections.html' : 'jewellery-accessories.html';
+        window.location.href = dest + '?q=' + encodeURIComponent(query) + '&open=' + encodeURIComponent(p.id);
       });
 
       resultsWrap.appendChild(row);
