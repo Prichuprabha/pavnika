@@ -4762,27 +4762,141 @@ function initBusinessExpenses(token) {
   }
   clearBtn.addEventListener('click', resetForm);
 
+  // ---- summary cards, search and pagination ----
+  var PAGE_SIZE = 10;
+  var currentPage = 1;
+  var searchQuery = '';
+  var summaryEl = document.getElementById('admin-be-summary');
+  var searchInputEl = document.getElementById('admin-be-search');
+  var pagerShowing = document.getElementById('admin-be-showing');
+  var pagerPages = document.getElementById('admin-be-pages');
+
+  function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function monthKey(y, m) { // m is 0-11, may over/underflow
+    var d = new Date(y, m, 1);
+    return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2);
+  }
+
+  function pctDelta(now, before) {
+    if (!before) return null; // nothing to compare against
+    return ((now - before) / before) * 100;
+  }
+
+  function deltaHtml(pct, suffix) {
+    if (pct === null || !isFinite(pct)) return '<div class="be-card-delta is-flat">&ndash; <small>' + suffix + '</small></div>';
+    var r = Math.round(Math.abs(pct));
+    if (r === 0) return '<div class="be-card-delta is-flat">&rarr; 0% <small>' + suffix + '</small></div>';
+    // spending UP is bad (red), spending DOWN is good (green)
+    return '<div class="be-card-delta ' + (pct > 0 ? 'is-up' : 'is-down') + '">' + (pct > 0 ? '&uarr; ' : '&darr; ') + r + '% <small>' + suffix + '</small></div>';
+  }
+
+  function renderSummary() {
+    if (!summaryEl) return;
+    var now = new Date();
+    var cur = monthKey(now.getFullYear(), now.getMonth());
+    var prev = monthKey(now.getFullYear(), now.getMonth() - 1);
+    var prev2 = monthKey(now.getFullYear(), now.getMonth() - 2);
+    var total = 0, curSum = 0, prevSum = 0, prev2Sum = 0, curN = 0;
+    currentExpenses.forEach(function (e) {
+      var amt = Number(e.amount) || 0;
+      var k = (e.date || '').slice(0, 7);
+      total += amt;
+      if (k === cur) { curSum += amt; curN++; }
+      else if (k === prev) prevSum += amt;
+      else if (k === prev2) prev2Sum += amt;
+    });
+    var before = total - curSum; // everything up to the end of last month
+    var beforeN = currentExpenses.length - curN;
+    var ic = {
+      wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h13v4"/><path d="M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2z"/><circle cx="16.5" cy="14.5" r="1.2"/></svg>',
+      cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>',
+      doc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h4"/></svg>',
+      pie: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12A9 9 0 1 1 12 3v9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg>'
+    };
+    function card(icon, label, value, delta) {
+      return '<div class="be-card"><div class="be-card-icon">' + icon + '</div><div class="be-card-body"><div class="be-card-label">' + label + '</div><div class="be-card-value">' + value + '</div>' + delta + '</div></div>';
+    }
+    summaryEl.innerHTML =
+      card(ic.wallet, 'Total Expenses', 'AED ' + formatAED(total), deltaHtml(pctDelta(total, before), 'vs end of last month')) +
+      card(ic.cal, 'This Month', 'AED ' + formatAED(curSum), deltaHtml(pctDelta(curSum, prevSum), 'vs last month')) +
+      card(ic.doc, 'Last Month', 'AED ' + formatAED(prevSum), deltaHtml(pctDelta(prevSum, prev2Sum), 'vs month before')) +
+      card(ic.pie, 'Total Entries', String(currentExpenses.length), deltaHtml(pctDelta(currentExpenses.length, beforeN), 'vs end of last month'));
+  }
+
+  function filteredExpenses() {
+    var q = searchQuery.trim().toLowerCase();
+    if (!q) return currentExpenses;
+    return currentExpenses.filter(function (e) {
+      var hay = [e.category, e.description, e.date, formatAED(e.amount), String(e.amount), e.origCurrency].join(' ').toLowerCase();
+      return hay.indexOf(q) !== -1;
+    });
+  }
+
+  function pageList(cur, last) { // 1 2 3 ... 24 style, with the current page's neighbours
+    if (last <= 7) { var all = []; for (var i = 1; i <= last; i++) all.push(i); return all; }
+    var out = [1];
+    var lo = Math.max(2, cur - 1), hi = Math.min(last - 1, cur + 1);
+    if (cur <= 3) { lo = 2; hi = 3; }
+    if (cur >= last - 2) { lo = last - 2; hi = last - 1; }
+    if (lo > 2) out.push('gap');
+    for (var p = lo; p <= hi; p++) out.push(p);
+    if (hi < last - 1) out.push('gap');
+    out.push(last);
+    return out;
+  }
+
+  function renderPager(totalCount) {
+    var last = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+    if (currentPage > last) currentPage = last;
+    if (!totalCount) { pagerShowing.textContent = ''; pagerPages.innerHTML = ''; return; }
+    var from = (currentPage - 1) * PAGE_SIZE + 1;
+    var to = Math.min(currentPage * PAGE_SIZE, totalCount);
+    pagerShowing.textContent = 'Showing ' + from + '-' + to + ' of ' + totalCount + ' entr' + (totalCount === 1 ? 'y' : 'ies');
+    if (last === 1) { pagerPages.innerHTML = ''; return; }
+    var html = '<button type="button" class="be-page-btn" data-be-page="' + (currentPage - 1) + '"' + (currentPage === 1 ? ' disabled' : '') + '>&lsaquo;</button>';
+    pageList(currentPage, last).forEach(function (p) {
+      html += p === 'gap' ? '<span class="be-page-gap">&hellip;</span>'
+        : '<button type="button" class="be-page-btn' + (p === currentPage ? ' is-active' : '') + '" data-be-page="' + p + '">' + p + '</button>';
+    });
+    html += '<button type="button" class="be-page-btn" data-be-page="' + (currentPage + 1) + '"' + (currentPage === last ? ' disabled' : '') + '>&rsaquo;</button>';
+    pagerPages.innerHTML = html;
+    pagerPages.querySelectorAll('[data-be-page]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var n = parseInt(btn.getAttribute('data-be-page'), 10);
+        if (n >= 1 && n <= last) { currentPage = n; renderTable(); }
+      });
+    });
+  }
+
+  if (searchInputEl) searchInputEl.addEventListener('input', function () { searchQuery = searchInputEl.value; currentPage = 1; renderTable(); });
+
   function renderTable() {
-    if (!currentExpenses.length) {
-      rowsEl.innerHTML = '<tr><td colspan="5" style="opacity:0.6;">No expenses logged yet.</td></tr>';
+    renderSummary();
+    var list = filteredExpenses();
+    if (!list.length) {
+      rowsEl.innerHTML = '<tr><td colspan="5" style="opacity:0.6;">' + (currentExpenses.length ? 'No expenses match your search.' : 'No expenses logged yet.') + '</td></tr>';
       totalEl.textContent = '';
+      renderPager(0);
       return;
     }
-    rowsEl.innerHTML = currentExpenses.map(function (e) {
+    var last = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    if (currentPage > last) currentPage = last;
+    var pageItems = list.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+    rowsEl.innerHTML = pageItems.map(function (e) {
       var when = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
       var fxNote = e.origCurrency ? '<div class="fx-note" style="font-size:0.72rem; opacity:0.65;">' + e.origCurrency + ' ' + formatAED(e.origAmount) + ' @ ' + e.fxRate + '</div>' : '';
       // data-col feeds the mobile single-line layout (scoped to
-      // #admin-view-business-expenses under 880px): Date/Category/Amount
-      // stay visible on one line, Description is hidden there entirely
-      // (still shown on desktop and still in the CSV export).
-      return '<tr><td data-col="date">' + when + '</td><td data-col="category">' + (e.category || '') + '</td><td data-col="description">' + (e.description || '') + '</td>' +
+      // #admin-view-business-expenses under 880px).
+      return '<tr><td data-col="date">' + when + '</td><td data-col="category">' + escHtml(e.category) + '</td><td data-col="description">' + escHtml(e.description) + '</td>' +
         '<td data-col="amount"><div>' + formatAED(e.amount) + fxNote + '</div></td>' +
-        '<td data-col="actions" style="white-space:nowrap;"><button type="button" class="admin-btn-secondary" data-edit-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Edit</button> ' +
-        '<button type="button" class="admin-btn-secondary" data-delete-expense="' + e.id + '" style="font-size:0.72rem; padding:5px 12px;">Delete</button></td></tr>';
+        '<td data-col="actions"><div class="be-act-wrap"><button type="button" class="be-act-btn" data-edit-expense="' + e.id + '" title="Edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Edit</span></button>' +
+        '<button type="button" class="be-act-btn is-delete" data-delete-expense="' + e.id + '" title="Delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg><span>Delete</span></button></div></td></tr>';
     }).join('');
 
-    var total = currentExpenses.reduce(function (sum, e) { return sum + (Number(e.amount) || 0); }, 0);
-    totalEl.textContent = 'Total: AED ' + formatAED(total) + ' (' + currentExpenses.length + ' expense' + (currentExpenses.length === 1 ? '' : 's') + ')';
+    var total = list.reduce(function (sum, e) { return sum + (Number(e.amount) || 0); }, 0);
+    totalEl.textContent = (searchQuery.trim() ? 'Filtered total: AED ' : 'Total: AED ') + formatAED(total) + ' (' + list.length + ' expense' + (list.length === 1 ? '' : 's') + ')';
+    renderPager(list.length);
 
     rowsEl.querySelectorAll('[data-edit-expense]').forEach(function (btn) {
       btn.addEventListener('click', function () {
@@ -4972,6 +5086,22 @@ function initBusinessExpenses(token) {
       return obj;
     });
   }
+
+  document.getElementById('admin-be-download-pdf-btn').addEventListener('click', function () {
+    var list = filteredExpenses();
+    if (!list.length) { showStatus('error', 'Nothing to export.'); return; }
+    var total = list.reduce(function (s, e) { return s + (Number(e.amount) || 0); }, 0);
+    var rowsHtml = list.map(function (e) {
+      var when = e.date ? new Date(e.date + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+      return '<tr><td>' + when + '</td><td>' + escHtml(e.category) + '</td><td>' + escHtml(e.description) + '</td><td style="text-align:right">' + formatAED(e.amount) + '</td></tr>';
+    }).join('');
+    var w = window.open('', '_blank');
+    if (!w) { showStatus('error', 'Please allow pop-ups to export the PDF.'); return; }
+    w.document.write('<!doctype html><html><head><meta charset="utf-8"><title>Pavnika business expenses</title><style>body{font-family:Arial,sans-serif;color:#222;margin:28px}h1{font-size:18px;color:#5c0e22;margin:0 0 4px}p{font-size:12px;color:#666;margin:0 0 14px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#3c1223;color:#fff;text-align:left;padding:7px 8px}td{padding:6px 8px;border-bottom:1px solid #ddd}tr:nth-child(even) td{background:#faf4ee}tfoot td{font-weight:bold;border-top:2px solid #3c1223}</style></head><body><h1>Pavnika by Saranya &mdash; Business Expenses</h1><p>Exported ' + new Date().toLocaleDateString('en-GB') + ' &middot; ' + list.length + ' entries' + (searchQuery.trim() ? ' (filtered by &ldquo;' + escHtml(searchQuery.trim()) + '&rdquo;)' : '') + '</p><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th style="text-align:right">Amount (AED)</th></tr></thead><tbody>' + rowsHtml + '</tbody><tfoot><tr><td colspan="3">Total</td><td style="text-align:right">' + formatAED(total) + '</td></tr></tfoot></table></body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(function () { w.print(); }, 300);
+  });
 
   document.getElementById('admin-be-download-csv-btn').addEventListener('click', function () {
     var rows = [EXPENSE_CSV_COLUMNS.join(',')];
