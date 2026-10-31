@@ -4849,10 +4849,10 @@ function initBusinessExpenses(token) {
   function renderPager(totalCount) {
     var last = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
     if (currentPage > last) currentPage = last;
-    if (!totalCount) { pagerShowing.textContent = ''; pagerPages.innerHTML = ''; return; }
+    if (!totalCount) { pagerShowing.innerHTML = ''; pagerPages.innerHTML = ''; return; }
     var from = (currentPage - 1) * PAGE_SIZE + 1;
     var to = Math.min(currentPage * PAGE_SIZE, totalCount);
-    pagerShowing.textContent = 'Showing ' + from + '-' + to + ' of ' + totalCount + ' entr' + (totalCount === 1 ? 'y' : 'ies');
+    pagerShowing.innerHTML = '<span class="be-hide-sm">Showing </span>' + from + '-' + to + ' of ' + totalCount + '<span class="be-hide-sm"> entr' + (totalCount === 1 ? 'y' : 'ies') + '</span>';
     if (last === 1) { pagerPages.innerHTML = ''; return; }
     var html = '<button type="button" class="be-page-btn" data-be-page="' + (currentPage - 1) + '"' + (currentPage === 1 ? ' disabled' : '') + '>&lsaquo;</button>';
     pageList(currentPage, last).forEach(function (p) {

@@ -2079,8 +2079,8 @@
         .be-card-icon { flex:0 0 auto; width:54px; height:54px; border-radius:50%; background:#f6d9d6; color:#5c0e22; display:flex; align-items:center; justify-content:center; }
         .be-card-icon svg { width:26px; height:26px; }
         .be-card-body { min-width:0; }
-        .be-card-label { font-size:0.74rem; color:var(--ink); opacity:0.8; }
-        .be-card-value { font-family:'Cormorant Garamond',serif; font-size:1.55rem; font-weight:700; color:#3c1223; line-height:1.15; white-space:nowrap; }
+        .be-card-label { font-size:0.62rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink); opacity:0.6; margin:0 0 6px; }
+        .be-card-value { font-size:1.5rem; font-weight:600; color:var(--green-deep); margin:0; line-height:1.2; }
         .be-card-delta { font-size:0.72rem; font-weight:600; margin-top:3px; }
         .be-card-delta.is-up { color:#c0392b; } .be-card-delta.is-down { color:#1e8449; } .be-card-delta.is-flat { color:var(--ink); opacity:0.55; }
         .be-card-delta small { font-weight:400; opacity:0.65; }
@@ -2098,14 +2098,14 @@
         .be-act-btn.is-delete { color:#8c1d2b; border-color:#d9a3a8; }
         .be-act-btn:hover { background:#fff; }
         .be-act-wrap { display:flex; gap:8px; justify-content:flex-end; align-items:center; }
-        .be-pager { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin:-10px 0 14px; font-size:0.76rem; }
-        .be-pager-pages { display:flex; align-items:center; gap:6px; }
+        .be-pager { display:flex; align-items:center; justify-content:space-between; flex-wrap:nowrap; gap:8px; margin:-10px 0 14px; font-size:0.76rem; }
+        .be-pager-pages { display:flex; align-items:center; gap:5px; flex:0 0 auto; } #admin-be-showing { white-space:nowrap; min-width:0; }
         .be-page-btn { min-width:32px; height:32px; padding:0 8px; border:1px solid var(--stone); border-radius:8px; background:rgba(255,255,255,0.75); font-size:0.76rem; font-weight:600; cursor:pointer; color:var(--ink); }
         .be-page-btn.is-active { background:#5c0e22; border-color:#5c0e22; color:#fff; }
         .be-page-btn:disabled { opacity:0.4; cursor:default; }
         .be-page-gap { opacity:0.55; padding:0 2px; }
         @media (max-width: 900px) { .be-summary { grid-template-columns:repeat(2,1fr); } }
-        @media (max-width: 480px) { .be-card { padding:12px; gap:10px; } .be-card-icon { width:42px; height:42px; } .be-card-icon svg { width:20px; height:20px; } .be-card-value { font-size:0.98rem; } .be-search input { width:100%; } .be-search { flex:1 1 100%; } .be-act-btn span { display:none; } }
+        @media (max-width: 480px) { .be-pager { font-size:0.7rem; } .be-page-btn { min-width:27px; height:28px; padding:0 4px; font-size:0.72rem; } .be-pager-pages { gap:3px; } .be-hide-sm { display:none; } .be-card { padding:12px; gap:10px; } .be-card-icon { width:42px; height:42px; } .be-card-icon svg { width:20px; height:20px; } .be-card-value { font-size:1.05rem; } .be-search input { width:100%; } .be-search { flex:1 1 100%; } .be-act-btn span { display:none; } }
       </style>
       <div class="be-summary" id="admin-be-summary"></div>
 
@@ -2173,7 +2173,7 @@
         <tbody id="admin-be-rows"></tbody>
       </table>
       <div class="be-pager" id="admin-be-pager"><span id="admin-be-showing"></span><div class="be-pager-pages" id="admin-be-pages"></div></div>
-      <p style="font-size:0.78rem; font-weight:600; margin-top:10px;" id="admin-be-total"></p>
+      <p id="admin-be-total" style="display:none;"></p>
     </div>
 
     <div class="admin-view" id="admin-view-delivery-rates" style="display:none;">
@@ -2626,7 +2626,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=224"></script>
+<script src="admin.js?v=225"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->
