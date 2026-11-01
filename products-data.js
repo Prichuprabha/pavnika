@@ -3176,15 +3176,16 @@ window.PRODUCTS = [
     "qtyUnit": null,
     "maxPerOrder": null,
     "images": [
-      "https://pavnika.ae/assets/products/VW040-1.jpg",
       "https://pavnika.ae/assets/products/VW040-2.jpg",
       "https://pavnika.ae/assets/products/VW040-3.jpg",
       "https://pavnika.ae/assets/products/VW040-4.jpg",
       "https://pavnika.ae/assets/products/VW040-5.jpg",
       "https://pavnika.ae/assets/products/VW040-6.jpg",
-      "https://pavnika.ae/assets/products/VW040-7.jpg"
+      "https://pavnika.ae/assets/products/VW040-7.jpg",
+      "https://pavnika.ae/assets/products/VW040-8.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/VW040-1.jpg"
+    "image": "https://pavnika.ae/assets/products/VW040-2.jpg",
+    "soldAt": null
   },
   {
     "id": "VW039",
