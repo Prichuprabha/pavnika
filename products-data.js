@@ -122,7 +122,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW006-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW006-1.jpg",
-    "salePrice": null,
+    "salePrice": 219,
     "occasions": [
       "Wedding Guest"
     ]
@@ -149,7 +149,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/PP002-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/PP002-1.jpg",
-    "salePrice": null,
+    "salePrice": 822,
     "occasions": [
       "Bridal"
     ]
@@ -174,7 +174,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/PP003-5.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/PP003-1.jpg",
-    "salePrice": null,
+    "salePrice": 822,
     "occasions": [
       "Bridal"
     ]
@@ -200,7 +200,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/PP004-6.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/PP004-1.jpg",
-    "salePrice": null,
+    "salePrice": 822,
     "occasions": [
       "Bridal"
     ]
@@ -227,7 +227,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/GG002-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/GG002-1.jpg",
-    "salePrice": null,
+    "salePrice": 751,
     "occasions": [
       "Bridal"
     ]
@@ -254,7 +254,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SU002-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SU002-1.jpg",
-    "salePrice": null,
+    "salePrice": 1006,
     "occasions": [
       "Bridal"
     ]
@@ -324,7 +324,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SU004-14.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SU004-7.jpg",
-    "salePrice": null,
+    "salePrice": 1230,
     "occasions": [
       "Bridal"
     ],
@@ -358,7 +358,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SU005-15.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SU005-6.jpg",
-    "salePrice": null,
+    "salePrice": 755,
     "occasions": [
       "Bridal"
     ],
@@ -389,7 +389,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SU006-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SU006-1.jpg",
-    "salePrice": null,
+    "salePrice": 798,
     "occasions": [
       "Bridal"
     ]
@@ -466,7 +466,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SU009-1.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": 847
   },
   {
     "id": "SU010",
@@ -488,7 +489,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SU010-1.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": 843
   },
   {
     "id": "GG001",
@@ -513,7 +515,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/GG001-1.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": 879
   },
   {
     "id": "SA005",
@@ -581,7 +584,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SA007-6.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SA007-1.jpg",
-    "salePrice": null,
+    "salePrice": 706,
     "occasions": [
       "Wedding Guest"
     ]
@@ -609,7 +612,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/DA001-1.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": 823
   },
   {
     "id": "SA002",
@@ -660,7 +664,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SA003-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 653
   },
   {
     "id": "SA004",
@@ -683,7 +688,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SA004-6.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SA004-1.jpg",
-    "salePrice": null,
+    "salePrice": 474,
     "occasions": [
       "Wedding Guest"
     ]
@@ -712,7 +717,8 @@ window.PRODUCTS = [
     "occasions": [
       "Bridal",
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 595
   },
   {
     "id": "PS001",
@@ -739,7 +745,8 @@ window.PRODUCTS = [
       "Bridal",
       "Wedding Guest",
       "Reception"
-    ]
+    ],
+    "salePrice": 1120
   },
   {
     "id": "PP001",
@@ -765,7 +772,8 @@ window.PRODUCTS = [
     "occasions": [
       "Bridal",
       "Reception"
-    ]
+    ],
+    "salePrice": 1217
   },
   {
     "id": "PS002",
@@ -792,7 +800,8 @@ window.PRODUCTS = [
       "Bridal",
       "Wedding Guest",
       "Reception"
-    ]
+    ],
+    "salePrice": 1234
   },
   {
     "id": "SS001",
@@ -931,7 +940,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW008-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW008-1.jpg",
-    "salePrice": null,
+    "salePrice": 204,
     "occasions": [
       "Wedding Guest",
       "Festive"
@@ -955,7 +964,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW009-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW009-1.jpg",
-    "salePrice": null,
+    "salePrice": 228,
     "occasions": [
       "Wedding Guest",
       "Festive"
@@ -978,7 +987,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SA008-2.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SA008-1.jpg",
-    "salePrice": null,
+    "salePrice": 261,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1001,7 +1010,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/PP009-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/PP009-1.jpg",
-    "salePrice": null,
+    "salePrice": 271,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1072,7 +1081,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/PP010-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/PP010-1.jpg",
-    "salePrice": null,
+    "salePrice": 271,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1118,7 +1127,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/GG003-5.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/GG003-1.jpg",
-    "salePrice": null,
+    "salePrice": 323,
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -1172,7 +1181,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/PP011-5.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/PP011-1.jpg",
-    "salePrice": null,
+    "salePrice": 271,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1199,7 +1208,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW012-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW012-1.jpg",
-    "salePrice": null,
+    "salePrice": 228,
     "occasions": [
       "Wedding Guest",
       "Festive"
@@ -1315,7 +1324,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/FV004-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/FV004-1.jpg",
-    "salePrice": null,
+    "salePrice": 143,
     "occasions": [
       "Festive",
       "Everyday"
@@ -1339,7 +1348,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/FV005-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/FV005-1.jpg",
-    "salePrice": null,
+    "salePrice": 189,
     "occasions": [
       "Festive",
       "Everyday"
@@ -1363,7 +1372,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/FV006-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/FV006-1.jpg",
-    "salePrice": null,
+    "salePrice": 189,
     "occasions": [
       "Festive",
       "Everyday"
@@ -1387,7 +1396,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/FV007-3.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/FV007-1.jpg",
-    "salePrice": null,
+    "salePrice": 189,
     "occasions": [
       "Festive",
       "Everyday"
@@ -1412,7 +1421,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SA010-4.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SA010-1.jpg",
-    "salePrice": null,
+    "salePrice": 632,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1436,7 +1445,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SA011-4.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SA011-1.jpg",
-    "salePrice": null,
+    "salePrice": 304,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1463,7 +1472,8 @@ window.PRODUCTS = [
     "occasions": [
       "Wedding Guest",
       "Festive"
-    ]
+    ],
+    "salePrice": 230
   },
   {
     "id": "VW014",
@@ -1531,7 +1541,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SA012-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 347
   },
   {
     "id": "SA013",
@@ -1553,7 +1564,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SA013-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 235
   },
   {
     "id": "VW016",
@@ -1577,7 +1589,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW016-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW016-1.jpg",
-    "salePrice": null,
+    "salePrice": 228,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1602,7 +1614,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW017-5.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW017-1.jpg",
-    "salePrice": null,
+    "salePrice": 247,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1705,7 +1717,8 @@ window.PRODUCTS = [
     "occasions": [
       "Wedding Guest",
       "Everyday"
-    ]
+    ],
+    "salePrice": 216
   },
   {
     "id": "VW022",
@@ -1729,7 +1742,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW022-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW022-1.jpg",
-    "salePrice": null,
+    "salePrice": 271,
     "occasions": [
       "Wedding Guest"
     ]
@@ -1830,7 +1843,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/VW026-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 230
   },
   {
     "id": "SA014",
@@ -1961,7 +1975,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SU011-1.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": 872
   },
   {
     "id": "SU012",
@@ -1986,7 +2001,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SU012-1.jpg",
     "occasions": [
       "Bridal"
-    ]
+    ],
+    "salePrice": 896
   },
   {
     "id": "VW027",
@@ -2040,7 +2056,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/VW028-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 239
   },
   {
     "id": "VW029",
@@ -2116,7 +2133,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/VW031-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 230
   },
   {
     "id": "VW032",
@@ -2139,7 +2157,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW032-6.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW032-1.jpg",
-    "salePrice": null,
+    "salePrice": 228,
     "occasions": [
       "Wedding Guest"
     ]
@@ -2168,7 +2186,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/VW033-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 230
   },
   {
     "id": "VW034",
@@ -2193,7 +2212,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/VW034-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 235
   },
   {
     "id": "VW035",
@@ -2217,7 +2237,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW035-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW035-1.jpg",
-    "salePrice": null,
+    "salePrice": 328,
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2245,7 +2265,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/FV008-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/FV008-1.jpg",
-    "salePrice": null,
+    "salePrice": 309,
     "occasions": [
       "Festive",
       "Reception"
@@ -2329,7 +2349,8 @@ window.PRODUCTS = [
     "occasions": [
       "Bridal",
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 332
   },
   {
     "id": "BB004",
@@ -2355,7 +2376,8 @@ window.PRODUCTS = [
     "occasions": [
       "Bridal",
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 332
   },
   {
     "id": "BB005",
@@ -2464,7 +2486,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "salePrice": 156
   },
   {
     "id": "FV011",
@@ -2490,7 +2513,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "salePrice": 210
   },
   {
     "id": "FV012",
@@ -2516,7 +2540,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "salePrice": 210
   },
   {
     "id": "SU014",
@@ -2569,7 +2594,8 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/SO005-1.jpg",
     "occasions": [
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 546
   },
   {
     "id": "SO006",
@@ -2648,7 +2674,8 @@ window.PRODUCTS = [
     "occasions": [
       "Bridal",
       "Wedding Guest"
-    ]
+    ],
+    "salePrice": 322
   },
   {
     "id": "BB008",
@@ -2704,7 +2731,7 @@ window.PRODUCTS = [
       "Bridal",
       "Wedding Guest"
     ],
-    "salePrice": null
+    "salePrice": 309
   },
   {
     "id": "BB010",
@@ -2757,7 +2784,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/SU015-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/SU015-1.jpg",
-    "salePrice": null,
+    "salePrice": 945,
     "occasions": [
       "Bridal"
     ]
@@ -2815,7 +2842,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "salePrice": 156
   },
   {
     "id": "FV014",
@@ -2840,7 +2868,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "salePrice": 156
   },
   {
     "id": "FV015",
@@ -2866,7 +2895,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "salePrice": 156
   },
   {
     "id": "VW036",
@@ -2917,7 +2947,7 @@ window.PRODUCTS = [
     "image": "https://pavnika.ae/assets/products/BB006-1.jpg",
     "material": "Semi Kanchipuram",
     "shade": "Green",
-    "salePrice": null,
+    "salePrice": 280,
     "occasions": [
       "Bridal",
       "Wedding Guest"
@@ -2936,7 +2966,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 240,
-    "salePrice": null,
+    "salePrice": 228,
     "sold": false,
     "occasions": [
       "Wedding Guest",
@@ -2969,7 +2999,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 295,
-    "salePrice": null,
+    "salePrice": 280,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3001,7 +3031,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 318,
-    "salePrice": null,
+    "salePrice": 302,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3034,7 +3064,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 320,
-    "salePrice": null,
+    "salePrice": 304,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3066,7 +3096,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 345,
-    "salePrice": null,
+    "salePrice": 328,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3099,7 +3129,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 360,
-    "salePrice": null,
+    "salePrice": 342,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3131,7 +3161,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 375,
-    "salePrice": null,
+    "salePrice": 356,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3165,7 +3195,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 230,
-    "salePrice": null,
+    "salePrice": 219,
     "sold": false,
     "occasions": [
       "Wedding Guest",
@@ -3268,7 +3298,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 355,
-    "salePrice": null,
+    "salePrice": 337,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3301,7 +3331,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 265,
-    "salePrice": null,
+    "salePrice": 252,
     "sold": false,
     "occasions": [
       "Wedding Guest",
@@ -3334,7 +3364,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 365,
-    "salePrice": null,
+    "salePrice": 347,
     "sold": false,
     "occasions": [
       "Wedding Guest",
@@ -3368,7 +3398,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 575,
-    "salePrice": null,
+    "salePrice": 546,
     "sold": false,
     "occasions": [
       "Wedding Guest",
@@ -3403,7 +3433,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 355,
-    "salePrice": null,
+    "salePrice": 337,
     "sold": false,
     "occasions": [
       "Wedding Guest",
@@ -3436,7 +3466,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 365,
-    "salePrice": null,
+    "salePrice": 347,
     "sold": false,
     "occasions": [
       "Festive",
@@ -3470,7 +3500,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 340,
-    "salePrice": null,
+    "salePrice": 323,
     "sold": false,
     "occasions": [
       "Festive",
@@ -3503,7 +3533,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 345,
-    "salePrice": null,
+    "salePrice": 328,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3537,7 +3567,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 345,
-    "salePrice": null,
+    "salePrice": 328,
     "sold": false,
     "occasions": [
       "Bridal",
@@ -3571,7 +3601,7 @@ window.PRODUCTS = [
     "colour": "",
     "note": "",
     "price": 230,
-    "salePrice": null,
+    "salePrice": 219,
     "sold": false,
     "occasions": [
       "Festive",
@@ -3604,7 +3634,7 @@ window.PRODUCTS = [
     "colour": "White & Red",
     "note": "Jasmine Double Layer With Rose, A Graceful Blend of Jasmine & Rose",
     "price": 70,
-    "salePrice": null,
+    "salePrice": 67,
     "sold": false,
     "occasions": [],
     "quantity": 4,
@@ -3633,7 +3663,7 @@ window.PRODUCTS = [
     "colour": "White",
     "note": "Jasmine Double Layer in Timeless Traditional Elegance",
     "price": 70,
-    "salePrice": null,
+    "salePrice": 67,
     "sold": false,
     "occasions": [],
     "quantity": 4,
@@ -3661,7 +3691,7 @@ window.PRODUCTS = [
     "colour": "Gold",
     "note": "Goddess with Ruby & Emerald rectangle type set of 2 (Size - 2.8)",
     "price": 120,
-    "salePrice": null,
+    "salePrice": 114,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3717,7 +3747,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Lekshmi Necklace",
     "price": 155,
-    "salePrice": null,
+    "salePrice": 147,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3746,7 +3776,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Necklace and Long Haram Set with Earring",
     "price": 245,
-    "salePrice": null,
+    "salePrice": 233,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3774,7 +3804,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Non Jhumka",
     "price": 65,
-    "salePrice": null,
+    "salePrice": 62,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3801,7 +3831,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Bridal Jhumka Big Size",
     "price": 120,
-    "salePrice": null,
+    "salePrice": 114,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3828,7 +3858,7 @@ window.PRODUCTS = [
     "colour": "Antique Design in Golden color",
     "note": "Antique with Gutta Pusalu Hanging",
     "price": 80,
-    "salePrice": null,
+    "salePrice": 76,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3855,7 +3885,7 @@ window.PRODUCTS = [
     "colour": "Antique Design in Golden color",
     "note": "Ruby Emerald with earchain",
     "price": 95,
-    "salePrice": null,
+    "salePrice": 90,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3882,7 +3912,7 @@ window.PRODUCTS = [
     "colour": "Antique Design in Golden color",
     "note": "Antingue with hook type Ruby and Emerald",
     "price": 85,
-    "salePrice": null,
+    "salePrice": 81,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3909,7 +3939,7 @@ window.PRODUCTS = [
     "colour": "Antique Design in Golden color",
     "note": "Antingue with hook type Ruby",
     "price": 85,
-    "salePrice": null,
+    "salePrice": 81,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3936,7 +3966,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Long Haram with Round beads and Goddess Pentant",
     "price": 179,
-    "salePrice": null,
+    "salePrice": 170,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3965,7 +3995,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Goddess with Ruby",
     "price": 75,
-    "salePrice": null,
+    "salePrice": 71,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -3992,7 +4022,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Thin Layer Chain with Temple Big Pentant",
     "price": 90,
-    "salePrice": null,
+    "salePrice": 86,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -4021,7 +4051,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Premium Temple Necklace with Long Pentant",
     "price": 195,
-    "salePrice": null,
+    "salePrice": 185,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -4049,7 +4079,7 @@ window.PRODUCTS = [
     "colour": "AD stone  Design in Golden color",
     "note": "single layer AD Stone",
     "price": 70,
-    "salePrice": null,
+    "salePrice": 67,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -4077,7 +4107,7 @@ window.PRODUCTS = [
     "colour": "AD stone  Design in Golden color",
     "note": "AD stone with Emerald thick type",
     "price": 95,
-    "salePrice": null,
+    "salePrice": 90,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -4135,7 +4165,7 @@ window.PRODUCTS = [
     "colour": "AD  Stone Design in Golden color",
     "note": "Double Layer AD stone",
     "price": 95,
-    "salePrice": null,
+    "salePrice": 90,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -4192,7 +4222,7 @@ window.PRODUCTS = [
     "colour": "Coin Design in Golden color",
     "note": "Ruby Emerald Coin",
     "price": 130,
-    "salePrice": null,
+    "salePrice": 124,
     "sold": false,
     "occasions": [],
     "quantity": null,
@@ -4241,7 +4271,7 @@ window.PRODUCTS = [
     "type": "Reusable Flowers",
     "note": "Jasmine Single Layer, Timeless Traditional Elegance",
     "price": 60,
-    "salePrice": null,
+    "salePrice": 57,
     "sold": false,
     "soldAt": null,
     "images": [
