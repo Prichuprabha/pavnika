@@ -2254,7 +2254,7 @@ window.PRODUCTS = [
     "material": "Banarasi",
     "shade": "Purple / Violet",
     "price": 325,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/FV008-1.jpg",
       "https://pavnika.ae/assets/products/FV008-2.jpg",
@@ -2270,7 +2270,7 @@ window.PRODUCTS = [
       "Festive",
       "Reception"
     ],
-    "soldAt": null,
+    "soldAt": "2026-11-05T05:37:11.386Z",
     "quantity": null,
     "qtyUnit": null,
     "maxPerOrder": null
