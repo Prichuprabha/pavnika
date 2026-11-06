@@ -4027,7 +4027,7 @@ window.PRODUCTS = [
     "note": "Thin Layer Chain with Temple Big Pentant",
     "price": 90,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [],
     "quantity": null,
     "qtyUnit": null,
@@ -4039,7 +4039,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/LH001-4.jpg",
       "https://pavnika.ae/assets/products/LH001-5.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/LH001-1.jpg"
+    "image": "https://pavnika.ae/assets/products/LH001-1.jpg",
+    "soldAt": "2026-11-06T12:29:02.667Z"
   },
   {
     "id": "NK008",
