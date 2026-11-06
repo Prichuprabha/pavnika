@@ -4026,7 +4026,7 @@ window.PRODUCTS = [
     "colour": "Temple Design in Golden color",
     "note": "Thin Layer Chain with Temple Big Pentant",
     "price": 90,
-    "salePrice": 86,
+    "salePrice": null,
     "sold": false,
     "occasions": [],
     "quantity": null,
