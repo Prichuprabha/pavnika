@@ -1,15 +1,5 @@
 [
   {
-    "image": "diwali_banner.jpg",
-    "mobileImage": "diwali_banner-mobile.jpg",
-    "link": "collections.html",
-    "hideText": true,
-    "eyebrow": "",
-    "heading": "",
-    "description": "",
-    "seconds": 6
-  },
-  {
     "image": "banner-v2-1.jpg",
     "mobileImage": "banner-v2-1-mobile.jpg",
     "link": "collections.html",
@@ -48,5 +38,15 @@
     "heading": "",
     "description": "",
     "seconds": ""
+  },
+  {
+    "image": "",
+    "mobileImage": "",
+    "link": "collections.html",
+    "hideText": false,
+    "eyebrow": "",
+    "heading": "",
+    "description": "",
+    "seconds": 5
   }
 ]
