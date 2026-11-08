@@ -2043,7 +2043,7 @@ window.PRODUCTS = [
     "material": "Semi Kanchipuram",
     "shade": "Pink",
     "price": 252,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/VW028-1.jpg",
       "https://pavnika.ae/assets/products/VW028-2.jpg",
@@ -2057,7 +2057,8 @@ window.PRODUCTS = [
     "occasions": [
       "Wedding Guest"
     ],
-    "salePrice": 239
+    "salePrice": 239,
+    "soldAt": "2026-11-08T05:20:33.614Z"
   },
   {
     "id": "VW029",
