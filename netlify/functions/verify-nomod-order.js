@@ -16,8 +16,8 @@
 //       mechanism the admin panel already uses.
 //     - Updates the order record to "paid".
 //     - Emails a receipt to pavnikabysaranya@gmail.com via Resend.
-// - Safe to call more than once for the same order — if it's already
-//   marked paid, it won't repeat the saree-marking or email steps.
+// - Safe to call more than once for the same order — if it's no longer
+//   "pending" (paid, shipped, delivered...), it won't repeat the saree-marking or email steps.
 // - The receipt email (sendReceiptEmail) includes the fields required
 //   by UAE Consumer Protection Law for a consumer invoice: seller
 //   trade name/address/licence number/contact, the order date, item
@@ -50,7 +50,8 @@ async function getOrderByReference(referenceId) {
 async function markOrderPaid(orderId, paymentMethod) {
   var patch = { status: 'paid' };
   if (paymentMethod) patch.payment_method = paymentMethod;
-  await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}`, {
+  // Only flips pending -> paid; never overwrites a status the admin set later.
+  await fetch(`${SUPABASE_URL}/rest/v1/orders?id=eq.${orderId}&status=eq.pending`, {
     method: 'PATCH',
     headers: supabaseHeaders(),
     body: JSON.stringify(patch)
@@ -286,9 +287,14 @@ exports.handler = async function (event) {
       return { statusCode: 200, body: JSON.stringify({ paid: false, error: 'No matching order found.' }) };
     }
 
-    if (order.status === 'paid') {
+    if (order.status !== 'pending') {
       // Already processed on a previous call — nothing more to do.
-      return { statusCode: 200, body: JSON.stringify({ paid: true, alreadyProcessed: true, order: order }) };
+      // IMPORTANT: this must be "anything other than pending", not just
+      // "paid". Once the admin moves an order on to shipped / delivered /
+      // etc., a repeat visit to order-success.html must NOT re-run stock,
+      // promo, store credit or the receipt email, nor reset the status.
+      var okStatuses = ['paid', 'shipped', 'delivered', 'delivered_direct_pay'];
+      return { statusCode: 200, body: JSON.stringify({ paid: okStatuses.indexOf(order.status) !== -1, alreadyProcessed: true, order: order }) };
     }
 
     const nomodRes = await fetch(`${NOMOD_BASE}/checkout/${order.nomod_checkout_id}`, {
