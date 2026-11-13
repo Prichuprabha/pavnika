@@ -6331,17 +6331,20 @@ a.home-video-tile-link {
 
 /* ---------- Mobile: wider content, less empty side space ----------
    Phones only (<=640px). Scoped to the home page's Curated / Follow the
-   Drape / Shop by Category sections and the Collection + Jewellery pages.
+   Drape / Jewellery Shop-by-Category sections and the Collection +
+   Jewellery pages. "Our signature series" is intentionally left as-is.
    Desktop/tablet and the About / Contact / text pages are untouched. */
 @media (max-width: 640px) {
   .home-page .hero-spacer-section .container,
   .home-page .drape-band,
-  .home-page section:has(.category-marquee) .container,
+  .home-page .jewel-promo-section .container,
   body:has(.catalogue-hero) section .container {
     padding-left: 14px;
     padding-right: 14px;
   }
   .home-page .curated-grid { gap: 10px; }
-  .home-page .category-tile { width: 78vw; }
+  .home-page .jewel-access-grid { gap: 10px; }
   body:has(.catalogue-hero) .product-grid { gap: 12px; }
+  /* ID tag sits closer under the series tag */
+  body:has(.catalogue-hero) .product-photo .id-badge { top: 38px; }
 }
