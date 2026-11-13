@@ -376,6 +376,67 @@ function buildDispatchConfirmationMessage(order) {
     'Thank you again for shopping with Pavnika by Saranya!';
 }
 
+// Shipped / Delivered customer updates. Offered right after an order's
+// status is saved (see offerStatusWhatsApp). Plain text only -- WhatsApp
+// bold is single asterisks.
+function buildShippedMessage(order, items) {
+  var firstName = (order.customer_name || '').trim().split(' ')[0] || 'there';
+  var address = formatAddressPlain(order.shipping_address || order.billing_address);
+  var shown = items.slice(0, 3);
+  var lines = shown.map(function (it) {
+    var qty = it.qty && it.qty > 1 ? ' \u00d7 ' + it.qty : '';
+    return '\u2014 ' + (it.name || it.id || 'Item') + qty + ' (AED ' + formatAED(it.price || 0) + ')';
+  });
+  if (items.length > shown.length) lines.push('\u2014 +' + (items.length - shown.length) + ' more');
+  return 'Hi ' + firstName + ', this is the Pavnika dispatch team \u2014 great news!\n\n' +
+    'Your order #' + (order.order_number || order.id) + ' has been shipped and is on its way to you.\n\n' +
+    (lines.length ? lines.join('\n') + '\n\n' : '') +
+    (address ? 'Delivering to:\n*' + address + '*\n\n' : '') +
+    'Please keep your phone handy, our delivery partner may call you on arrival.\n\n' +
+    'Thank you for shopping with Pavnika by Saranya!';
+}
+
+function buildDeliveredMessage(order) {
+  var firstName = (order.customer_name || '').trim().split(' ')[0] || 'there';
+  return 'Hi ' + firstName + ', this is the Pavnika team \u2014 your order #' + (order.order_number || order.id) + ' has been delivered.\n\n' +
+    'We hope you love your purchase! If you have any questions about it, just reply to this message and we\u2019ll be happy to help.\n\n' +
+    'Thank you for shopping with Pavnika by Saranya!';
+}
+
+// After a status is saved as Shipped or Delivered, offer a pre-filled,
+// editable WhatsApp message to the customer. Opens WhatsApp for the admin
+// to press send (same as the other WhatsApp buttons here); skipped
+// silently when the order has no phone number or another status was set.
+function offerStatusWhatsApp(order, newStatus) {
+  if (!order || !order.customer_phone) return;
+  if (newStatus !== 'shipped' && newStatus !== 'delivered') return;
+  var overlay = document.getElementById('admin-wa-notify-overlay');
+  if (!overlay) return;
+  var items = [];
+  try { items = JSON.parse(order.items || '[]'); } catch (e) {}
+  var label = newStatus === 'shipped' ? 'Shipped' : 'Delivered';
+  var firstName = (order.customer_name || '').trim().split(' ')[0] || 'the customer';
+  document.getElementById('admin-wa-notify-text').innerHTML = 'Order #' + (order.order_number || order.id) + ' marked <strong>' + label + '</strong>. Notify ' + firstName.replace(/</g, '&lt;') + ' on WhatsApp?';
+  var msgEl = document.getElementById('admin-wa-notify-msg');
+  msgEl.value = newStatus === 'shipped' ? buildShippedMessage(order, items) : buildDeliveredMessage(order);
+  document.getElementById('admin-wa-notify-to').textContent = 'To: ' + order.customer_phone + ' \u00b7 You can edit the message before sending.';
+  var sendBtn = document.getElementById('admin-wa-notify-send');
+  var skipBtn = document.getElementById('admin-wa-notify-skip');
+  overlay.classList.add('is-open');
+  function cleanup() {
+    overlay.classList.remove('is-open');
+    sendBtn.removeEventListener('click', onSend);
+    skipBtn.removeEventListener('click', onSkip);
+    overlay.removeEventListener('click', onOverlay);
+  }
+  function onSend() { window.open(buildWhatsAppUrl(order.customer_phone, msgEl.value), '_blank', 'noopener'); cleanup(); }
+  function onSkip() { cleanup(); }
+  function onOverlay(e) { if (e.target === overlay) cleanup(); }
+  sendBtn.addEventListener('click', onSend);
+  skipBtn.addEventListener('click', onSkip);
+  overlay.addEventListener('click', onOverlay);
+}
+
 function buildWhatsAppUrl(phone, message) {
   var digits = String(phone || '').replace(/[^\d]/g, '');
   return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(message);
@@ -6048,6 +6109,7 @@ function initOrdersView(token) {
               showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' marked Delivered (' + DELIVERY_METHOD_LABEL[dmResult.data.deliveryMethod] + ', AED ' + formatAED(dmResult.data.deliveryCost || 0) + ').');
               renderSummary();
               renderTable();
+              offerStatusWhatsApp(order, 'delivered');
             });
           }).catch(function () { showStatus('error', 'Network error — status was not updated.'); });
         }, function () { statusSelectEl.value = prevStatusTable; }, { partnerRate: currentDeliveryRates.partner_rate });
@@ -6061,6 +6123,7 @@ function initOrdersView(token) {
           showStatus('success', 'Order #' + (order ? order.order_number : orderId) + ' updated to ' + statusLabel(newStatus) + '.');
           renderSummary();
           renderTable(); // re-render so the status pill's colour matches the new status
+          offerStatusWhatsApp(order, newStatus);
         })
         .catch(function () { showStatus('error', 'Network error — status was not updated.'); });
       return;
@@ -6563,6 +6626,7 @@ function initOrdersView(token) {
                 showDrawerStatus('success', 'Updated to Delivered (' + DELIVERY_METHOD_LABEL[dmResult.data.deliveryMethod] + ', AED ' + formatAED(dmResult.data.deliveryCost || 0) + ').');
                 renderSummary();
                 renderTable();
+                offerStatusWhatsApp(orderForStatus, 'delivered');
               });
             })
             .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); select.value = prevStatus; });
@@ -6583,6 +6647,7 @@ function initOrdersView(token) {
             showDrawerStatus('success', 'Updated to ' + statusLabel(newStatus) + '.');
             renderSummary();
             renderTable();
+            offerStatusWhatsApp(order, newStatus);
           })
           .catch(function () { showDrawerStatus('error', 'Network error — status was not updated.'); select.value = prevStatus; });
       }, function () { select.value = prevStatus; });
