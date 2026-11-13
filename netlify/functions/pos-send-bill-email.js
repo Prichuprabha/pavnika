@@ -44,13 +44,24 @@ exports.handler = async function (event) {
         </td>
         <td style="padding:10px; border-bottom:1px solid #DED0C7; font-size:13px; color:#3B2528;">
           ${it.id} \u2014 ${it.name || ''}
-          <br><span style="font-size:10px; color:#a08b7f;">Qty: ${it.qty || 1}</span>
+          <br><span style="font-size:10px; color:#a08b7f;">Qty: ${it.qty || 1}${Number(it.originalPrice) > Number(it.price) ? ' &middot; was AED ' + formatAED(it.originalPrice) + ' each' : ''}</span>
         </td>
         <td style="padding:10px; border-bottom:1px solid #DED0C7; font-size:13px; font-weight:bold; color:#B68A69; white-space:nowrap;">
-          AED ${formatAED((it.price || 0) * (it.qty || 1))}
+          ${Number(it.originalPrice) > Number(it.price)
+            ? `<span style="text-decoration:line-through; color:#a08b7f; font-weight:normal; font-size:11px;">AED ${formatAED(it.originalPrice * (it.qty || 1))}</span><br>AED ${formatAED((it.price || 0) * (it.qty || 1))}<br><span style="font-size:10px; font-weight:600; color:#3B6D11;">Sale &minus;${Math.round((1 - Number(it.price) / Number(it.originalPrice)) * 100)}%</span>`
+            : `AED ${formatAED((it.price || 0) * (it.qty || 1))}`}
         </td>
       </tr>`;
   }).join('');
+
+  // Sale-price savings (original vs. charged) -- shown only when an item
+  // carries originalPrice; older bills render exactly as before.
+  var origTotal = 0, saleTotal = 0;
+  items.forEach(function (it) {
+    var q = Number(it.qty) || 1, cur = Number(it.price) || 0;
+    origTotal += (Number(it.originalPrice) > cur ? Number(it.originalPrice) : cur) * q; saleTotal += cur * q;
+  });
+  var saleSavings = Math.round((origTotal - saleTotal) * 100) / 100;
 
   var html = `
     <div style="font-family:sans-serif; max-width:520px; margin:0 auto; background:#FCF5ED;">
@@ -101,6 +112,15 @@ exports.handler = async function (event) {
 
         <div style="border-top:1px solid #DED0C7; padding-top:10px; margin-top:6px;">
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            ${saleSavings > 0 ? `
+            <tr>
+              <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Original price / <span dir="rtl" style="text-transform:none;">السعر الأصلي</span></td>
+              <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(origTotal)}</td>
+            </tr>
+            <tr>
+              <td style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">Sale discount / <span dir="rtl" style="text-transform:none; font-weight:400;">خصم التخفيضات</span></td>
+              <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">&minus; AED ${formatAED(saleSavings)}</td>
+            </tr>` : ''}
             <tr>
               <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Subtotal / <span dir="rtl" style="text-transform:none;">المجموع الفرعي</span></td>
               <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(body.subtotal)}</td>

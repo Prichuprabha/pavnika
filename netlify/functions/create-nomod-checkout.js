@@ -184,7 +184,13 @@ exports.handler = async function (event) {
     subtotalCents += lineTotalCents;
     totalDiscountCents += itemDiscountCents;
 
-    resolvedItems.push(Object.assign({}, it, { qty: qty, price: centsToStr(unitPriceCents) }));
+    // originalPrice: the regular (pre-sale) price, saved only when a sale
+    // price was actually applied -- lets receipts show the original value
+    // and the sale saving. Absent on non-sale items.
+    var resolved = Object.assign({}, it, { qty: qty, price: centsToStr(unitPriceCents) });
+    if (unitPriceCents < toCents(catalogItem.price)) resolved.originalPrice = centsToStr(toCents(catalogItem.price));
+    else delete resolved.originalPrice;
+    resolvedItems.push(resolved);
 
     var item = {
       item_id: it.id,

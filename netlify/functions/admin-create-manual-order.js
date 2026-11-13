@@ -135,6 +135,7 @@ exports.handler = async function (event) {
       id: it.id,
       name: it.name,
       price: Number(it.price) || 0,
+      originalPrice: Number(it.originalPrice) > Number(it.price) ? Number(it.originalPrice) : undefined, // regular price when a sale price was applied
       qty: Number(it.qty) || 1,
       department: it.department || '',
       series: it.series || '',

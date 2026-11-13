@@ -7255,15 +7255,29 @@ function initPinnedHero() {
       ? rec.items.map(function (it) {
           var qty = Number(it.qty) || 1;
           var price = Number(it.price) || 0;
+          var orig = Number(it.originalPrice) > price ? Number(it.originalPrice) : 0;
           return '<div class="rc-item">' +
             '<div><span>' + esc((it.id ? it.id + ' \u2014 ' : '') + (it.name || it.material || 'Item')) + '</span>' +
-            (qty > 1 ? '<p class="rc-item-sub">' + qty + ' \u00d7 ' + money(price) + '</p>' : '') + '</div>' +
+            (orig ? '<p class="rc-item-sub"><s>' + money(orig) + '</s> \u2192 ' + money(price) + (qty > 1 ? ' \u00d7 ' + qty : '') + ' \u00b7 <span style="color:#3B6D11; font-weight:600;">Sale \u2212' + Math.round((1 - price / orig) * 100) + '%</span></p>'
+              : (qty > 1 ? '<p class="rc-item-sub">' + qty + ' \u00d7 ' + money(price) + '</p>' : '')) + '</div>' +
             '<span>' + money(price * qty) + '</span>' +
           '</div>';
         }).join('')
       : '<p class="rc-item-sub">No items on record.</p>';
 
-    var totalsHtml = '<div class="rc-row"><span>Subtotal</span><span>' + money(rec.subtotal) + '</span></div>';
+    // Sale-price savings (original vs. charged) -- only when an item carries originalPrice.
+    var rcOrig = 0, rcSale = 0;
+    rec.items.forEach(function (it) {
+      var q = Number(it.qty) || 1, cur = Number(it.price) || 0;
+      rcOrig += (Number(it.originalPrice) > cur ? Number(it.originalPrice) : cur) * q; rcSale += cur * q;
+    });
+    var rcSavings = Math.round((rcOrig - rcSale) * 100) / 100;
+    var totalsHtml = '';
+    if (rcSavings > 0) {
+      totalsHtml += '<div class="rc-row"><span>Original price</span><span>' + money(rcOrig) + '</span></div>' +
+        '<div class="rc-row" style="color:#3B6D11; font-weight:600;"><span>Sale discount</span><span>\u2212 ' + money(rcSavings) + '</span></div>';
+    }
+    totalsHtml += '<div class="rc-row"><span>Subtotal</span><span>' + money(rec.subtotal) + '</span></div>';
     if (Number(rec.discount) > 0) {
       totalsHtml += '<div class="rc-row"><span>Discount' + (rec.promo ? ' (' + esc(rec.promo) + ')' : '') +
         '</span><span>\u2212 ' + money(rec.discount) + '</span></div>';

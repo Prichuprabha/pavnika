@@ -6305,9 +6305,21 @@ function initOrdersView(token) {
       return '<div class="admin-order-drawer-item">' +
         (img ? '<img src="' + img + '">' : '') +
         '<span style="flex:1;">' + (it.id ? it.id + ' \u2014 ' : '') + (it.name || it.id || 'Item') + (it.qty && it.qty > 1 ? ' &times; ' + it.qty : '') + '</span>' +
-        '<span style="font-weight:600;">AED ' + formatAED(it.price || 0) + '</span>' +
+        '<span style="font-weight:600; text-align:right;">' +
+          (Number(it.originalPrice) > Number(it.price) ? '<s style="font-weight:400; opacity:0.55; font-size:0.78em;">AED ' + formatAED(it.originalPrice) + '</s><br>' : '') +
+          'AED ' + formatAED(it.price || 0) +
+          (Number(it.originalPrice) > Number(it.price) ? '<br><span style="font-size:0.72em; color:#3B6D11;">Sale \u2212' + Math.round((1 - Number(it.price) / Number(it.originalPrice)) * 100) + '%</span>' : '') +
+        '</span>' +
       '</div>';
     }).join('') || '<p style="opacity:0.6;">No items on record.</p>';
+
+    // Sale-price savings (original vs. charged) -- only when an item carries originalPrice.
+    var drOrig = 0, drSale = 0;
+    items.forEach(function (it) {
+      var q = Number(it.qty) || 1, cur = Number(it.price) || 0;
+      drOrig += (Number(it.originalPrice) > cur ? Number(it.originalPrice) : cur) * q; drSale += cur * q;
+    });
+    var drSavings = Math.round((drOrig - drSale) * 100) / 100;
 
     var subtotal = order.subtotal != null ? Number(order.subtotal) : Number(order.total);
     var discount = Number(order.discount_amount) || 0;
@@ -6322,6 +6334,8 @@ function initOrdersView(token) {
       '<h4>Items</h4>' + itemsHtml +
 
       '<h4>Order Summary</h4>' +
+      (drSavings > 0 ? '<div class="admin-order-drawer-totals-row"><span>Original price</span><span>AED ' + formatAED(drOrig) + '</span></div>' +
+        '<div class="admin-order-drawer-totals-row" style="color:#3B6D11; font-weight:600;"><span>Sale discount</span><span>-AED ' + formatAED(drSavings) + '</span></div>' : '') +
       '<div class="admin-order-drawer-totals-row"><span>Subtotal</span><span>AED ' + formatAED(subtotal) + '</span></div>' +
       (discount > 0 ? '<div class="admin-order-drawer-totals-row"><span>Discount' + (order.promo_code ? ' (' + order.promo_code + ')' : '') + '</span><span>-AED ' + formatAED(discount) + '</span></div>' : '') +
       (shippingFee > 0 ? '<div class="admin-order-drawer-totals-row"><span>Shipping (non-refundable)</span><span>AED ' + formatAED(shippingFee) + '</span></div>' : '') +
@@ -7172,6 +7186,7 @@ function initManualOrderView(token) {
         id: product.id,
         name: itemDisplayName(product),
         price: effectivePrice(product),
+        originalPrice: effectivePrice(product) < Number(product.price) ? Number(product.price) : undefined, // regular price, shown on receipts when on sale
         qty: Math.min(qty, stockCap),
         stockCap: stockCap,
         // Same field set the online checkout sends (script.js) -- without

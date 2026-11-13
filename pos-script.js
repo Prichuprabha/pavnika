@@ -364,7 +364,7 @@ function previewHeldSale(sale) {
   itemsEl.innerHTML = items.map(function (it) {
     var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
     return '<div class="pos-cart-item">' + imgTag +
-      '<div class="ci-info"><div class="ci-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="ci-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div></div>' +
+      '<div class="ci-info"><div class="ci-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="ci-sub">' + itemSubHtml(it) + '</div></div>' +
       '<div class="ci-total">' + formatAED(it.price * it.qty) + '</div></div>';
   }).join('');
 
@@ -864,7 +864,7 @@ function viewSalesHistoryBill(id) {
   itemsEl.innerHTML = (sale.items || []).map(function (it) {
     var imgTag = it.image ? '<img src="' + it.image + '">' : '<div style="width:42px;height:54px;border-radius:6px;background:var(--ivory-deep);flex-shrink:0;"></div>';
     return '<div class="pos-cart-item">' + imgTag +
-      '<div class="ci-info"><div class="ci-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="ci-sub">Qty ' + it.qty + ' &times; AED ' + formatAED(it.price) + '</div></div>' +
+      '<div class="ci-info"><div class="ci-name">' + it.id + ' \u2014 ' + it.name + '</div><div class="ci-sub">' + itemSubHtml(it) + '</div></div>' +
       '<div class="ci-total">' + formatAED(it.price * it.qty) + '</div></div>';
   }).join('');
 
@@ -881,10 +881,7 @@ function viewSalesHistoryBill(id) {
 }
 
 function buildHistoricalReceiptHtml(sale) {
-  var itemLines = (sale.items || []).map(function (it) {
-    return '<div>' + it.id + ' ' + it.name + '</div>' +
-      '<div class="pr-row"><span>' + it.qty + ' x ' + formatAED(it.price) + '</span><span>' + formatAED(it.price * it.qty) + '</span></div>';
-  }).join('');
+  var itemLines = receiptItemLinesHtml(sale.items);
 
   return '<div class="pr-header">' +
       '<div class="pr-shop-name">PAVNIKA BY SARANYA</div>' +
@@ -899,6 +896,7 @@ function buildHistoricalReceiptHtml(sale) {
     '</div>' +
     '<div class="pr-dashed">' + itemLines + '</div>' +
     '<div class="pr-dashed">' +
+      receiptSavingsRowsHtml(sale.items) +
       '<div class="pr-row"><span>Subtotal</span><span>' + formatAED(sale.subtotal) + '</span></div>' +
       (sale.discount_amount > 0 ? '<div class="pr-row"><span>Discount</span><span>-' + formatAED(sale.discount_amount) + '</span></div>' : '') +
       '<div class="pr-row"><span>VAT</span><span>N/A</span></div>' +
@@ -928,8 +926,10 @@ function sendSalesHistoryWhatsApp(id) {
   lines.push('');
   lines.push('Bill ' + sale.bill_number + ' \u00b7 ' + new Date(sale.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }));
   (sale.items || []).forEach(function (it) {
-    lines.push(it.id + ' \u2014 ' + it.name + ' x' + it.qty + ' \u2014 AED ' + formatAED(it.price * it.qty));
+    lines.push(it.id + ' \u2014 ' + it.name + ' x' + it.qty + ' \u2014 AED ' + formatAED(it.price * it.qty) + (itemOnSale(it) ? ' (was AED ' + formatAED(it.originalPrice * it.qty) + ')' : ''));
   });
+  var wsSale = itemsSaleSavings(sale.items);
+  if (wsSale.savings > 0) lines.push('Sale savings: \u2212AED ' + formatAED(wsSale.savings));
   if (sale.discount_amount > 0) lines.push('Discount: \u2212AED ' + formatAED(sale.discount_amount));
   lines.push('Total: AED ' + formatAED(sale.total));
 
@@ -1058,6 +1058,42 @@ function formatAED(n) {
 // one is set, otherwise the regular price. Scanning a saree at the till
 // should charge this, not the pre-discount price, and this same rule
 // is already used identically on the website and in the admin panel.
+// ---- Sale-price display helpers ------------------------------------
+// A cart/sale item carries originalPrice (the regular price) only when a
+// sale price was applied. These helpers turn that into the "was / now /
+// Sale -X%" wording on cart lines, receipts and WhatsApp text. Items
+// without originalPrice (every older sale) render exactly as before.
+function itemOnSale(it) { return Number(it.originalPrice) > Number(it.price); }
+function itemSalePct(it) { return Math.round((1 - Number(it.price) / Number(it.originalPrice)) * 100); }
+function itemSubHtml(it) {
+  if (itemOnSale(it)) {
+    return 'Qty ' + it.qty + ' &times; <s>AED ' + formatAED(it.originalPrice) + '</s> AED ' + formatAED(it.price) +
+      ' <span style="color:#3B6D11; font-weight:600;">Sale \u2212' + itemSalePct(it) + '%</span>';
+  }
+  return 'Qty ' + it.qty + ' &times; AED ' + formatAED(it.price);
+}
+function itemsSaleSavings(items) {
+  var orig = 0, sale = 0;
+  (items || []).forEach(function (it) {
+    var q = Number(it.qty) || 1, cur = Number(it.price) || 0;
+    orig += (itemOnSale(it) ? Number(it.originalPrice) : cur) * q; sale += cur * q;
+  });
+  return { original: orig, savings: Math.round((orig - sale) * 100) / 100 };
+}
+function receiptItemLinesHtml(items) {
+  return (items || []).map(function (it) {
+    return '<div>' + it.id + ' ' + it.name + '</div>' +
+      (itemOnSale(it) ? '<div class="pr-row"><span>Was ' + formatAED(it.originalPrice) + ' (Sale \u2212' + itemSalePct(it) + '%)</span><span></span></div>' : '') +
+      '<div class="pr-row"><span>' + it.qty + ' x ' + formatAED(it.price) + '</span><span>' + formatAED(it.price * it.qty) + '</span></div>';
+  }).join('');
+}
+function receiptSavingsRowsHtml(items) {
+  var t = itemsSaleSavings(items);
+  if (!(t.savings > 0)) return '';
+  return '<div class="pr-row"><span>Original price</span><span>' + formatAED(t.original) + '</span></div>' +
+    '<div class="pr-row"><span>Sale discount</span><span>-' + formatAED(t.savings) + '</span></div>';
+}
+
 function effectivePrice(p) {
   var hasValidSale = p && p.salePrice && Number(p.salePrice) > 0 && Number(p.salePrice) < Number(p.price);
   return hasValidSale ? Number(p.salePrice) : Number(p && p.price || 0);
@@ -1375,7 +1411,7 @@ function addToCart() {
     existing.qty += posState.currentQty;
     existing.dupeWarning = true; // added as a separate action a second time — likely an accidental re-scan
   } else {
-    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: effectivePrice(item), qty: posState.currentQty, image: item.image || '', dupeWarning: false, sold: !!item.sold });
+    posState.cart.push({ id: item.id, name: itemDisplayName(item), price: effectivePrice(item), originalPrice: effectivePrice(item) < Number(item.price) ? Number(item.price) : undefined, qty: posState.currentQty, image: item.image || '', dupeWarning: false, sold: !!item.sold });
   }
   renderCart();
   refreshStepLocks();
@@ -1408,7 +1444,7 @@ function renderCart() {
       var dupeNote = c.dupeWarning ? '<div class="ci-sub" style="color:#B8142A;">Added Separately</div>' : '';
       return '<div class="pos-cart-item' + warnClass + '">' + imgTag +
         '<div class="ci-info"><div class="ci-name">' + c.id + ' \u2014 ' + c.name + '</div>' +
-        '<div class="ci-sub">Qty ' + c.qty + ' &times; AED ' + formatAED(c.price) + '</div>' + dupeNote + '</div>' +
+        '<div class="ci-sub">' + itemSubHtml(c) + '</div>' + dupeNote + '</div>' +
         '<div class="ci-total">' + formatAED(c.price * c.qty) + '</div>' +
         '<button class="del-btn" data-remove="' + c.id + '">&times;</button></div>';
     }).join('');
@@ -2259,10 +2295,7 @@ function buildPrintReceiptHtml() {
   var paymentMethodLabel = posState.paymentMode === 'split' ? 'Split Payment' : posState.paymentMethod;
   var totalDiscount = totals.discountAmount + totals.loyaltyAmount + totals.couponAmount;
 
-  var itemLines = posState.cart.map(function (c) {
-    return '<div>' + c.id + ' ' + c.name + '</div>' +
-      '<div class="pr-row"><span>' + c.qty + ' x ' + formatAED(c.price) + '</span><span>' + formatAED(c.price * c.qty) + '</span></div>';
-  }).join('');
+  var itemLines = receiptItemLinesHtml(posState.cart);
 
   return '<div class="pr-header">' +
       '<div class="pr-shop-name">PAVNIKA BY SARANYA</div>' +
@@ -2277,6 +2310,7 @@ function buildPrintReceiptHtml() {
     '</div>' +
     '<div class="pr-dashed">' + itemLines + '</div>' +
     '<div class="pr-dashed">' +
+      receiptSavingsRowsHtml(posState.cart) +
       '<div class="pr-row"><span>Subtotal</span><span>' + formatAED(totals.subtotal) + '</span></div>' +
       (totalDiscount > 0 ? '<div class="pr-row"><span>Discount</span><span>-' + formatAED(totalDiscount) + '</span></div>' : '') +
       '<div class="pr-row"><span>VAT</span><span>N/A</span></div>' +
@@ -2324,8 +2358,10 @@ function buildWhatsAppReceiptMessage() {
   lines.push('');
   lines.push('Bill ' + (posState.billNumber || '') + ' \u00b7 ' + billDate);
   posState.cart.forEach(function (c) {
-    lines.push(c.id + ' \u2014 ' + c.name + ' x' + c.qty + ' \u2014 AED ' + formatAED(c.price * c.qty));
+    lines.push(c.id + ' \u2014 ' + c.name + ' x' + c.qty + ' \u2014 AED ' + formatAED(c.price * c.qty) + (itemOnSale(c) ? ' (was AED ' + formatAED(c.originalPrice * c.qty) + ')' : ''));
   });
+  var wsCart = itemsSaleSavings(posState.cart);
+  if (wsCart.savings > 0) lines.push('Sale savings: \u2212AED ' + formatAED(wsCart.savings));
   if (totalDiscount > 0) {
     lines.push('Discount: \u2212AED ' + formatAED(totalDiscount));
   }

@@ -38,13 +38,27 @@ function buildReceiptHtml(data) {
   var itemRows = data.items.map(function (it) {
     var qty = Number(it.qty) || 1;
     var price = Number(it.price) || 0;
+    var orig = Number(it.originalPrice) > price ? Number(it.originalPrice) : 0;
     return '<tr>' +
       '<td style="padding:6px 0; font-size:13px; color:#3B2528;">' + esc(it.id ? it.id + ' — ' : '') + esc(it.name || it.material || 'Item') +
-        (qty > 1 ? '<br><span style="font-size:11.5px; color:#8a6f63;">' + qty + ' × ' + fmt(price) + '</span>' : '') +
+        (orig ? '<br><span style="font-size:11.5px; color:#8a6f63;"><span style="text-decoration:line-through;">' + fmt(orig) + '</span> &rarr; ' + fmt(price) + (qty > 1 ? ' × ' + qty : '') + ' <span style="color:#3B6D11; font-weight:600;">Sale −' + Math.round((1 - price / orig) * 100) + '%</span></span>'
+          : (qty > 1 ? '<br><span style="font-size:11.5px; color:#8a6f63;">' + qty + ' × ' + fmt(price) + '</span>' : '')) +
       '</td>' +
       '<td align="right" style="padding:6px 0; font-size:13px; color:#3B2528; white-space:nowrap;">' + fmt(price * qty) + '</td>' +
     '</tr>';
   }).join('');
+
+  // Sale-price savings (original vs. charged), shown only when present.
+  var origTotal = 0, saleTotal = 0;
+  data.items.forEach(function (it) {
+    var q = Number(it.qty) || 1, cur = Number(it.price) || 0;
+    origTotal += (Number(it.originalPrice) > cur ? Number(it.originalPrice) : cur) * q; saleTotal += cur * q;
+  });
+  var saleSavings = Math.round((origTotal - saleTotal) * 100) / 100;
+  var saleRows = saleSavings > 0
+    ? '<tr><td style="font-size:13px; color:#8a6f63;">Original price</td><td align="right" style="font-size:13px; color:#8a6f63;">' + fmt(origTotal) + '</td></tr>' +
+      '<tr><td style="font-size:13px; color:#3B6D11; font-weight:600;">Sale discount</td><td align="right" style="font-size:13px; color:#3B6D11; font-weight:600;">− ' + fmt(saleSavings) + '</td></tr>'
+    : '';
 
   var discountRow = Number(data.discount) > 0
     ? '<tr><td style="font-size:13px; color:#8a6f63;">Discount</td><td align="right" style="font-size:13px; color:#B8142A;">− ' + fmt(data.discount) + '</td></tr>'
@@ -74,6 +88,7 @@ function buildReceiptHtml(data) {
       </table>
 
       <table width="100%" cellpadding="0" cellspacing="0">
+        ${saleRows}
         <tr><td style="font-size:13px; color:#8a6f63;">Subtotal</td><td align="right" style="font-size:13px; color:#3B2528;">${fmt(data.subtotal)}</td></tr>
         ${discountRow}
       </table>

@@ -402,10 +402,33 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
           <br><span style="font-size:10px; color:#a08b7f;">Qty: ${it.qty || 1} &middot; Condition: New</span>
         </td>
         <td style="padding:10px; border-bottom:1px solid #DED0C7; font-size:13px; font-weight:bold; color:#B68A69; white-space:nowrap;">
-          AED ${formatAED(it.price)}
+          ${(Number(it.originalPrice) > Number(it.price))
+            ? `<span style="text-decoration:line-through; color:#a08b7f; font-weight:normal; font-size:11px;">AED ${formatAED(it.originalPrice)}</span><br>AED ${formatAED(it.price)}<br><span style="font-size:10px; font-weight:600; color:#3B6D11;">Sale &minus;${Math.round((1 - Number(it.price) / Number(it.originalPrice)) * 100)}%</span>`
+            : `AED ${formatAED(it.price)}`}
         </td>
       </tr>`;
   }).join('');
+
+  // Sale-price savings (admin "Sale Price" on the catalogue). Only shown
+  // when at least one item on the order carries an originalPrice higher
+  // than what was charged, so orders placed before this existed, and
+  // orders with no sale items, render exactly as before.
+  var origTotal = 0, saleTotal = 0;
+  items.forEach(function (it) {
+    var q = Number(it.qty) || 1, cur = Number(it.price) || 0;
+    var orig = Number(it.originalPrice) > cur ? Number(it.originalPrice) : cur;
+    origTotal += orig * q; saleTotal += cur * q;
+  });
+  var saleSavings = Math.round((origTotal - saleTotal) * 100) / 100;
+  // "10% off" label when the discount is a clean percentage of the subtotal.
+  var discPctLabel = '';
+  (function () {
+    var sub = Number(order.subtotal) || 0, d = Number(order.discount_amount) || 0;
+    if (sub > 0 && d > 0) {
+      var pct = d / sub * 100;
+      if (Math.abs(pct - Math.round(pct)) < 0.15) discPctLabel = ' (' + Math.round(pct) + '% off)';
+    }
+  })();
 
   // Payment status shown on the invoice. This has to stay honest: a
   // Cash-on-Delivery order genuinely hasn't been paid yet, so stamping
@@ -490,12 +513,20 @@ async function sendReceiptEmail(order, paymentMethodLabel) {
 
       <div style="border-top:1px solid #DED0C7; padding-top:10px; margin-top:6px;">
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          ${saleSavings > 0 ? `<tr>
+            <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Original price / <span dir="rtl" style="text-transform:none;">السعر الأصلي</span></td>
+            <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(origTotal)}</td>
+          </tr>
+          <tr>
+            <td style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">Sale discount / <span dir="rtl" style="text-transform:none; font-weight:400;">خصم التخفيضات</span></td>
+            <td align="right" style="font-size:12.5px; color:#3B6D11; font-weight:600; padding-bottom:4px;">-AED ${formatAED(saleSavings)}</td>
+          </tr>` : ''}
           <tr>
             <td style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">Subtotal / <span dir="rtl" style="text-transform:none;">المجموع الفرعي</span></td>
             <td align="right" style="font-size:12.5px; color:#8a6f63; padding-bottom:4px;">AED ${formatAED(order.subtotal || order.total)}</td>
           </tr>
           ${(order.discount_amount && Number(order.discount_amount) > 0) ? `<tr>
-            <td style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">${order.promo_code ? order.promo_code + ' discount' : 'Discount'} / <span dir="rtl" style="text-transform:none; font-weight:400;">الخصم</span></td>
+            <td style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">${order.promo_code ? order.promo_code + ' discount' : 'Discount'}${discPctLabel} / <span dir="rtl" style="text-transform:none; font-weight:400;">الخصم</span></td>
             <td align="right" style="font-size:12.5px; color:#946B4A; font-weight:600; padding-bottom:4px;">-AED ${formatAED(order.discount_amount)}</td>
           </tr>` : ''}
           ${(order.gift_card_applied && Number(order.gift_card_applied) > 0) ? `<tr>
