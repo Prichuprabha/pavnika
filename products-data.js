@@ -3331,7 +3331,7 @@ window.PRODUCTS = [
     "sareeType": "Cream colour body with pink temple border",
     "pattern": "Buttas",
     "design": "Traditional",
-    "material": "Soft Silk",
+    "material": "Semi Kanchipuram",
     "shade": "Beige / Mauve",
     "colour": "",
     "note": "",
@@ -3354,7 +3354,8 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW038-6.jpg",
       "https://pavnika.ae/assets/products/VW038-7.jpg"
     ],
-    "image": "https://pavnika.ae/assets/products/VW038-1.jpg"
+    "image": "https://pavnika.ae/assets/products/VW038-1.jpg",
+    "soldAt": null
   },
   {
     "id": "SO012",
