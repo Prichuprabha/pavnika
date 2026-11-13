@@ -3337,7 +3337,7 @@ window.PRODUCTS = [
     "note": "",
     "price": 265,
     "salePrice": null,
-    "sold": false,
+    "sold": true,
     "occasions": [
       "Wedding Guest",
       "Festive"
@@ -3355,7 +3355,7 @@ window.PRODUCTS = [
       "https://pavnika.ae/assets/products/VW038-7.jpg"
     ],
     "image": "https://pavnika.ae/assets/products/VW038-1.jpg",
-    "soldAt": null
+    "soldAt": "2026-11-13T13:27:30.241Z"
   },
   {
     "id": "SO012",
