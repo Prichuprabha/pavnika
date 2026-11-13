@@ -6328,3 +6328,20 @@ a.home-video-tile-link {
   .jewel-access-heading { text-align: center; }
   .jewel-access-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
 }
+
+/* ---------- Mobile: wider content, less empty side space ----------
+   Phones only (<=640px). Scoped to the home page's Curated / Follow the
+   Drape / Shop by Category sections and the Collection + Jewellery pages.
+   Desktop/tablet and the About / Contact / text pages are untouched. */
+@media (max-width: 640px) {
+  .home-page .hero-spacer-section .container,
+  .home-page .drape-band,
+  .home-page section:has(.category-marquee) .container,
+  body:has(.catalogue-hero) section .container {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+  .home-page .curated-grid { gap: 10px; }
+  .home-page .category-tile { width: 78vw; }
+  body:has(.catalogue-hero) .product-grid { gap: 12px; }
+}
