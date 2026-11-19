@@ -6348,3 +6348,15 @@ a.home-video-tile-link {
   /* ID tag sits closer under the series tag */
   body:has(.catalogue-hero) .product-photo .id-badge { top: 38px; }
 }
+
+/* ---------- Home: Jewellery promo -- keep the fanned cards clear of the copy ----------
+   The stack's back cards fan out ~20% of the card width to the right while
+   animating. On laptop widths the fixed 64px column gap was smaller than
+   that, so a card edge overlapped the Explore button. Widen the card column,
+   keep the front card at 88% of it (leaving room for the fan), and keep the
+   copy above the cards. Desktop/laptop only. */
+@media (min-width: 901px) {
+  .jewel-combo { grid-template-columns: 0.8fr 1.5fr; }
+  .jp-stack-wrap { width: 88%; }
+  .jewel-right { position: relative; z-index: 5; }
+}
