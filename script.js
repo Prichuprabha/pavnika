@@ -3808,7 +3808,12 @@ function recordHomePopupDismissal() {
 function shouldShowHomePopup() {
   if (gateGetCookie('pavnika_verified')) return false; // already verified — never show
   var state = getHomePopupDismissState();
-  return Date.now() >= state.until;
+  // 3rd dismissal onward = never again. This must be checked by count:
+  // the "until" value for that case was stored as Infinity, which
+  // JSON.stringify turns into null, and null >= comparisons then read
+  // as "no wait" -- the popup came back on every visit.
+  if (state.count >= 3) return false;
+  return Date.now() >= (Number(state.until) || 0);
 }
 
 function showGateOverlay(mode, onSuccess, bodyText, dismissible) {
