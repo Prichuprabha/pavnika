@@ -1317,7 +1317,7 @@ window.PRODUCTS = [
     "material": "Satin",
     "shade": "Maroon / Red",
     "price": 150,
-    "sold": false,
+    "sold": true,
     "images": [
       "https://pavnika.ae/assets/products/FV004-1.jpg",
       "https://pavnika.ae/assets/products/FV004-2.jpg",
@@ -1328,7 +1328,8 @@ window.PRODUCTS = [
     "occasions": [
       "Festive",
       "Everyday"
-    ]
+    ],
+    "soldAt": "2026-11-19T05:26:34.051Z"
   },
   {
     "id": "FV005",
