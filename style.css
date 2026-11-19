@@ -6360,3 +6360,15 @@ a.home-video-tile-link {
   .jp-stack-wrap { width: 88%; }
   .jewel-right { position: relative; z-index: 5; }
 }
+
+/* ---------- Jewellery "Shop by Category" tiles: names line up ----------
+   The description and "Explore More" are invisible at rest but still take
+   up room, and the text block sits a fixed distance down. So a tile whose
+   description wraps to fewer lines (e.g. Bangles & Bracelets on a phone,
+   Long Harams on a laptop) had its name sit lower or higher than the rest.
+   Reserve the same description height (3 lines) on every tile and push the
+   block down by that extra line, so every name lands at the same height. */
+.jewel-occ-desc { min-height: calc(3 * 1.4 * 0.78rem); }
+.jewel-occ-tile-text { transform: translateY(calc(62px + 1.4 * 0.78rem)); }
+.jewel-occ-tile.is-revealed .jewel-occ-tile-text { transform: translateY(0); }
+@media (hover: hover) { .jewel-occ-tile:hover .jewel-occ-tile-text { transform: translateY(0); } }
