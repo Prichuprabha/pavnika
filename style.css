@@ -6376,3 +6376,7 @@ a.home-video-tile-link {
 .jewel-occ-tile-text { transform: translateY(calc(62px + 1.4 * 0.78rem)); }
 .jewel-occ-tile.is-revealed .jewel-occ-tile-text { transform: translateY(0); }
 @media (hover: hover) { .jewel-occ-tile:hover .jewel-occ-tile-text { transform: translateY(0); } }
+
+/* step34: stable compositing for signature-series tiles (partial-white glitch) */
+.category-tile-media { transform: translateZ(0); isolation: isolate; }
+.category-tile-media img { backface-visibility: hidden; }

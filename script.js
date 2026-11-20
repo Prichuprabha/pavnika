@@ -3381,9 +3381,11 @@ function initHomeSeriesMarquee() {
     var desc = SERIES_DESCRIPTIONS[series] || '';
     var label = seriesTitleCase(series);
     var hoverText = seriesHoverText(series);
-    var imgsHTML = picks.map(function (src, i) {
-      return '<img src="' + src + '" alt="' + label + ' saree" loading="lazy" class="' + (i === 0 ? 'is-active' : '') + '">';
-    }).join('');
+    // Only TWO <img> layers per tile (swapped in place) instead of one per
+    // photo: each product photo is ~1080x1350, and decoding dozens of them at
+    // once on a phone starves GPU memory and drops rectangles of the picture.
+    var imgsHTML = '<img src="' + picks[0] + '" alt="' + label + ' saree" decoding="async" class="is-active" data-picks="' + picks.join('|') + '">' +
+      (picks.length > 1 ? '<img alt="' + label + ' saree" decoding="async">' : '');
     return (
       '<a class="category-tile" href="collections.html?series=' + encodeURIComponent(series) + '">' +
         '<div class="category-tile-media">' +
@@ -3404,39 +3406,44 @@ function initHomeSeriesMarquee() {
   track.innerHTML = tiles.join('') + tiles.join('');
   initTouchRevealTiles();
 
-  // Cycle each tile's images independently.
+  // Cycle each tile's images independently (two layers per tile, see above).
   track.querySelectorAll('.category-tile-media').forEach(function (media, mediaIndex) {
     var imgs = media.querySelectorAll('img');
     if (imgs.length < 2) return;
-    var idx = 0;
+    var picks = (imgs[0].getAttribute('data-picks') || '').split('|').filter(Boolean);
+    if (picks.length < 2) return;
+    var cur = 0, pick = 0, busy = false, visible = false;
     var offset = (mediaIndex % 5) * 500;
-    var waiting = false;
-    // Cross-fade without a blank dip: the outgoing photo stays fully
-    // visible (is-prev) underneath while the next one fades in on top.
-    // And never switch to a photo that hasn't finished loading -- the
-    // non-first photos are lazy-loaded, so on a phone the next one may
-    // not be downloaded yet, which used to flash the empty tile
-    // background. In that case start loading it now and switch when ready
-    // (or skip it if it fails).
     function showNext() {
-      if (waiting) return;
-      var next = (idx + 1) % imgs.length;
-      var nextImg = imgs[next];
-      function go() {
-        waiting = false;
-        var prev = imgs[idx];
-        prev.classList.remove('is-active');
-        prev.classList.add('is-prev');
-        nextImg.classList.add('is-active');
-        idx = next;
-        setTimeout(function () { prev.classList.remove('is-prev'); }, 1300);
+      if (busy || !visible) return;
+      busy = true;
+      var front = imgs[cur], back = imgs[1 - cur];
+      var nextPick = (pick + 1) % picks.length;
+      var done = false;
+      function swap() {
+        if (done) return; done = true;
+        // Fully decoded before it becomes visible -> no half-painted tile.
+        var go = function () {
+          front.classList.remove('is-active'); front.classList.add('is-prev');
+          back.classList.add('is-active');
+          cur = 1 - cur; pick = nextPick;
+          setTimeout(function () {
+            front.classList.remove('is-prev');
+            front.removeAttribute('src'); // release the big decoded bitmap
+            busy = false;
+          }, 1300);
+        };
+        if (back.decode) { back.decode().then(go, go); } else { go(); }
       }
-      if (nextImg.complete && nextImg.naturalWidth > 0) { go(); return; }
-      waiting = true;
-      nextImg.loading = 'eager';
-      nextImg.addEventListener('load', go, { once: true });
-      nextImg.addEventListener('error', function () { waiting = false; idx = next; }, { once: true });
+      back.addEventListener('load', swap, { once: true });
+      back.addEventListener('error', function () { done = true; busy = false; pick = nextPick; }, { once: true });
+      back.src = picks[nextPick];
+      if (back.complete && back.naturalWidth > 0) swap();
     }
+    // Only animate tiles that are actually on screen.
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) { visible = es[0].isIntersecting; }, { threshold: 0 }).observe(media);
+    } else { visible = true; }
     setTimeout(function () { setInterval(showNext, 2600); }, offset);
   });
 
