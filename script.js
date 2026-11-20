@@ -3410,13 +3410,34 @@ function initHomeSeriesMarquee() {
     if (imgs.length < 2) return;
     var idx = 0;
     var offset = (mediaIndex % 5) * 500;
-    setTimeout(function () {
-      setInterval(function () {
-        imgs[idx].classList.remove('is-active');
-        idx = (idx + 1) % imgs.length;
-        imgs[idx].classList.add('is-active');
-      }, 2600);
-    }, offset);
+    var waiting = false;
+    // Cross-fade without a blank dip: the outgoing photo stays fully
+    // visible (is-prev) underneath while the next one fades in on top.
+    // And never switch to a photo that hasn't finished loading -- the
+    // non-first photos are lazy-loaded, so on a phone the next one may
+    // not be downloaded yet, which used to flash the empty tile
+    // background. In that case start loading it now and switch when ready
+    // (or skip it if it fails).
+    function showNext() {
+      if (waiting) return;
+      var next = (idx + 1) % imgs.length;
+      var nextImg = imgs[next];
+      function go() {
+        waiting = false;
+        var prev = imgs[idx];
+        prev.classList.remove('is-active');
+        prev.classList.add('is-prev');
+        nextImg.classList.add('is-active');
+        idx = next;
+        setTimeout(function () { prev.classList.remove('is-prev'); }, 1300);
+      }
+      if (nextImg.complete && nextImg.naturalWidth > 0) { go(); return; }
+      waiting = true;
+      nextImg.loading = 'eager';
+      nextImg.addEventListener('load', go, { once: true });
+      nextImg.addEventListener('error', function () { waiting = false; idx = next; }, { once: true });
+    }
+    setTimeout(function () { setInterval(showNext, 2600); }, offset);
   });
 
   var marqueeEl = document.querySelector('.category-marquee');

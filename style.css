@@ -2124,9 +2124,13 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   height: 100%;
   object-fit: cover;
   opacity: 0;
+  z-index: 0;
   transition: opacity 1.1s ease;
 }
-.category-tile-media img.is-active { opacity: 1; }
+/* The photo being replaced stays fully visible underneath while the new one
+   fades in on top (no blank dip mid-fade). */
+.category-tile-media img.is-prev { opacity: 1; z-index: 1; transition: none; }
+.category-tile-media img.is-active { opacity: 1; z-index: 2; }
 .tile-hover-overlay {
   position: absolute;
   inset: 0;
@@ -2140,7 +2144,7 @@ section.story-banner-contact { padding-left: 0; } /* superseded, harmless no-op 
   -webkit-backdrop-filter: blur(10px) saturate(150%);
   opacity: 0;
   transition: opacity 0.3s ease;
-  z-index: 2;
+  z-index: 5;
 }
 .category-tile:focus-visible .tile-hover-overlay,
 .category-tile.is-revealed .tile-hover-overlay { opacity: 1; }
