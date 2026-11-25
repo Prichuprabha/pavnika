@@ -4527,6 +4527,12 @@ function initAccountMenu() {
   window.addEventListener('scroll', function () {
     dropdown.classList.remove('is-open');
   }, { passive: true });
+
+  // Coming back to this page (browser Back / cached restore) must never show
+  // the dropdown still open; also close it the moment My Account is tapped.
+  window.addEventListener('pageshow', function () { dropdown.classList.remove('is-open'); });
+  var myAcc = document.getElementById('account-my-account');
+  if (myAcc) myAcc.addEventListener('click', function () { dropdown.classList.remove('is-open'); });
 }
 
 /* My Account page: Back button */
