@@ -7,19 +7,24 @@
   function wa(msg) { return 'https://wa.me/' + PHONE + (msg ? '?text=' + encodeURIComponent(msg) : ''); }
 
   function build() {
-    if (document.getElementById('chat-fab')) return;
+    if (document.getElementById('chat-fab') || document.querySelector('link[href^="chat-widget.css"]')) return;
     var link = document.createElement('link');
-    link.rel = 'stylesheet'; link.href = 'chat-widget.css?v=1';
+    link.rel = 'stylesheet'; link.href = 'chat-widget.css?v=3';
+    link.onload = function () { mount(); };
+    link.onerror = function () { /* no styles -> don't show an unstyled widget */ };
     document.head.appendChild(link);
+  }
 
+  function mount() {
+    if (document.getElementById('chat-fab')) return;
     var wrap = document.createElement('div');
     wrap.innerHTML =
       '<div class="chat-panel" id="chat-panel" role="dialog" aria-label="Chat with Pavnika">' +
-        '<div class="chat-head"><b>Chat with Pavnika</b><span>Typically replies within a few hours</span></div>' +
+        '<div class="chat-head"><div class="chat-head-text"><b>Chat with Pavnika</b><span>Typically replies within a few hours</span></div><img class="chat-head-logo" src="assets/circle-logo.png" alt="Pavnika by Saranya"></div>' +
         '<div class="chat-body"><p>Hi! 👋 How can we help you today?</p>' +
           '<a class="chat-opt" target="_blank" rel="noopener" href="' + wa("Hi Pavnika, I'd like to know more about a saree.") + '">🧿 Ask about a saree</a>' +
           '<a class="chat-opt" target="_blank" rel="noopener" href="' + wa('Hi Pavnika, I have a question about my order.') + '">📦 Track or ask about my order</a>' +
-          '<a class="chat-opt" target="_blank" rel="noopener" href="' + wa("Hi Pavnika, I'd like to book an appointment.") + '">📅 Book an appointment</a>' +
+          '<a class="chat-opt chat-appt" href="contact.html">📅 Book an appointment</a>' +
           '<a class="chat-opt" target="_blank" rel="noopener" href="' + wa('Hi Pavnika, I have a question.') + '">💬 Something else</a>' +
           '<div class="chat-cta"><a href="collections.html" class="chat-btn chat-btn-fill">View Collections</a>' +
           '<a href="' + wa('') + '" target="_blank" rel="noopener" class="chat-btn chat-btn-line">Connect with us</a></div>' +
@@ -30,12 +35,22 @@
     while (wrap.firstChild) document.body.appendChild(wrap.firstChild);
 
     var fab = document.getElementById('chat-fab');
+    var apptOpt = document.querySelector('.chat-appt');
     var panel = document.getElementById('chat-panel');
     function setOpen(o) {
       panel.classList.toggle('is-open', o);
       fab.classList.toggle('is-open', o);
       fab.setAttribute('aria-expanded', o ? 'true' : 'false');
     }
+    // "Book an appointment" opens the site's own booking popup (same one as
+    // the header's Book Appointment button); falls back to contact.html.
+    if (apptOpt) apptOpt.addEventListener('click', function (e) {
+      var cta = document.querySelector('.nav-cta');
+      if (!cta) return; // no popup on this page -> normal link to contact.html
+      e.preventDefault();
+      setOpen(false);
+      setTimeout(function () { cta.click(); }, 150);
+    });
     fab.addEventListener('click', function (e) { e.stopPropagation(); setOpen(!panel.classList.contains('is-open')); });
     document.addEventListener('click', function (e) {
       if (panel.classList.contains('is-open') && !panel.contains(e.target) && e.target !== fab && !fab.contains(e.target)) setOpen(false);

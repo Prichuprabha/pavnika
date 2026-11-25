@@ -36,3 +36,7 @@ body:has(.lightbox-overlay.is-visible) .chat-fab, body:has(.lightbox-overlay.is-
 body:has(#gate-overlay-root.is-open) .chat-fab, body:has(#gate-overlay-root.is-open) .chat-panel,
 body:has(.collections-sidebar.is-open) .chat-fab, body:has(.collections-sidebar.is-open) .chat-panel,
 body:has(#qf-sheet-overlay.is-open) .chat-fab, body:has(#qf-sheet-overlay.is-open) .chat-panel{opacity:0!important;visibility:hidden!important;pointer-events:none!important}
+
+.chat-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.chat-head-logo{width:46px;height:46px;border-radius:50%;flex:0 0 46px;object-fit:cover;background:#fff;border:1px solid rgba(255,255,255,.35)}
+@media(min-width:881px){.chat-fab{right:48px}.chat-panel{right:48px}}
