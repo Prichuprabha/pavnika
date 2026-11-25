@@ -4452,6 +4452,9 @@ function refreshAccountMenuDisplay() {
   // prompt with nothing behind it.
   var accountLink = document.getElementById('account-my-account');
   if (accountLink) accountLink.style.display = decodedEmail ? 'block' : 'none';
+  // The mobile burger-menu Logout link follows the same rule.
+  var navLogout = document.getElementById('nav-logout-link');
+  if (navLogout) navLogout.style.display = decodedEmail ? '' : 'none';
 }
 
 function initAccountMenu() {
@@ -4517,8 +4520,27 @@ function initAccountMenu() {
     var cta = mainNav.querySelector('.nav-cta');
     if (cta) mainNav.insertBefore(lg, cta);
     else mainNav.appendChild(lg);
+    refreshAccountMenuDisplay(); // hide it straight away for guests
   }
+
+  // Close the profile dropdown as soon as the page scrolls (like the burger menu).
+  window.addEventListener('scroll', function () {
+    dropdown.classList.remove('is-open');
+  }, { passive: true });
 }
+
+/* My Account page: Back button */
+(function () {
+  document.addEventListener('DOMContentLoaded', function () {
+    var back = document.getElementById('acct-back');
+    if (!back) return;
+    back.addEventListener('click', function (e) {
+      var sameSite = false;
+      try { sameSite = document.referrer && new URL(document.referrer).origin === location.origin; } catch (err) {}
+      if (sameSite && history.length > 1) { e.preventDefault(); history.back(); }
+    });
+  });
+})();
 
 /* ---------- Site-wide saree search (frosted-glass panel) ---------- */
 function initSearchPanel() {

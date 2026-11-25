@@ -6380,3 +6380,7 @@ a.home-video-tile-link {
 /* step34: stable compositing for signature-series tiles (partial-white glitch) */
 .category-tile-media { transform: translateZ(0); isolation: isolate; }
 .category-tile-media img { backface-visibility: hidden; }
+
+/* step35: My Account Back button, right-aligned on the "Signed in as" row */
+.acct-back{margin-left:auto;flex:0 0 auto;display:inline-flex;align-items:center;gap:8px;font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--maroon,#5a1030);text-decoration:none;padding:8px 14px;border:1px solid var(--stone);border-radius:999px;background:var(--ivory)}
+.acct-back:hover{border-color:var(--gold);color:var(--gold)}
