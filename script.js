@@ -785,7 +785,7 @@ function initTouchRevealTiles() {
     });
   }
 
-  wire('.curated-tile');
+  wire('.curated-tile:not(.cur-slide)');
   wire('.category-tile');
   wire('.occ-tile');
   wire('.jewel-occ-tile');
@@ -6927,6 +6927,119 @@ function initJewelPromoSection() {
   })();
 }
 
+/*CAROUSEL-START*/
+// Mobile "Curated, Just for You": one big card at a time, neighbours
+// faded at both ends, auto-advancing (5s per card). Tapping the centred
+// card slides its caption up ("Explore More"); tapping it again opens the
+// item. Tapping a faded neighbour brings it to the centre; swiping
+// left/right moves too. Scrolling or tapping elsewhere drops the caption.
+function initCuratedCarousel(grid, tilesHtml) {
+  var N = tilesHtml.length;
+  grid.classList.add('is-carousel');
+  grid.innerHTML = '<div class="cur-track">' + tilesHtml[N - 1] + tilesHtml.join('') + tilesHtml[0] + '</div>';
+  var track = grid.querySelector('.cur-track');
+  var slides = Array.prototype.slice.call(track.children);
+  slides.forEach(function (s, i) {
+    s.classList.add('cur-slide');
+    if (i === 0 || i === N + 1) { s.setAttribute('aria-hidden', 'true'); s.tabIndex = -1; }
+  });
+
+  var GAP = 12, CYCLE_MS = 5700, SLIDE_MS = 700; // 5s settled + 0.7s slide
+  var idx = 1, busy = false, visible = false, touching = false, swiped = false, revealed = false, timer = null;
+
+  function place(animate) {
+    var vw = grid.clientWidth, cw = slides[0].offsetWidth;
+    var x = (vw - cw) / 2 - idx * (cw + GAP);
+    track.style.transition = animate ? 'transform ' + SLIDE_MS + 'ms cubic-bezier(0.22, 1, 0.36, 1)' : 'none';
+    track.style.transform = 'translate3d(' + x + 'px,0,0)';
+  }
+  function setRevealed(on) {
+    revealed = on;
+    slides.forEach(function (s) { s.classList.remove('is-revealed'); });
+    if (on) slides[idx].classList.add('is-revealed');
+    if (on) stop(); else start();
+  }
+  function goTo(newIdx) {
+    if (busy) return;
+    busy = true;
+    revealed = false;
+    slides.forEach(function (s) { s.classList.remove('is-revealed'); }); // caption drops as the slide starts
+    idx = newIdx;
+    place(true);
+    setTimeout(function () {
+      if (idx === 0) { idx = N; place(false); }
+      else if (idx === N + 1) { idx = 1; place(false); }
+      void track.offsetWidth;
+      busy = false;
+    }, SLIDE_MS + 40);
+  }
+  function stop() { if (timer) { clearInterval(timer); timer = null; } }
+  function start() { if (!timer && visible && !touching && !revealed) timer = setInterval(function () { goTo(idx + 1); }, CYCLE_MS); }
+  function restart() { stop(); start(); }
+
+  place(false);
+  var io = null;
+  if ('IntersectionObserver' in window) {
+    io = new IntersectionObserver(function (es) {
+      visible = es[0].isIntersecting;
+      if (visible) start(); else { stop(); if (revealed) setRevealed(false); }
+    }, { threshold: 0.5 });
+    io.observe(grid);
+  } else { visible = true; start(); }
+
+  function onResize() { place(false); }
+  window.addEventListener('resize', onResize);
+  function onScroll() { if (revealed) setRevealed(false); }
+  function onDocClick(e) { if (revealed && !grid.contains(e.target)) setRevealed(false); }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  document.addEventListener('click', onDocClick);
+
+  // swipe left / right (the card itself does not follow the finger)
+  var sx = 0, sy = 0, dx = 0, tracking = false, dragging = false, pid = null;
+  grid.addEventListener('dragstart', function (e) { e.preventDefault(); }); // no native link/image drag
+  grid.addEventListener('pointerdown', function (e) {
+    tracking = true; dragging = false; sx = e.clientX; sy = e.clientY; dx = 0; pid = e.pointerId; touching = true; stop();
+  });
+  grid.addEventListener('pointermove', function (e) {
+    if (!tracking || e.pointerId !== pid) return;
+    dx = e.clientX - sx;
+    if (!dragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(e.clientY - sy)) {
+      dragging = true;
+      try { grid.setPointerCapture(pid); } catch (err) {}
+    }
+  });
+  function endTouch(cancel) {
+    if (!tracking) return;
+    tracking = false; touching = false;
+    if (dragging) {
+      swiped = true; setTimeout(function () { swiped = false; }, 350);
+      if (!cancel && Math.abs(dx) > 40) goTo(dx < 0 ? idx + 1 : idx - 1);
+    }
+    dragging = false; restart();
+  }
+  grid.addEventListener('pointerup', function () { endTouch(false); });
+  grid.addEventListener('pointercancel', function () { endTouch(true); });
+
+  grid.addEventListener('click', function (e) {
+    if (swiped) { e.preventDefault(); swiped = false; return; }
+    var s = e.target.closest('.cur-slide');
+    if (!s) return;
+    if (s !== slides[idx]) { e.preventDefault(); goTo(slides.indexOf(s)); restart(); return; }
+    // centred card: first tap raises the caption, second tap opens the item
+    if (!revealed) { e.preventDefault(); setRevealed(true); }
+  });
+
+  grid.__teardown = function () {
+    stop(); if (io) io.disconnect();
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('scroll', onScroll);
+    document.removeEventListener('click', onDocClick);
+    grid.classList.remove('is-carousel');
+    grid.__teardown = null;
+  };
+}
+/*CAROUSEL-END*/
+
 function initCuratedShowcase() {
   var grid = document.getElementById('curated-showcase');
   if (!grid || typeof window.PRODUCTS === 'undefined') return;
@@ -6951,7 +7064,15 @@ function initCuratedShowcase() {
     : null;
   var jewelSlot = jewelPick ? Math.floor(Math.random() * picks.length) : -1;
 
-  grid.innerHTML = picks.map(function (p, i) {
+  function curatedPriceHtml(item) {
+    var now = effectivePrice(item);
+    var onSale = item.salePrice && Number(item.salePrice) > 0 && Number(item.salePrice) < Number(item.price);
+    return '<span class="curated-price">' +
+      (onSale ? '<span class="curated-price-was">AED ' + formatAED(item.price) + '</span>' : '') +
+      '<span class="curated-price-now">AED ' + formatAED(now) + '</span></span>';
+  }
+
+  var tilesHtml = picks.map(function (p, i) {
     if (i === jewelSlot) {
       // itemGroupLabel(jewelPick) gives the category (e.g. "Necklaces") --
       // used for the series line, same spot a saree shows its series.
@@ -6972,6 +7093,7 @@ function initCuratedShowcase() {
           '<div class="curated-tile-text">' +
             '<span class="curated-series">' + jGroup + '</span>' +
             '<h3 class="curated-type">' + jHeading + '</h3>' +
+            curatedPriceHtml(jewelPick) +
             '<p class="curated-hover-detail">From our Jewellery &amp; Accessories collection</p>' +
             '<span class="curated-explore">Explore More &rarr;</span>' +
           '</div>' +
@@ -6990,13 +7112,27 @@ function initCuratedShowcase() {
         '<div class="curated-tile-text">' +
           '<span class="curated-series">' + seriesLabel + '</span>' +
           '<h3 class="curated-type">' + (p.material || p.type || '') + '</h3>' +
+          curatedPriceHtml(p) +
           '<p class="curated-hover-detail">' + detail + '</p>' +
           '<span class="curated-explore">Explore More &rarr;</span>' +
         '</div>' +
       '</a>'
     );
-  }).join('');
-  initTouchRevealTiles();
+  });
+
+  // Phones get the big auto-advancing carousel; larger screens keep the grid.
+  var mq = window.matchMedia ? window.matchMedia('(max-width: 640px)') : null;
+  function render() {
+    if (grid.__teardown) grid.__teardown();
+    if (mq && mq.matches) {
+      initCuratedCarousel(grid, tilesHtml);
+    } else {
+      grid.innerHTML = tilesHtml.join('');
+    }
+    initTouchRevealTiles();
+  }
+  render();
+  if (mq) { if (mq.addEventListener) mq.addEventListener('change', render); else if (mq.addListener) mq.addListener(render); }
 }
 
 

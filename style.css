@@ -6407,3 +6407,34 @@ a.home-video-tile-link {
 .jp-prev { left: 4px; } .jp-next { right: 4px; }
 @media (hover: hover) and (pointer: fine) and (min-width: 881px) { .jp-nav { display: flex; } }
 @media (max-width: 880px) { .jp-card .jp-price { font-size: .76rem; padding: 3px 10px; margin: 9px 0 20px; } .jp-price-was { font-size: .7rem; } }
+
+/* ===== step41: Curated, Just for You -- price pill + phone carousel ===== */
+.curated-price { display: inline-flex; gap: 6px; align-items: baseline; margin: 8px 0 0; padding: 4px 11px; border-radius: 999px; background: #9C6B47; color: #fff; font-size: 0.78rem; line-height: 1.2; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+.curated-price-now { font-weight: 600; letter-spacing: .02em; }
+.curated-price-was { text-decoration: line-through; opacity: .75; font-size: .7rem; }
+@media (max-width: 640px) {
+  .curated-grid.is-carousel { display: block; overflow: hidden; padding: 2px 0 6px; touch-action: pan-y; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, #000 11%, #000 89%, transparent 100%); }
+  .cur-track { display: flex; gap: 12px; will-change: transform; }
+  .cur-slide { flex: 0 0 74%; }
+  .cur-slide .curated-tile-text { padding: 18px 18px 20px; }
+  .cur-slide .curated-type { font-size: 1.45rem; }
+  .cur-slide .curated-price { font-size: .8rem; margin-top: 9px; }
+  .cur-slide.is-revealed .curated-tile-text { transform: translateY(0); }
+  .cur-slide.is-revealed .curated-hover-detail,
+  .cur-slide.is-revealed .curated-explore { opacity: 1; }
+  .curated-grid.is-carousel > .cur-track > *:nth-child(5) { display: block; }
+}
+@media (prefers-reduced-motion: reduce) { .cur-track { transition: none !important; } }
+
+.cur-slide img { -webkit-user-drag: none; user-drag: none; }
+
+/* carousel: the caption is raised by tapping only, never by mouse hover */
+@media (max-width: 640px) {
+  .curated-grid.is-carousel .cur-slide:not(.is-revealed):not(:focus-visible) .curated-tile-text { transform: translateY(62px); }
+  .curated-grid.is-carousel .cur-slide:not(.is-revealed):not(:focus-visible) .curated-hover-detail,
+  .curated-grid.is-carousel .cur-slide:not(.is-revealed):not(:focus-visible) .curated-explore { opacity: 0; }
+  .curated-grid.is-carousel .cur-slide:hover .curated-tile-media img { transform: none; }
+  .curated-grid.is-carousel .cur-slide:hover { border-color: var(--stone); }
+}
