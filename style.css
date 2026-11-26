@@ -6388,3 +6388,22 @@ a.home-video-tile-link {
 /* step36: profile dropdown fades/slides like the burger menu (both directions) */
 .account-dropdown{display:block;opacity:0;visibility:hidden;transform:translateY(-8px);pointer-events:none;transition:opacity .25s ease,transform .25s ease,visibility 0s linear .25s}
 .account-dropdown.is-open{opacity:1;visibility:visible;transform:none;pointer-events:auto;transition:opacity .25s ease,transform .25s ease,visibility 0s}
+
+/* ===== Timeless Jewellery stack: price pill, Know more, arrows, swipe ===== */
+.jp-stack-wrap { touch-action: pan-y; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.jp-card.no-anim { transition: none !important; }
+.jp-card-text { padding-bottom: 0; transform: translateY(47px); transition: transform .38s cubic-bezier(.22,1,.36,1); }
+.jp-card:not(.pos-front) .jp-card-text { transform: translateY(47px); }
+.jp-stack-wrap.is-revealed .jp-card.pos-front .jp-card-text { transform: translateY(0); }
+.jp-card .jp-price { margin: 12px 0 22px; font-size: .9rem; color: #fff; display: inline-flex; gap: 7px; align-items: baseline; background: #9C6B47; padding: 5px 13px; border-radius: 999px; line-height: 1.2; box-shadow: 0 4px 12px rgba(0,0,0,.25); }
+.jp-price-was { text-decoration: line-through; opacity: .75; font-size: .78rem; }
+.jp-price-now { font-weight: 600; letter-spacing: .02em; }
+.jp-card .jp-more { display: block; height: 44px; line-height: 44px; margin-top: 4px; font-size: .74rem; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--ivory); text-decoration: none; border-top: 1px solid rgba(246,223,213,.28); }
+.jp-card .jp-more span { display: inline-block; transition: transform .25s; }
+.jp-card .jp-more:hover span { transform: translateX(4px); }
+.jp-nav { position: absolute; top: 50%; z-index: 6; width: 44px; height: 64px; margin-top: -32px; border: 0; background: transparent; color: #fff; display: none; align-items: center; justify-content: center; cursor: pointer; padding: 0; filter: drop-shadow(0 1px 4px rgba(0,0,0,.5)); transition: transform .2s, opacity .2s; opacity: .95; }
+.jp-nav svg { width: 34px; height: 34px; stroke-width: 1.6; }
+.jp-nav:hover { transform: scale(1.12); opacity: 1; }
+.jp-prev { left: 4px; } .jp-next { right: 4px; }
+@media (hover: hover) and (pointer: fine) and (min-width: 881px) { .jp-nav { display: flex; } }
+@media (max-width: 880px) { .jp-card .jp-price { font-size: .76rem; padding: 3px 10px; margin: 9px 0 20px; } .jp-price-was { font-size: .7rem; } }

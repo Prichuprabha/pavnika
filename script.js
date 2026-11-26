@@ -6694,10 +6694,12 @@ function initJewelPromoSection() {
   mount.innerHTML =
     '<section class="jewel-promo-section">' +
       '<div class="container jewel-combo">' +
-        '<div class="jp-stack-wrap" id="jp-stack" role="button" tabindex="0" aria-label="Show next jewellery piece">' +
-          '<div class="jp-card pos-back"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p></div></div>' +
-          '<div class="jp-card pos-mid"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p></div></div>' +
-          '<div class="jp-card pos-front"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p></div></div>' +
+        '<div class="jp-stack-wrap" id="jp-stack" role="group" aria-label="Jewellery pieces">' +
+          '<div class="jp-card pos-back"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p><p class="jp-price"></p><a class="jp-more" href="jewellery-accessories.html" tabindex="-1">Know more <span aria-hidden="true">&rarr;</span></a></div></div>' +
+          '<div class="jp-card pos-mid"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p><p class="jp-price"></p><a class="jp-more" href="jewellery-accessories.html" tabindex="-1">Know more <span aria-hidden="true">&rarr;</span></a></div></div>' +
+          '<div class="jp-card pos-front"><div class="jp-card-gradient"></div><div class="jp-card-text"><span class="eyebrow jp-cat"></span><p class="jp-note"></p><p class="jp-price"></p><a class="jp-more" href="jewellery-accessories.html" tabindex="-1">Know more <span aria-hidden="true">&rarr;</span></a></div></div>' +
+          '<button type="button" class="jp-nav jp-prev" aria-label="Previous piece"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+          '<button type="button" class="jp-nav jp-next" aria-label="Next piece"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>' +
         '</div>' +
         '<div class="jewel-right">' +
           '<div class="jewel-right-top">' +
@@ -6726,78 +6728,138 @@ function initJewelPromoSection() {
     return a;
   }
 
-  // ---------- Left stack: random individual products ----------
+  // ---------- Left stack: individual products, browsable ----------
+  // Desktop: < / > arrows cycle back and forth; hovering pauses the auto
+  // cycle and slides up a "Know more" row; clicking opens the item.
+  // Touch: swipe left/right to cycle; first tap reveals "Know more",
+  // second tap opens the item. Every card also shows the price.
   (function () {
     var wrap = document.getElementById('jp-stack');
     if (!wrap) return;
     var cardEls = Array.prototype.slice.call(wrap.querySelectorAll('.jp-card'));
+    if (cardEls.length < 3) return;
 
-    var queue = shuffle(stackPool);
-    var qi = 0;
-    function nextItem() {
-      if (qi >= queue.length) { queue = shuffle(stackPool); qi = 0; }
-      return queue[qi++];
+    var deck = shuffle(stackPool);
+    var n = deck.length;
+    var idx = 0; // deck index of the front card
+    function at(i) { return deck[((i % n) + n) % n]; }
+
+    var canHover = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+    function priceHtml(item) {
+      var now = effectivePrice(item);
+      var onSale = item.salePrice && Number(item.salePrice) > 0 && Number(item.salePrice) < Number(item.price);
+      return onSale
+        ? '<span class="jp-price-was">AED ' + formatAED(item.price) + '</span><span class="jp-price-now">AED ' + formatAED(now) + '</span>'
+        : '<span class="jp-price-now">AED ' + formatAED(now) + '</span>';
     }
-
     function paint(cardEl, item) {
       cardEl.style.backgroundImage = "url('" + item.image + "')";
       cardEl.querySelector('.jp-cat').textContent = item.type;
       cardEl.querySelector('.jp-note').textContent = item.note || itemDisplayName(item);
+      cardEl.querySelector('.jp-price').innerHTML = priceHtml(item);
+      var more = cardEl.querySelector('.jp-more');
+      var href = 'jewellery-accessories.html?open=' + encodeURIComponent(item.id);
+      more.setAttribute('href', href);
+      cardEl.setAttribute('data-href', href);
     }
 
-    var order = cardEls.slice();
-    if (order.length < 3) return;
-    paint(order[0], nextItem());
-    paint(order[1], nextItem());
-    paint(order[2], nextItem());
+    var order = [wrap.querySelector('.pos-front'), wrap.querySelector('.pos-mid'), wrap.querySelector('.pos-back')]; // [front, mid, back]
+    paint(order[0], at(0)); paint(order[1], at(1)); paint(order[2], at(2));
 
     var CYCLE_MS = 3400, TRANSITION_MS = 760;
-    var timer = null, hovering = false, isVisible = false, transitioning = false;
+    var timer = null, hovering = false, revealed = false, isVisible = false, transitioning = false;
 
-    function advance() {
+    function setRevealed(v) {
+      revealed = v;
+      wrap.classList.toggle('is-revealed', v);
+      if (v) stop(); else maybeStart();
+    }
+
+    function go(dir) {
       if (transitioning) return;
       transitioning = true;
+      if (revealed) { revealed = false; wrap.classList.remove('is-revealed'); }
       var front = order[0], mid = order[1], back = order[2];
-      front.classList.remove('pos-front'); front.classList.add('pos-exit');
-      mid.classList.remove('pos-mid'); mid.classList.add('pos-front');
-      back.classList.remove('pos-back'); back.classList.add('pos-mid');
-      setTimeout(function () {
-        paint(front, nextItem());
-        front.classList.remove('pos-exit'); front.classList.add('pos-back');
-        transitioning = false;
-      }, TRANSITION_MS);
-      order = [mid, back, front];
+      if (dir > 0) {
+        front.classList.remove('pos-front'); front.classList.add('pos-exit');
+        mid.classList.remove('pos-mid'); mid.classList.add('pos-front');
+        back.classList.remove('pos-back'); back.classList.add('pos-mid');
+        idx++;
+        setTimeout(function () {
+          paint(front, at(idx + 2));
+          front.classList.add('no-anim');
+          front.classList.remove('pos-exit'); front.classList.add('pos-back');
+          void front.offsetWidth; front.classList.remove('no-anim');
+          transitioning = false;
+        }, TRANSITION_MS);
+        order = [mid, back, front];
+      } else {
+        // previous: the back card is repainted with the previous item,
+        // parked at the exit position, then glides in as the new front.
+        idx--;
+        paint(back, at(idx));
+        back.classList.add('no-anim');
+        back.classList.remove('pos-back'); back.classList.add('pos-exit');
+        void back.offsetWidth; back.classList.remove('no-anim');
+        back.classList.remove('pos-exit'); back.classList.add('pos-front');
+        front.classList.remove('pos-front'); front.classList.add('pos-mid');
+        mid.classList.remove('pos-mid'); mid.classList.add('pos-back');
+        order = [back, front, mid];
+        setTimeout(function () { transitioning = false; }, TRANSITION_MS);
+      }
     }
 
     function stop() { if (timer) { clearInterval(timer); timer = null; } }
-    function maybeStart() { if (isVisible && !hovering && !timer) timer = setInterval(advance, CYCLE_MS); }
+    function maybeStart() { if (isVisible && !hovering && !revealed && !timer) timer = setInterval(function () { go(1); }, CYCLE_MS); }
+    function restart() { stop(); maybeStart(); }
 
-    wrap.addEventListener('mouseenter', function () { hovering = true; stop(); });
-    wrap.addEventListener('mouseleave', function () { hovering = false; maybeStart(); });
+    wrap.addEventListener('mouseenter', function () { if (canHover) { hovering = true; stop(); } });
+    wrap.addEventListener('mouseleave', function () { if (canHover) { hovering = false; maybeStart(); } });
 
-    function onActivate() { advance(); stop(); maybeStart(); }
-    wrap.addEventListener('click', onActivate);
-    wrap.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onActivate(); }
+    // Arrows (desktop only; hidden by CSS on touch screens)
+    wrap.querySelector('.jp-prev').addEventListener('click', function (e) { e.stopPropagation(); go(-1); restart(); });
+    wrap.querySelector('.jp-next').addEventListener('click', function (e) { e.stopPropagation(); go(1); restart(); });
+
+    // Click / tap
+    var swiped = false;
+    wrap.addEventListener('click', function (e) {
+      if (swiped) { swiped = false; return; }
+      if (e.target.closest('.jp-nav')) return;
+      var cardHit = e.target.closest('.jp-card');
+      var front = order[0];
+      if (cardHit && cardHit !== front) { go(1); restart(); return; } // peeking card behind
+      if (revealed) { window.location.href = front.getAttribute('data-href'); }
+      else setRevealed(true);
     });
+    // Scrolling the page rolls the revealed "Know more" row back automatically
+    window.addEventListener('scroll', function () { if (revealed) setRevealed(false); }, { passive: true });
+    // Tap anywhere else on the page closes the revealed "Know more" row
+    document.addEventListener('click', function (e) { if (revealed && !wrap.contains(e.target)) setRevealed(false); });
 
-    // Mobile-only fix: this is a role="button" div so keyboard users can
-    // Tab to it, but that tabindex also makes mobile browsers treat a tap
-    // on it as "focus a not-fully-in-view element", which some of them
-    // answer by auto-scrolling the page to bring it fully into view --
-    // right as the card-flip transition above also starts, so the two
-    // compete and the flip visibly stalls/freezes until that scroll
-    // settles. A tap only ever needs to fire the click, never hold focus,
-    // so blur it right back out when the focus came from a pointer (not
-    // from Tab), which stops that auto-scroll from kicking in at all.
-    var focusedViaPointer = false;
-    wrap.addEventListener('pointerdown', function () { focusedViaPointer = true; });
-    wrap.addEventListener('focus', function () {
-      if (focusedViaPointer) {
-        focusedViaPointer = false;
-        wrap.blur();
+    // Swipe left / right on touch screens
+    var sx = 0, sy = 0, dx = 0, tracking = false, dragging = false, pid = null;
+    wrap.addEventListener('pointerdown', function (e) {
+      if (e.pointerType === 'mouse') return;
+      tracking = true; dragging = false; sx = e.clientX; sy = e.clientY; dx = 0; pid = e.pointerId;
+    });
+    wrap.addEventListener('pointermove', function (e) {
+      if (!tracking || e.pointerId !== pid) return;
+      dx = e.clientX - sx; var dy = e.clientY - sy;
+      if (!dragging && Math.abs(dx) > 10 && Math.abs(dx) > Math.abs(dy)) { dragging = true; stop(); try { wrap.setPointerCapture(pid); } catch (err) {} }
+    });
+    function endDrag(cancel) {
+      if (!tracking) return;
+      tracking = false;
+      if (dragging) {
+        swiped = true; setTimeout(function () { swiped = false; }, 350);
+        if (!cancel && Math.abs(dx) > 40 && !transitioning) { go(dx < 0 ? 1 : -1); }
+        restart();
       }
-    });
+      dragging = false;
+    }
+    wrap.addEventListener('pointerup', function () { endDrag(false); });
+    wrap.addEventListener('pointercancel', function () { endDrag(true); });
 
     if ('IntersectionObserver' in window) {
       var io = new IntersectionObserver(function (entries) {
@@ -6812,6 +6874,7 @@ function initJewelPromoSection() {
       maybeStart();
     }
   })();
+
 
   // ---------- Right tiles: 4 random categories, each cycling ----------
   (function () {
