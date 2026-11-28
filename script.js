@@ -5972,6 +5972,21 @@ function initCheckoutPage() {
       });
   });
 
+  // Arriving from the reminder popup's "Use my offer" button: the code
+  // is in the link, so fill it in and apply it for the customer.
+  (function autoApplyPromoFromLink() {
+    if (window.__promoAutoApplied) return;
+    var linked = '';
+    try { linked = (new URLSearchParams(window.location.search).get('promo') || '').trim().toUpperCase(); } catch (e) { return; }
+    if (!linked || !/^[A-Z0-9-]{4,40}$/.test(linked)) return;
+    window.__promoAutoApplied = true;
+    var input = document.getElementById('checkout-promo-input');
+    var applyBtn = document.getElementById('checkout-promo-apply');
+    if (!input || !applyBtn || checkoutAppliedCode) return;
+    input.value = linked;
+    applyBtn.click();
+  })();
+
   function readAddress(prefix) {
     return {
       building: document.getElementById(prefix + '-building').value.trim(),
@@ -7768,7 +7783,7 @@ function initPinnedHero() {
     if (offer) {
       var until = '';
       try { until = new Date(offer.expiresAt).toLocaleString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hour12: true }); } catch (e) { /* ignore */ }
-      offerHtml = '<div class="crp-offer"><div><b>' + esc(offer.code) + '</b><small>Valid until ' + esc(until) + '</small></div><span class="crp-pct">' + esc(offer.percent) + '% off</span></div>';
+      offerHtml = '<div class="crp-offer"><div class="crp-offer-top"><b>' + esc(offer.code) + '</b><button type="button" class="crp-copy" aria-label="Copy code">Copy</button></div><div class="crp-offer-bottom"><small>Valid until ' + esc(until) + '</small><span class="crp-pct">' + esc(offer.percent) + '% off</span></div></div>';
     }
     var el = document.createElement('div');
     el.id = 'crp-pop';
@@ -7785,7 +7800,7 @@ function initPinnedHero() {
           : 'The pieces you chose are still available. Return to your selection whenever you are ready.') + '</p>' +
         '<div class="crp-thumbs">' + thumbs + '<span>' + count + '</span></div>' +
         offerHtml +
-        '<button type="button" class="crp-cta">View my selection</button>' +
+        '<button type="button" class="crp-cta">' + (offer ? 'Use my offer' : 'View my selection') + '</button>' +
         '<button type="button" class="crp-later">Maybe later</button>' +
       '</div>';
     document.body.appendChild(el);
@@ -7799,8 +7814,20 @@ function initPinnedHero() {
     function close() { el.classList.remove('is-in'); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 350); }
     el.querySelector('.crp-x').addEventListener('click', close);
     el.querySelector('.crp-later').addEventListener('click', close);
+    var copyBtn = el.querySelector('.crp-copy');
+    if (copyBtn && offer) copyBtn.addEventListener('click', function () {
+      function done() { copyBtn.textContent = 'Copied'; setTimeout(function () { copyBtn.textContent = 'Copy'; }, 1800); }
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(offer.code).then(done, done); return; }
+      } catch (e) { /* fall through */ }
+      var ta = document.createElement('textarea'); ta.value = offer.code; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); } catch (e) { /* ignore */ }
+      document.body.removeChild(ta); done();
+    });
     el.querySelector('.crp-cta').addEventListener('click', function () {
       close();
+      // With an offer: straight to checkout with the code applied for them.
+      if (offer) { window.location.href = 'checkout.html?promo=' + encodeURIComponent(offer.code); return; }
       if (typeof openCartDrawer === 'function') openCartDrawer(); else window.location.href = 'checkout.html';
     });
   }

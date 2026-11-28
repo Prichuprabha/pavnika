@@ -6480,3 +6480,9 @@ a.home-video-tile-link {
 .crp-cta{display:block;width:100%;border:0;cursor:pointer;background:#3B0F20;color:#fff;font:600 .78rem var(--body,'Jost',sans-serif);letter-spacing:.1em;text-transform:uppercase;padding:13px;border-radius:999px}
 .crp-later{display:block;width:100%;margin-top:8px;background:none;border:0;cursor:pointer;font-size:.78rem;color:#7a6360;text-decoration:underline}
 @media(max-width:640px){.crp-pop{left:10px;right:10px;bottom:84px;width:auto;max-width:none}}
+.crp-copy{flex:none;border:1px solid #9C6B47;background:#fff;color:#9C6B47;border-radius:999px;padding:4px 11px;font:600 .72rem var(--body,'Jost',sans-serif);letter-spacing:.06em;text-transform:uppercase;cursor:pointer}
+.crp-offer{display:block}
+.crp-offer-top{display:flex;align-items:center;gap:10px}
+.crp-offer-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:8px}
+.crp-offer-bottom small{display:block;min-width:0}
+.crp-offer .crp-pct{margin-left:0}
