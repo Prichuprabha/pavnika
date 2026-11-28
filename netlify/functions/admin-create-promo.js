@@ -1,15 +1,17 @@
 // netlify/functions/admin-create-promo.js
 //
 // POST { adminToken, discountPercent }
-// - Generates a random single-use promo code, valid for 10 minutes,
-//   and stores it in Supabase. Several codes can be active at once,
+// - Optional: validFor ('10m' default, '24h', '3d', '7d') and email
+//   (ties the code to one customer; checked at checkout).
+// - Generates a random single-use promo code, valid for 10 minutes
+//   by default, and stores it in Supabase. Several codes can be active at once,
 //   for different customers.
 
 const { verifyAdminToken } = require('./_admin-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const CODE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const TTL = { '10m': 10 * 60 * 1000, '24h': 24 * 60 * 60 * 1000, '3d': 3 * 24 * 60 * 60 * 1000, '7d': 7 * 24 * 60 * 60 * 1000 };
 
 function randomSuffix() {
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // no 0/O/1/I ambiguity
@@ -41,7 +43,9 @@ exports.handler = async function (event) {
   }
 
   const code = 'SAVE' + discount + '-' + randomSuffix();
-  const expiresAt = new Date(Date.now() + CODE_TTL_MS).toISOString();
+  const ttl = TTL[body.validFor] || TTL['10m'];
+  const expiresAt = new Date(Date.now() + ttl).toISOString();
+  const boundEmail = body.email ? String(body.email).trim().toLowerCase() : null;
 
   try {
     const res = await fetch(`${SUPABASE_URL}/rest/v1/promo_codes`, {
@@ -57,7 +61,8 @@ exports.handler = async function (event) {
         discount_percent: discount,
         expires_at: expiresAt,
         used: false,
-        active: true
+        active: true,
+        ...(boundEmail ? { email: boundEmail } : {})
       })
     });
     if (!res.ok) throw new Error(`Supabase error ${res.status}: ${await res.text()}`);

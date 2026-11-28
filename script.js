@@ -5936,7 +5936,7 @@ function initCheckoutPage() {
     fetch('/.netlify/functions/validate-promo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ code: code })
+      body: JSON.stringify({ code: code, visitorToken: getVisitorToken() })
     })
       .then(function (res) { return res.json(); })
       .then(function (result) {

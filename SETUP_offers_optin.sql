@@ -19,3 +19,6 @@ CREATE TABLE IF NOT EXISTS cart_offers (
 );
 CREATE INDEX IF NOT EXISTS cart_offers_email_idx ON cart_offers (email, sent_at DESC);
 ALTER TABLE cart_offers ENABLE ROW LEVEL SECURITY;
+
+-- Step 45: a promo code can be tied to one customer's email.
+ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS email text;

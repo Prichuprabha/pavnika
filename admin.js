@@ -4336,7 +4336,7 @@ function initPromoCodesEditor(token) {
           '<div class="admin-promo-item" data-code="' + p.code + '" data-expires="' + p.expires_at + '">' +
             '<div>' +
               '<p class="code">' + p.code + '</p>' +
-              '<p class="meta">' + p.discount_percent + '% off &middot; expires in <span class="countdown">' + formatCountdown(p.expires_at) + '</span></p>' +
+              '<p class="meta">' + p.discount_percent + '% off' + (p.email ? ' &middot; for ' + String(p.email).replace(/[&<>"]/g, '') : '') + ' &middot; expires in <span class="countdown">' + formatCountdown(p.expires_at) + '</span></p>' +
             '</div>' +
             '<div style="display:flex; align-items:center; gap:14px;">' +
               '<span class="copy-link" data-code="' + p.code + '">Copy</span>' +

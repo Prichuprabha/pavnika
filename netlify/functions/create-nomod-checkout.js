@@ -101,7 +101,34 @@ exports.handler = async function (event) {
   }
 
   const customer = body.customer || {};
-  const discountPercent = Number(body.discountPercent) || 0;
+  // The discount is decided HERE from the stored promo code, never from
+  // a percentage the browser claims. (Previously body.discountPercent
+  // was trusted as sent.) A code tied to one customer's email must be
+  // redeemed by that signed-in customer.
+  let discountPercent = 0;
+  if (body.promoCode) {
+    try {
+      const pcode = String(body.promoCode).trim().toUpperCase();
+      const pres = await fetch(`${SUPABASE_URL}/rest/v1/promo_codes?code=eq.${encodeURIComponent(pcode)}`, { headers: supabaseHeaders() });
+      if (!pres.ok) throw new Error('Supabase error ' + pres.status);
+      const prow = (await pres.json())[0];
+      const bad = (msg) => ({ statusCode: 400, body: JSON.stringify({ error: msg }) });
+      if (!prow) return bad('That promo code was not found. Please remove it and try again.');
+      if (prow.used) return bad('That promo code has already been used.');
+      if (!prow.active) return bad('That promo code is no longer active.');
+      if (new Date(prow.expires_at).getTime() < Date.now()) return bad('That promo code has expired.');
+      if (prow.email) {
+        const who = verifyVisitorToken(body.visitorToken);
+        if (!who || String(who.email).toLowerCase() !== String(prow.email).toLowerCase()) {
+          return bad('This promo code was issued to a different email address.');
+        }
+      }
+      discountPercent = Number(prow.discount_percent) || 0;
+    } catch (e) {
+      console.error('Promo code check failed at checkout:', e);
+      return { statusCode: 500, body: JSON.stringify({ error: 'We could not verify your promo code just now. Please try again.' }) };
+    }
+  }
 
   // All money math is done in integer cents, then formatted to a decimal
   // string only at the very end. This guarantees net_amount always

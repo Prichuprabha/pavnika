@@ -1,12 +1,16 @@
 // netlify/functions/validate-promo.js
 //
-// POST { code }
+// POST { code, visitorToken? }
+// - A code tied to one customer (promo_codes.email) is only valid for
+//   that signed-in customer.
 // - Checks the code exists, hasn't expired, hasn't already been used,
 //   and is active, and returns the discount percentage if so.
 // - Does NOT mark the code as used here — that only happens once a
 //   payment actually succeeds (see verify-nomod-order.js). Consuming
 //   it at apply-time would permanently burn a code even if the
 //   customer abandons checkout or cancels payment on Nomod's page.
+
+const { verifyVisitorToken } = require('./_visitor-auth');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -57,6 +61,13 @@ exports.handler = async function (event) {
     }
     if (new Date(promo.expires_at).getTime() < Date.now()) {
       return { statusCode: 200, body: JSON.stringify({ valid: false, error: 'That code has expired.' }) };
+    }
+
+    if (promo.email) {
+      const who = verifyVisitorToken(body.visitorToken);
+      if (!who || String(who.email).toLowerCase() !== String(promo.email).toLowerCase()) {
+        return { statusCode: 200, body: JSON.stringify({ valid: false, error: 'This code was issued to a different email address. Please sign in with the email it was sent to.' }) };
+      }
     }
 
     return {
