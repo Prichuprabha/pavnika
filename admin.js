@@ -568,6 +568,7 @@ function showAdminPanel(token, displayName) {
   initOrdersView(token);
   initManualOrderView(token);
   initCustomersView(token);
+  initAbandonedCartsView(token);
   initSareeTagsView(token);
   initShareLinkTool();
   initBusinessSettings(token);
@@ -8237,4 +8238,124 @@ function buildJewelleryStickerSheetHtml(items) {
     'CODES.forEach(function(code,i){try{var qr=qrcode(0,"M");qr.addData(code);qr.make();document.getElementById("jqr-"+i).innerHTML=qr.createSvgTag(0);}catch(e){' +
     'var el=document.getElementById("jqr-"+i);if(el)el.outerHTML=\'<div style="font-size:8px;color:#B8142A;">QR failed<\/div>\';}});<\/script>' +
     '</body></html>';
+}
+
+// ---------------------------------------------------------------
+// Abandoned Carts (step 43): opted-in customers whose saved cart has
+// sat untouched. Lists them with the admin's chosen discount and a
+// preview of the email. Sending itself is switched on in a later step.
+// ---------------------------------------------------------------
+function initAbandonedCartsView(token) {
+  var rowsEl = document.getElementById('ac-rows');
+  var summaryEl = document.getElementById('ac-summary');
+  var msgEl = document.getElementById('ac-msg');
+  var idleSel = document.getElementById('ac-idle');
+  var pop = document.getElementById('ac-pop');
+  var pbody = document.getElementById('ac-pbody');
+  var backBtn = document.getElementById('ac-back');
+  if (!rowsEl || !summaryEl || !idleSel || !pop) return;
+  var LOGO = 'https://pavnika.ae/assets/email-logo.png';
+  var data = { customers: [], offersSent30d: 0 };
+  var loadedOnce = false;
+
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function aed(n) { return 'AED ' + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  function fmtDate(iso) { try { return new Date(iso).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }); } catch (e) { return ''; } }
+
+  function lookup(id) { return (window.PRODUCTS || []).find(function (p) { return p.id === id; }) || null; }
+  // Items still buyable, with prices; sold-out ones are shown but not counted.
+  function priceLines(c) {
+    return c.items.map(function (l) {
+      var p = lookup(l.id);
+      var sold = !p || isEffectivelySold(p);
+      var unit = p ? effectivePrice(p) : 0;
+      return { id: l.id, qty: l.qty, product: p, sold: sold, unit: unit, line: sold ? 0 : unit * l.qty };
+    });
+  }
+  function cartTotal(lines) { return lines.reduce(function (s, l) { return s + l.line; }, 0); }
+
+  function load() {
+    msgEl.textContent = 'Loading…'; msgEl.className = 'admin-status-msg';
+    fetch('/.netlify/functions/admin-list-abandoned-carts', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, idleDays: Number(idleSel.value) })
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok) { msgEl.textContent = (res.d && res.d.error) || 'Could not load abandoned carts.'; msgEl.className = 'admin-status-msg admin-status-error'; return; }
+        msgEl.textContent = '';
+        data = res.d; loadedOnce = true; render();
+      })
+      .catch(function (e) { msgEl.textContent = 'Error: ' + e.message; msgEl.className = 'admin-status-msg admin-status-error'; });
+  }
+
+  function render() {
+    var value = 0;
+    data.customers.forEach(function (c) { value += cartTotal(priceLines(c)); });
+    summaryEl.innerHTML =
+      buildStatCardHtml('Customers Waiting', data.customers.length, 'users', 'gold') +
+      buildStatCardHtml('Cart Value Waiting (AED)', value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 'wallet', 'green') +
+      buildStatCardHtml('Offers Sent (30 days)', data.offersSent30d || 0, 'box', 'orange');
+    if (!data.customers.length) {
+      rowsEl.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No one matches yet. Customers appear here once they have opted in to offers and left items in their cart for ' + esc(idleSel.value) + ' days or more.</p>';
+      return;
+    }
+    rowsEl.innerHTML = data.customers.map(function (c, i) {
+      var lines = priceLines(c);
+      var blocked = !!c.offerBlockedUntil;
+      var nothing = cartTotal(lines) <= 0;
+      var items = lines.map(function (l) {
+        var p = l.product;
+        return '<div class="ac-it"><img src="' + esc((p && p.image) || '') + '" alt=""><div>' + esc(p ? (p.material || p.type || l.id) : l.id) +
+          (l.qty > 1 ? ' × ' + l.qty : '') + '<small>' + esc(l.id) + ' &middot; ' + (l.sold ? 'No longer available' : aed(l.unit)) + '</small></div></div>';
+      }).join('');
+      var offerLine = c.lastOffer
+        ? '<span>Last offer: ' + esc(c.lastOffer.discount_percent) + '% on ' + esc(fmtDate(c.lastOffer.sent_at)) + '</span>'
+        : '<span>No offer sent yet</span>';
+      var orderLine = c.orderCount ? '<span>' + c.orderCount + ' online order' + (c.orderCount === 1 ? '' : 's') + ', last ' + esc(fmtDate(c.lastOrderAt)) + '</span>' : '<span>Never ordered online</span>';
+      var note = blocked ? '<p style="font-size:.76rem;color:#B8142A;margin:8px 0 0;">An offer was sent recently. Next offer allowed after ' + esc(fmtDate(c.offerBlockedUntil)) + '.</p>'
+        : (nothing ? '<p style="font-size:.76rem;color:#B8142A;margin:8px 0 0;">Nothing in this cart is available any more.</p>' : '');
+      return '<div class="ac-card" data-i="' + i + '">' +
+        '<div class="ac-who"><b>' + esc(c.email) + '</b><span>Cart last changed ' + c.idleDays + ' day' + (c.idleDays === 1 ? '' : 's') + ' ago</span>' + orderLine + offerLine + '<em class="ac-tag" style="font-style:normal">Opted in to offers</em></div>' +
+        '<div>' + items + '</div>' +
+        '<div><div class="admin-field"><label>Discount for this customer</label><select class="ac-pct"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option></select></div>' +
+        '<div class="admin-field"><label>Code valid for</label><select class="ac-valid"><option value="24h">24 hours</option><option value="3d" selected>3 days</option><option value="7d">7 days</option></select></div>' +
+        '<div class="ac-sum"><div><span>Cart total</span><span class="ac-t0"></span></div><div><span>Discount</span><span class="ac-td"></span></div><div class="t"><span>Total after discount</span><span class="ac-t1"></span></div></div>' +
+        '<button type="button" class="btn btn-primary ac-send" style="width:100%"' + ((blocked || nothing) ? ' disabled' : '') + '>Email this offer</button>' + note + '</div></div>';
+    }).join('');
+    rowsEl.querySelectorAll('.ac-card').forEach(function (card) {
+      var c = data.customers[Number(card.getAttribute('data-i'))];
+      var total = cartTotal(priceLines(c));
+      var sel = card.querySelector('.ac-pct');
+      function upd() {
+        var pct = Number(sel.value), d = Math.round(total * pct) / 100;
+        card.querySelector('.ac-t0').textContent = aed(total);
+        card.querySelector('.ac-td').textContent = '− ' + aed(d) + ' (' + pct + '%)';
+        card.querySelector('.ac-t1').textContent = aed(total - d);
+      }
+      sel.addEventListener('change', upd); upd();
+      card.querySelector('.ac-send').addEventListener('click', function () { openPreview(c, Number(sel.value), card.querySelector('.ac-valid').value); });
+    });
+  }
+
+  function openPreview(c, pct, valid) {
+    var lines = priceLines(c).filter(function (l) { return !l.sold; });
+    var total = cartTotal(lines), d = Math.round(total * pct) / 100;
+    var validText = valid === '24h' ? '24 hours' : (valid === '7d' ? '7 days' : '3 days');
+    var rowsHtml = lines.map(function (l) {
+      return '<tr><td style="padding:4px 0;">' + esc(l.product ? (l.product.material || l.id) : l.id) + (l.qty > 1 ? ' × ' + l.qty : '') + '</td><td style="text-align:right;">' + aed(l.line) + '</td></tr>';
+    }).join('');
+    pbody.innerHTML = '<dl class="ac-meta"><dt>From</dt><dd>Pavnika by Saranya &lt;offers@pavnika.ae&gt;</dd><dt>To</dt><dd>' + esc(c.email) + '</dd><dt>Subject</dt><dd>Your curated selection awaits: ' + pct + '% off, just for you</dd></dl>' +
+      '<div class="ac-mail"><div class="m"><div class="h"><img src="' + LOGO + '" alt="" style="height:60px"></div><div class="b"><b style="font-size:1.1rem">Your curated selection awaits</b>' +
+      '<p>The pieces you chose are still available. Here is a <b>' + pct + '% offer</b> on everything in your cart, valid for ' + validText + '.</p>' +
+      '<table style="width:100%;font-size:.82rem;border-collapse:collapse;">' + rowsHtml + '<tr><td style="padding-top:8px;border-top:1px solid #eee;">Cart total</td><td style="text-align:right;padding-top:8px;border-top:1px solid #eee;">' + aed(total) + '</td></tr><tr><td>Your discount</td><td style="text-align:right;">− ' + aed(d) + '</td></tr><tr><td><b>You pay</b></td><td style="text-align:right;"><b>' + aed(total - d) + '</b></td></tr></table>' +
+      '<div class="ac-code"><small>Your personal code</small><br><b>SAVE' + pct + '-XXXX</b><br><small>(the real code is generated when the email is sent)</small></div>' +
+      '<p style="text-align:center;font-size:.76rem;opacity:.7">Unsubscribe &middot; pavnika.ae</p></div></div></div>';
+    pop.classList.add('on');
+  }
+
+  backBtn.addEventListener('click', function () { pop.classList.remove('on'); });
+  pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('on'); });
+  idleSel.addEventListener('change', load);
+  var nav = document.querySelector('.admin-nav-item[data-view="abandoned-carts"]');
+  if (nav) nav.addEventListener('click', load);
 }
