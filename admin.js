@@ -8337,7 +8337,12 @@ function initAbandonedCartsView(token) {
     });
   }
 
+  var pending = null;
+  var goBtn = document.getElementById('ac-go');
   function openPreview(c, pct, valid) {
+    pending = { email: c.email, pct: pct, valid: valid };
+    goBtn.style.display = ''; goBtn.disabled = false; goBtn.textContent = 'Send email now';
+    backBtn.textContent = 'Back to edit';
     var lines = priceLines(c).filter(function (l) { return !l.sold; });
     var total = cartTotal(lines), d = Math.round(total * pct) / 100;
     var validText = valid === '24h' ? '24 hours' : (valid === '7d' ? '7 days' : '3 days');
@@ -8354,6 +8359,26 @@ function initAbandonedCartsView(token) {
   }
 
   backBtn.addEventListener('click', function () { pop.classList.remove('on'); });
+  goBtn.addEventListener('click', function () {
+    if (!pending) return;
+    var job = pending;
+    goBtn.disabled = true; goBtn.textContent = 'Sending\u2026';
+    fetch('/.netlify/functions/admin-send-cart-offer', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminToken: token, email: job.email, discountPercent: job.pct, validFor: job.valid })
+    }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error((res.d && res.d.error) || 'Could not send.');
+        pending = null;
+        pbody.innerHTML = '<p style="padding:26px 10px;text-align:center;font-size:.95rem;line-height:1.6;"><b>Email sent to ' + esc(job.email) + '.</b><br>Code <b>' + esc(res.d.code) + '</b> (' + job.pct + '% off) is tied to their email.' + (res.d.logged === false ? '<br><span style="color:#B8142A;">The send was not logged (run the latest SQL), so the 30-day pause will not apply.</span>' : '') + '</p>';
+        goBtn.style.display = 'none'; backBtn.textContent = 'Close';
+        load();
+      })
+      .catch(function (e) {
+        pbody.insertAdjacentHTML('afterbegin', '<p style="background:#FDECEC;color:#B8142A;padding:10px 12px;border-radius:8px;margin:0 0 12px;">' + esc(e.message) + '</p>');
+        goBtn.disabled = false; goBtn.textContent = 'Try again';
+      });
+  });
   pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('on'); });
   idleSel.addEventListener('change', load);
   var nav = document.querySelector('.admin-nav-item[data-view="abandoned-carts"]');

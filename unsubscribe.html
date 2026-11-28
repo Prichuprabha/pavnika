@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unsubscribe — Pavnika by Saranya</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root { --maroon:#3B0F20; --ink:#3B2528; --gold:#9C6B47; --cream:#F8ECE2; --line:#E3D2C4; }
+  * { box-sizing: border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:var(--cream); color:var(--ink); font-family:'Jost',system-ui,sans-serif; }
+  .card { width:100%; max-width:440px; background:#fffdf9; border:1px solid var(--line); border-radius:18px; padding:34px 28px; text-align:center; box-shadow:0 8px 28px rgba(59,15,32,.12); }
+  .card img { height:64px; margin-bottom:14px; }
+  h1 { font-family:'Cormorant Garamond',Georgia,serif; font-weight:600; font-size:1.7rem; color:var(--maroon); margin:0 0 10px; }
+  p { margin:0 0 20px; line-height:1.6; font-size:.95rem; }
+  a.btn, button { display:inline-block; border:0; cursor:pointer; text-decoration:none; background:var(--maroon); color:#fff; font:600 .78rem 'Jost',sans-serif; letter-spacing:.1em; text-transform:uppercase; padding:14px 30px; border-radius:999px; }
+  button[disabled] { opacity:.6; cursor:default; }
+  .small { font-size:.8rem; opacity:.7; margin:16px 0 0; }
+  .err { color:#B8142A; }
+</style>
+</head>
+<body>
+<main class="card">
+  <img src="assets/maroonlogo.png" alt="Pavnika by Saranya">
+  <div id="ask">
+    <h1>Unsubscribe from offers?</h1>
+    <p>You will stop receiving special offers and updates from Pavnika by Saranya. Order and account emails are not affected.</p>
+    <button type="button" id="go">Yes, unsubscribe me</button>
+    <p class="small"><a href="home.html" style="color:inherit;">No, take me back to the website</a></p>
+  </div>
+  <div id="done" style="display:none;">
+    <h1>You are unsubscribed</h1>
+    <p>You will no longer receive offers from us. If you change your mind, you can switch offers back on any time in My Account.</p>
+    <a class="btn" href="home.html">Back to the website</a>
+  </div>
+  <p class="err" id="err" style="display:none;"></p>
+</main>
+<script>
+(function () {
+  var token = new URLSearchParams(location.search).get('t') || '';
+  var btn = document.getElementById('go'), err = document.getElementById('err');
+  if (!token) { document.getElementById('ask').style.display = 'none'; err.style.display = 'block'; err.textContent = 'This unsubscribe link is not valid.'; return; }
+  btn.addEventListener('click', function () {
+    btn.disabled = true; btn.textContent = 'Please wait…'; err.style.display = 'none';
+    fetch('/.netlify/functions/unsubscribe-offers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ token: token }) })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (res) {
+        if (!res.ok) throw new Error(res.d.error || 'Something went wrong.');
+        document.getElementById('ask').style.display = 'none'; document.getElementById('done').style.display = 'block';
+      })
+      .catch(function (e) { err.style.display = 'block'; err.textContent = e.message + ' Please try again, or email support@pavnika.ae.'; btn.disabled = false; btn.textContent = 'Yes, unsubscribe me'; });
+  });
+})();
+</script>
+</body>
+</html>
