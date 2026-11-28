@@ -4761,7 +4761,16 @@ function cartGetLines() {
   return _cartCache;
 }
 
+// Remembers when the cart last really changed (an item or a quantity),
+// for the "your selection is waiting" reminder popup.
+function cartSignature(lines) {
+  return (lines || []).map(function (l) { return l.id + ':' + l.qty; }).sort().join('|');
+}
 function cartSaveLines(lines) {
+  try {
+    var prevSig = cartSignature(cartGetLines());
+    if (prevSig !== cartSignature(lines)) localStorage.setItem('pavnika_cart_changed', String(Date.now()));
+  } catch (e) { /* ignore */ }
   _cartCache = lines;
   try {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(lines));
@@ -7716,4 +7725,119 @@ function initPinnedHero() {
           'Could not reach the server. Please check your connection and try again.';
       });
   };
+})();
+
+/* ---------- "Your selection is waiting" reminder popup ----------
+   Shown when items have sat untouched in the cart for 3 days or more.
+   A plain reminder; if we have emailed this customer an offer that is
+   still usable, it reminds them of that code instead. At most once a
+   day and 3 times per untouched stretch, never on payment pages. */
+(function () {
+  var page = (window.location.pathname.split('/').pop() || 'home').toLowerCase().replace(/\.html$/, '');
+  var skip = ['checkout', 'payment', 'order-success', 'index', 'admin', 'pos', 'scan', 'unsubscribe', 'account'];
+  if (skip.indexOf(page) !== -1) return;
+
+  var IDLE_MS = 3 * 24 * 60 * 60 * 1000;
+  var DAY_MS = 24 * 60 * 60 * 1000;
+  var MAX_SHOWS = 3;
+  var STATE_KEY = 'pavnika_cart_reminder';
+
+  function readState() { try { return JSON.parse(localStorage.getItem(STATE_KEY) || '{}') || {}; } catch (e) { return {}; } }
+  function writeState(st) { try { localStorage.setItem(STATE_KEY, JSON.stringify(st)); } catch (e) { /* ignore */ } }
+  function esc(t) { return String(t == null ? '' : t).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+
+  function localLastChange() {
+    var v = 0;
+    try { v = Number(localStorage.getItem('pavnika_cart_changed')) || 0; } catch (e) { /* ignore */ }
+    if (!v) {
+      // Cart existed before tracking began: start its clock now.
+      v = Date.now();
+      try { localStorage.setItem('pavnika_cart_changed', String(v)); } catch (e) { /* ignore */ }
+    }
+    return v;
+  }
+
+  function show(ids, offer, lastChange) {
+    if (document.getElementById('crp-pop')) return;
+    var products = (window.PRODUCTS || []);
+    var items = ids.map(function (id) { return products.find(function (p) { return p.id === id; }); }).filter(Boolean);
+    if (!items.length) return;
+    var thumbs = items.slice(0, 3).map(function (p) { return '<img src="' + esc(p.image) + '" alt="" loading="lazy">'; }).join('');
+    var count = items.length + (items.length === 1 ? ' selection' : ' selections') + ' in your cart';
+    var offerHtml = '';
+    if (offer) {
+      var until = '';
+      try { until = new Date(offer.expiresAt).toLocaleString('en-GB', { timeZone: 'Asia/Dubai', weekday: 'long', day: 'numeric', month: 'long', hour: 'numeric', minute: '2-digit', hour12: true }); } catch (e) { /* ignore */ }
+      offerHtml = '<div class="crp-offer"><div><b>' + esc(offer.code) + '</b><small>Valid until ' + esc(until) + '</small></div><span class="crp-pct">' + esc(offer.percent) + '% off</span></div>';
+    }
+    var el = document.createElement('div');
+    el.id = 'crp-pop';
+    el.className = 'crp-pop';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-label', 'Your curated selection awaits');
+    el.innerHTML =
+      '<button type="button" class="crp-x" aria-label="Close">&times;</button>' +
+      '<div class="crp-body">' +
+        '<p class="crp-eyebrow">' + (offer ? 'Your offer is waiting' : 'Still thinking it over?') + '</p>' +
+        '<p class="crp-title">Your curated selection awaits</p>' +
+        '<p class="crp-text">' + (offer
+          ? 'Your personal offer is still active. Use it on your selection before it ends.'
+          : 'The pieces you chose are still available. Return to your selection whenever you are ready.') + '</p>' +
+        '<div class="crp-thumbs">' + thumbs + '<span>' + count + '</span></div>' +
+        offerHtml +
+        '<button type="button" class="crp-cta">View my selection</button>' +
+        '<button type="button" class="crp-later">Maybe later</button>' +
+      '</div>';
+    document.body.appendChild(el);
+    requestAnimationFrame(function () { el.classList.add('is-in'); });
+
+    // Count this showing right away, so closing the tab can't repeat it.
+    var st = readState();
+    var same = st.stretch === lastChange;
+    writeState({ stretch: lastChange, shown: (same ? (st.shown || 0) : 0) + 1, lastShown: Date.now() });
+
+    function close() { el.classList.remove('is-in'); setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 350); }
+    el.querySelector('.crp-x').addEventListener('click', close);
+    el.querySelector('.crp-later').addEventListener('click', close);
+    el.querySelector('.crp-cta').addEventListener('click', function () {
+      close();
+      if (typeof openCartDrawer === 'function') openCartDrawer(); else window.location.href = 'checkout.html';
+    });
+  }
+
+  function decide(lastChange, offer) {
+    if (!lastChange || Date.now() - lastChange < IDLE_MS) return;
+    var ids = typeof cartGetItems === 'function' ? cartGetItems() : [];
+    if (!ids.length) return;
+    var st = readState();
+    var shown = st.stretch === lastChange ? (st.shown || 0) : 0;
+    if (shown >= MAX_SHOWS) return;
+    if (st.stretch === lastChange && st.lastShown && Date.now() - st.lastShown < DAY_MS) return;
+    // Don't pop up over an open drawer or login overlay.
+    if (document.getElementById('gate-overlay-root') || document.querySelector('.cart-drawer-overlay.is-open, #cart-drawer-overlay.is-open')) return;
+    show(ids, offer, lastChange);
+  }
+
+  function run() {
+    var ids = typeof cartGetItems === 'function' ? cartGetItems() : [];
+    if (!ids.length) return;
+    var token = typeof getVisitorToken === 'function' ? getVisitorToken() : null;
+    var local = localLastChange();
+    if (!token) { decide(local, null); return; }
+    fetch('/.netlify/functions/get-cart-reminder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorToken: token })
+    })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        // Server time is shared across devices; fall back to this browser's.
+        var last = d && d.cartUpdatedAt ? new Date(d.cartUpdatedAt).getTime() : local;
+        decide(last, d ? d.offer : null);
+      })
+      .catch(function () { decide(local, null); });
+  }
+
+  // Give the page (and the cart sync) a few seconds to settle first.
+  window.addEventListener('load', function () { setTimeout(run, 4000); });
 })();

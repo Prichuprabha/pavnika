@@ -6460,3 +6460,23 @@ a.home-video-tile-link {
 .acct-switch input:checked+.acct-switch-track::after{transform:translateX(22px)}
 .acct-switch input:focus-visible+.acct-switch-track{outline:2px solid #9C6B47;outline-offset:2px}
 @media(max-width:560px){.acct-offers{padding:12px 16px}.acct-offers-title{font-size:1.15rem}.acct-offers-sub{font-size:.8rem}.acct-offers-text{padding-right:14px}.acct-switch{padding-left:14px;flex-direction:column;gap:6px;font-size:.85rem}}
+
+/* cart reminder popup (step48) */
+.crp-pop{position:fixed;z-index:9000;right:24px;bottom:96px;width:360px;max-width:calc(100vw - 20px);background:#fffdf9;border:1px solid #e8c9a8;border-radius:18px;box-shadow:0 12px 36px rgba(59,15,32,.25);overflow:hidden;opacity:0;transform:translateY(24px);transition:opacity .4s ease,transform .4s ease;color:#3B2528}
+.crp-pop.is-in{opacity:1;transform:none}
+.crp-pop::before{content:'';position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#9C6B47,#e8c9a8,#9C6B47)}
+.crp-x{position:absolute;top:10px;right:10px;width:30px;height:30px;border:0;border-radius:50%;background:rgba(255,255,255,.8);color:#3B0F20;font-size:20px;line-height:1;cursor:pointer;z-index:2}
+.crp-body{position:relative;padding:20px 18px 16px}
+.crp-eyebrow{margin:0 0 4px;font-size:.68rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#9C6B47}
+.crp-title{margin:0 0 6px;padding-right:26px;font-family:var(--display,'Cormorant Garamond',Georgia,serif);font-weight:600;font-size:1.45rem;line-height:1.15;color:#3B0F20}
+.crp-text{margin:0 0 12px;font-size:.9rem;line-height:1.5}
+.crp-thumbs{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.crp-thumbs img{width:52px;height:64px;object-fit:cover;border-radius:6px;border:1px solid #E3D2C4}
+.crp-thumbs span{font-size:.8rem;color:#7a6360}
+.crp-offer{display:flex;align-items:center;gap:10px;background:#fff;border:1px dashed #9C6B47;border-radius:10px;padding:9px 12px;margin-bottom:12px}
+.crp-offer b{font-size:1.1rem;letter-spacing:.08em;color:#3B0F20}
+.crp-offer small{display:block;font-size:.74rem;color:#7a6360}
+.crp-pct{margin-left:auto;flex:none;white-space:nowrap;background:#3B0F20;color:#fff;border-radius:999px;padding:4px 10px;font-size:.8rem;font-weight:600}
+.crp-cta{display:block;width:100%;border:0;cursor:pointer;background:#3B0F20;color:#fff;font:600 .78rem var(--body,'Jost',sans-serif);letter-spacing:.1em;text-transform:uppercase;padding:13px;border-radius:999px}
+.crp-later{display:block;width:100%;margin-top:8px;background:none;border:0;cursor:pointer;font-size:.78rem;color:#7a6360;text-decoration:underline}
+@media(max-width:640px){.crp-pop{left:10px;right:10px;bottom:84px;width:auto;max-width:none}}
