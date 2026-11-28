@@ -3716,7 +3716,7 @@ function wireGateOverlayEvents() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email })
+      body: JSON.stringify({ email: email, marketingOptIn: !!((document.getElementById('gate-overlay-offers-checkbox') || {}).checked) })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -3971,7 +3971,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email })
+      body: JSON.stringify({ email: email, marketingOptIn: !!((document.getElementById('gate-offers-checkbox') || {}).checked) })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });

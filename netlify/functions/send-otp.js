@@ -74,6 +74,17 @@ exports.handler = async function (event) {
 
     // Already verified before — no need to send a code at all.
     if (existing && existing.verified) {
+      // A returning customer skips the code, so the "email me offers"
+      // tick is saved here (it never reaches verify-otp). Only ever
+      // turns the choice ON; it can't be switched off from the login box.
+      if (body.marketingOptIn === true) {
+        try {
+          await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ marketing_opt_in: true, marketing_opt_in_at: new Date().toISOString() })
+          });
+        } catch (e) { console.error('saving offers opt-in failed (are the SETUP_offers_optin.sql columns added?):', e); }
+      }
       var response = { alreadyVerified: true };
       try { response.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
       return { statusCode: 200, body: JSON.stringify(response) };
