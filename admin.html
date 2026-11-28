@@ -141,10 +141,11 @@
     font-family: var(--body); font-size: 0.82rem; background: var(--ivory);
   }
   #admin-orders-status-filter, #admin-shop-status-filter { width: 190px; }
-  #admin-customers-search, #admin-customers-sort {
+  #admin-customers-search, #admin-customers-sort, #ac-idle {
     padding: 8px 10px; border: 1px solid var(--stone); border-radius: 3px;
     font-family: var(--body); font-size: 0.8rem; background: var(--ivory);
   }
+  #ac-idle { width: 215px; flex-shrink: 0; }
   #admin-customers-sort { width: 185px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #admin-review-search, #admin-review-rating-filter {
     padding: 8px 10px; border: 1px solid var(--stone); border-radius: 3px;
@@ -2461,7 +2462,7 @@
       <p class="admin-status-msg" id="ac-msg"></p>
       <div class="admin-metric-grid" id="ac-summary"></div>
       <div class="ac-bar">
-        <select id="ac-idle" class="admin-pill-input"><option value="7">Idle 7 days or more</option><option value="14">Idle 14 days or more</option><option value="30">Idle 30 days or more</option></select>
+        <select id="ac-idle" class="admin-pill-input"><option value="7" selected>Idle 7 days or more</option><option value="14">Idle 14 days or more</option><option value="30">Idle 30 days or more</option><option value="0">Show all (any idle time)</option></select>
         <span style="font-size:.8rem;opacity:.65">Only customers who opted in to offers are listed.</span>
       </div>
       <div id="ac-rows"></div>
@@ -2671,7 +2672,7 @@
     }).catch(function () {});
   }
 </script>
-<script src="admin.js?v=228"></script>
+<script src="admin.js?v=229"></script>
 <!-- Barcode scanner overlay, for scanning a customer receipt's barcode
      from the Orders search bar (see admin-orders-scan-btn). Same
      scanning engine as the /scan.html saree lookup app. -->

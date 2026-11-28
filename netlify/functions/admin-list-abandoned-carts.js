@@ -45,7 +45,7 @@ exports.handler = async function (event) {
   if (!verifyAdminToken(body.adminToken)) {
     return { statusCode: 401, body: JSON.stringify({ error: 'Not authorized. Please sign in again.' }) };
   }
-  const idleDays = [7, 14, 30].indexOf(Number(body.idleDays)) !== -1 ? Number(body.idleDays) : 7;
+  const idleDays = [0, 7, 14, 30].indexOf(Number(body.idleDays)) !== -1 ? Number(body.idleDays) : 7;
 
   try {
     const visitors = await get('verified_visitors?marketing_opt_in=eq.true&select=email,cart_updated_at');

@@ -8296,7 +8296,7 @@ function initAbandonedCartsView(token) {
       buildStatCardHtml('Cart Value Waiting (AED)', value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 'wallet', 'green') +
       buildStatCardHtml('Offers Sent (30 days)', data.offersSent30d || 0, 'box', 'orange');
     if (!data.customers.length) {
-      rowsEl.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No one matches yet. Customers appear here once they have opted in to offers and left items in their cart for ' + esc(idleSel.value) + ' days or more.</p>';
+      rowsEl.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No one matches yet. Customers appear here once they have opted in to offers and left items in their cart' + (Number(idleSel.value) ? ' for ' + esc(idleSel.value) + ' days or more' : '') + '.</p>';
       return;
     }
     rowsEl.innerHTML = data.customers.map(function (c, i) {
@@ -8315,7 +8315,7 @@ function initAbandonedCartsView(token) {
       var note = blocked ? '<p style="font-size:.76rem;color:#B8142A;margin:8px 0 0;">An offer was sent recently. Next offer allowed after ' + esc(fmtDate(c.offerBlockedUntil)) + '.</p>'
         : (nothing ? '<p style="font-size:.76rem;color:#B8142A;margin:8px 0 0;">Nothing in this cart is available any more.</p>' : '');
       return '<div class="ac-card" data-i="' + i + '">' +
-        '<div class="ac-who"><b>' + esc(c.email) + '</b><span>Cart last changed ' + c.idleDays + ' day' + (c.idleDays === 1 ? '' : 's') + ' ago</span>' + orderLine + offerLine + '<em class="ac-tag" style="font-style:normal">Opted in to offers</em></div>' +
+        '<div class="ac-who"><b>' + esc(c.email) + '</b><span>Cart last changed ' + (c.idleDays === 0 ? 'today' : c.idleDays + ' day' + (c.idleDays === 1 ? '' : 's') + ' ago') + '</span>' + orderLine + offerLine + '<em class="ac-tag" style="font-style:normal">Opted in to offers</em></div>' +
         '<div>' + items + '</div>' +
         '<div><div class="admin-field"><label>Discount for this customer</label><select class="ac-pct"><option value="5">5%</option><option value="10" selected>10%</option><option value="15">15%</option><option value="20">20%</option><option value="25">25%</option></select></div>' +
         '<div class="admin-field"><label>Code valid for</label><select class="ac-valid"><option value="24h">24 hours</option><option value="3d" selected>3 days</option><option value="7d">7 days</option></select></div>' +
