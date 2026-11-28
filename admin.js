@@ -8274,32 +8274,49 @@ function initAbandonedCartsView(token) {
   }
   function cartTotal(lines) { return lines.reduce(function (s, l) { return s + l.line; }, 0); }
 
+  var loading = false;
   function load() {
-    msgEl.textContent = 'Loading…'; msgEl.className = 'admin-status-msg';
+    if (loading) return;
+    loading = true;
+    if (!loadedOnce) { msgEl.textContent = ''; render(); }
+    // Always fetch everyone once; the idle-days dropdown then filters
+    // instantly in the browser instead of waiting on the server again.
     fetch('/.netlify/functions/admin-list-abandoned-carts', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ adminToken: token, idleDays: Number(idleSel.value) })
+      body: JSON.stringify({ adminToken: token, idleDays: 0 })
     }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (res) {
         if (!res.ok) { msgEl.textContent = (res.d && res.d.error) || 'Could not load abandoned carts.'; msgEl.className = 'admin-status-msg admin-status-error'; return; }
         msgEl.textContent = '';
         data = res.d; loadedOnce = true; render();
       })
-      .catch(function (e) { msgEl.textContent = 'Error: ' + e.message; msgEl.className = 'admin-status-msg admin-status-error'; });
+      .catch(function (e) { msgEl.textContent = 'Error: ' + e.message; msgEl.className = 'admin-status-msg admin-status-error'; })
+      .then(function () { loading = false; });
   }
 
+  var shown = [];
   function render() {
+    var minIdle = Number(idleSel.value) || 0;
+    shown = data.customers.filter(function (c) { return c.idleDays >= minIdle; });
     var value = 0;
-    data.customers.forEach(function (c) { value += cartTotal(priceLines(c)); });
+    if (!loadedOnce) {
+      summaryEl.innerHTML =
+        buildStatCardHtml('Customers Waiting', '\u2026', 'users', 'gold') +
+        buildStatCardHtml('Cart Value Waiting (AED)', '\u2026', 'wallet', 'green') +
+        buildStatCardHtml('Offers Sent (30 days)', '\u2026', 'box', 'orange');
+      rowsEl.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">Loading\u2026</p>';
+      return;
+    }
+    shown.forEach(function (c) { value += cartTotal(priceLines(c)); });
     summaryEl.innerHTML =
-      buildStatCardHtml('Customers Waiting', data.customers.length, 'users', 'gold') +
+      buildStatCardHtml('Customers Waiting', shown.length, 'users', 'gold') +
       buildStatCardHtml('Cart Value Waiting (AED)', value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), 'wallet', 'green') +
       buildStatCardHtml('Offers Sent (30 days)', data.offersSent30d || 0, 'box', 'orange');
-    if (!data.customers.length) {
+    if (!shown.length) {
       rowsEl.innerHTML = '<p style="font-size:0.85rem; opacity:0.6;">No one matches yet. Customers appear here once they have opted in to offers and left items in their cart' + (Number(idleSel.value) ? ' for ' + esc(idleSel.value) + ' days or more' : '') + '.</p>';
       return;
     }
-    rowsEl.innerHTML = data.customers.map(function (c, i) {
+    rowsEl.innerHTML = shown.map(function (c, i) {
       var lines = priceLines(c);
       var blocked = !!c.offerBlockedUntil;
       var nothing = cartTotal(lines) <= 0;
@@ -8323,7 +8340,7 @@ function initAbandonedCartsView(token) {
         '<button type="button" class="btn btn-primary ac-send" style="width:100%"' + ((blocked || nothing) ? ' disabled' : '') + '>Email this offer</button>' + note + '</div></div>';
     }).join('');
     rowsEl.querySelectorAll('.ac-card').forEach(function (card) {
-      var c = data.customers[Number(card.getAttribute('data-i'))];
+      var c = shown[Number(card.getAttribute('data-i'))];
       var total = cartTotal(priceLines(c));
       var sel = card.querySelector('.ac-pct');
       function upd() {
@@ -8380,7 +8397,9 @@ function initAbandonedCartsView(token) {
       });
   });
   pop.addEventListener('click', function (e) { if (e.target === pop) pop.classList.remove('on'); });
-  idleSel.addEventListener('change', load);
+  idleSel.addEventListener('change', render);
   var nav = document.querySelector('.admin-nav-item[data-view="abandoned-carts"]');
-  if (nav) nav.addEventListener('click', load);
+  if (nav) nav.addEventListener('click', function () { render(); load(); });
+  render(); // tiles show straight away (with dots) before any data arrives
+  load();   // warm the data in the background as soon as the admin signs in
 }

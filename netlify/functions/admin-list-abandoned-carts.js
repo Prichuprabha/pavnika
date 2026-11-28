@@ -48,14 +48,16 @@ exports.handler = async function (event) {
   const idleDays = [0, 7, 14, 30].indexOf(Number(body.idleDays)) !== -1 ? Number(body.idleDays) : 7;
 
   try {
-    const visitors = await get('verified_visitors?marketing_opt_in=eq.true&select=email,cart_updated_at');
+    const [visitors, recentOffers] = await Promise.all([
+      get('verified_visitors?marketing_opt_in=eq.true&select=email,cart_updated_at'),
+      get('cart_offers?select=email,discount_percent,code,expires_at,sent_at&order=sent_at.desc&limit=2000', true)
+    ]);
     const optedIn = {};
     visitors.forEach(function (v) { optedIn[String(v.email).toLowerCase()] = v; });
     const emails = Object.keys(optedIn);
     const now = Date.now();
 
     // Offers sent in the last 30 days, across everyone (for the stat card).
-    const recentOffers = await get('cart_offers?select=email,discount_percent,code,expires_at,sent_at&order=sent_at.desc&limit=2000', true);
     const sentLast30 = recentOffers.filter(function (o) { return now - new Date(o.sent_at).getTime() < PAUSE_DAYS * DAY; }).length;
 
     if (!emails.length) {
