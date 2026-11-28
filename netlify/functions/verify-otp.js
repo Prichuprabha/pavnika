@@ -10,6 +10,7 @@
 // touches this endpoint at all.
 
 const { signVisitorToken } = require('./_visitor-auth');
+const { isTrusted, trust } = require('./_device');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -92,13 +93,34 @@ exports.handler = async function (event, context) {
       return { statusCode: 400, body: JSON.stringify({ error: 'No verification request found for this email.' }) };
     }
 
-    if (record.verified) {
-      var alreadyResponse = { verified: true };
-      try { alreadyResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
-      return { statusCode: 200, body: JSON.stringify(alreadyResponse) };
+    const MAX_ATTEMPTS = 5;
+
+    // No pending code: only a browser already trusted for this email may
+    // be let straight in (e.g. a double-submit). Anyone else must request
+    // a code first -- a verified address is no longer enough on its own.
+    if (!record.otp_code) {
+      if (record.verified && await isTrusted(email, body.deviceId)) {
+        var trustedResponse = { verified: true };
+        try { trustedResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
+        return { statusCode: 200, body: JSON.stringify(trustedResponse) };
+      }
+      return { statusCode: 400, body: JSON.stringify({ error: 'Please request a new code.' }) };
     }
 
-    if (!record.otp_code || record.otp_code !== code) {
+    if (record.otp_code !== code) {
+      // Limit guesses: after 5 wrong tries this code is thrown away.
+      const tries = (Number(record.otp_attempts) || 0) + 1;
+      try {
+        await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
+          method: 'PATCH',
+          body: JSON.stringify(tries >= MAX_ATTEMPTS ? { otp_code: null, otp_expires_at: null, otp_attempts: 0 } : { otp_attempts: tries })
+        });
+      } catch (e) {
+        if (tries >= MAX_ATTEMPTS) { try { await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, { method: 'PATCH', body: JSON.stringify({ otp_code: null, otp_expires_at: null }) }); } catch (e2) { /* ignore */ } }
+      }
+      if (tries >= MAX_ATTEMPTS) {
+        return { statusCode: 400, body: JSON.stringify({ error: 'Too many incorrect attempts. Please request a new code.' }) };
+      }
       return { statusCode: 400, body: JSON.stringify({ error: 'Incorrect code. Please try again.' }) };
     }
 
@@ -107,18 +129,16 @@ exports.handler = async function (event, context) {
     }
 
     const nowIso = new Date().toISOString();
-    const geo = getGeoFromEvent(event);
-    await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
-      method: 'PATCH',
-      body: JSON.stringify({
-        verified: true,
-        verified_at: nowIso,
-        otp_code: null,
-        otp_expires_at: null,
-        country: geo.country,
-        region: geo.region
-      })
-    });
+    const patch = { verified: true, otp_code: null, otp_expires_at: null };
+    if (!record.verified) {
+      const geo = getGeoFromEvent(event);
+      patch.verified_at = nowIso; patch.country = geo.country; patch.region = geo.region;
+    }
+    await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, { method: 'PATCH', body: JSON.stringify(patch) });
+    try { await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, { method: 'PATCH', body: JSON.stringify({ otp_attempts: 0 }) }); } catch (e) { /* column not added yet */ }
+
+    // This browser has now proven it controls the inbox: remember it.
+    await trust(email, body.deviceId);
 
     await saveOptIn(email, body.marketingOptIn);
     var freshResponse = { verified: true };

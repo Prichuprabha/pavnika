@@ -3558,6 +3558,45 @@ function getVisitorToken() {
   return raw;
 }
 
+// A random id for this browser, used so the server can tell a browser it
+// already knows (no code needed) from a new one (asks for the emailed
+// code). Only a hash of it is ever stored server side.
+function getDeviceId() {
+  var id = '';
+  try { id = localStorage.getItem('pavnika_device') || ''; } catch (e) { /* ignore */ }
+  if (!/^[a-f0-9]{32}$/.test(id)) {
+    id = '';
+    try {
+      var bytes = new Uint8Array(16);
+      (window.crypto || window.msCrypto).getRandomValues(bytes);
+      for (var i = 0; i < bytes.length; i++) id += ('0' + bytes[i].toString(16)).slice(-2);
+    } catch (e) {
+      for (var j = 0; j < 32; j++) id += Math.floor(Math.random() * 16).toString(16);
+    }
+    try { localStorage.setItem('pavnika_device', id); } catch (e) { /* ignore */ }
+  }
+  return id;
+}
+
+// Customers who were already signed in on this browser before device
+// checks existed: remember the browser once, so they are not suddenly
+// asked for a code on the device they were already using.
+(function trustThisBrowser() {
+  window.addEventListener('load', function () {
+    setTimeout(function () {
+      var token = getVisitorToken();
+      if (!token) return;
+      var mark = 'dt:' + token.slice(-16);
+      try { if (localStorage.getItem('pavnika_device_trusted') === mark) return; } catch (e) { return; }
+      fetch('/.netlify/functions/trust-device', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visitorToken: token, deviceId: getDeviceId() })
+      }).then(function (r) { if (r.ok) { try { localStorage.setItem('pavnika_device_trusted', mark); } catch (e) { /* ignore */ } } }).catch(function () {});
+    }, 2500);
+  });
+})();
+
+
 /* ---------- Shared gate overlay (embeddable login, usable from any page) ----------
    Extracted from what used to live only on index.html, so it can be
    triggered from any page as an in-place overlay instead of a full
@@ -3716,7 +3755,7 @@ function wireGateOverlayEvents() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, marketingOptIn: !!((document.getElementById('gate-overlay-offers-checkbox') || {}).checked) })
+      body: JSON.stringify({ email: email, marketingOptIn: !!((document.getElementById('gate-overlay-offers-checkbox') || {}).checked), deviceId: getDeviceId() })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -3756,7 +3795,7 @@ function wireGateOverlayEvents() {
     fetch('/.netlify/functions/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateOverlayEmail, code: code, marketingOptIn: !!((document.getElementById('gate-overlay-offers-checkbox') || {}).checked) })
+      body: JSON.stringify({ email: gateOverlayEmail, code: code, marketingOptIn: !!((document.getElementById('gate-overlay-offers-checkbox') || {}).checked), deviceId: getDeviceId() })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -3785,7 +3824,7 @@ function wireGateOverlayEvents() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateOverlayEmail })
+      body: JSON.stringify({ email: gateOverlayEmail, deviceId: getDeviceId() })
     })
       .finally(function () {
         setTimeout(function () {
@@ -3971,7 +4010,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: email, marketingOptIn: !!((document.getElementById('gate-offers-checkbox') || {}).checked) })
+      body: JSON.stringify({ email: email, marketingOptIn: !!((document.getElementById('gate-offers-checkbox') || {}).checked), deviceId: getDeviceId() })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -4013,7 +4052,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateEmail, code: code, marketingOptIn: !!((document.getElementById('gate-offers-checkbox') || {}).checked) })
+      body: JSON.stringify({ email: gateEmail, code: code, marketingOptIn: !!((document.getElementById('gate-offers-checkbox') || {}).checked), deviceId: getDeviceId() })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -4048,7 +4087,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/send-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateEmail })
+      body: JSON.stringify({ email: gateEmail, deviceId: getDeviceId() })
     })
       .finally(function () {
         setTimeout(function () {

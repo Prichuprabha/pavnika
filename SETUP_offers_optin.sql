@@ -22,3 +22,16 @@ ALTER TABLE cart_offers ENABLE ROW LEVEL SECURITY;
 
 -- Step 45: a promo code can be tied to one customer's email.
 ALTER TABLE promo_codes ADD COLUMN IF NOT EXISTS email text;
+
+-- Step 52: trusted devices (a new browser must enter the emailed code)
+-- and a limit on wrong-code guesses.
+CREATE TABLE IF NOT EXISTS trusted_devices (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email text NOT NULL,
+  device_hash text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  last_seen timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (email, device_hash)
+);
+ALTER TABLE trusted_devices ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verified_visitors ADD COLUMN IF NOT EXISTS otp_attempts integer NOT NULL DEFAULT 0;

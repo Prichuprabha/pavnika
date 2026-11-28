@@ -12,6 +12,7 @@
 // touches this endpoint at all.
 
 const { signVisitorToken } = require('./_visitor-auth');
+const { isTrusted } = require('./_device');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -72,11 +73,12 @@ exports.handler = async function (event) {
     );
     const existing = existingRows[0];
 
-    // Already verified before — no need to send a code at all.
-    if (existing && existing.verified) {
-      // A returning customer skips the code, so the "email me offers"
-      // tick is saved here (it never reaches verify-otp). Only ever
-      // turns the choice ON; it can't be switched off from the login box.
+    // Already verified before, AND on a browser we already know for this
+    // email: no code needed. A browser we have not seen before falls
+    // through and gets a fresh code emailed, like a first-time sign-in.
+    if (existing && existing.verified && await isTrusted(email, body.deviceId)) {
+      // The "email me offers" tick is saved here for returning customers
+      // (it never reaches verify-otp). It only ever turns the choice ON.
       if (body.marketingOptIn === true) {
         try {
           await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
@@ -132,6 +134,9 @@ exports.handler = async function (event) {
         })
       });
     }
+
+    // Fresh code = fresh set of guesses (best effort; needs otp_attempts).
+    try { await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, { method: 'PATCH', body: JSON.stringify({ otp_attempts: 0 }) }); } catch (e) { /* column not added yet */ }
 
     const emailRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
