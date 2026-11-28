@@ -3600,6 +3600,7 @@ function buildGateOverlayDOM() {
             '<input type="checkbox" id="gate-overlay-consent-checkbox">' +
             '<label for="gate-overlay-consent-checkbox">I agree to the <a href="terms.html" target="_blank" rel="noopener" class="gate-legal-link">Terms &amp; Conditions</a> and <a href="privacy.html" target="_blank" rel="noopener" class="gate-legal-link">Privacy &amp; Cookies Policy</a></label>' +
           '</div>' +
+          '<div class="gate-consent-row gate-offers-row"><input type="checkbox" id="gate-overlay-offers-checkbox"><label for="gate-overlay-offers-checkbox">Email me special offers and updates <span class="gate-optional">(optional)</span></label></div>' +
           '<button type="button" id="gate-overlay-send-btn" class="btn btn-primary" disabled>Send Verification Code</button>' +
           '<p class="gate-error" id="gate-overlay-error-1"></p>' +
           '<button type="button" id="gate-overlay-maybe-later-btn-1" class="gate-maybe-later" style="display:none;">Maybe Later</button>' +
@@ -3755,7 +3756,7 @@ function wireGateOverlayEvents() {
     fetch('/.netlify/functions/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateOverlayEmail, code: code })
+      body: JSON.stringify({ email: gateOverlayEmail, code: code, marketingOptIn: !!((document.getElementById('gate-overlay-offers-checkbox') || {}).checked) })
     })
       .then(function (res) { return res.json().then(function (data) { return { ok: res.ok, data: data }; }); })
       .then(function (result) {
@@ -4012,7 +4013,7 @@ function initLoginPage() {
     fetch('/.netlify/functions/verify-otp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: gateEmail, code: code })
+      body: JSON.stringify({ email: gateEmail, code: code, marketingOptIn: !!((document.getElementById('gate-offers-checkbox') || {}).checked) })
     })
       .then(function (res) {
         return res.json().then(function (data) { return { ok: res.ok, data: data }; });
@@ -7665,9 +7666,37 @@ function initPinnedHero() {
     });
   });
 
+  // ---- Offers & updates switch ----
+  function initOffersToggle(token) {
+    var box = document.getElementById('acct-offers-toggle');
+    var label = document.querySelector('.acct-switch-label');
+    if (!box) return;
+    function show() { if (label) label.textContent = box.checked ? 'On' : 'Off'; }
+    function call(payload) {
+      payload.visitorToken = token;
+      return fetch('/.netlify/functions/account-marketing-pref', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function (r) { return r.json().then(function (d) { return { ok: r.ok, data: d }; }); });
+    }
+    box.checked = false; show();
+    call({ action: 'get' }).then(function (res) {
+      if (res.ok) { box.checked = !!res.data.optIn; show(); }
+    }).catch(function () {});
+    box.addEventListener('change', function () {
+      var wanted = box.checked;
+      show();
+      call({ action: 'set', optIn: wanted }).then(function (res) {
+        if (!res.ok) { box.checked = !wanted; show(); }
+      }).catch(function () { box.checked = !wanted; show(); });
+    });
+  }
+
   // ---- Load ----
   window.initAccountPage = function () {
     var token = gateGetCookie('pavnika_verified');
+    initOffersToggle(token);
     fetch('/.netlify/functions/account-get-summary', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -39,13 +39,27 @@ exports.handler = async function (event) {
         method: 'DELETE',
         headers: {
           'apikey': SUPABASE_SERVICE_ROLE_KEY,
-          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          'Prefer': 'return=representation'
         }
       }
     );
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`Supabase error ${res.status}: ${text}`);
+    }
+    // Only a real removal counts as cart activity (repeat removals that
+    // delete nothing must not restart the idle clock).
+    let deleted = [];
+    try { deleted = await res.json(); } catch (e) { deleted = []; }
+    if (Array.isArray(deleted) && deleted.length) {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/verified_visitors?email=eq.${encodeURIComponent(payload.email)}`, {
+          method: 'PATCH',
+          headers: { 'apikey': SUPABASE_SERVICE_ROLE_KEY, 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cart_updated_at: new Date().toISOString() })
+        });
+      } catch (e) { console.error('touchCart failed:', e); }
     }
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (err) {

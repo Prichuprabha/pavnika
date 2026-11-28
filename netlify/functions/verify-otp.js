@@ -49,6 +49,19 @@ async function supabaseFetch(path, options) {
   return res.json();
 }
 
+// Saves the optional "email me offers" tick. Only ever turns it ON at
+// login (never off), so signing in again can't undo a choice made in
+// My Account. Must never break sign-in.
+async function saveOptIn(email, wanted) {
+  if (wanted !== true) return;
+  try {
+    await supabaseFetch(`verified_visitors?email=eq.${encodeURIComponent(email)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ marketing_opt_in: true, marketing_opt_in_at: new Date().toISOString() })
+    });
+  } catch (e) { console.error('saveOptIn failed (are the SETUP_offers_optin.sql columns added?):', e); }
+}
+
 exports.handler = async function (event, context) {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: 'Method Not Allowed' };
@@ -107,6 +120,7 @@ exports.handler = async function (event, context) {
       })
     });
 
+    await saveOptIn(email, body.marketingOptIn);
     var freshResponse = { verified: true };
     try { freshResponse.visitorToken = signVisitorToken(email); } catch (e) { console.error('signVisitorToken failed (is VISITOR_SECRET set?):', e); }
     return { statusCode: 200, body: JSON.stringify(freshResponse) };
